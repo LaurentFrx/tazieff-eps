@@ -1,37 +1,44 @@
+"use client";
+
+import { useI18n } from "@/lib/i18n/I18nProvider";
+
 const cards = [
   {
-    title: "Weekly map",
-    tag: "Plan",
-    body: "Sketch a simple week with clear focus days.",
+    key: "weekly",
+    tagKey: "pages.seances.cards.weekly.tag",
+    titleKey: "pages.seances.cards.weekly.title",
+    bodyKey: "pages.seances.cards.weekly.body",
   },
   {
-    title: "Session flow",
-    tag: "Tempo",
-    body: "Keep warmup, work, and cooldown in one flow.",
+    key: "flow",
+    tagKey: "pages.seances.cards.flow.tag",
+    titleKey: "pages.seances.cards.flow.title",
+    bodyKey: "pages.seances.cards.flow.body",
   },
   {
-    title: "Notes",
-    tag: "Log",
-    body: "Add short notes to keep the next session sharp.",
+    key: "notes",
+    tagKey: "pages.seances.cards.notes.tag",
+    titleKey: "pages.seances.cards.notes.title",
+    bodyKey: "pages.seances.cards.notes.body",
   },
 ];
 
 export default function SeancesPage() {
+  const { t } = useI18n();
+
   return (
     <section className="page">
       <header className="page-header">
-        <p className="eyebrow">Seances</p>
-        <h1>Plan simple sessions</h1>
-        <p className="lede">
-          Keep a light structure so each session feels repeatable.
-        </p>
+        <p className="eyebrow">{t("pages.seances.eyebrow")}</p>
+        <h1>{t("pages.seances.title")}</h1>
+        <p className="lede">{t("pages.seances.lede")}</p>
       </header>
       <div className="card-grid">
         {cards.map((card) => (
-          <article key={card.title} className="card">
-            <span className="pill">{card.tag}</span>
-            <h2>{card.title}</h2>
-            <p>{card.body}</p>
+          <article key={card.key} className="card">
+            <span className="pill">{t(card.tagKey)}</span>
+            <h2>{t(card.titleKey)}</h2>
+            <p>{t(card.bodyKey)}</p>
           </article>
         ))}
       </div>

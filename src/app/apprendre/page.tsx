@@ -1,37 +1,44 @@
+"use client";
+
+import { useI18n } from "@/lib/i18n/I18nProvider";
+
 const cards = [
   {
-    title: "Basics",
-    tag: "Start",
-    body: "Short explainers for form, tempo, and recovery.",
+    key: "basics",
+    tagKey: "pages.apprendre.cards.basics.tag",
+    titleKey: "pages.apprendre.cards.basics.title",
+    bodyKey: "pages.apprendre.cards.basics.body",
   },
   {
-    title: "Guides",
-    tag: "Focus",
-    body: "Deep dives for specific goals and techniques.",
+    key: "guides",
+    tagKey: "pages.apprendre.cards.guides.tag",
+    titleKey: "pages.apprendre.cards.guides.title",
+    bodyKey: "pages.apprendre.cards.guides.body",
   },
   {
-    title: "Glossary",
-    tag: "Terms",
-    body: "Quick definitions to keep language consistent.",
+    key: "glossary",
+    tagKey: "pages.apprendre.cards.glossary.tag",
+    titleKey: "pages.apprendre.cards.glossary.title",
+    bodyKey: "pages.apprendre.cards.glossary.body",
   },
 ];
 
 export default function ApprendrePage() {
+  const { t } = useI18n();
+
   return (
     <section className="page">
       <header className="page-header">
-        <p className="eyebrow">Apprendre</p>
-        <h1>Learn the essentials</h1>
-        <p className="lede">
-          Build confidence with short lessons you can scan in minutes.
-        </p>
+        <p className="eyebrow">{t("pages.apprendre.eyebrow")}</p>
+        <h1>{t("pages.apprendre.title")}</h1>
+        <p className="lede">{t("pages.apprendre.lede")}</p>
       </header>
       <div className="card-grid">
         {cards.map((card) => (
-          <article key={card.title} className="card">
-            <span className="pill">{card.tag}</span>
-            <h2>{card.title}</h2>
-            <p>{card.body}</p>
+          <article key={card.key} className="card">
+            <span className="pill">{t(card.tagKey)}</span>
+            <h2>{t(card.titleKey)}</h2>
+            <p>{t(card.bodyKey)}</p>
           </article>
         ))}
       </div>

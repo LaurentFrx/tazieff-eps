@@ -1,37 +1,44 @@
+"use client";
+
+import { useI18n } from "@/lib/i18n/I18nProvider";
+
 const cards = [
   {
-    title: "Catalogue",
-    tag: "Library",
-    body: "Browse a clear list of moves and build your set.",
+    key: "catalogue",
+    tagKey: "pages.exos.cards.catalogue.tag",
+    titleKey: "pages.exos.cards.catalogue.title",
+    bodyKey: "pages.exos.cards.catalogue.body",
   },
   {
-    title: "Focus",
-    tag: "Target",
-    body: "Filter by goal, equipment, or intensity.",
+    key: "focus",
+    tagKey: "pages.exos.cards.focus.tag",
+    titleKey: "pages.exos.cards.focus.title",
+    bodyKey: "pages.exos.cards.focus.body",
   },
   {
-    title: "Quick set",
-    tag: "Build",
-    body: "Draft a short block and keep the pace steady.",
+    key: "quickset",
+    tagKey: "pages.exos.cards.quickset.tag",
+    titleKey: "pages.exos.cards.quickset.title",
+    bodyKey: "pages.exos.cards.quickset.body",
   },
 ];
 
 export default function ExosPage() {
+  const { t } = useI18n();
+
   return (
     <section className="page">
       <header className="page-header">
-        <p className="eyebrow">Exos</p>
-        <h1>Build strong training blocks</h1>
-        <p className="lede">
-          Start with a focused list of moves and keep sessions simple.
-        </p>
+        <p className="eyebrow">{t("pages.exos.eyebrow")}</p>
+        <h1>{t("pages.exos.title")}</h1>
+        <p className="lede">{t("pages.exos.lede")}</p>
       </header>
       <div className="card-grid">
         {cards.map((card) => (
-          <article key={card.title} className="card">
-            <span className="pill">{card.tag}</span>
-            <h2>{card.title}</h2>
-            <p>{card.body}</p>
+          <article key={card.key} className="card">
+            <span className="pill">{t(card.tagKey)}</span>
+            <h2>{t(card.titleKey)}</h2>
+            <p>{t(card.bodyKey)}</p>
           </article>
         ))}
       </div>

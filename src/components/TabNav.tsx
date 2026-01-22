@@ -2,16 +2,30 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 const tabs = [
-  { href: "/exos", label: "Exos", meta: "Moves" },
-  { href: "/seances", label: "Seances", meta: "Plan" },
-  { href: "/apprendre", label: "Apprendre", meta: "Learn" },
-  { href: "/progres", label: "Progres", meta: "Track" },
+  { href: "/exos", labelKey: "nav.exos.label", metaKey: "nav.exos.meta" },
+  {
+    href: "/seances",
+    labelKey: "nav.seances.label",
+    metaKey: "nav.seances.meta",
+  },
+  {
+    href: "/apprendre",
+    labelKey: "nav.apprendre.label",
+    metaKey: "nav.apprendre.meta",
+  },
+  {
+    href: "/progres",
+    labelKey: "nav.progres.label",
+    metaKey: "nav.progres.meta",
+  },
 ];
 
 export function TabNav() {
   const pathname = usePathname() ?? "";
+  const { t } = useI18n();
 
   return (
     <nav className="tab-nav" aria-label="Primary">
@@ -27,8 +41,8 @@ export function TabNav() {
             aria-current={isActive ? "page" : undefined}
           >
             <span className="tab-icon" aria-hidden="true" />
-            <span className="tab-label">{tab.label}</span>
-            <span className="tab-meta">{tab.meta}</span>
+            <span className="tab-label">{t(tab.labelKey)}</span>
+            <span className="tab-meta">{t(tab.metaKey)}</span>
           </Link>
         );
       })}
