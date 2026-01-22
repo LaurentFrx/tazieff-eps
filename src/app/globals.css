@@ -1,0 +1,344 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f5efe6;
+  --bg-2: #fff7ee;
+  --ink: #1e1a16;
+  --muted: #5f5a53;
+  --accent: #f05a2b;
+  --accent-2: #2a9d8f;
+  --card: rgba(255, 255, 255, 0.78);
+  --border: rgba(30, 26, 22, 0.12);
+  --shadow: 0 20px 45px rgba(54, 33, 15, 0.12);
+  --radius: 22px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background:
+    radial-gradient(680px circle at 8% 0%, rgba(240, 90, 43, 0.18), transparent 60%),
+    radial-gradient(640px circle at 92% 0%, rgba(42, 157, 143, 0.2), transparent 60%),
+    linear-gradient(180deg, var(--bg), var(--bg-2) 55%, #f0e4d4 110%);
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      120deg,
+      rgba(30, 26, 22, 0.03) 0,
+      rgba(30, 26, 22, 0.03) 1px,
+      transparent 1px,
+      transparent 44px
+    ),
+    repeating-linear-gradient(
+      60deg,
+      rgba(240, 90, 43, 0.02) 0,
+      rgba(240, 90, 43, 0.02) 1px,
+      transparent 1px,
+      transparent 52px
+    );
+  opacity: 0.55;
+  z-index: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.app-shell {
+  position: relative;
+  z-index: 1;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px 20px 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-mark {
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.brand-title {
+  font-size: 22px;
+  color: var(--ink);
+}
+
+.brand-subtitle {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: rgba(30, 26, 22, 0.6);
+}
+
+.status-chip {
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink);
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: linear-gradient(
+    120deg,
+    rgba(240, 90, 43, 0.18),
+    rgba(42, 157, 143, 0.18)
+  );
+}
+
+.app-main {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  animation: fade-slide 0.7s ease both;
+}
+
+.page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+}
+
+.page-header h1 {
+  font-size: clamp(32px, 5vw, 52px);
+  line-height: 1.05;
+  color: var(--ink);
+}
+
+.lede {
+  font-size: 16px;
+  max-width: 560px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: fade-slide 0.7s ease both;
+}
+
+.card:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.card:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.card:nth-child(3) {
+  animation-delay: 0.18s;
+}
+
+.card h2 {
+  font-size: 20px;
+  color: var(--ink);
+}
+
+.pill {
+  align-self: flex-start;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink);
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(42, 157, 143, 0.15);
+  border: 1px solid rgba(42, 157, 143, 0.35);
+}
+
+.tab-nav {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  width: min(560px, calc(100% - 32px));
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
+  z-index: 10;
+  animation: rise 0.7s ease both 0.2s;
+}
+
+.tab-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 8px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.tab-link:hover {
+  transform: translateY(-1px);
+}
+
+.tab-link.is-active {
+  color: var(--ink);
+  background: linear-gradient(
+    140deg,
+    rgba(240, 90, 43, 0.2),
+    rgba(42, 157, 143, 0.22)
+  );
+  box-shadow: inset 0 0 0 1px rgba(30, 26, 22, 0.12);
+}
+
+.tab-icon {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(30, 26, 22, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(30, 26, 22, 0.12);
+}
+
+.tab-link.is-active .tab-icon {
+  background: linear-gradient(120deg, #f05a2b, #2a9d8f);
+  box-shadow: 0 0 12px rgba(240, 90, 43, 0.35);
+}
+
+.tab-label {
+  font-size: 12px;
+}
+
+.tab-meta {
+  display: none;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(95, 90, 83, 0.85);
+}
+
+@keyframes fade-slide {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 16px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (min-width: 768px) {
+  .app-shell {
+    padding: 36px 32px 160px;
+  }
+
+  .tab-meta {
+    display: block;
+  }
+
+  .tab-link {
+    font-size: 11px;
+    gap: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
