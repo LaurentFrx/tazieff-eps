@@ -8,6 +8,10 @@ export const messages = {
     },
     settings: {
       title: "Réglages",
+      open: "Ouvrir les réglages",
+      about: "À propos",
+      version: "Version",
+      copy: "Copier",
       language: {
         label: "Langue",
         fr: "Français",
@@ -137,6 +141,10 @@ export const messages = {
     },
     settings: {
       title: "Settings",
+      open: "Open settings",
+      about: "About",
+      version: "Version",
+      copy: "Copy",
       language: {
         label: "Language",
         fr: "French",

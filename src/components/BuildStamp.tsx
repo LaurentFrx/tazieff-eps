@@ -1,20 +1,42 @@
 "use client";
 
-function getEnvValue(value?: string) {
+type BuildInfo = {
+  branch: string;
+  sha7: string;
+  env: string;
+  label: string;
+};
+
+function getEnvValue(value: string | undefined, fallback: string) {
   if (!value || value.trim().length === 0) {
-    return "local";
+    return fallback;
   }
 
   return value;
 }
 
+export function getBuildInfo(): BuildInfo {
+  const branch = getEnvValue(
+    process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF,
+    "main",
+  );
+  const commitRaw = getEnvValue(process.env.NEXT_PUBLIC_COMMIT_SHA, "local");
+  const sha7 = commitRaw === "local" ? "local" : commitRaw.slice(0, 7);
+  const envRaw = getEnvValue(process.env.NEXT_PUBLIC_VERCEL_ENV, "dev");
+  const envValue = envRaw === "local" ? "dev" : envRaw;
+  const env = envValue === "production" ? "prod" : envValue;
+  const label = `${branch} · ${sha7 || "local"} · ${env}`;
+
+  return {
+    branch,
+    sha7: sha7 || "local",
+    env,
+    label,
+  };
+}
+
 export function BuildStamp() {
-  const commitRaw = getEnvValue(process.env.NEXT_PUBLIC_COMMIT_SHA);
-  const commit =
-    commitRaw === "local" ? "local" : commitRaw.slice(0, 7) || "local";
-  const branch = getEnvValue(process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF);
-  const envRaw = getEnvValue(process.env.NEXT_PUBLIC_VERCEL_ENV);
-  const env = envRaw === "production" ? "prod" : envRaw;
+  const { label } = getBuildInfo();
 
   return (
     <div
@@ -22,7 +44,7 @@ export function BuildStamp() {
       style={{ bottom: "calc(var(--tabbar-offset) + var(--tabbar-height) + 8px)" }}
       aria-hidden="true"
     >
-      {branch} · {commit} · {env}
+      {label}
     </div>
   );
 }

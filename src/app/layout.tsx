@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Space_Grotesk, Sora } from "next/font/google";
 import { cookies } from "next/headers";
 import { AppHeader } from "@/components/AppHeader";
-import { BuildStamp } from "@/components/BuildStamp";
 import { InstallPwaBanner } from "@/components/InstallPwaBanner";
 import { TabNav } from "@/components/TabNav";
 import { AppProviders } from "@/components/providers/AppProviders";
@@ -68,7 +67,6 @@ export default async function RootLayout({
             <main className="app-main">{children}</main>
           </div>
           <TabNav />
-          <BuildStamp />
           <InstallPwaBanner />
         </AppProviders>
       </body>

@@ -2,6 +2,7 @@
 
 import { useTheme } from "next-themes";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { getBuildInfo } from "@/components/BuildStamp";
 
 const languageOptions = [
   { value: "fr", labelKey: "settings.language.fr" },
@@ -18,6 +19,19 @@ export default function ReglagesPage() {
   const { t, lang, setLang } = useI18n();
   const { theme, setTheme } = useTheme();
   const currentTheme = theme ?? "system";
+  const buildInfo = getBuildInfo();
+
+  const handleCopy = async () => {
+    if (!navigator?.clipboard) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(buildInfo.label);
+    } catch {
+      // Ignore clipboard errors to keep the UI silent.
+    }
+  };
 
   return (
     <section className="page settings-page">
@@ -77,6 +91,24 @@ export default function ReglagesPage() {
                 {t(option.labelKey)}
               </label>
             ))}
+          </div>
+        </div>
+        <div className="settings-card">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="settings-heading">{t("settings.about")}</h2>
+            </div>
+            <button
+              type="button"
+              className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted)] transition hover:text-[color:var(--ink)]"
+              onClick={handleCopy}
+            >
+              {t("settings.copy")}
+            </button>
+          </div>
+          <div className="flex items-center justify-between gap-4 text-xs text-[color:var(--muted)]">
+            <span>{t("settings.version")}</span>
+            <span className="font-mono">{buildInfo.label}</span>
           </div>
         </div>
       </div>
