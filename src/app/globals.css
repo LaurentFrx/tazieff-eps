@@ -16,6 +16,8 @@
   --radius: 22px;
   --grid: rgba(30, 26, 22, 0.03);
   --grid-2: rgba(240, 90, 43, 0.02);
+  --tabbar-height: 72px;
+  --tabbar-offset: calc(16px + env(safe-area-inset-bottom));
 }
 
 .dark,
@@ -282,7 +284,7 @@ p {
 .tab-nav {
   position: fixed;
   left: 50%;
-  bottom: calc(16px + env(safe-area-inset-bottom));
+  bottom: var(--tabbar-offset);
   transform: translateX(-50%);
   width: min(560px, calc(100% - 32px));
   display: grid;
@@ -437,6 +439,7 @@ p {
   pointer-events: none;
   inset: 0;
 }
+
 
 @keyframes fade-slide {
   from {

@@ -123,6 +123,12 @@ export const messages = {
         themeHelp: "Suivez le système ou forcez un mode fixe.",
       },
     },
+    pwaBanner: {
+      title: "Installer l'app",
+      body: "Pour un affichage plein écran (sans menus iOS).",
+      hint: "Safari → Partager → « Sur l'écran d'accueil ».",
+      close: "Fermer",
+    },
   },
   en: {
     header: {
@@ -245,6 +251,12 @@ export const messages = {
         languageHelp: "The language applies across all screens.",
         themeHelp: "Follow the system or force a fixed mode.",
       },
+    },
+    pwaBanner: {
+      title: "Install the app",
+      body: "Get a full-screen view (without iOS browser UI).",
+      hint: "Safari → Share → “Add to Home Screen”.",
+      close: "Close",
     },
   },
 } as const;
