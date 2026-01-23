@@ -4,13 +4,14 @@ import { getMdxBySlug } from "@/lib/content/fs";
 import { renderMdx } from "@/lib/mdx/render";
 
 type ExoPageProps = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 export async function generateMetadata({
   params,
 }: ExoPageProps): Promise<Metadata> {
-  const result = await getMdxBySlug("exos", params.slug);
+  const { slug } = await params;
+  const result = await getMdxBySlug("exos", slug);
 
   if (!result) {
     return { title: "Exercice introuvable" };
@@ -20,7 +21,8 @@ export async function generateMetadata({
 }
 
 export default async function ExoPage({ params }: ExoPageProps) {
-  const result = await getMdxBySlug("exos", params.slug);
+  const { slug } = await params;
+  const result = await getMdxBySlug("exos", slug);
 
   if (!result) {
     notFound();

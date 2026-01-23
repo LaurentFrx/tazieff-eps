@@ -5,13 +5,14 @@ import { getMdxBySlug } from "@/lib/content/fs";
 import { renderMdx } from "@/lib/mdx/render";
 
 type SeancePageProps = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 export async function generateMetadata({
   params,
 }: SeancePageProps): Promise<Metadata> {
-  const result = await getMdxBySlug("seances", params.slug);
+  const { slug } = await params;
+  const result = await getMdxBySlug("seances", slug);
 
   if (!result) {
     return { title: "Séance introuvable" };
@@ -21,7 +22,8 @@ export async function generateMetadata({
 }
 
 export default async function SeancePage({ params }: SeancePageProps) {
-  const result = await getMdxBySlug("seances", params.slug);
+  const { slug } = await params;
+  const result = await getMdxBySlug("seances", slug);
 
   if (!result) {
     notFound();
