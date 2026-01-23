@@ -281,6 +281,25 @@ p {
   border: 1px solid color-mix(in srgb, var(--accent-2) 35%, transparent);
 }
 
+.pill--difficulty {
+  --pill-accent: var(--accent-2);
+  color: color-mix(in srgb, var(--pill-accent) 85%, var(--ink));
+  background: color-mix(in srgb, var(--pill-accent) 15%, transparent);
+  border-color: color-mix(in srgb, var(--pill-accent) 35%, transparent);
+}
+
+.pill--debutant {
+  --pill-accent: #16a34a;
+}
+
+.pill--intermediaire {
+  --pill-accent: #2563eb;
+}
+
+.pill--avance {
+  --pill-accent: #dc2626;
+}
+
 .tab-nav {
   position: fixed;
   left: 50%;

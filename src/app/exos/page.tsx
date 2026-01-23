@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import DifficultyBadge from "@/components/DifficultyBadge";
+import DifficultyPill from "@/components/DifficultyPill";
 import { listMdx } from "@/lib/content/fs";
 
 export default async function ExosPage() {
@@ -43,8 +43,8 @@ export default async function ExosPage() {
                         {(exercise.muscles ?? []).slice(0, 2).join(" · ") ||
                           "Exercice"}
                       </span>
-                      <DifficultyBadge
-                        difficulty={exercise.difficulty ?? "intermediaire"}
+                      <DifficultyPill
+                        level={exercise.difficulty ?? "intermediaire"}
                       />
                     </div>
                     <h2>{exercise.title}</h2>
