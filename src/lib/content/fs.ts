@@ -20,6 +20,7 @@ export type SeanceFrontmatter = BaseFrontmatter & {
 export type ExerciceFrontmatter = BaseFrontmatter & {
   muscles?: string[];
   equipment?: string[];
+  image?: string;
 };
 
 type FrontmatterMap = {

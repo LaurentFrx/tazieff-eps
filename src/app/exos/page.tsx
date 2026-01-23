@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { listMdx } from "@/lib/content/fs";
 
@@ -23,15 +24,30 @@ export default async function ExosPage() {
           exercises.map((exercise) => (
             <Link key={exercise.slug} href={`/exos/${exercise.slug}`}>
               <article className="card">
-                <span className="pill">
-                  {(exercise.muscles ?? []).slice(0, 2).join(" · ") || "Exercice"}
-                </span>
-                <h2>{exercise.title}</h2>
-                <p>
-                  {(exercise.equipment ?? []).length > 0
-                    ? `Matériel: ${exercise.equipment?.join(", ")}`
-                    : "Sans matériel spécifique."}
-                </p>
+                <div className="flex items-center gap-4">
+                  {exercise.image ? (
+                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl">
+                      <Image
+                        src={exercise.image}
+                        alt={exercise.title}
+                        fill
+                        sizes="80px"
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : null}
+                  <div className="min-w-0">
+                    <span className="pill">
+                      {(exercise.muscles ?? []).slice(0, 2).join(" · ") || "Exercice"}
+                    </span>
+                    <h2>{exercise.title}</h2>
+                    <p>
+                      {(exercise.equipment ?? []).length > 0
+                        ? `Matériel: ${exercise.equipment?.join(", ")}`
+                        : "Sans matériel spécifique."}
+                    </p>
+                  </div>
+                </div>
               </article>
             </Link>
           ))
