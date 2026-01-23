@@ -2,7 +2,8 @@
 
 ## Dev live (obligatoire pour les sessions Codex)
 
-- Node requis: Next.js 16 demande Node >= 20.9.
+- Node supporte: 20.9–22.x (Next.js 16 demande Node >= 20.9).
+- Recommande: Node 20 LTS si la CI est verrouillee sur une version fixe.
 - Lancer et garder actif: `npm run dev:3000` (127.0.0.1:3000 et localhost)
 - Une verification Node est lancee automatiquement avant le dev server.
 - Ne PAS utiliser `npm start` pour iterer (reserve au test prod local apres build)
