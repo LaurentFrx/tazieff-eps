@@ -3,7 +3,7 @@ import type { Dirent } from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 
-export type ContentType = "seances" | "exercices";
+export type ContentType = "seances" | "exos";
 
 type BaseFrontmatter = {
   title: string;
@@ -24,7 +24,7 @@ export type ExerciceFrontmatter = BaseFrontmatter & {
 
 type FrontmatterMap = {
   seances: SeanceFrontmatter;
-  exercices: ExerciceFrontmatter;
+  exos: ExerciceFrontmatter;
 };
 
 type MdxResult<T extends ContentType> = {
@@ -33,9 +33,13 @@ type MdxResult<T extends ContentType> = {
 };
 
 const CONTENT_ROOT = path.join(process.cwd(), "content");
+const CONTENT_DIRS: Record<ContentType, string> = {
+  seances: "seances",
+  exos: "exercices",
+};
 
 function getContentDir(type: ContentType) {
-  return path.join(CONTENT_ROOT, type);
+  return path.join(CONTENT_ROOT, CONTENT_DIRS[type]);
 }
 
 function normalizeFrontmatter<T extends ContentType>(
