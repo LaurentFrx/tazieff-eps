@@ -6,6 +6,7 @@
 - Recommande: Node 20 LTS si la CI est verrouillee sur une version fixe.
 - Lancer et garder actif: `npm run dev:3000` (127.0.0.1:3000 et localhost)
 - Une verification Node est lancee automatiquement avant le dev server.
+- En dev, pas de Service Worker pour eviter le cache.
 - Ne PAS utiliser `npm start` pour iterer (reserve au test prod local apres build)
 - Apres chaque changement: verifier que localhost repond et faire un smoke test:
   - `curl.exe -I --max-time 20 http://127.0.0.1:3000` -> 200/3xx

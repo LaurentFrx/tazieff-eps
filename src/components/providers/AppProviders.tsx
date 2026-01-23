@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { ThemeProvider, useTheme } from "next-themes";
 import { I18nProvider, type Lang } from "@/lib/i18n/I18nProvider";
+import { DevServiceWorkerCleanup } from "@/components/DevServiceWorkerCleanup";
 
 type ThemePreference = "system" | "light" | "dark";
 
@@ -60,6 +61,7 @@ export function AppProviders({
       <I18nProvider initialLang={initialLang}>
         {children}
         <ThemeSync initialTheme={initialTheme} />
+        <DevServiceWorkerCleanup />
       </I18nProvider>
     </ThemeProvider>
   );

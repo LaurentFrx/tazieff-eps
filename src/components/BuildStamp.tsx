@@ -1,13 +1,24 @@
 "use client";
 
-type BuildInfo = {
-  branch: string;
-  sha7: string;
-  env: string;
-  label: string;
+import { useEffect, useState } from "react";
+
+export type BuildInfo = {
+  ref: string;
+  sha: string;
+  builtAt?: string;
 };
 
-function getEnvValue(value: string | undefined, fallback: string) {
+type RuntimeInfo = {
+  env: string;
+  mode: string;
+};
+
+const FALLBACK_BUILD_INFO: BuildInfo = {
+  ref: "local",
+  sha: "unknown",
+};
+
+function normalizeValue(value: string | undefined, fallback: string) {
   if (!value || value.trim().length === 0) {
     return fallback;
   }
@@ -15,28 +26,65 @@ function getEnvValue(value: string | undefined, fallback: string) {
   return value;
 }
 
-export function getBuildInfo(): BuildInfo {
-  const branch = getEnvValue(
-    process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF,
-    "main",
-  );
-  const commitRaw = getEnvValue(process.env.NEXT_PUBLIC_COMMIT_SHA, "local");
-  const sha7 = commitRaw === "local" ? "local" : commitRaw.slice(0, 7);
-  const envRaw = getEnvValue(process.env.NEXT_PUBLIC_VERCEL_ENV, "dev");
-  const envValue = envRaw === "local" ? "dev" : envRaw;
-  const env = envValue === "production" ? "prod" : envValue;
-  const label = `${branch} · ${sha7 || "local"} · ${env}`;
+function getRuntimeInfo(): RuntimeInfo {
+  const envRaw = normalizeValue(process.env.NEXT_PUBLIC_VERCEL_ENV, "local");
+  const env = envRaw === "production" ? "prod" : envRaw;
+  const mode = process.env.NODE_ENV === "production" ? "prod" : "dev";
 
-  return {
-    branch,
-    sha7: sha7 || "local",
-    env,
-    label,
-  };
+  return { env, mode };
+}
+
+function formatBuildLabel(info: BuildInfo, runtime: RuntimeInfo) {
+  const ref = normalizeValue(info.ref, "local");
+  const sha = normalizeValue(info.sha, "unknown");
+
+  return `${ref} | ${sha} | ${runtime.env} | ${runtime.mode}`;
+}
+
+export function useBuildInfo() {
+  const [info, setInfo] = useState<BuildInfo>(FALLBACK_BUILD_INFO);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadInfo = async () => {
+      try {
+        const response = await fetch("/build-info.json", { cache: "no-store" });
+        if (!response.ok) {
+          return;
+        }
+
+        const data = (await response.json()) as Partial<BuildInfo>;
+        if (!active) {
+          return;
+        }
+
+        setInfo({
+          ref: normalizeValue(data.ref, FALLBACK_BUILD_INFO.ref),
+          sha: normalizeValue(data.sha, FALLBACK_BUILD_INFO.sha),
+          builtAt:
+            typeof data.builtAt === "string" ? data.builtAt : undefined,
+        });
+      } catch {
+        // Ignore fetch errors and keep the fallback info.
+      }
+    };
+
+    void loadInfo();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const runtime = getRuntimeInfo();
+  const label = formatBuildLabel(info, runtime);
+
+  return { ...info, ...runtime, label };
 }
 
 export function BuildStamp() {
-  const { label } = getBuildInfo();
+  const { label } = useBuildInfo();
 
   return (
     <div
