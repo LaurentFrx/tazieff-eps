@@ -1,26 +1,9 @@
-import type { ComponentType } from "react";
 import Link from "next/link";
-import type { ExerciseCardProps } from "@/components/ExerciseCardVariants";
-import {
-  ExerciseCardVariantA,
-  ExerciseCardVariantB,
-  ExerciseCardVariantC,
-} from "@/components/ExerciseCardVariants";
+import { ExerciseCard } from "@/components/ExerciseCard";
 import { listMdx } from "@/lib/content/fs";
-
-type ExoCardVariant = "A" | "B" | "C";
-
-const EXO_CARD_VARIANT: ExoCardVariant = "A";
-
-const CARD_VARIANTS: Record<ExoCardVariant, ComponentType<ExerciseCardProps>> = {
-  A: ExerciseCardVariantA,
-  B: ExerciseCardVariantB,
-  C: ExerciseCardVariantC,
-};
 
 export default async function ExosPage() {
   const exercises = await listMdx("exos");
-  const ExerciseCard = CARD_VARIANTS[EXO_CARD_VARIANT];
 
   return (
     <section className="page">
