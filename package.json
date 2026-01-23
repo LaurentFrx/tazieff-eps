@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "predev": "node scripts/check-node.mjs && node scripts/gen-build-info.mjs",
-    "dev": "next dev --webpack -p 3000 -H 127.0.0.1",
+    "dev": "next dev --webpack -p 3000 -H 0.0.0.0",
     "prebuild": "node scripts/gen-build-info.mjs",
     "build": "next build",
     "start": "next start",
