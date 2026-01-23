@@ -10,6 +10,8 @@ type BaseFrontmatter = {
   slug: string;
 };
 
+export type Difficulty = "debutant" | "intermediaire" | "avance";
+
 export type SeanceFrontmatter = BaseFrontmatter & {
   durationMin?: number;
   level?: string;
@@ -21,6 +23,7 @@ export type ExerciceFrontmatter = BaseFrontmatter & {
   muscles?: string[];
   equipment?: string[];
   image?: string;
+  difficulty?: Difficulty;
 };
 
 type FrontmatterMap = {
@@ -57,10 +60,25 @@ function normalizeFrontmatter<T extends ContentType>(
       ? data.title
       : slug;
 
-  return {
+  const normalized: Record<string, unknown> = {
     ...data,
     slug,
     title,
+  };
+
+  if (type === "exos") {
+    const difficulty =
+      data.difficulty === "debutant" ||
+      data.difficulty === "intermediaire" ||
+      data.difficulty === "avance"
+        ? data.difficulty
+        : "intermediaire";
+
+    normalized.difficulty = difficulty;
+  }
+
+  return {
+    ...normalized,
   } as FrontmatterMap[T];
 }
 

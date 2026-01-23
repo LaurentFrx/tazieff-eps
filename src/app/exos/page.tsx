@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import DifficultyBadge from "@/components/DifficultyBadge";
 import { listMdx } from "@/lib/content/fs";
 
 export default async function ExosPage() {
@@ -37,9 +38,15 @@ export default async function ExosPage() {
                     </div>
                   ) : null}
                   <div className="min-w-0">
-                    <span className="pill">
-                      {(exercise.muscles ?? []).slice(0, 2).join(" · ") || "Exercice"}
-                    </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="pill">
+                        {(exercise.muscles ?? []).slice(0, 2).join(" · ") ||
+                          "Exercice"}
+                      </span>
+                      <DifficultyBadge
+                        difficulty={exercise.difficulty ?? "intermediaire"}
+                      />
+                    </div>
                     <h2>{exercise.title}</h2>
                     <p>
                       {(exercise.equipment ?? []).length > 0

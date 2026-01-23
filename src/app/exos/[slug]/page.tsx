@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import DifficultyBadge from "@/components/DifficultyBadge";
 import { getMdxBySlug } from "@/lib/content/fs";
 import { renderMdx } from "@/lib/mdx/render";
 
@@ -30,21 +31,21 @@ export default async function ExoPage({ params }: ExoPageProps) {
 
   const { frontmatter, content } = result;
   const mdxContent = await renderMdx(content);
+  const difficulty = frontmatter.difficulty ?? "intermediaire";
 
   return (
     <section className="page">
       <header className="page-header">
         <p className="eyebrow">Exos</p>
         <h1>{frontmatter.title}</h1>
-        {frontmatter.muscles && frontmatter.muscles.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {frontmatter.muscles.map((muscle) => (
-              <span key={muscle} className="pill">
-                {muscle}
-              </span>
-            ))}
-          </div>
-        ) : null}
+        <div className="flex flex-wrap items-center gap-2">
+          <DifficultyBadge difficulty={difficulty} />
+          {frontmatter.muscles?.map((muscle) => (
+            <span key={muscle} className="pill">
+              {muscle}
+            </span>
+          ))}
+        </div>
         {frontmatter.equipment && frontmatter.equipment.length > 0 ? (
           <div className="text-sm text-[color:var(--muted)]">
             Matériel: {frontmatter.equipment.join(", ")}
