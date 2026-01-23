@@ -1,3 +1,5 @@
+[Docs Codex](docs/CODEX.md)
+
 # tazieff-eps
 
 ## Docs

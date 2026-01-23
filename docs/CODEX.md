@@ -1,7 +1,13 @@
 # CODEX
 
+## Interdiction de recherches globales (anti-iCloud)
+
+- Ne jamais lancer rg sur `C:\Users\...` ni sur un disque.
+- Toujours executer depuis la racine du repo.
+- Limiter rg a des chemins du repo: `rg "motif" src docs README.md package.json`
+- Exemple interdit: `rg "motif" C:\Users\...`
+
 ## Regles de recherche (obligatoire)
 
-- Interdiction de recherches globales. Ne jamais lancer de recherches en dehors du repo (pas de `rg` sur `C:\Users\...`, pas de `Get-ChildItem -Recurse` hors repo).
-- Toute recherche doit etre strictement limitee au repo `tazieff-eps` et executee depuis la racine (cwd = racine).
+- Toute recherche doit etre strictement limitee au repo `tazieff-eps`.
 - Utiliser des chemins internes au repo pour chaque recherche (ex: `rg "pattern" src` ou `rg "pattern" .`).
