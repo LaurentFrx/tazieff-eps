@@ -2,11 +2,15 @@
 
 ## Dev live (obligatoire pour les sessions Codex)
 
-- Lancer et garder actif: `npm run dev`
-- Ne PAS utiliser `npm start` pour itérer (réservé au test prod local après build)
-- Après chaque changement: vérifier que localhost répond, et faire un smoke test:
+- Node requis: Next.js 16 demande Node >= 20.9.
+- Lancer et garder actif: `npm run dev:3000` (127.0.0.1:3000 et localhost)
+- Une verification Node est lancee automatiquement avant le dev server.
+- Ne PAS utiliser `npm start` pour iterer (reserve au test prod local apres build)
+- Apres chaque changement: verifier que localhost repond et faire un smoke test:
+  - `curl.exe -I --max-time 20 http://127.0.0.1:3000` -> 200/3xx
   - GET `/exos` -> 200
   - GET `/exos/<slug_existant>` -> 200
   - GET `/seances/<slug_existant>` -> 200
-- Le compte rendu doit contenir: "✅ Local dev OK (localhost:3000) + routes testées"
-- Si HMR ne réagit pas (WSL/FS): proposer `WATCHPACK_POLLING=true` dans `.env.local`
+- Le compte rendu doit contenir: "✅ Local dev OK (127.0.0.1:3000) + routes testees"
+- Si le port ecoute mais que curl timeout: arreter Node sur 3000, supprimer `.next`, relancer `npm run dev:3000`.
+- Si HMR ne reagit pas (WSL/FS): proposer `WATCHPACK_POLLING=true` dans `.env.local`.
