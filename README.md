@@ -1,5 +1,9 @@
 # tazieff-eps
 
+## Docs
+
+- Regles Codex: [docs/CODEX.md](docs/CODEX.md)
+
 ## Dev live (obligatoire pour les sessions Codex)
 
 - Node supporte: 20.9–22.x (Next.js 16 demande Node >= 20.9).
