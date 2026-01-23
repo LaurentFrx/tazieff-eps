@@ -1,10 +1,26 @@
-import Image from "next/image";
+import type { ComponentType } from "react";
 import Link from "next/link";
-import DifficultyPill from "@/components/DifficultyPill";
+import type { ExerciseCardProps } from "@/components/ExerciseCardVariants";
+import {
+  ExerciseCardVariantA,
+  ExerciseCardVariantB,
+  ExerciseCardVariantC,
+} from "@/components/ExerciseCardVariants";
 import { listMdx } from "@/lib/content/fs";
+
+type ExoCardVariant = "A" | "B" | "C";
+
+const EXO_CARD_VARIANT: ExoCardVariant = "A";
+
+const CARD_VARIANTS: Record<ExoCardVariant, ComponentType<ExerciseCardProps>> = {
+  A: ExerciseCardVariantA,
+  B: ExerciseCardVariantB,
+  C: ExerciseCardVariantC,
+};
 
 export default async function ExosPage() {
   const exercises = await listMdx("exos");
+  const ExerciseCard = CARD_VARIANTS[EXO_CARD_VARIANT];
 
   return (
     <section className="page">
@@ -25,36 +41,7 @@ export default async function ExosPage() {
           exercises.map((exercise) => (
             <Link key={exercise.slug} href={`/exos/${exercise.slug}`}>
               <article className="card">
-                <div className="flex items-center gap-4">
-                  {exercise.image ? (
-                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl">
-                      <Image
-                        src={exercise.image}
-                        alt={exercise.title}
-                        fill
-                        sizes="80px"
-                        className="object-cover"
-                      />
-                    </div>
-                  ) : null}
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="pill">
-                        {(exercise.muscles ?? []).slice(0, 2).join(" · ") ||
-                          "Exercice"}
-                      </span>
-                      <DifficultyPill
-                        level={exercise.difficulty ?? "intermediaire"}
-                      />
-                    </div>
-                    <h2>{exercise.title}</h2>
-                    <p>
-                      {(exercise.equipment ?? []).length > 0
-                        ? `Matériel: ${exercise.equipment?.join(", ")}`
-                        : "Sans matériel spécifique."}
-                    </p>
-                  </div>
-                </div>
+                <ExerciseCard exercise={exercise} />
               </article>
             </Link>
           ))
