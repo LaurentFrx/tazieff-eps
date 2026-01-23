@@ -2,7 +2,7 @@
 
 import { useTheme } from "next-themes";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { getBuildInfo } from "@/components/BuildStamp";
+import { useBuildInfo } from "@/components/BuildStamp";
 
 const languageOptions = [
   { value: "fr", labelKey: "settings.language.fr" },
@@ -19,7 +19,7 @@ export default function ReglagesPage() {
   const { t, lang, setLang } = useI18n();
   const { theme, setTheme } = useTheme();
   const currentTheme = theme ?? "system";
-  const buildInfo = getBuildInfo();
+  const buildInfo = useBuildInfo();
 
   const handleCopy = async () => {
     if (!navigator?.clipboard) {

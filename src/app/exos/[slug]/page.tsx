@@ -10,7 +10,7 @@ type ExoPageProps = {
 export async function generateMetadata({
   params,
 }: ExoPageProps): Promise<Metadata> {
-  const result = await getMdxBySlug("exercices", params.slug);
+  const result = await getMdxBySlug("exos", params.slug);
 
   if (!result) {
     return { title: "Exercice introuvable" };
@@ -20,7 +20,7 @@ export async function generateMetadata({
 }
 
 export default async function ExoPage({ params }: ExoPageProps) {
-  const result = await getMdxBySlug("exercices", params.slug);
+  const result = await getMdxBySlug("exos", params.slug);
 
   if (!result) {
     notFound();

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { listMdx } from "@/lib/content/fs";
 
 export default async function ExosPage() {
-  const exercises = await listMdx("exercices");
+  const exercises = await listMdx("exos");
 
   return (
     <section className="page">
