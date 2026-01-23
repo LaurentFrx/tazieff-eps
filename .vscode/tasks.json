@@ -2,9 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "dev:3000",
+      "label": "dev",
       "type": "npm",
-      "script": "dev:3000",
+      "script": "dev",
       "isBackground": true,
       "runOptions": {
         "runOn": "folderOpen"

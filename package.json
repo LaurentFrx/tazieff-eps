@@ -3,9 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "predev:3000": "node scripts/check-node.mjs && node scripts/gen-build-info.mjs",
-    "dev:3000": "next dev --webpack -p 3000 -H 127.0.0.1",
+    "predev": "node scripts/check-node.mjs && node scripts/gen-build-info.mjs",
+    "dev": "next dev --webpack -p 3000 -H 127.0.0.1",
     "prebuild": "node scripts/gen-build-info.mjs",
     "build": "next build",
     "start": "next start",
