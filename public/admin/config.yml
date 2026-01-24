@@ -1,0 +1,61 @@
+backend:
+  name: git-gateway
+  branch: main
+
+local_backend: true
+
+media_folder: "public/media"
+public_folder: "/media"
+
+collections:
+  - name: "bac"
+    label: "Bac"
+    format: "mdx"
+    files:
+      - name: "bac"
+        label: "Bac"
+        file: "content/bac/bac.mdx"
+        fields:
+          - { label: "Title", name: "title", widget: "string" }
+          - { label: "Summary", name: "summary", widget: "string", required: false }
+          - { label: "Updated At", name: "updatedAt", widget: "datetime", required: false, date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+          - { label: "Body", name: "body", widget: "markdown" }
+
+  - name: "apprendre_parametres"
+    label: "Apprendre - Paramètres"
+    format: "mdx"
+    files:
+      - name: "apprendre_parametres"
+        label: "Paramètres"
+        file: "content/apprendre/parametres/index.mdx"
+        fields:
+          - { label: "Title", name: "title", widget: "string" }
+          - { label: "Summary", name: "summary", widget: "string", required: false }
+          - { label: "Updated At", name: "updatedAt", widget: "datetime", required: false, date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+          - { label: "Body", name: "body", widget: "markdown" }
+
+  - name: "apprendre_techniques"
+    label: "Apprendre - Techniques"
+    format: "mdx"
+    files:
+      - name: "apprendre_techniques"
+        label: "Techniques"
+        file: "content/apprendre/techniques/index.mdx"
+        fields:
+          - { label: "Title", name: "title", widget: "string" }
+          - { label: "Summary", name: "summary", widget: "string", required: false }
+          - { label: "Updated At", name: "updatedAt", widget: "datetime", required: false, date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+          - { label: "Body", name: "body", widget: "markdown" }
+
+  - name: "apprendre_connaissances"
+    label: "Apprendre - Connaissances"
+    format: "mdx"
+    files:
+      - name: "apprendre_connaissances"
+        label: "Connaissances"
+        file: "content/apprendre/connaissances/index.mdx"
+        fields:
+          - { label: "Title", name: "title", widget: "string" }
+          - { label: "Summary", name: "summary", widget: "string", required: false }
+          - { label: "Updated At", name: "updatedAt", widget: "datetime", required: false, date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+          - { label: "Body", name: "body", widget: "markdown" }

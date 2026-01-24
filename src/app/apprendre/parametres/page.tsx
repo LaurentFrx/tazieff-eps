@@ -1,39 +1,29 @@
-const sections = [
-  { id: "section-1", title: "Section 1" },
-  { id: "section-2", title: "Section 2" },
-  { id: "section-3", title: "Section 3" },
-];
+import { getPageMdx } from "@/lib/content/reader";
 
-export default function ParametresPage() {
+export default async function ParametresPage() {
+  const { frontmatter, content, toc } = await getPageMdx("apprendre/parametres");
+  const tocItems = toc.filter((item) => item.level === 2);
+
   return (
     <section className="page">
       <header className="page-header">
         <p className="eyebrow">Apprendre</p>
-        <h1>Paramètres</h1>
-        <p className="lede">À compléter</p>
+        <h1>{frontmatter.title}</h1>
+        <p className="lede">{frontmatter.summary ?? "À compléter"}</p>
       </header>
 
       <nav className="card stack-md" aria-label="Sommaire">
         <h2>Sommaire</h2>
         <ul>
-          {sections.map((section) => (
-            <li key={section.id}>
-              <a href={`#${section.id}`}>{section.title}</a>
+          {tocItems.map((item) => (
+            <li key={item.id}>
+              <a href={`#${item.id}`}>{item.title}</a>
             </li>
           ))}
         </ul>
       </nav>
 
-      <div className="stack-lg">
-        {sections.map((section) => (
-          <section key={section.id} id={section.id} className="stack-md">
-            <h2>{section.title}</h2>
-            <ul>
-              <li>À compléter</li>
-            </ul>
-          </section>
-        ))}
-      </div>
+      <div className="stack-lg">{content}</div>
     </section>
   );
 }
