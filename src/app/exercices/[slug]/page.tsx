@@ -1,8 +1,8 @@
-import Image from "next/image";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import DifficultyPill from "@/components/DifficultyPill";
 import { FavoriteToggle } from "@/components/FavoriteToggle";
+import { HeroMedia } from "@/components/media/HeroMedia";
 import { getExercise } from "@/lib/content/fs";
 import { renderMdx } from "@/lib/mdx/render";
 
@@ -36,7 +36,7 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
   const difficulty = frontmatter.level ?? "intermediaire";
 
   return (
-    <section className="page overflow-x-hidden">
+    <section className="page">
       <header className="page-header">
         <p className="eyebrow">Exercices</p>
         <h1>{frontmatter.title}</h1>
@@ -49,18 +49,7 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
           ))}
         </div>
         {frontmatter.media ? (
-          <div className="relative left-1/2 right-1/2 w-screen -ml-[50vw] -mr-[50vw]">
-            <div className="relative h-[100svh] w-full overflow-hidden">
-              <Image
-                src={frontmatter.media}
-                alt={frontmatter.title}
-                fill
-                priority
-                sizes="100vw"
-                className="object-cover object-center"
-              />
-            </div>
-          </div>
+          <HeroMedia src={frontmatter.media} alt={frontmatter.title} />
         ) : null}
         <div className="meta-row">
           <FavoriteToggle slug={frontmatter.slug} />
