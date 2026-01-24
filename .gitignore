@@ -45,3 +45,7 @@ next-env.d.ts
 
 # build info (generated)
 public/build-info.json
+
+# local branding assets
+public/images/flyer-eps.webp
+public/images/logo-eps.webp
