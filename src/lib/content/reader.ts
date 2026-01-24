@@ -18,11 +18,29 @@ const PageFrontmatterSchema = z
     title: z.string().min(1, "Le titre est requis."),
     summary: z.string().min(1, "Le résumé est requis.").optional(),
     updatedAt: z.preprocess((value) => {
+      if (value == null || value === "") {
+        return undefined;
+      }
       if (value instanceof Date) {
         return value.toISOString().slice(0, 10);
       }
       if (typeof value === "string") {
-        return value;
+        const trimmed = value.trim();
+        if (/^\d{4}-\d{2}-\d{2}T/.test(trimmed)) {
+          return trimmed.slice(0, 10);
+        }
+        if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+          return trimmed;
+        }
+        const frMatch = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(trimmed);
+        if (frMatch) {
+          return `${frMatch[3]}-${frMatch[2]}-${frMatch[1]}`;
+        }
+        const dashMatch = /^(\d{2})-(\d{2})-(\d{4})$/.exec(trimmed);
+        if (dashMatch) {
+          return `${dashMatch[3]}-${dashMatch[2]}-${dashMatch[1]}`;
+        }
+        return trimmed;
       }
       return undefined;
     }, z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide (YYYY-MM-DD).").optional()),
