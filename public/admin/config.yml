@@ -1,8 +1,7 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: "<OWNER>/<REPO>"
   branch: main
-
-local_backend: true
 
 media_folder: "public/media"
 public_folder: "/media"
