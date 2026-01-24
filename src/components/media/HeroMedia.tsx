@@ -1,38 +1,46 @@
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
 
-type HeroMediaProps = {
-  src: string;
-  alt: string;
-  aspectClass?: string;
-};
+type HeroMediaProps =
+  | {
+      src: StaticImageData;
+      alt: string;
+      priority?: boolean;
+      sizes?: string;
+    }
+  | {
+      src: string;
+      alt: string;
+      priority?: boolean;
+      sizes?: string;
+      width: number;
+      height: number;
+    };
 
-const DEFAULT_ASPECT_CLASS = "aspect-[16/9]";
+export function HeroMedia(props: HeroMediaProps) {
+  const {
+    src,
+    alt,
+    priority,
+    sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 900px, 1100px",
+  } = props;
 
-export function HeroMedia({
-  src,
-  alt,
-  aspectClass = DEFAULT_ASPECT_CLASS,
-}: HeroMediaProps) {
+  const dimensionProps =
+    typeof src === "string"
+      ? {
+          width: (props as Extract<HeroMediaProps, { src: string }>).width,
+          height: (props as Extract<HeroMediaProps, { src: string }>).height,
+        }
+      : undefined;
+
   return (
-    <div
-      className={`relative w-full overflow-hidden rounded-3xl bg-white/5 ring-1 ring-white/10 shadow-xl ${aspectClass}`.trim()}
-    >
-      <Image
-        src={src}
-        alt=""
-        fill
-        sizes="100vw"
-        priority
-        className="object-cover object-center blur-2xl opacity-40 scale-110"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/0 to-black/0" />
+    <div className="rounded-3xl overflow-hidden bg-white/5 ring-1 ring-white/10 shadow-xl">
       <Image
         src={src}
         alt={alt}
-        fill
-        sizes="100vw"
-        priority
-        className="object-contain object-center"
+        priority={priority}
+        sizes={sizes}
+        className="w-full h-auto"
+        {...dimensionProps}
       />
     </div>
   );

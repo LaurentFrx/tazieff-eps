@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import DifficultyPill from "@/components/DifficultyPill";
 import { FavoriteToggle } from "@/components/FavoriteToggle";
 import { HeroMedia } from "@/components/media/HeroMedia";
+import s1001 from "../../../../public/images/exos/s1-001.webp";
 import { getExercise } from "@/lib/content/fs";
 import { renderMdx } from "@/lib/mdx/render";
 
@@ -34,6 +35,11 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
   const { frontmatter, content } = result;
   const mdxContent = await renderMdx(content);
   const difficulty = frontmatter.level ?? "intermediaire";
+  const heroImage = frontmatter.media
+    ? {
+        "/images/exos/s1-001.webp": s1001,
+      }[frontmatter.media]
+    : undefined;
 
   return (
     <section className="page">
@@ -48,8 +54,8 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
             </span>
           ))}
         </div>
-        {frontmatter.media ? (
-          <HeroMedia src={frontmatter.media} alt={frontmatter.title} />
+        {heroImage ? (
+          <HeroMedia src={heroImage} alt={frontmatter.title} priority />
         ) : null}
         <div className="meta-row">
           <FavoriteToggle slug={frontmatter.slug} />
