@@ -17,6 +17,12 @@
 - Exemple d'usage dans le contenu MDX:
   - `<Figure src="/media/apprendre/parametres/parametres-fig-01.webp" caption="À compléter" credit="EPS" />`
   - Les images Markdown `![](/media/...)` seront aussi rendues avec le composant Figure.
+- Pipeline PDF -> images:
+  - Pré-requis (WSL recommandé): `pdfimages` (poppler-utils) ou `mutool` (mupdf-tools).
+  - Extraction + conversion pour Paramètres:
+    - `npm run pdf:extract:parametres`
+  - Les sources brutes sont écrites dans `public/media/apprendre/parametres/_src`.
+  - Pour un autre PDF: `npm run pdf:extract:parametres -- --pdf "docs/Mon fichier.pdf"` (ou définir `PDF_PATH` / `OUT_DIR` / `PREFIX`).
 
 ## Dev live (obligatoire pour les sessions Codex)
 

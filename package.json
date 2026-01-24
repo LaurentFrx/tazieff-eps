@@ -8,7 +8,8 @@
     "prebuild": "node scripts/gen-build-info.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "pdf:extract:parametres": "node tools/pdf/extract-images.mjs --pdf \"docs/Parametres volume 1.pdf\" --out \"public/media/apprendre/parametres/_src\" --prefix \"parametres\" && node tools/pdf/to-webp.mjs --in \"public/media/apprendre/parametres/_src\" --out \"public/media/apprendre/parametres\" --prefix \"parametres\""
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
@@ -28,6 +29,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.4",
+    "sharp": "^0.33.5",
     "tailwindcss": "^4",
     "typescript": "^5"
   },

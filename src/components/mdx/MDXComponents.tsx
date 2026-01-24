@@ -50,10 +50,12 @@ export const mdxComponents = {
     alt = "",
     title,
   }: ComponentPropsWithoutRef<"img">) => {
-    const normalizedSrc = typeof src === "string" ? src : "";
+    if (typeof src !== "string") {
+      return null;
+    }
     return (
       <Figure
-        src={normalizedSrc}
+        src={src}
         alt={alt}
         caption={title ?? undefined}
       />
