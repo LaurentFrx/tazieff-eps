@@ -1,56 +1,60 @@
 import fs from "node:fs/promises";
 import type { Dirent } from "node:fs";
 import path from "node:path";
+import { cache } from "react";
 import matter from "gray-matter";
+import type { ZodIssue, ZodSchema } from "zod";
+import {
+  ExerciseFrontmatterSchema,
+  SeanceFrontmatterSchema,
+  type ExerciseFrontmatter,
+  type SeanceFrontmatter,
+} from "@/lib/content/schema";
 
-export type ContentType = "seances" | "exos";
+type ContentType = "exercices" | "seances";
 
-type BaseFrontmatter = {
-  title: string;
-  slug: string;
-};
-
-export type Difficulty = "debutant" | "intermediaire" | "avance";
-
-export type SeanceFrontmatter = BaseFrontmatter & {
-  durationMin?: number;
-  level?: string;
-  tags?: string[];
-  exercises?: string[];
-};
-
-export type ExerciceFrontmatter = BaseFrontmatter & {
-  muscles?: string[];
-  equipment?: string[];
-  image?: string;
-  difficulty?: Difficulty;
-};
-
-type FrontmatterMap = {
-  seances: SeanceFrontmatter;
-  exos: ExerciceFrontmatter;
-};
-
-type MdxResult<T extends ContentType> = {
-  frontmatter: FrontmatterMap[T];
+type MdxResult<T> = {
+  frontmatter: T;
   content: string;
 };
 
 const CONTENT_ROOT = path.join(process.cwd(), "content");
 const CONTENT_DIRS: Record<ContentType, string> = {
+  exercices: "exercices",
   seances: "seances",
-  exos: "exercices",
 };
 
 function getContentDir(type: ContentType) {
   return path.join(CONTENT_ROOT, CONTENT_DIRS[type]);
 }
 
-function normalizeFrontmatter<T extends ContentType>(
-  type: T,
+function formatZodPath(pathSegments: Array<string | number>) {
+  return pathSegments.reduce((acc, segment) => {
+    if (typeof segment === "number") {
+      return `${acc}[${segment}]`;
+    }
+    return acc ? `${acc}.${segment}` : segment;
+  }, "");
+}
+
+function formatZodError(filename: string, issues: ZodIssue[]) {
+  const details = issues
+    .map((issue) => {
+      const cleanedPath = issue.path.map((segment) =>
+        typeof segment === "symbol" ? segment.toString() : segment,
+      ) as Array<string | number>;
+      const field = formatZodPath(cleanedPath) || "frontmatter";
+      return `- ${field}: ${issue.message}`;
+    })
+    .join("\n");
+
+  return `Frontmatter invalide dans ${filename}.\n${details}`;
+}
+
+function normalizeFrontmatter(
   data: Record<string, unknown>,
   filename: string,
-): FrontmatterMap[T] {
+): Record<string, unknown> {
   const slug =
     typeof data.slug === "string" && data.slug.trim().length > 0
       ? data.slug
@@ -60,33 +64,29 @@ function normalizeFrontmatter<T extends ContentType>(
       ? data.title
       : slug;
 
-  const normalized: Record<string, unknown> = {
+  return {
     ...data,
     slug,
     title,
   };
-
-  if (type === "exos") {
-    const difficulty =
-      data.difficulty === "debutant" ||
-      data.difficulty === "intermediaire" ||
-      data.difficulty === "avance"
-        ? data.difficulty
-        : "intermediaire";
-
-    normalized.difficulty = difficulty;
-  }
-
-  return {
-    ...normalized,
-  } as FrontmatterMap[T];
 }
 
-export async function listMdx<T extends ContentType>(
-  type: T,
-): Promise<FrontmatterMap[T][]> {
-  const dir = getContentDir(type);
+function parseFrontmatter<T>(
+  schema: ZodSchema<T>,
+  rawData: Record<string, unknown>,
+  filename: string,
+): T {
+  const normalized = normalizeFrontmatter(rawData, filename);
+  const result = schema.safeParse(normalized);
 
+  if (!result.success) {
+    throw new Error(formatZodError(filename, result.error.issues));
+  }
+
+  return result.data;
+}
+
+async function listMdxFiles(dir: string) {
   let entries: Dirent[] = [];
   try {
     entries = await fs.readdir(dir, { withFileTypes: true });
@@ -94,43 +94,83 @@ export async function listMdx<T extends ContentType>(
     return [];
   }
 
-  const files = entries.filter((entry) => entry.isFile() && entry.name.endsWith(".mdx"));
+  return entries
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".mdx"))
+    .map((entry) => entry.name);
+}
 
+async function readMdxFile<T>(
+  filePath: string,
+  schema: ZodSchema<T>,
+): Promise<MdxResult<T>> {
+  const raw = await fs.readFile(filePath, "utf8");
+  const { data, content } = matter(raw);
+  const filename = path.relative(process.cwd(), filePath);
+
+  return {
+    frontmatter: parseFrontmatter(schema, data as Record<string, unknown>, filename),
+    content,
+  };
+}
+
+async function readBySlug<T>(
+  type: ContentType,
+  slug: string,
+  schema: ZodSchema<T>,
+): Promise<MdxResult<T> | null> {
+  const dir = getContentDir(type);
+  const filePath = path.join(dir, `${slug}.mdx`);
+
+  try {
+    return await readMdxFile(filePath, schema);
+  } catch (error) {
+    const nodeError = error as NodeJS.ErrnoException;
+    if (nodeError.code === "ENOENT") {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export async function getAllExercises(): Promise<ExerciseFrontmatter[]> {
+  const dir = getContentDir("exercices");
+  const files = await listMdxFiles(dir);
   const items = await Promise.all(
     files.map(async (file) => {
-      const fullPath = path.join(dir, file.name);
-      const raw = await fs.readFile(fullPath, "utf8");
-      const { data } = matter(raw);
-      return normalizeFrontmatter(type, data as Record<string, unknown>, file.name);
+      const fullPath = path.join(dir, file);
+      const { frontmatter } = await readMdxFile(fullPath, ExerciseFrontmatterSchema);
+      return frontmatter;
     }),
   );
 
   return items.sort((a, b) => a.title.localeCompare(b.title, "fr"));
 }
 
-export async function getMdxBySlug<T extends ContentType>(
-  type: T,
+export async function getExercise(
   slug: string,
-): Promise<MdxResult<T> | null> {
-  const dir = getContentDir(type);
-  const filePath = path.join(dir, `${slug}.mdx`);
-
-  let raw: string;
-  try {
-    raw = await fs.readFile(filePath, "utf8");
-  } catch (error) {
-    const nodeError = error as NodeJS.ErrnoException;
-    if (nodeError.code === "ENOENT") {
-      return null;
-    }
-
-    throw error;
-  }
-
-  const { data, content } = matter(raw);
-
-  return {
-    frontmatter: normalizeFrontmatter(type, data as Record<string, unknown>, `${slug}.mdx`),
-    content,
-  };
+): Promise<MdxResult<ExerciseFrontmatter> | null> {
+  return readBySlug("exercices", slug, ExerciseFrontmatterSchema);
 }
+
+export async function getAllSeances(): Promise<SeanceFrontmatter[]> {
+  const dir = getContentDir("seances");
+  const files = await listMdxFiles(dir);
+  const items = await Promise.all(
+    files.map(async (file) => {
+      const fullPath = path.join(dir, file);
+      const { frontmatter } = await readMdxFile(fullPath, SeanceFrontmatterSchema);
+      return frontmatter;
+    }),
+  );
+
+  return items.sort((a, b) => a.title.localeCompare(b.title, "fr"));
+}
+
+export async function getSeance(
+  slug: string,
+): Promise<MdxResult<SeanceFrontmatter> | null> {
+  return readBySlug("seances", slug, SeanceFrontmatterSchema);
+}
+
+export const exercisesIndex = cache(async () => getAllExercises());
+export const seancesIndex = cache(async () => getAllSeances());

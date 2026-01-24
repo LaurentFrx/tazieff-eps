@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
 const tabs = [
-  { href: "/exos", labelKey: "nav.exos.label", metaKey: "nav.exos.meta" },
+  { href: "/exercices", labelKey: "nav.exos.label", metaKey: "nav.exos.meta" },
   {
     href: "/seances",
     labelKey: "nav.seances.label",

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getMdxBySlug } from "@/lib/content/fs";
+import DifficultyPill from "@/components/DifficultyPill";
+import { exercisesIndex, getSeance } from "@/lib/content/fs";
 import { renderMdx } from "@/lib/mdx/render";
 
 type SeancePageProps = {
@@ -12,7 +13,7 @@ export async function generateMetadata({
   params,
 }: SeancePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const result = await getMdxBySlug("seances", slug);
+  const result = await getSeance(slug);
 
   if (!result) {
     return { title: "Séance introuvable" };
@@ -23,7 +24,7 @@ export async function generateMetadata({
 
 export default async function SeancePage({ params }: SeancePageProps) {
   const { slug } = await params;
-  const result = await getMdxBySlug("seances", slug);
+  const result = await getSeance(slug);
 
   if (!result) {
     notFound();
@@ -31,41 +32,60 @@ export default async function SeancePage({ params }: SeancePageProps) {
 
   const { frontmatter, content } = result;
   const mdxContent = await renderMdx(content);
+  const exercises = await exercisesIndex();
+  const exerciseMap = new Map(exercises.map((exercise) => [exercise.slug, exercise]));
 
   return (
     <section className="page">
       <header className="page-header">
         <p className="eyebrow">Séances</p>
         <h1>{frontmatter.title}</h1>
-        <div className="flex flex-wrap gap-2 text-sm text-[color:var(--muted)]">
-          {frontmatter.durationMin ? (
-            <span>{frontmatter.durationMin} min</span>
-          ) : null}
-          {frontmatter.level ? <span>{frontmatter.level}</span> : null}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="pill">{frontmatter.durationMin} min</span>
+          {frontmatter.level ? <DifficultyPill level={frontmatter.level} /> : null}
         </div>
-        {frontmatter.tags && frontmatter.tags.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {frontmatter.tags.map((tag) => (
-              <span key={tag} className="pill">
-                {tag}
-              </span>
-            ))}
-          </div>
-        ) : null}
+        <div className="flex flex-wrap gap-2">
+          {frontmatter.tags.map((tag) => (
+            <span key={tag} className="pill">
+              {tag}
+            </span>
+          ))}
+        </div>
+        <Link href={`/seances/${frontmatter.slug}/terrain`} className="primary-button">
+          Mode terrain
+        </Link>
       </header>
-      <div className="flex flex-col gap-4">{mdxContent}</div>
-      {frontmatter.exercises && frontmatter.exercises.length > 0 ? (
-        <div className="card">
-          <h2>Exercices liés</h2>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {frontmatter.exercises.map((exercise) => (
-              <Link key={exercise} href={`/exos/${exercise}`} className="pill">
-                {exercise}
-              </Link>
-            ))}
-          </div>
+
+      <div className="card">
+        <h2>Déroulé</h2>
+        <div className="stack-md">
+          {frontmatter.blocks.map((block, index) => {
+            const exercise = exerciseMap.get(block.exoSlug);
+            const repsLabel =
+              typeof block.reps === "number" ? `${block.reps} reps` : block.reps;
+            const muscleLabel = exercise?.muscles?.slice(0, 3).join(" • ");
+            return (
+              <div key={`${block.exoSlug}-${index}`} className="block-row">
+                <div>
+                  <Link href={`/exercices/${block.exoSlug}`} className="block-title">
+                    {exercise?.title ?? block.exoSlug}
+                  </Link>
+                  <p className="block-meta">
+                    {muscleLabel ?? "Exercice à renseigner"}
+                  </p>
+                </div>
+                <div className="block-stats">
+                  {block.sets ? <span>{block.sets} séries</span> : null}
+                  {repsLabel ? <span>{repsLabel}</span> : null}
+                  {block.restSec ? <span>{block.restSec}s repos</span> : null}
+                </div>
+              </div>
+            );
+          })}
         </div>
-      ) : null}
+      </div>
+
+      <div className="flex flex-col gap-4">{mdxContent}</div>
     </section>
   );
 }

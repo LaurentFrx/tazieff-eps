@@ -1,4 +1,4 @@
-import type { Difficulty } from "@/lib/content/fs";
+import type { Difficulty } from "@/lib/content/schema";
 
 type DifficultyLevel = Difficulty | string;
 

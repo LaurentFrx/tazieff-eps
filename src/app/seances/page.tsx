@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { listMdx } from "@/lib/content/fs";
+import { seancesIndex } from "@/lib/content/fs";
+import { SeanceListClient } from "@/app/seances/SeanceListClient";
 
 export default async function SeancesPage() {
-  const seances = await listMdx("seances");
+  const seances = await seancesIndex();
 
   return (
     <section className="page">
@@ -10,34 +10,10 @@ export default async function SeancesPage() {
         <p className="eyebrow">Séances</p>
         <h1>Plans de séance</h1>
         <p className="lede">
-          Des modèles prêts à l&apos;emploi pour structurer une séance complète.
+          Des formats prêts à l&apos;emploi pour structurer vos entraînements.
         </p>
       </header>
-      <div className="card-grid">
-        {seances.length === 0 ? (
-          <div className="card">
-            <h2>Aucune séance pour le moment</h2>
-            <p>Ajoutez un fichier MDX pour enrichir la bibliothèque.</p>
-          </div>
-        ) : (
-          seances.map((seance) => (
-            <Link key={seance.slug} href={`/seances/${seance.slug}`}>
-              <article className="card">
-                <span className="pill">
-                  {seance.durationMin ? `${seance.durationMin} min` : "Séance"}
-                  {seance.level ? ` · ${seance.level}` : ""}
-                </span>
-                <h2>{seance.title}</h2>
-                <p>
-                  {(seance.tags ?? []).length > 0
-                    ? `Tags: ${seance.tags?.join(", ")}`
-                    : "Plan structuré avec objectifs clairs."}
-                </p>
-              </article>
-            </Link>
-          ))
-        )}
-      </div>
+      <SeanceListClient seances={seances} />
     </section>
   );
 }

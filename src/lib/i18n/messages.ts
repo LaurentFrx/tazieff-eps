@@ -23,6 +23,13 @@ export const messages = {
         light: "Clair",
         dark: "Sombre",
       },
+      fieldTheme: {
+        label: "Thème terrain",
+        help: "Définit le profil pour filtrer les exercices compatibles.",
+        one: "Thème 1",
+        two: "Thème 2",
+        three: "Thème 3",
+      },
     },
     nav: {
       exos: { label: "Exos", meta: "Mouvements" },
@@ -155,6 +162,13 @@ export const messages = {
         system: "System",
         light: "Light",
         dark: "Dark",
+      },
+      fieldTheme: {
+        label: "Field theme",
+        help: "Sets the profile used to filter compatible exercises.",
+        one: "Theme 1",
+        two: "Theme 2",
+        three: "Theme 3",
       },
     },
     nav: {

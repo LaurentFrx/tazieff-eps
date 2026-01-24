@@ -1,9 +1,9 @@
 import Image from "next/image";
 import DifficultyPill from "@/components/DifficultyPill";
-import type { ExerciceFrontmatter } from "@/lib/content/fs";
+import type { ExerciseFrontmatter } from "@/lib/content/schema";
 
 export type ExerciseCardProps = {
-  exercise: ExerciceFrontmatter;
+  exercise: ExerciseFrontmatter;
 };
 
 function formatMuscles(muscles?: string[]) {
@@ -30,15 +30,15 @@ function formatEquipment(equipment?: string[]) {
 }
 
 export function ExerciseCard({ exercise }: ExerciseCardProps) {
-  const difficulty = exercise.difficulty ?? "intermediaire";
+  const difficulty = exercise.level ?? "intermediaire";
   const muscles = formatMuscles(exercise.muscles);
 
   return (
     <div className="flex items-start gap-4">
       <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-xl ring-1 ring-white/10">
-        {exercise.image ? (
+        {exercise.media ? (
           <Image
-            src={exercise.image}
+            src={exercise.media}
             alt={exercise.title}
             fill
             sizes="72px"

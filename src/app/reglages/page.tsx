@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useBuildInfo } from "@/components/BuildStamp";
+import { getTheme, onThemeChange, setTheme as setFieldTheme, type ThemePreference } from "@/lib/storage";
 
 const languageOptions = [
   { value: "fr", labelKey: "settings.language.fr" },
@@ -15,11 +17,20 @@ const themeOptions = [
   { value: "dark", labelKey: "settings.theme.dark" },
 ] as const;
 
+const fieldThemeOptions = [
+  { value: 1, labelKey: "settings.fieldTheme.one" },
+  { value: 2, labelKey: "settings.fieldTheme.two" },
+  { value: 3, labelKey: "settings.fieldTheme.three" },
+] as const;
+
 export default function ReglagesPage() {
   const { t, lang, setLang } = useI18n();
   const { theme, setTheme } = useTheme();
   const currentTheme = theme ?? "system";
   const buildInfo = useBuildInfo();
+  const [fieldTheme, setLocalFieldTheme] = useState<ThemePreference>(getTheme());
+
+  useEffect(() => onThemeChange(setLocalFieldTheme), []);
 
   const handleCopy = async () => {
     if (!navigator?.clipboard) {
@@ -87,6 +98,35 @@ export default function ReglagesPage() {
                   value={option.value}
                   checked={currentTheme === option.value}
                   onChange={() => setTheme(option.value)}
+                />
+                {t(option.labelKey)}
+              </label>
+            ))}
+          </div>
+        </div>
+        <div className="settings-card">
+          <div>
+            <h2 className="settings-heading">{t("settings.fieldTheme.label")}</h2>
+            <p className="settings-help">{t("settings.fieldTheme.help")}</p>
+          </div>
+          <div className="segmented">
+            {fieldThemeOptions.map((option) => (
+              <label
+                key={option.value}
+                className={`segment-button${
+                  fieldTheme === option.value ? " is-active" : ""
+                }`}
+              >
+                <input
+                  className="segment-input"
+                  type="radio"
+                  name="field-theme"
+                  value={option.value}
+                  checked={fieldTheme === option.value}
+                  onChange={() => {
+                    setLocalFieldTheme(option.value);
+                    setFieldTheme(option.value);
+                  }}
                 />
                 {t(option.labelKey)}
               </label>
