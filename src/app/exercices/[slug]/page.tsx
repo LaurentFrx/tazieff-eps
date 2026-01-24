@@ -36,7 +36,7 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
   const difficulty = frontmatter.level ?? "intermediaire";
 
   return (
-    <section className="page">
+    <section className="page overflow-x-hidden">
       <header className="page-header">
         <p className="eyebrow">Exercices</p>
         <h1>{frontmatter.title}</h1>
@@ -49,14 +49,17 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
           ))}
         </div>
         {frontmatter.media ? (
-          <div className="media-frame">
-            <Image
-              src={frontmatter.media}
-              alt={frontmatter.title}
-              fill
-              sizes="(max-width: 768px) 100vw, 720px"
-              className="object-cover"
-            />
+          <div className="relative left-1/2 right-1/2 w-screen -ml-[50vw] -mr-[50vw]">
+            <div className="relative h-[100svh] w-full overflow-hidden">
+              <Image
+                src={frontmatter.media}
+                alt={frontmatter.title}
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover object-center"
+              />
+            </div>
           </div>
         ) : null}
         <div className="meta-row">
