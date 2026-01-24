@@ -6,12 +6,15 @@ import { ExerciseCard } from "@/components/ExerciseCard";
 import { Chips } from "@/components/Chips";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
 import {
-  getFavorites,
   getTheme,
-  onFavoritesChange,
   onThemeChange,
   type ThemePreference,
 } from "@/lib/storage";
+import {
+  EMPTY_FAVORITES_SERVER_SNAPSHOT,
+  getFavoritesSnapshot,
+  subscribeFavorites,
+} from "@/lib/favoritesStore";
 
 type ExerciseListClientProps = {
   exercises: ExerciseFrontmatter[];
@@ -23,9 +26,9 @@ export function ExerciseListClient({ exercises }: ExerciseListClientProps) {
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [onlyCompatible, setOnlyCompatible] = useState(false);
   const favorites = useSyncExternalStore(
-    (callback) => onFavoritesChange(() => callback()),
-    getFavorites,
-    () => [],
+    subscribeFavorites,
+    getFavoritesSnapshot,
+    () => EMPTY_FAVORITES_SERVER_SNAPSHOT,
   );
   const theme = useSyncExternalStore<ThemePreference>(
     (callback) => onThemeChange(() => callback()),

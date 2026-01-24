@@ -1,7 +1,11 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { isFavorite, onFavoritesChange, toggleFavorite } from "@/lib/storage";
+import {
+  getFavoritesSnapshot,
+  subscribeFavorites,
+  toggleFavorite,
+} from "@/lib/favoritesStore";
 
 type FavoriteToggleProps = {
   slug: string;
@@ -9,8 +13,8 @@ type FavoriteToggleProps = {
 
 export function FavoriteToggle({ slug }: FavoriteToggleProps) {
   const active = useSyncExternalStore(
-    (callback) => onFavoritesChange(() => callback()),
-    () => isFavorite(slug),
+    subscribeFavorites,
+    () => getFavoritesSnapshot().includes(slug),
     () => false,
   );
 
