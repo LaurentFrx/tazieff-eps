@@ -17,9 +17,9 @@ const tabs = [
     metaKey: "nav.apprendre.meta",
   },
   {
-    href: "/progres",
-    labelKey: "nav.progres.label",
-    metaKey: "nav.progres.meta",
+    href: "/bac",
+    labelKey: "nav.bac.label",
+    metaKey: "nav.bac.meta",
   },
 ];
 

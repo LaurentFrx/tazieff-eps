@@ -36,6 +36,7 @@ export const messages = {
       seances: { label: "Séances", meta: "Plan" },
       apprendre: { label: "Apprendre", meta: "Savoir" },
       progres: { label: "Progrès", meta: "Suivi" },
+      bac: { label: "Bac", meta: "Épreuve" },
     },
     pages: {
       exos: {
@@ -176,6 +177,7 @@ export const messages = {
       seances: { label: "Sessions", meta: "Plan" },
       apprendre: { label: "Learn", meta: "Guide" },
       progres: { label: "Progress", meta: "Track" },
+      bac: { label: "Bac", meta: "Exam" },
     },
     pages: {
       exos: {
