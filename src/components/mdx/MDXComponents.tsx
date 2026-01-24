@@ -1,4 +1,5 @@
 import type { ComponentPropsWithoutRef } from "react";
+import { Figure } from "@/components/mdx/Figure";
 
 type CalloutProps = ComponentPropsWithoutRef<"div"> & {
   tone?: "info" | "warning" | "success";
@@ -44,6 +45,21 @@ export const mdxComponents = {
   li: ({ className, ...props }: ComponentPropsWithoutRef<"li">) => (
     <li className={`text-[color:var(--muted)] ${className ?? ""}`.trim()} {...props} />
   ),
+  img: ({
+    src,
+    alt = "",
+    title,
+  }: ComponentPropsWithoutRef<"img">) => {
+    const normalizedSrc = typeof src === "string" ? src : "";
+    return (
+      <Figure
+        src={normalizedSrc}
+        alt={alt}
+        caption={title ?? undefined}
+      />
+    );
+  },
+  Figure,
   Callout: ({
     tone = "info",
     className,

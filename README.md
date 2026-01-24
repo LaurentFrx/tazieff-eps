@@ -10,6 +10,14 @@
 
 - Règle CMS-ready: [docs/REFERENCE_APP_EPS.md](docs/REFERENCE_APP_EPS.md)
 
+## Images MDX (Decap)
+
+- Placer les illustrations dans `public/media/...` (ex: `public/media/apprendre/parametres/parametres-fig-01.webp`).
+- Convention de nommage: `fig-01`, `fig-02`, etc.
+- Exemple d'usage dans le contenu MDX:
+  - `<Figure src="/media/apprendre/parametres/parametres-fig-01.webp" caption="À compléter" credit="EPS" />`
+  - Les images Markdown `![](/media/...)` seront aussi rendues avec le composant Figure.
+
 ## Dev live (obligatoire pour les sessions Codex)
 
 - Node supporte: 20.9–22.x (Next.js 16 demande Node >= 20.9).
