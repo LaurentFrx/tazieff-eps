@@ -17,10 +17,15 @@ const PageFrontmatterSchema = z
   .object({
     title: z.string().min(1, "Le titre est requis."),
     summary: z.string().min(1, "Le résumé est requis.").optional(),
-    updatedAt: z
-      .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide (YYYY-MM-DD).")
-      .optional(),
+    updatedAt: z.preprocess((value) => {
+      if (value instanceof Date) {
+        return value.toISOString().slice(0, 10);
+      }
+      if (typeof value === "string") {
+        return value;
+      }
+      return undefined;
+    }, z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide (YYYY-MM-DD).").optional()),
   })
   .passthrough();
 
