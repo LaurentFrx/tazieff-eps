@@ -3,19 +3,19 @@ import Image from "next/image";
 type HeroMediaProps = {
   src: string;
   alt: string;
-  heightClass?: string;
+  aspectClass?: string;
 };
 
-const DEFAULT_HEIGHT_CLASS = "h-[70svh] max-h-[820px] min-h-[320px]";
+const DEFAULT_ASPECT_CLASS = "aspect-[16/9]";
 
 export function HeroMedia({
   src,
   alt,
-  heightClass = DEFAULT_HEIGHT_CLASS,
+  aspectClass = DEFAULT_ASPECT_CLASS,
 }: HeroMediaProps) {
   return (
     <div
-      className={`relative w-full ${heightClass} rounded-3xl overflow-hidden bg-white/5 ring-1 ring-white/10 shadow-xl`.trim()}
+      className={`relative w-full overflow-hidden rounded-3xl bg-white/5 ring-1 ring-white/10 shadow-xl ${aspectClass}`.trim()}
     >
       <Image
         src={src}
