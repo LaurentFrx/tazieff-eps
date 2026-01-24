@@ -6,6 +6,10 @@
 
 - Regles Codex: [docs/CODEX.md](docs/CODEX.md)
 
+## Référence projet
+
+- Règle CMS-ready: [docs/REFERENCE_APP_EPS.md](docs/REFERENCE_APP_EPS.md)
+
 ## Dev live (obligatoire pour les sessions Codex)
 
 - Node supporte: 20.9–22.x (Next.js 16 demande Node >= 20.9).
