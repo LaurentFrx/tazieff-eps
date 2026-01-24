@@ -1,7 +1,9 @@
 backend:
   name: github
-  repo: "<OWNER>/<REPO>"
+  repo: "LaurentFrx/tazieff-eps"
   branch: main
+  base_url: "https://tazieff-eps.vercel.app"
+  auth_endpoint: "auth"
 
 media_folder: "public/media"
 public_folder: "/media"
