@@ -1,7 +1,7 @@
 import { getPageMdx } from "@/lib/content/reader";
 
 export default async function TechniquesPage() {
-  const { frontmatter, content, toc } = await getPageMdx("apprendre/techniques");
+  const { frontmatter, content, toc } = await getPageMdx("apprendre_techniques");
   const tocItems = toc.filter((item) => item.level === 2);
 
   return (

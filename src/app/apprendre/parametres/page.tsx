@@ -1,7 +1,7 @@
 import { getPageMdx } from "@/lib/content/reader";
 
 export default async function ParametresPage() {
-  const { frontmatter, content, toc } = await getPageMdx("apprendre/parametres");
+  const { frontmatter, content, toc } = await getPageMdx("apprendre_parametres");
   const tocItems = toc.filter((item) => item.level === 2);
 
   return (
