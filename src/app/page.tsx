@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { HomeFlyer } from "@/components/HomeFlyer";
 
@@ -8,9 +9,6 @@ export default function HomePage() {
     "backdrop-blur-md ring-1 ring-white/10 " +
     "transition hover:scale-[1.01] active:scale-[0.99] " +
     "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30";
-  const pillPurple =
-    "bg-gradient-to-r from-violet-600/70 to-fuchsia-500/40 text-white " +
-    "hover:from-violet-500/80 hover:to-fuchsia-400/50";
   const pillGreen =
     "bg-gradient-to-r from-emerald-600/70 to-lime-500/35 text-white " +
     "hover:from-emerald-500/80 hover:to-lime-400/45";
@@ -23,6 +21,10 @@ export default function HomePage() {
   const pillRose =
     "bg-gradient-to-r from-rose-500/75 to-pink-500/40 text-white " +
     "hover:from-rose-400/85 hover:to-pink-400/55";
+
+  const imageButtonBase =
+    "block overflow-hidden rounded-2xl ring-1 ring-white/10 shadow-sm transition-transform " +
+    "hover:scale-[1.01] active:scale-[0.99]";
 
   return (
     <section className="page">
@@ -41,21 +43,43 @@ export default function HomePage() {
           <div className="flex flex-col gap-3">
             <Link
               href="/apprendre/parametres#endurance-de-force"
-              className={`${pillBase} ${pillPurple}`}
+              className={imageButtonBase}
             >
-              ENDURANCE DE FORCE (Tonification)
+              <Image
+                src="/images/menus/bouton-endurance-de-force.webp"
+                alt="Endurance de force"
+                width={1536}
+                height={384}
+                sizes="(max-width: 768px) 100vw, 720px"
+                className="h-auto w-full"
+                priority
+              />
             </Link>
             <Link
               href="/apprendre/parametres#gain-de-volume-hypertrophie"
-              className={`${pillBase} ${pillPurple}`}
+              className={imageButtonBase}
             >
-              GAIN DE VOLUME
+              <Image
+                src="/images/menus/bouton-gain-de-volume.webp"
+                alt="Gain de volume"
+                width={1536}
+                height={384}
+                sizes="(max-width: 768px) 100vw, 720px"
+                className="h-auto w-full"
+              />
             </Link>
             <Link
               href="/apprendre/parametres#gain-de-puissance"
-              className={`${pillBase} ${pillPurple}`}
+              className={imageButtonBase}
             >
-              GAIN DE PUISSANCE
+              <Image
+                src="/images/menus/bouton-gain-de-puissance.webp"
+                alt="Gain de puissance"
+                width={1536}
+                height={384}
+                sizes="(max-width: 768px) 100vw, 720px"
+                className="h-auto w-full"
+              />
             </Link>
           </div>
 
