@@ -10,6 +10,21 @@ type BacSections = {
   sections: BacCard[][];
 };
 
+function slugifyHeading(value: string, counts: Map<string, number>) {
+  const base = value
+    .toLowerCase()
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+  const count = counts.get(base) ?? 0;
+  counts.set(base, count + 1);
+
+  return count === 0 ? base : `${base}-${count}`;
+}
+
 function splitBacSections(source: string): BacSections {
   const lines = source.split(/\r?\n/);
   const headings: string[] = [];
@@ -73,8 +88,12 @@ async function buildCards(items: BacCard[]) {
 export default async function BacPage() {
   const { frontmatter, source } = await getPageMdx("bac");
   const { headings, sections } = splitBacSections(source);
-  const competences = await buildCards(sections[0] ?? []);
-  const projets = await buildCards(sections[1] ?? []);
+  const fallbackHeadings = ["Compétences", "Projets", "Évaluation"];
+  const resolvedHeadings = sections.map(
+    (_, index) => headings[index] ?? fallbackHeadings[index] ?? `Section ${index + 1}`,
+  );
+  const sectionCards = await Promise.all(sections.map((items) => buildCards(items)));
+  const slugCounts = new Map<string, number>();
 
   return (
     <section className="page">
@@ -84,32 +103,34 @@ export default async function BacPage() {
         <p className="lede">{frontmatter.summary ?? "À compléter"}</p>
       </header>
 
-      <section className="stack-lg" aria-labelledby="bac-competences">
-        <div className="stack-md">
-          <h2 id="bac-competences">
-            {headings[0] ?? "L’épreuve en 4 compétences clés"}
-          </h2>
-          <div className="card-grid">
-            {competences.map((competence) => (
-              <article key={competence.id} className="card">
-                <h3>{competence.title}</h3>
-                <div className="stack-md">{competence.content}</div>
-              </article>
-            ))}
-          </div>
-        </div>
+      <section className="stack-lg">
+        {sectionCards.map((cards, index) => {
+          const heading = resolvedHeadings[index];
+          const headingId = heading
+            ? slugifyHeading(heading, slugCounts)
+            : undefined;
 
-        <div className="stack-md">
-          <h2>{headings[1] ?? "3 projets d’entraînement"}</h2>
-          <div className="card-grid">
-            {projets.map((projet) => (
-              <article key={projet.id} className="card">
-                <h3>{projet.title}</h3>
-                <div className="stack-md">{projet.content}</div>
-              </article>
-            ))}
-          </div>
-        </div>
+          return (
+            <div key={`${heading}-${index}`} className="stack-md">
+              {heading ? <h2 id={headingId}>{heading}</h2> : null}
+              <div className="card-grid">
+                {cards.map((card) => {
+                  const title = card.title || "À compléter";
+                  const cardId = card.title
+                    ? slugifyHeading(card.title, slugCounts)
+                    : undefined;
+
+                  return (
+                    <article key={card.id} className="card">
+                      <h3 id={cardId}>{title}</h3>
+                      <div className="stack-md">{card.content}</div>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </section>
     </section>
   );
