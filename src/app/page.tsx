@@ -29,7 +29,7 @@ export default function HomePage() {
       <HomeFlyer />
       <header className="stack-md text-center">
         <h1 className="text-4xl font-semibold text-[color:var(--ink)]">
-          LA MUSCULATION EN EPS
+          LA MUSCULATION
         </h1>
       </header>
 
