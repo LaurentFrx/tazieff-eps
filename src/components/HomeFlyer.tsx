@@ -8,7 +8,7 @@ export function HomeFlyer() {
       <Link
         href="/reglages"
         aria-label="Paramètres"
-        className="icon-button absolute right-4 top-3"
+        className="icon-button absolute right-4 top-3 h-9 w-9 text-xs"
       >
         <span aria-hidden="true">⚙️</span>
       </Link>
