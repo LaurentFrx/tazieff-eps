@@ -39,7 +39,7 @@ function getInitialTheme(value?: string): ThemePreference {
     return value;
   }
 
-  return "system";
+  return "dark";
 }
 
 export default async function RootLayout({
