@@ -2,8 +2,27 @@ import Link from "next/link";
 import { HomeFlyer } from "@/components/HomeFlyer";
 
 export default function HomePage() {
-  const buttonBase =
-    "block w-full rounded-2xl px-4 py-3 text-sm font-semibold text-[color:var(--ink)] border border-white/10 backdrop-blur-md transition hover:-translate-y-0.5 hover:shadow-[var(--shadow)]";
+  const pillBase =
+    "w-full rounded-2xl px-5 py-4 text-left font-semibold tracking-wide " +
+    "border border-white/15 shadow-[0_12px_30px_rgba(0,0,0,0.35)] " +
+    "backdrop-blur-md ring-1 ring-white/10 " +
+    "transition hover:scale-[1.01] active:scale-[0.99] " +
+    "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30";
+  const pillPurple =
+    "bg-gradient-to-r from-violet-600/70 to-fuchsia-500/40 text-white " +
+    "hover:from-violet-500/80 hover:to-fuchsia-400/50";
+  const pillGreen =
+    "bg-gradient-to-r from-emerald-600/70 to-lime-500/35 text-white " +
+    "hover:from-emerald-500/80 hover:to-lime-400/45";
+  const pillGray =
+    "bg-gradient-to-r from-slate-700/80 to-slate-500/35 text-white " +
+    "hover:from-slate-600/90 hover:to-slate-400/45";
+  const pillGold =
+    "bg-gradient-to-r from-amber-400/85 to-yellow-300/55 text-slate-950 " +
+    "hover:from-amber-300/95 hover:to-yellow-200/70";
+  const pillRose =
+    "bg-gradient-to-r from-rose-500/75 to-pink-500/40 text-white " +
+    "hover:from-rose-400/85 hover:to-pink-400/55";
 
   return (
     <section className="page">
@@ -12,9 +31,6 @@ export default function HomePage() {
         <h1 className="text-4xl font-semibold text-[color:var(--ink)]">
           LA MUSCULATION EN EPS
         </h1>
-        <p className="text-sm text-[color:var(--muted)]">
-          Cliquer sur les rubriques pour accéder aux contenus
-        </p>
       </header>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -25,19 +41,19 @@ export default function HomePage() {
           <div className="flex flex-col gap-3">
             <Link
               href="/apprendre/parametres#endurance-de-force"
-              className={`${buttonBase} bg-violet-400/20 hover:bg-violet-300/30`}
+              className={`${pillBase} ${pillPurple}`}
             >
               ENDURANCE DE FORCE (Tonification)
             </Link>
             <Link
               href="/apprendre/parametres#gain-de-volume-hypertrophie"
-              className={`${buttonBase} bg-violet-400/20 hover:bg-violet-300/30`}
+              className={`${pillBase} ${pillPurple}`}
             >
               GAIN DE VOLUME
             </Link>
             <Link
               href="/apprendre/parametres#gain-de-puissance"
-              className={`${buttonBase} bg-violet-400/20 hover:bg-violet-300/30`}
+              className={`${pillBase} ${pillPurple}`}
             >
               GAIN DE PUISSANCE
             </Link>
@@ -49,13 +65,13 @@ export default function HomePage() {
             </h3>
             <Link
               href="/bac#projets"
-              className={`${buttonBase} bg-emerald-400/20 hover:bg-emerald-300/30`}
+              className={`${pillBase} ${pillGreen}`}
             >
               DÉTENTE VERTICALE
             </Link>
             <Link
               href="/bac#projets"
-              className={`${buttonBase} bg-emerald-400/20 hover:bg-emerald-300/30`}
+              className={`${pillBase} ${pillGreen}`}
             >
               VITESSE et AGILITÉ en SPORTS COLLECTIFS
             </Link>
@@ -69,26 +85,26 @@ export default function HomePage() {
           <div className="flex flex-col gap-3">
             <Link
               href="/apprendre/connaissances#les-muscles-et-leur-fonctionnement"
-              className={`${buttonBase} bg-white/20 hover:bg-white/30`}
+              className={`${pillBase} ${pillGray}`}
             >
               LES MUSCLES ET LEUR FONCTIONNEMENT
             </Link>
             <Link
               href="/apprendre/techniques#methodes-dentrainement"
-              className={`${buttonBase} bg-white/20 hover:bg-white/30`}
+              className={`${pillBase} ${pillGray}`}
             >
               MÉTHODES D’ENTRAÎNEMENT
             </Link>
             <Link
               href="/apprendre/techniques#rm-rir-rpe"
-              className={`${buttonBase} bg-white/20 hover:bg-white/30`}
+              className={`${pillBase} ${pillGray}`}
             >
               RM/RIR/RPE
             </Link>
           </div>
           <Link
             href="/apprendre/techniques#principes-securitaires"
-            className={`${buttonBase} bg-amber-300/40 hover:bg-amber-300/55`}
+            className={`${pillBase} ${pillGold}`}
           >
             PRINCIPES SÉCURITAIRES
           </Link>
@@ -97,7 +113,7 @@ export default function HomePage() {
         <section className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[var(--shadow)] backdrop-blur-xl">
           <Link
             href="/bac#competences"
-            className="rounded-2xl border border-rose-200/40 bg-rose-300/30 px-4 py-3 text-sm font-semibold text-[color:var(--ink)] shadow-[var(--shadow)] backdrop-blur-md transition hover:-translate-y-0.5"
+            className={`${pillBase} ${pillRose}`}
           >
             Compétences attendues au lycée (démarche spiralaire).
           </Link>
@@ -108,19 +124,19 @@ export default function HomePage() {
           <div className="flex flex-col gap-3">
             <Link
               href="/bac#evaluation-2nde"
-              className={`${buttonBase} bg-amber-300/40 hover:bg-amber-300/55`}
+              className={`${pillBase} ${pillGold}`}
             >
               Evaluation en 2nde
             </Link>
             <Link
               href="/bac#evaluation-1ere"
-              className={`${buttonBase} bg-amber-300/40 hover:bg-amber-300/55`}
+              className={`${pillBase} ${pillGold}`}
             >
               Evaluation en 1ère
             </Link>
             <Link
               href="/bac#evaluation-terminale"
-              className={`${buttonBase} bg-amber-300/40 hover:bg-amber-300/55`}
+              className={`${pillBase} ${pillGold}`}
             >
               Evaluation en Terminale
             </Link>
