@@ -45,3 +45,6 @@ next-env.d.ts
 
 # build info (generated)
 public/build-info.json
+
+# large local docs
+docs/pdfs/Muscu'Tazieff 2.pdf
