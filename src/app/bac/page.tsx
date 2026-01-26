@@ -97,12 +97,6 @@ export default async function BacPage() {
 
   return (
     <section className="page">
-      <header className="page-header">
-        <p className="eyebrow">Bac</p>
-        <h1>{frontmatter.title}</h1>
-        <p className="lede">{frontmatter.summary ?? "À compléter"}</p>
-      </header>
-
       <section className="stack-lg">
         {sectionCards.map((cards, index) => {
           const heading = resolvedHeadings[index];

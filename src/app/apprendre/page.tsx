@@ -21,11 +21,6 @@ const cards = [
 export default function ApprendrePage() {
   return (
     <section className="page">
-      <header className="page-header">
-        <p className="eyebrow">Apprendre</p>
-        <h1>Apprendre</h1>
-        <p className="lede">À compléter</p>
-      </header>
       <div className="card-grid">
         {cards.map((card) => (
           <Link key={card.href} href={card.href} className="card">

@@ -144,11 +144,20 @@ p {
   color: var(--ink);
 }
 
+.brand-title--page {
+  font-size: clamp(32px, 5vw, 52px);
+  line-height: 1.05;
+}
+
 .brand-subtitle {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.22em;
   color: color-mix(in srgb, var(--ink) 55%, transparent);
+}
+
+.brand-subtitle--page {
+  color: var(--accent-2);
 }
 
 .header-actions {

@@ -11,6 +11,60 @@ const languageOptions = [
   { value: "en", labelKey: "settings.language.en" },
 ] as const;
 
+type LanguageValue = (typeof languageOptions)[number]["value"];
+
+const FlagIcon = ({ locale }: { locale: LanguageValue }) => {
+  if (locale === "fr") {
+    return (
+      <svg
+        viewBox="0 0 30 20"
+        className="h-4 w-6 rounded-sm ring-1 ring-black/10"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <rect width="10" height="20" fill="#0055A4" />
+        <rect x="10" width="10" height="20" fill="#FFFFFF" />
+        <rect x="20" width="10" height="20" fill="#EF4135" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg
+      viewBox="0 0 30 20"
+      className="h-4 w-6 rounded-sm ring-1 ring-black/10"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <rect width="30" height="20" fill="#012169" />
+      <path
+        d="M0 0 L30 20 M30 0 L0 20"
+        stroke="#FFFFFF"
+        strokeWidth="4"
+        strokeLinecap="square"
+      />
+      <path
+        d="M0 0 L30 20 M30 0 L0 20"
+        stroke="#C8102E"
+        strokeWidth="2"
+        strokeLinecap="square"
+      />
+      <path
+        d="M0 10 H30 M15 0 V20"
+        stroke="#FFFFFF"
+        strokeWidth="6"
+        strokeLinecap="square"
+      />
+      <path
+        d="M0 10 H30 M15 0 V20"
+        stroke="#C8102E"
+        strokeWidth="4"
+        strokeLinecap="square"
+      />
+    </svg>
+  );
+};
+
 const themeOptions = [
   { value: "system", labelKey: "settings.theme.system" },
   { value: "light", labelKey: "settings.theme.light" },
@@ -46,11 +100,6 @@ export default function ReglagesPage() {
 
   return (
     <section className="page settings-page">
-      <header className="page-header">
-        <p className="eyebrow">{t("pages.settings.eyebrow")}</p>
-        <h1>{t("pages.settings.title")}</h1>
-        <p className="lede">{t("pages.settings.lede")}</p>
-      </header>
       <div className="settings-list">
         <div className="settings-card">
           <div>
@@ -73,7 +122,10 @@ export default function ReglagesPage() {
                   checked={lang === option.value}
                   onChange={() => setLang(option.value)}
                 />
-                {t(option.labelKey)}
+                <span className="inline-flex items-center gap-2">
+                  <FlagIcon locale={option.value} />
+                  {t(option.labelKey)}
+                </span>
               </label>
             ))}
           </div>

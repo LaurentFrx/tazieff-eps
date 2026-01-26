@@ -73,7 +73,7 @@ export default function HomePage() {
               className={imageButtonBase}
             >
               <Image
-                src="/images/menus/bouton-gain-de-puissance.webp"
+                src="/images/menus/bouton-power-gain.webp"
                 alt="Gain de puissance"
                 width={1536}
                 height={384}
