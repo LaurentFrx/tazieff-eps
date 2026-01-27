@@ -99,6 +99,54 @@ async function listMdxFiles(dir: string) {
     .map((entry) => entry.name);
 }
 
+function getExerciseDirs() {
+  const baseDir = getContentDir("exercices");
+  return {
+    baseDir,
+    frDir: path.join(baseDir, "fr"),
+  };
+}
+
+async function listExerciseFilePaths() {
+  const { baseDir, frDir } = getExerciseDirs();
+  const [baseFiles, frFiles] = await Promise.all([
+    listMdxFiles(baseDir),
+    listMdxFiles(frDir),
+  ]);
+
+  const files = new Map<string, string>();
+  baseFiles.forEach((file) => {
+    const slug = path.basename(file, ".mdx");
+    files.set(slug, path.join(baseDir, file));
+  });
+  frFiles.forEach((file) => {
+    const slug = path.basename(file, ".mdx");
+    files.set(slug, path.join(frDir, file));
+  });
+
+  return Array.from(files.entries()).map(([slug, filePath]) => ({ slug, filePath }));
+}
+
+async function readBySlugInDirs<T>(
+  slug: string,
+  schema: ZodSchema<T>,
+  dirs: string[],
+): Promise<MdxResult<T> | null> {
+  for (const dir of dirs) {
+    const filePath = path.join(dir, `${slug}.mdx`);
+    try {
+      return await readMdxFile(filePath, schema);
+    } catch (error) {
+      const nodeError = error as NodeJS.ErrnoException;
+      if (nodeError.code === "ENOENT") {
+        continue;
+      }
+      throw error;
+    }
+  }
+  return null;
+}
+
 async function readMdxFile<T>(
   filePath: string,
   schema: ZodSchema<T>,
@@ -133,12 +181,10 @@ async function readBySlug<T>(
 }
 
 export async function getAllExercises(): Promise<ExerciseFrontmatter[]> {
-  const dir = getContentDir("exercices");
-  const files = await listMdxFiles(dir);
+  const files = await listExerciseFilePaths();
   const items = await Promise.all(
-    files.map(async (file) => {
-      const fullPath = path.join(dir, file);
-      const { frontmatter } = await readMdxFile(fullPath, ExerciseFrontmatterSchema);
+    files.map(async ({ filePath }) => {
+      const { frontmatter } = await readMdxFile(filePath, ExerciseFrontmatterSchema);
       return frontmatter;
     }),
   );
@@ -149,7 +195,8 @@ export async function getAllExercises(): Promise<ExerciseFrontmatter[]> {
 export async function getExercise(
   slug: string,
 ): Promise<MdxResult<ExerciseFrontmatter> | null> {
-  return readBySlug("exercices", slug, ExerciseFrontmatterSchema);
+  const { baseDir, frDir } = getExerciseDirs();
+  return readBySlugInDirs(slug, ExerciseFrontmatterSchema, [frDir, baseDir]);
 }
 
 export async function getAllSeances(): Promise<SeanceFrontmatter[]> {
