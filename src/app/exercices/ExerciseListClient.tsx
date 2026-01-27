@@ -39,7 +39,11 @@ export function ExerciseListClient({ exercises }: ExerciseListClientProps) {
   const tags = useMemo(() => {
     const tagSet = new Set<string>();
     exercises.forEach((exercise) => {
-      exercise.tags.forEach((tag) => tagSet.add(tag));
+      const muscles = [
+        ...exercise.musclesPrimary,
+        ...(exercise.musclesSecondary ?? []),
+      ];
+      muscles.forEach((tag) => tagSet.add(tag));
     });
     return Array.from(tagSet).sort((a, b) => a.localeCompare(b, "fr"));
   }, [exercises]);
@@ -52,15 +56,17 @@ export function ExerciseListClient({ exercises }: ExerciseListClientProps) {
         return false;
       }
 
-      if (
-        onlyCompatible &&
-        !exercise.themeCompatibility.includes(theme)
-      ) {
+      const themeKey = `t${theme}` as const;
+      if (onlyCompatible && !exercise.themes.includes(themeKey)) {
         return false;
       }
 
       if (selectedTags.length > 0) {
-        const hasTag = selectedTags.some((tag) => exercise.tags.includes(tag));
+        const muscleTags = [
+          ...exercise.musclesPrimary,
+          ...(exercise.musclesSecondary ?? []),
+        ];
+        const hasTag = selectedTags.some((tag) => muscleTags.includes(tag));
         if (!hasTag) {
           return false;
         }
@@ -70,7 +76,11 @@ export function ExerciseListClient({ exercises }: ExerciseListClientProps) {
         return true;
       }
 
-      const haystack = `${exercise.title} ${exercise.tags.join(" ")} ${exercise.muscles.join(" ")}`.toLowerCase();
+      const muscleTags = [
+        ...exercise.musclesPrimary,
+        ...(exercise.musclesSecondary ?? []),
+      ];
+      const haystack = `${exercise.title} ${muscleTags.join(" ")}`.toLowerCase();
       return haystack.includes(normalizedQuery);
     });
   }, [exercises, favorites, onlyCompatible, onlyFavorites, query, selectedTags, theme]);
@@ -104,7 +114,7 @@ export function ExerciseListClient({ exercises }: ExerciseListClientProps) {
             className={`chip${onlyCompatible ? " is-active" : ""}`}
             onClick={() => setOnlyCompatible((prev) => !prev)}
           >
-            Compatibles thème {theme}
+            Compatibles thème T{theme}
           </button>
           <button
             type="button"
@@ -120,7 +130,7 @@ export function ExerciseListClient({ exercises }: ExerciseListClientProps) {
           </button>
         </div>
         <Chips
-          label="Tags"
+          label="Muscles"
           items={tags}
           activeItems={selectedTags}
           onToggle={toggleTag}
@@ -145,13 +155,20 @@ export function ExerciseListClient({ exercises }: ExerciseListClientProps) {
               <article className="card">
                 <ExerciseCard exercise={exercise} />
                 <div className="chip-row chip-row--compact">
-                  {exercise.tags.slice(0, 3).map((tag) => (
-                    <span key={tag} className="chip">
-                      {tag}
-                    </span>
-                  ))}
+                  {Array.from(
+                    new Set([
+                      ...exercise.musclesPrimary,
+                      ...(exercise.musclesSecondary ?? []),
+                    ]),
+                  )
+                    .slice(0, 3)
+                    .map((tag, index) => (
+                      <span key={`${tag}-${index}`} className="chip">
+                        {tag}
+                      </span>
+                    ))}
                   <span className="chip chip-ghost">
-                    Thèmes {exercise.themeCompatibility.join(", ")}
+                    Thèmes {exercise.themes.map((value) => value.toUpperCase()).join(", ")}
                   </span>
                 </div>
               </article>

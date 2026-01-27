@@ -31,14 +31,18 @@ function formatEquipment(equipment?: string[]) {
 
 export function ExerciseCard({ exercise }: ExerciseCardProps) {
   const difficulty = exercise.level ?? "intermediaire";
-  const muscles = formatMuscles(exercise.muscles);
+  const muscles = formatMuscles([
+    ...exercise.musclesPrimary,
+    ...(exercise.musclesSecondary ?? []),
+  ]);
+  const thumb = exercise.media?.thumb;
 
   return (
     <div className="flex items-start gap-4">
       <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-xl ring-1 ring-white/10">
-        {exercise.media ? (
+        {thumb ? (
           <Image
-            src={exercise.media}
+            src={thumb}
             alt={exercise.title}
             fill
             sizes="72px"
