@@ -1,0 +1,282 @@
+{
+  "s1-01": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "PLANCHE FRONTALE SUR COUDES"
+  },
+  "s1-02": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "PLANCHE FRONTALE SUR MAINS"
+  },
+  "s1-03": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "PLANCHE LATERALE COUDE DROIT"
+  },
+  "s1-04": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "PLANCHE LATERALE COUDE GAUCHE"
+  },
+  "s1-05": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "PLANCHE HAUTE PIEDS SUR SWISS BALL"
+  },
+  "s1-06": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "HOLLOW BODY HOLD"
+  },
+  "s1-07": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "SUPERMAN / EXTENSION DORSALE"
+  },
+  "s1-08": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "L-SIT AU SOL"
+  },
+  "s1-09": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "L-SIT AUX BARRES PARALLELES"
+  },
+  "s1-10": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "DEAD BUG"
+  },
+  "s2-01": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "MOUNTAIN CLIMBERS"
+  },
+  "s2-02": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "MOUNTAIN CLIMBERS AVEC MEDECINE-BALL"
+  },
+  "s2-03": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "PLANCHE AVEC SHOULDER TAPS"
+  },
+  "s2-04": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "BIRD DOG"
+  },
+  "s2-05": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "BEAR CRAWL"
+  },
+  "s2-06": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "CRUNCH CLASSIQUE"
+  },
+  "s2-07": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "CRUNCH CROISE"
+  },
+  "s2-08": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "BICYCLE CRUNCH"
+  },
+  "s2-09": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "RELEVE DE JAMBES AU SOL"
+  },
+  "s2-10": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "RELEVE DE JAMBES SUSPENDU BARRE FIXE"
+  },
+  "s2-11": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "V-UPS / V-SIT"
+  },
+  "s2-12": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "RUSSIAN TWISTS AVEC MEDECINE-BALL"
+  },
+  "s2-13": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "PALLOF PRESS AVEC ELASTIQUE"
+  },
+  "s2-14": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "AB WHEEL ROLLOUT"
+  },
+  "s2-15": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "PLANCHE LATERALE AVEC ROTATION"
+  },
+  "s3-01": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "POMPES CLASSIQUES"
+  },
+  "s3-02": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "POMPES DIAMANT"
+  },
+  "s3-03": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "POMPES DECLINEES (PIEDS SURELEVES)"
+  },
+  "s3-04": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "POMPES INCLINEES (MAINS SURELEVEES)"
+  },
+  "s3-05": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "POMPES AVEC ROTATION"
+  },
+  "s3-06": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "DIPS AUX BARRES PARALLELES"
+  },
+  "s3-07": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "TRACTIONS PRONATION"
+  },
+  "s3-08": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "TRACTIONS SUPINATION"
+  },
+  "s3-09": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "TRACTIONS PRISE NEUTRE"
+  },
+  "s3-10": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "DEVELOPPE HALTERES COUCHE SUR BANC"
+  },
+  "s3-11": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "DEVELOPPE HALTERES INCLINE"
+  },
+  "s3-12": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "ROWING HALTERE UN BRAS"
+  },
+  "s3-13": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "ROWING HALTERES PENCHE"
+  },
+  "s3-14": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "ELEVATIONS LATERALES HALTERES"
+  },
+  "s3-15": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "ELEVATIONS FRONTALES HALTERES"
+  },
+  "s3-16": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "CURL BICEPS HALTERES DEBOUT"
+  },
+  "s3-17": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "CURL BICEPS MARTEAU"
+  },
+  "s3-18": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "EXTENSION TRICEPS OVERHEAD HALTERE"
+  },
+  "s3-19": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "KICKBACK TRICEPS HALTERE"
+  },
+  "s3-20": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "FACE PULLS ELASTIQUE"
+  },
+  "s4-01": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "SQUAT CLASSIQUE AU POIDS DU CORPS"
+  },
+  "s4-02": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "GOBLET SQUAT AVEC KETTLEBELL"
+  },
+  "s4-03": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "SQUAT BULGARE (SPLIT SQUAT ARRIERE)"
+  },
+  "s4-04": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "FENTES AVANT MARCHEES"
+  },
+  "s4-05": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "FENTES ARRIERE"
+  },
+  "s4-06": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "FENTES LATERALES"
+  },
+  "s4-07": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "SOULEVE DE TERRE ROUMAIN HALTERES"
+  },
+  "s4-08": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "HIP THRUST AU SOL"
+  },
+  "s4-09": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "HIP THRUST SUR BANC AVEC CHARGE"
+  },
+  "s4-10": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "GLUTE BRIDGE"
+  },
+  "s4-11": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "STEP-UPS SUR CAISSON"
+  },
+  "s4-12": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "PISTOL SQUAT"
+  },
+  "s4-13": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "NORDIC CURLS A L'ESPALIER"
+  },
+  "s4-14": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "MOLLETS DEBOUT"
+  },
+  "s4-15": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "JUMP SQUATS"
+  },
+  "s5-01": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "BURPEES COMPLETS (Full Burpees) 76 BURPEES SANS POMPE (DEBUTANT)"
+  },
+  "s5-02": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "BURPEES COMPLETS (Full Burpees) 76 BURPEES SANS POMPE (DEBUTANT)"
+  },
+  "s5-03": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "BURPEES SUR STEP (BOX JUMP"
+  },
+  "s5-04": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "BURPEES) THRUSTERS HALTERES (Dumbbell"
+  },
+  "s5-05": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "KETTLEBELL SWING (Balancement"
+  },
+  "s5-06": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "kettlebell) TURKISH GET-UP (RELEVE TURC)"
+  },
+  "s5-07": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "Souleve de terre roumain halteres"
+  },
+  "s5-08": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "(Romanian Deadlift) WALL BALLS (Lancers muraux)"
+  },
+  "s5-09": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "FARMERS WALK (MARCHE DU"
+  },
+  "s5-10": {
+    "legacyRef": "file:scripts/out/exercisesFromPdf.json",
+    "legacyTitle": "FERMIER) BOX JUMPS (SAUTS SUR CAISSON)"
+  }
+}
