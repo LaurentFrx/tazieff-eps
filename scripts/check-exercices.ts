@@ -10,6 +10,7 @@ const REQUIRED_FIELDS = ["title", "slug", "sessionId"] as const;
 
 type Frontmatter = Record<string, unknown> & {
   media?: { hero?: string };
+  source?: { legacyRef?: string };
 };
 
 async function listMdxFiles(dir: string): Promise<string[]> {
@@ -37,7 +38,12 @@ async function readFrontmatter(filePath: string): Promise<Frontmatter> {
   return data as Frontmatter;
 }
 
-async function checkFrontmatter(dir: string, filename: string, errors: string[]) {
+async function checkFrontmatter(
+  dir: string,
+  filename: string,
+  errors: string[],
+  legacyMap?: Map<string, string>,
+) {
   const filePath = path.join(dir, filename);
   const slug = toSlug(filename);
   const data = await readFrontmatter(filePath);
@@ -56,6 +62,13 @@ async function checkFrontmatter(dir: string, filename: string, errors: string[])
   if (!isNonEmptyString(hero)) {
     errors.push(`[${slug}] media.hero manquant ou vide`);
   }
+
+  const legacyRef = data.source?.legacyRef;
+  if (!isNonEmptyString(legacyRef)) {
+    errors.push(`[${slug}] source.legacyRef manquant ou vide`);
+  } else if (legacyMap) {
+    legacyMap.set(slug, legacyRef);
+  }
 }
 
 async function main() {
@@ -71,6 +84,8 @@ async function main() {
   const missingFr = Array.from(enSlugs).filter((slug) => !frSlugs.has(slug));
 
   const errors: string[] = [];
+  const frLegacyRefs = new Map<string, string>();
+  const enLegacyRefs = new Map<string, string>();
 
   if (missingEn.length > 0) {
     errors.push(`Slugs FR sans EN: ${missingEn.join(", ")}`);
@@ -80,11 +95,20 @@ async function main() {
   }
 
   for (const file of frFiles) {
-    await checkFrontmatter(FR_DIR, file, errors);
+    await checkFrontmatter(FR_DIR, file, errors, frLegacyRefs);
   }
 
   for (const file of enFiles) {
-    await checkFrontmatter(EN_DIR, file, errors);
+    await checkFrontmatter(EN_DIR, file, errors, enLegacyRefs);
+  }
+
+  for (const slug of frSlugs) {
+    if (!enSlugs.has(slug)) continue;
+    const frRef = frLegacyRefs.get(slug);
+    const enRef = enLegacyRefs.get(slug);
+    if (frRef && enRef && frRef !== enRef) {
+      errors.push(`[${slug}] legacyRef FR/EN différent: ${frRef} vs ${enRef}`);
+    }
   }
 
   console.log(`FR: ${frFiles.length} fichiers`);
