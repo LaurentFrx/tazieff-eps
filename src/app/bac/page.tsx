@@ -86,7 +86,7 @@ async function buildCards(items: BacCard[]) {
 }
 
 export default async function BacPage() {
-  const { frontmatter, source } = await getPageMdx("bac");
+  const { source } = await getPageMdx("bac");
   const { headings, sections } = splitBacSections(source);
   const fallbackHeadings = ["Compétences", "Projets", "Évaluation"];
   const resolvedHeadings = sections.map(
