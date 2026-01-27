@@ -38,10 +38,12 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
   const mdxContent = await renderMdx(content);
   const difficulty = frontmatter.level ?? "intermediaire";
   const heroImage = frontmatter.media?.hero;
-  const muscles = [
-    ...frontmatter.musclesPrimary,
-    ...(frontmatter.musclesSecondary ?? []),
-  ];
+  const muscles = Array.from(
+    new Set([
+      ...frontmatter.musclesPrimary,
+      ...(frontmatter.musclesSecondary ?? []),
+    ]),
+  );
   const copy =
     lang === "en"
       ? {
@@ -64,8 +66,8 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
         <h1>{frontmatter.title}</h1>
         <div className="flex flex-wrap items-center gap-2">
           <DifficultyPill level={difficulty} />
-          {muscles.map((muscle) => (
-            <span key={muscle} className="pill">
+          {muscles.map((muscle, index) => (
+            <span key={`${muscle}-${index}`} className="pill">
               {muscle}
             </span>
           ))}

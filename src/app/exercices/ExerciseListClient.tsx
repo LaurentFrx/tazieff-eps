@@ -155,13 +155,18 @@ export function ExerciseListClient({ exercises }: ExerciseListClientProps) {
               <article className="card">
                 <ExerciseCard exercise={exercise} />
                 <div className="chip-row chip-row--compact">
-                  {[...exercise.musclesPrimary, ...(exercise.musclesSecondary ?? [])]
+                  {Array.from(
+                    new Set([
+                      ...exercise.musclesPrimary,
+                      ...(exercise.musclesSecondary ?? []),
+                    ]),
+                  )
                     .slice(0, 3)
-                    .map((tag) => (
-                    <span key={tag} className="chip">
-                      {tag}
-                    </span>
-                  ))}
+                    .map((tag, index) => (
+                      <span key={`${tag}-${index}`} className="chip">
+                        {tag}
+                      </span>
+                    ))}
                   <span className="chip chip-ghost">
                     Thèmes {exercise.themes.map((value) => value.toUpperCase()).join(", ")}
                   </span>
