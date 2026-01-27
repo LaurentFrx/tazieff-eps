@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import DifficultyPill from "@/components/DifficultyPill";
 import { exercisesIndex, getSeance } from "@/lib/content/fs";
+import { getCurrentLang } from "@/lib/i18n/server";
 import { renderMdx } from "@/lib/mdx/render";
 
 type SeancePageProps = {
@@ -32,7 +33,8 @@ export default async function SeancePage({ params }: SeancePageProps) {
 
   const { frontmatter, content } = result;
   const mdxContent = await renderMdx(content);
-  const exercises = await exercisesIndex();
+  const lang = await getCurrentLang();
+  const exercises = await exercisesIndex(lang);
   const exerciseMap = new Map(exercises.map((exercise) => [exercise.slug, exercise]));
 
   return (
@@ -63,7 +65,11 @@ export default async function SeancePage({ params }: SeancePageProps) {
             const exercise = exerciseMap.get(block.exoSlug);
             const repsLabel =
               typeof block.reps === "number" ? `${block.reps} reps` : block.reps;
-            const muscleLabel = exercise?.muscles?.slice(0, 3).join(" • ");
+            const muscleLabel = exercise
+              ? [...exercise.musclesPrimary, ...(exercise.musclesSecondary ?? [])]
+                  .slice(0, 3)
+                  .join(" • ")
+              : undefined;
             return (
               <div key={`${block.exoSlug}-${index}`} className="block-row">
                 <div>

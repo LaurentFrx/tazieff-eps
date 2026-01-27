@@ -1,6 +1,6 @@
 import type { Difficulty } from "@/lib/content/schema";
 
-type DifficultyLevel = Difficulty | string;
+type DifficultyLevel = Difficulty | number | string;
 
 const LABELS: Record<Difficulty, string> = {
   debutant: "Débutant",
@@ -15,8 +15,22 @@ const VARIANTS: Record<Difficulty, string> = {
 };
 
 function normalizeLevel(level: DifficultyLevel): Difficulty {
+  if (typeof level === "number") {
+    if (level <= 1) {
+      return "debutant";
+    }
+    if (level === 2) {
+      return "intermediaire";
+    }
+    return "avance";
+  }
+
   if (level === "debutant" || level === "intermediaire" || level === "avance") {
     return level;
+  }
+
+  if (typeof level !== "string") {
+    return "intermediaire";
   }
 
   const normalized = level
@@ -29,7 +43,15 @@ function normalizeLevel(level: DifficultyLevel): Difficulty {
     return "debutant";
   }
 
+  if (normalized === "1") {
+    return "debutant";
+  }
+
   if (normalized === "avance") {
+    return "avance";
+  }
+
+  if (normalized === "3") {
     return "avance";
   }
 

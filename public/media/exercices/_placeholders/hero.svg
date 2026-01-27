@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="Exercise hero placeholder">
+  <rect width="1200" height="675" fill="#e5e7eb" />
+  <rect x="120" y="120" width="960" height="435" rx="32" fill="#f3f4f6" stroke="#d1d5db" stroke-width="4" />
+  <circle cx="320" cy="320" r="64" fill="#9ca3af" />
+  <rect x="420" y="280" width="360" height="80" rx="12" fill="#cbd5e1" />
+  <rect x="420" y="380" width="260" height="32" rx="8" fill="#e5e7eb" />
+  <text x="50%" y="560" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#6b7280">EXERCISE HERO</text>
+</svg>

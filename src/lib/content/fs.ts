@@ -10,6 +10,7 @@ import {
   type ExerciseFrontmatter,
   type SeanceFrontmatter,
 } from "@/lib/content/schema";
+import type { Lang } from "@/lib/i18n/messages";
 
 type ContentType = "exercices" | "seances";
 
@@ -24,8 +25,12 @@ const CONTENT_DIRS: Record<ContentType, string> = {
   seances: "seances",
 };
 
-function getContentDir(type: ContentType) {
-  return path.join(CONTENT_ROOT, CONTENT_DIRS[type]);
+function getContentDir(type: ContentType, locale?: Lang) {
+  const baseDir = path.join(CONTENT_ROOT, CONTENT_DIRS[type]);
+  if (type === "exercices" && locale) {
+    return path.join(baseDir, locale);
+  }
+  return baseDir;
 }
 
 function formatZodPath(pathSegments: Array<string | number>) {
@@ -117,8 +122,9 @@ async function readBySlug<T>(
   type: ContentType,
   slug: string,
   schema: ZodSchema<T>,
+  locale?: Lang,
 ): Promise<MdxResult<T> | null> {
-  const dir = getContentDir(type);
+  const dir = getContentDir(type, locale);
   const filePath = path.join(dir, `${slug}.mdx`);
 
   try {
@@ -132,24 +138,52 @@ async function readBySlug<T>(
   }
 }
 
-export async function getAllExercises(): Promise<ExerciseFrontmatter[]> {
-  const dir = getContentDir("exercices");
+async function readExercisesByLocale(locale: Lang) {
+  const dir = getContentDir("exercices", locale);
   const files = await listMdxFiles(dir);
   const items = await Promise.all(
     files.map(async (file) => {
       const fullPath = path.join(dir, file);
       const { frontmatter } = await readMdxFile(fullPath, ExerciseFrontmatterSchema);
-      return frontmatter;
+      const slug = path.basename(file, ".mdx");
+      return { slug, frontmatter };
     }),
   );
 
-  return items.sort((a, b) => a.title.localeCompare(b.title, "fr"));
+  return new Map(items.map((item) => [item.slug, item.frontmatter]));
+}
+
+export async function getAllExercises(lang: Lang = "fr"): Promise<ExerciseFrontmatter[]> {
+  const [frMap, enMap] = await Promise.all([
+    readExercisesByLocale("fr"),
+    readExercisesByLocale("en"),
+  ]);
+  const allSlugs = new Set<string>([...frMap.keys(), ...enMap.keys()]);
+
+  const items: ExerciseFrontmatter[] = [];
+  for (const slug of allSlugs) {
+    const entry =
+      lang === "en" ? enMap.get(slug) ?? frMap.get(slug) : frMap.get(slug) ?? enMap.get(slug);
+    if (entry) {
+      items.push(entry);
+    }
+  }
+
+  const locale = lang === "en" ? "en" : "fr";
+  return items.sort((a, b) => a.title.localeCompare(b.title, locale));
 }
 
 export async function getExercise(
   slug: string,
+  lang: Lang = "fr",
 ): Promise<MdxResult<ExerciseFrontmatter> | null> {
-  return readBySlug("exercices", slug, ExerciseFrontmatterSchema);
+  const preferred = await readBySlug("exercices", slug, ExerciseFrontmatterSchema, lang);
+  if (preferred) {
+    return preferred;
+  }
+
+  const fallbackLang = lang === "en" ? "fr" : "en";
+  return readBySlug("exercices", slug, ExerciseFrontmatterSchema, fallbackLang);
 }
 
 export async function getAllSeances(): Promise<SeanceFrontmatter[]> {
@@ -172,5 +206,5 @@ export async function getSeance(
   return readBySlug("seances", slug, SeanceFrontmatterSchema);
 }
 
-export const exercisesIndex = cache(async () => getAllExercises());
+export const exercisesIndex = cache(async (lang: Lang = "fr") => getAllExercises(lang));
 export const seancesIndex = cache(async () => getAllSeances());
