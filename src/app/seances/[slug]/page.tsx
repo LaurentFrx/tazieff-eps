@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import DifficultyPill from "@/components/DifficultyPill";
 import { exercisesIndex, getSeance } from "@/lib/content/fs";
 import { renderMdx } from "@/lib/mdx/render";
+import { SeanceDownloadButton } from "@/app/seances/[slug]/SeanceDownloadButton";
 
 type SeancePageProps = {
   params: Promise<{ slug: string }>;
@@ -34,6 +35,7 @@ export default async function SeancePage({ params }: SeancePageProps) {
   const mdxContent = await renderMdx(content);
   const exercises = await exercisesIndex();
   const exerciseMap = new Map(exercises.map((exercise) => [exercise.slug, exercise]));
+  const exerciseSlugs = frontmatter.blocks.map((block) => block.exoSlug);
 
   return (
     <section className="page">
@@ -54,6 +56,7 @@ export default async function SeancePage({ params }: SeancePageProps) {
         <Link href={`/seances/${frontmatter.slug}/terrain`} className="primary-button">
           Mode terrain
         </Link>
+        <SeanceDownloadButton exerciseSlugs={exerciseSlugs} />
       </header>
 
       <div className="card">

@@ -1,84 +1,73 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import DifficultyPill from "@/components/DifficultyPill";
-import { FavoriteToggle } from "@/components/FavoriteToggle";
-import { HeroMedia } from "@/components/media/HeroMedia";
-import s1001 from "../../../../public/images/exos/s1-001.webp";
 import { getExercise } from "@/lib/content/fs";
-import { renderMdx } from "@/lib/mdx/render";
+import { applyExercisePatch } from "@/lib/live/patch";
+import { fetchExerciseOverride, fetchLiveExercise } from "@/lib/live/queries";
+import type { Lang } from "@/lib/i18n/messages";
+import { ExerciseLiveDetail } from "@/app/exercices/[slug]/ExerciseLiveDetail";
 
 type ExercicePageProps = {
   params: Promise<{ slug: string }>;
 };
 
+const LANG_COOKIE = "eps_lang";
+
+function getInitialLang(value?: string): Lang {
+  return value === "en" ? "en" : "fr";
+}
+
 export async function generateMetadata({
   params,
 }: ExercicePageProps): Promise<Metadata> {
   const { slug } = await params;
+  const cookieStore = await cookies();
+  const locale = getInitialLang(cookieStore.get(LANG_COOKIE)?.value);
   const result = await getExercise(slug);
+  const liveExercise = result ? null : await fetchLiveExercise(slug, locale);
 
-  if (!result) {
+  if (!result && !liveExercise) {
     return { title: "Exercice introuvable" };
   }
 
-  return { title: result.frontmatter.title };
+  const base = result
+    ? { frontmatter: result.frontmatter, content: result.content }
+    : liveExercise!.data_json;
+  const override = await fetchExerciseOverride(slug, locale);
+  const merged = applyExercisePatch(base, override?.patch_json ?? null);
+
+  return { title: merged.frontmatter.title };
 }
 
 export default async function ExercicePage({ params }: ExercicePageProps) {
   const { slug } = await params;
+  const cookieStore = await cookies();
+  const locale = getInitialLang(cookieStore.get(LANG_COOKIE)?.value);
   const result = await getExercise(slug);
+  const liveExercise = result ? null : await fetchLiveExercise(slug, locale);
 
-  if (!result) {
+  if (!result && !liveExercise) {
     notFound();
   }
 
-  const { frontmatter, content } = result;
-  const mdxContent = await renderMdx(content);
-  const difficulty = frontmatter.level ?? "intermediaire";
-  const heroImage = frontmatter.media
-    ? {
-        "/images/exos/s1-001.webp": s1001,
-      }[frontmatter.media]
-    : undefined;
+  const baseFrontmatter = result
+    ? result.frontmatter
+    : liveExercise!.data_json.frontmatter;
+  const baseContent = result ? result.content : liveExercise!.data_json.content;
+  const override = await fetchExerciseOverride(slug, locale);
+  const initialPatch = override?.patch_json ?? null;
 
   return (
     <section className="page">
-      <header className="page-header">
-        <p className="eyebrow">Exercices</p>
-        <h1>{frontmatter.title}</h1>
-        <div className="flex flex-wrap items-center gap-2">
-          <DifficultyPill level={difficulty} />
-          {frontmatter.muscles.map((muscle) => (
-            <span key={muscle} className="pill">
-              {muscle}
-            </span>
-          ))}
-        </div>
-        {heroImage ? (
-          <HeroMedia src={heroImage} alt={frontmatter.title} priority />
-        ) : null}
-        <div className="meta-row">
-          <FavoriteToggle slug={frontmatter.slug} />
-          <span className="meta-text">
-            Thèmes compatibles: {frontmatter.themeCompatibility.join(", ")}
-          </span>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {frontmatter.tags.map((tag) => (
-            <span key={tag} className="pill">
-              {tag}
-            </span>
-          ))}
-        </div>
-        {frontmatter.equipment && frontmatter.equipment.length > 0 ? (
-          <div className="text-sm text-[color:var(--muted)]">
-            Matériel: {frontmatter.equipment.join(", ")}
-          </div>
-        ) : (
-          <div className="text-sm text-[color:var(--muted)]">Sans matériel spécifique.</div>
-        )}
-      </header>
-      <div className="flex flex-col gap-4">{mdxContent}</div>
+      <ExerciseLiveDetail
+        key={`${slug}-${locale}`}
+        slug={slug}
+        locale={locale}
+        source={result ? "mdx" : "live"}
+        baseFrontmatter={baseFrontmatter}
+        baseContent={baseContent}
+        initialPatch={initialPatch}
+      />
     </section>
   );
 }

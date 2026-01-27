@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { ExerciseCard } from "@/components/ExerciseCard";
 import { Chips } from "@/components/Chips";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
+import type { Lang } from "@/lib/i18n/I18nProvider";
+import type { LiveExerciseListItem, LiveExerciseRow } from "@/lib/live/types";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
   getTheme,
   onThemeChange,
@@ -18,9 +21,39 @@ import {
 
 type ExerciseListClientProps = {
   exercises: ExerciseFrontmatter[];
+  liveExercises: LiveExerciseRow[];
+  locale: Lang;
 };
 
-export function ExerciseListClient({ exercises }: ExerciseListClientProps) {
+const POLL_INTERVAL_MS = 20000;
+
+function mergeExercises(
+  exercises: ExerciseFrontmatter[],
+  liveExercises: LiveExerciseRow[],
+): LiveExerciseListItem[] {
+  const existing = new Set(exercises.map((exercise) => exercise.slug));
+  const liveItems = liveExercises
+    .map((row) => ({
+      ...row.data_json.frontmatter,
+      slug: row.slug,
+      isLive: true,
+    }))
+    .filter((exercise) => !existing.has(exercise.slug));
+
+  return [
+    ...exercises.map((exercise) => ({ ...exercise, isLive: false })),
+    ...liveItems,
+  ].sort((a, b) => a.title.localeCompare(b.title, "fr"));
+}
+
+export function ExerciseListClient({
+  exercises,
+  liveExercises,
+  locale,
+}: ExerciseListClientProps) {
+  const supabase = getSupabaseBrowserClient();
+  const [liveRows, setLiveRows] = useState<LiveExerciseRow[]>(liveExercises);
+  const [realtimeReady, setRealtimeReady] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
@@ -36,18 +69,137 @@ export function ExerciseListClient({ exercises }: ExerciseListClientProps) {
     () => 1 as ThemePreference,
   );
 
+  useEffect(() => {
+    if (!supabase) {
+      return;
+    }
+
+    let active = true;
+    let retry = 0;
+    let retryTimeout: ReturnType<typeof setTimeout> | null = null;
+    let channel = supabase.channel(`live-exercises-${locale}`);
+
+    const upsertRow = (row: LiveExerciseRow) => {
+      setLiveRows((prev) => {
+        const next = prev.filter((item) => item.slug !== row.slug);
+        next.push(row);
+        return next;
+      });
+    };
+
+    const setupChannel = () => {
+      channel = supabase.channel(`live-exercises-${locale}`);
+      channel.on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "live_exercises",
+          filter: `locale=eq.${locale}`,
+        },
+        (payload) => {
+          if (!active) {
+            return;
+          }
+          if (payload.eventType === "DELETE") {
+            const deleted = payload.old as LiveExerciseRow;
+            setLiveRows((prev) => prev.filter((item) => item.slug !== deleted.slug));
+            return;
+          }
+          const row = payload.new as LiveExerciseRow;
+          upsertRow(row);
+        },
+      );
+
+      channel.subscribe((status) => {
+        if (!active) {
+          return;
+        }
+        if (status === "SUBSCRIBED") {
+          retry = 0;
+          setRealtimeReady(true);
+          return;
+        }
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          setRealtimeReady(false);
+          channel.unsubscribe();
+          retryTimeout = setTimeout(
+            setupChannel,
+            Math.min(30000, 2000 * Math.pow(2, retry)),
+          );
+          retry += 1;
+        }
+      });
+    };
+
+    setupChannel();
+
+    return () => {
+      active = false;
+      if (retryTimeout) {
+        clearTimeout(retryTimeout);
+      }
+      supabase.removeChannel(channel);
+    };
+  }, [locale, supabase]);
+
+  useEffect(() => {
+    if (!supabase || realtimeReady) {
+      return;
+    }
+
+    let active = true;
+    let interval: ReturnType<typeof setInterval> | null = null;
+
+    const fetchLatest = async () => {
+      if (!active || document.visibilityState !== "visible") {
+        return;
+      }
+      const { data } = await supabase
+        .from("live_exercises")
+        .select("slug, locale, data_json, updated_at")
+        .eq("locale", locale);
+      if (!active || !data) {
+        return;
+      }
+      setLiveRows(data as LiveExerciseRow[]);
+    };
+
+    fetchLatest();
+    interval = setInterval(fetchLatest, POLL_INTERVAL_MS);
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        fetchLatest();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      active = false;
+      if (interval) {
+        clearInterval(interval);
+      }
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [locale, realtimeReady, supabase]);
+
+  const mergedExercises = useMemo(
+    () => mergeExercises(exercises, liveRows),
+    [exercises, liveRows],
+  );
+
   const tags = useMemo(() => {
     const tagSet = new Set<string>();
-    exercises.forEach((exercise) => {
+    mergedExercises.forEach((exercise) => {
       exercise.tags.forEach((tag) => tagSet.add(tag));
     });
     return Array.from(tagSet).sort((a, b) => a.localeCompare(b, "fr"));
-  }, [exercises]);
+  }, [mergedExercises]);
 
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
-    return exercises.filter((exercise) => {
+    return mergedExercises.filter((exercise) => {
       if (onlyFavorites && !favorites.includes(exercise.slug)) {
         return false;
       }
@@ -73,7 +225,15 @@ export function ExerciseListClient({ exercises }: ExerciseListClientProps) {
       const haystack = `${exercise.title} ${exercise.tags.join(" ")} ${exercise.muscles.join(" ")}`.toLowerCase();
       return haystack.includes(normalizedQuery);
     });
-  }, [exercises, favorites, onlyCompatible, onlyFavorites, query, selectedTags, theme]);
+  }, [
+    favorites,
+    mergedExercises,
+    onlyCompatible,
+    onlyFavorites,
+    query,
+    selectedTags,
+    theme,
+  ]);
 
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) =>
@@ -143,8 +303,11 @@ export function ExerciseListClient({ exercises }: ExerciseListClientProps) {
           filtered.map((exercise) => (
             <Link key={exercise.slug} href={`/exercices/${exercise.slug}`}>
               <article className="card">
-                <ExerciseCard exercise={exercise} />
+                <ExerciseCard exercise={exercise} isLive={exercise.isLive} />
                 <div className="chip-row chip-row--compact">
+                  {exercise.isLive ? (
+                    <span className="pill pill-live">LIVE</span>
+                  ) : null}
                   {exercise.tags.slice(0, 3).map((tag) => (
                     <span key={tag} className="chip">
                       {tag}

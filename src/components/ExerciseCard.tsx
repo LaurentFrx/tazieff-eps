@@ -4,6 +4,7 @@ import type { ExerciseFrontmatter } from "@/lib/content/schema";
 
 export type ExerciseCardProps = {
   exercise: ExerciseFrontmatter;
+  isLive?: boolean;
 };
 
 function formatMuscles(muscles?: string[]) {

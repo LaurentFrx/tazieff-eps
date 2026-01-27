@@ -1,3 +1,18 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+const withSerwistInit = require("@serwist/next");
+const withSerwist = (withSerwistInit.default ?? withSerwistInit)({
+  swSrc: "src/app/sw.ts",
+  swDest: "public/sw.js",
+  register: false,
+  disable: process.env.NODE_ENV === "development",
+  additionalPrecacheEntries: [
+    {
+      url: "/offline",
+      revision: process.env.NEXT_PUBLIC_COMMIT_SHA || "local",
+    },
+  ],
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: {
@@ -14,4 +29,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = withSerwist(nextConfig);
