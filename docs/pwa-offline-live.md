@@ -6,6 +6,9 @@
 3. Choisir **Ajouter à l'écran d'accueil**.
 4. Lancer l'app depuis l'icône installée.
 
+## Manifest
+- Ne pas dupliquer le manifest entre `public/` et `app/manifest.ts` (source unique: `app/manifest.ts`).
+
 ## Offline: ce qui est garanti / non garanti (iOS)
 - Garanti: l'app shell (_next/static, fonts, icônes) + les pages déjà consultées sont servies en cache.
 - Garanti: les séances téléchargées via “Télécharger pour la séance” mettent en cache les fiches d'exercices.
