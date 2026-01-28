@@ -55,6 +55,9 @@ function getGitShaShort() {
 }
 
 const buildTimeIso = new Date().toISOString();
+if (!/T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(buildTimeIso)) {
+  throw new Error(`[build-info] Invalid buildTimeIso: ${buildTimeIso}`);
+}
 const buildInfo = {
   envLabel: getEnvLabel(),
   appVersion: getAppVersion(),
