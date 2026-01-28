@@ -8,8 +8,9 @@ function formatBuildTimeLocal(iso: string) {
     return iso;
   }
 
+  let buildTimeLocal: string;
   try {
-    const dtf = new Intl.DateTimeFormat("fr-FR", {
+    buildTimeLocal = date.toLocaleString("sv-SE", {
       timeZone: "Europe/Paris",
       year: "numeric",
       month: "2-digit",
@@ -18,24 +19,19 @@ function formatBuildTimeLocal(iso: string) {
       minute: "2-digit",
       hour12: false,
     });
-    const parts = Object.fromEntries(
-      dtf.formatToParts(date).map((part) => [part.type, part.value]),
-    ) as Record<string, string>;
-    const buildTimeLocal = `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}`;
-
-    if (buildTimeLocal.includes(":") && parts.minute) {
-      return buildTimeLocal;
-    }
   } catch {
-    // Fall back to ISO when Intl or timeZone is unavailable.
+    return iso;
   }
 
-  const match = iso.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})/);
-  if (match) {
-    return `${match[1]} ${match[2]}:${match[3]}`;
+  if (!/\d{2}:\d{2}/.test(buildTimeLocal)) {
+    if (/\d{4}-\d{2}-\d{2} \d{2}$/.test(buildTimeLocal)) {
+      buildTimeLocal = `${buildTimeLocal}:00`;
+    } else {
+      buildTimeLocal = iso;
+    }
   }
 
-  return iso;
+  return buildTimeLocal;
 }
 
 export function useBuildInfo() {
@@ -43,7 +39,7 @@ export function useBuildInfo() {
   const fullLine = `${buildInfo.envLabel} · v${buildInfo.appVersion} · ${buildInfo.gitShaShort} · ${buildTimeLocal}`;
 
   if (process.env.NODE_ENV !== "production") {
-    console.log("[buildstamp]", fullLine);
+    console.log("[buildstamp]", buildInfo.buildTimeIso, buildTimeLocal);
   }
 
   return {
