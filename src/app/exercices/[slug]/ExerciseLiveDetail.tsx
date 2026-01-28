@@ -37,6 +37,8 @@ type LiveDraft = {
 };
 
 const POLL_INTERVAL_MS = 20000;
+const LONG_PRESS_MS = 1800;
+const MOVE_THRESHOLD_PX = 10;
 
 function parseList(value: string) {
   return value
@@ -79,6 +81,8 @@ export function ExerciseLiveDetail({
   const [liveDraft, setLiveDraft] = useState<LiveDraft | null>(null);
   const [submitStatus, setSubmitStatus] = useState<string | null>(null);
   const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pressStartRef = useRef<{ x: number; y: number } | null>(null);
+  const touchPointerActiveRef = useRef(false);
 
   const merged = useMemo(
     () => applyExercisePatch(base, patch),
@@ -309,22 +313,44 @@ export function ExerciseLiveDetail({
     };
   }, [locale, liveReady, overrideReady, slug, source, supabase]);
 
-  const startLongPress = () => {
+  const openPinModal = () => {
     if (teacherUnlocked) {
       return;
     }
+    setPinModalOpen(true);
+  };
+
+  const startLongPress = (x: number, y: number) => {
+    if (teacherUnlocked) {
+      return;
+    }
+    pressStartRef.current = { x, y };
     if (pressTimerRef.current) {
       clearTimeout(pressTimerRef.current);
     }
     pressTimerRef.current = setTimeout(() => {
-      setPinModalOpen(true);
-    }, 2000);
+      pressTimerRef.current = null;
+      openPinModal();
+    }, LONG_PRESS_MS);
   };
 
   const cancelLongPress = () => {
     if (pressTimerRef.current) {
       clearTimeout(pressTimerRef.current);
       pressTimerRef.current = null;
+    }
+    pressStartRef.current = null;
+  };
+
+  const cancelLongPressOnMove = (x: number, y: number) => {
+    const start = pressStartRef.current;
+    if (!start) {
+      return;
+    }
+    const dx = x - start.x;
+    const dy = y - start.y;
+    if (Math.hypot(dx, dy) > MOVE_THRESHOLD_PX) {
+      cancelLongPress();
     }
   };
 
@@ -466,17 +492,89 @@ export function ExerciseLiveDetail({
         <div
           role="button"
           tabIndex={0}
-          onPointerDown={startLongPress}
-          onPointerUp={cancelLongPress}
-          onPointerLeave={cancelLongPress}
-          onPointerCancel={cancelLongPress}
+          onPointerDown={(event) => {
+            if (event.ctrlKey || event.shiftKey) {
+              event.preventDefault();
+              cancelLongPress();
+              openPinModal();
+              return;
+            }
+            if (event.pointerType === "touch") {
+              touchPointerActiveRef.current = true;
+            } else {
+              event.preventDefault();
+            }
+            startLongPress(event.clientX, event.clientY);
+          }}
+          onPointerMove={(event) => {
+            cancelLongPressOnMove(event.clientX, event.clientY);
+          }}
+          onPointerUp={() => {
+            cancelLongPress();
+            touchPointerActiveRef.current = false;
+          }}
+          onPointerLeave={() => {
+            cancelLongPress();
+            touchPointerActiveRef.current = false;
+          }}
+          onPointerCancel={() => {
+            cancelLongPress();
+            touchPointerActiveRef.current = false;
+          }}
+          onMouseDown={(event) => {
+            if (event.ctrlKey || event.shiftKey) {
+              event.preventDefault();
+              cancelLongPress();
+              openPinModal();
+              return;
+            }
+            event.preventDefault();
+          }}
+          onTouchStart={(event) => {
+            if (touchPointerActiveRef.current) {
+              return;
+            }
+            const touch = event.touches[0];
+            if (!touch) {
+              return;
+            }
+            startLongPress(touch.clientX, touch.clientY);
+          }}
+          onTouchMove={(event) => {
+            if (touchPointerActiveRef.current) {
+              return;
+            }
+            const touch = event.touches[0];
+            if (!touch) {
+              return;
+            }
+            cancelLongPressOnMove(touch.clientX, touch.clientY);
+          }}
+          onTouchEnd={() => {
+            cancelLongPress();
+            touchPointerActiveRef.current = false;
+          }}
+          onTouchCancel={() => {
+            cancelLongPress();
+            touchPointerActiveRef.current = false;
+          }}
+          onContextMenu={(event) => {
+            event.preventDefault();
+          }}
+          onClick={(event) => {
+            if (event.ctrlKey || event.shiftKey) {
+              event.preventDefault();
+              cancelLongPress();
+              openPinModal();
+            }
+          }}
           onKeyDown={(event) => {
             if (teacherUnlocked) {
               return;
             }
             if (event.key === "Enter" || event.key === " ") {
               event.preventDefault();
-              setPinModalOpen(true);
+              openPinModal();
             }
           }}
           className="title-longpress"
