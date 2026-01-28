@@ -281,6 +281,16 @@ export function ExerciseLiveDetail({
   const [teacherError, setTeacherError] = useState<string | null>(null);
   const [overrideOpen, setOverrideOpen] = useState(false);
   const [overrideDoc, setOverrideDoc] = useState<ExerciseLiveDocV2 | null>(null);
+  const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
+  const [sectionMenuOpenId, setSectionMenuOpenId] = useState<string | null>(null);
+  const [blockMenuOpenKey, setBlockMenuOpenKey] = useState<string | null>(null);
+  const [dirtySnapshot, setDirtySnapshot] = useState("");
+  const [overrideToast, setOverrideToast] = useState<{
+    message: string;
+    tone: "success" | "error";
+  } | null>(null);
+  const [isSavingOverride, setIsSavingOverride] = useState(false);
   const [newPillLabel, setNewPillLabel] = useState("");
   const [heroPreviewUrl, setHeroPreviewUrl] = useState<string | null>(null);
   const [mediaUrlMap, setMediaUrlMap] = useState<Record<string, string>>({});
@@ -296,6 +306,9 @@ export function ExerciseLiveDetail({
   const pressStartRef = useRef<{ x: number; y: number } | null>(null);
   const touchPointerActiveRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sectionTitleRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const blockFieldRefs = useRef<Record<string, HTMLInputElement | HTMLTextAreaElement | null>>({});
 
   const merged = useMemo(
     () => applyExercisePatch(base, patch),
@@ -328,6 +341,16 @@ export function ExerciseLiveDetail({
   const tagPills: Array<{ label: string; kind?: string }> =
     overrideDocView?.pills ??
     (merged.frontmatter.tags ?? []).map((label) => ({ label }));
+  const overrideSnapshot = useMemo(
+    () => (overrideDoc ? JSON.stringify(overrideDoc) : ""),
+    [overrideDoc],
+  );
+  const isDirty = overrideDoc ? overrideSnapshot !== dirtySnapshot : false;
+  const activeSection =
+    overrideDoc?.doc.sections.find((section) => section.id === activeSectionId) ??
+    (overrideDoc
+      ? overrideDoc.doc.sections[overrideDoc.doc.sections.length - 1] ?? null
+      : null);
 
   useEffect(() => {
     if (!supabase) {
@@ -601,6 +624,24 @@ export function ExerciseLiveDetail({
     };
   }, [overrideDocView, supabase]);
 
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
+
+  const showOverrideToast = (message: string, tone: "success" | "error") => {
+    setOverrideToast({ message, tone });
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current);
+    }
+    toastTimerRef.current = setTimeout(() => {
+      setOverrideToast(null);
+    }, 2400);
+  };
+
   const openPinModal = () => {
     if (teacherUnlocked) {
       return;
@@ -645,10 +686,17 @@ export function ExerciseLiveDetail({
   const openOverrideEditor = () => {
     setSubmitStatus(null);
     const doc = buildOverrideDoc(base, patch);
+    const snapshot = JSON.stringify(doc);
     setOverrideDoc(doc);
+    setDirtySnapshot(snapshot);
     setNewPillLabel("");
     setHeroPreviewUrl(doc.doc.heroImage?.url?.trim() ? doc.doc.heroImage.url.trim() : null);
     setMediaStatus(null);
+    setActiveSectionId(doc.doc.sections[0]?.id ?? null);
+    setAddMenuOpen(false);
+    setSectionMenuOpenId(null);
+    setBlockMenuOpenKey(null);
+    setOverrideToast(null);
     setOverrideOpen(true);
   };
 
@@ -751,28 +799,43 @@ export function ExerciseLiveDetail({
       },
     };
     setSubmitStatus("Envoi en cours...");
-    const response = await fetch("/api/teacher/exercise-override", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        pin: teacherPin,
-        slug,
-        locale,
-        patchJson,
-      }),
-    });
+    setIsSavingOverride(true);
+    let response: Response;
+    try {
+      response = await fetch("/api/teacher/exercise-override", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pin: teacherPin,
+          slug,
+          locale,
+          patchJson,
+        }),
+      });
+    } catch {
+      setSubmitStatus(null);
+      setIsSavingOverride(false);
+      showOverrideToast("Échec de l'enregistrement.", "error");
+      return;
+    }
     if (!response.ok) {
       if (response.status === 401) {
         handleAuthError("PIN invalide.");
         setSubmitStatus(null);
+        setIsSavingOverride(false);
         return;
       }
-      setSubmitStatus("Échec de l'envoi.");
+      setSubmitStatus(null);
+      setIsSavingOverride(false);
+      showOverrideToast("Échec de l'enregistrement.", "error");
       return;
     }
     setPatch(patchJson);
-    setSubmitStatus("Correction enregistrée.");
-    setOverrideOpen(false);
+    setOverrideDoc(patchJson);
+    setDirtySnapshot(JSON.stringify(patchJson));
+    setSubmitStatus(null);
+    setIsSavingOverride(false);
+    showOverrideToast("Correction enregistrée.", "success");
   };
 
   const handleSaveLive = async () => {
@@ -849,6 +912,7 @@ export function ExerciseLiveDetail({
       handleAuthError("PIN requis.");
       return;
     }
+    setActiveSectionId(sectionId);
     setUploadTarget({ sectionId, blockIndex });
     fileInputRef.current?.click();
   };
@@ -1001,6 +1065,7 @@ export function ExerciseLiveDetail({
   };
 
   const handleAddSection = () => {
+    const newSectionId = createSectionId();
     updateOverrideDoc((doc) => ({
       ...doc,
       doc: {
@@ -1008,13 +1073,14 @@ export function ExerciseLiveDetail({
         sections: [
           ...doc.doc.sections,
           {
-            id: createSectionId(),
+            id: newSectionId,
             title: "Nouvelle section",
             blocks: [createMarkdownBlock("")],
           },
         ],
       },
     }));
+    setActiveSectionId(newSectionId);
   };
 
   const handleMoveSection = (sectionId: string, direction: number) => {
@@ -1062,6 +1128,75 @@ export function ExerciseLiveDetail({
       ...section,
       blocks: section.blocks.filter((_, idx) => idx !== blockIndex),
     }));
+  };
+
+  const resolveTargetSectionId = () => {
+    if (!overrideDoc) {
+      return null;
+    }
+    if (activeSectionId) {
+      const exists = overrideDoc.doc.sections.some(
+        (section) => section.id === activeSectionId,
+      );
+      if (exists) {
+        return activeSectionId;
+      }
+    }
+    return overrideDoc.doc.sections[overrideDoc.doc.sections.length - 1]?.id ?? null;
+  };
+
+  const handleAddFromMenu = (kind: "markdown" | "bullets" | "media" | "photo") => {
+    const targetSectionId = resolveTargetSectionId();
+    if (!targetSectionId) {
+      setMediaStatus("Ajoutez d'abord une section.");
+      return;
+    }
+    setActiveSectionId(targetSectionId);
+    setAddMenuOpen(false);
+    if (kind === "photo") {
+      handlePhotoUploadRequest(targetSectionId);
+      return;
+    }
+    handleAddBlock(targetSectionId, kind);
+  };
+
+  const handleClearPhoto = (sectionId: string, blockIndex: number) => {
+    updateSection(sectionId, (section) => ({
+      ...section,
+      blocks: section.blocks.map((block, idx) =>
+        idx === blockIndex && block.type === "media" && block.mediaType === "image"
+          ? { ...block, mediaId: undefined, url: undefined, caption: "" }
+          : block,
+      ),
+    }));
+  };
+
+  const handleCloseOverride = () => {
+    if (
+      isDirty &&
+      !window.confirm("Des modifications ne sont pas enregistrées. Fermer ?")
+    ) {
+      return;
+    }
+    setOverrideOpen(false);
+  };
+
+  const handleFocusSectionTitle = (sectionId: string) => {
+    const input = sectionTitleRefs.current[sectionId];
+    if (input) {
+      input.focus();
+      input.select();
+    }
+  };
+
+  const handleFocusBlock = (key: string) => {
+    const field = blockFieldRefs.current[key];
+    if (field) {
+      field.focus();
+      if ("select" in field) {
+        field.select();
+      }
+    }
   };
 
   return (
@@ -1379,10 +1514,28 @@ export function ExerciseLiveDetail({
 
       {overrideOpen ? (
         <div className="modal-overlay" role="dialog" aria-modal="true">
-          <div className="modal-card">
-            <h2>Corriger la fiche</h2>
-            {overrideDoc ? (
-              <div className="stack-md">
+          <div className="modal-card flex max-h-[85vh] flex-col">
+            <div className="flex flex-col gap-2 border-b border-white/10 pb-3">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex flex-col gap-1">
+                  <h2>Corriger la fiche</h2>
+                  {isDirty ? (
+                    <span className="text-xs text-[color:var(--muted)]">
+                      Modifications non enregistrées
+                    </span>
+                  ) : null}
+                </div>
+                {overrideToast ? (
+                  <span className="text-xs text-[color:var(--muted)]">
+                    {overrideToast.tone === "success" ? "OK: " : "Erreur: "}
+                    {overrideToast.message}
+                  </span>
+                ) : null}
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto pt-4">
+              {overrideDoc ? (
+                <div className="stack-md">
                 <div className="stack-sm">
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">
@@ -1516,10 +1669,17 @@ export function ExerciseLiveDetail({
                     </button>
                   </div>
                   {overrideDoc.doc.sections.map((section, sectionIndex) => (
-                    <div key={section.id} className="stack-md">
-                      <div className="flex flex-wrap items-center gap-2">
+                    <div
+                      key={section.id}
+                      className="stack-md"
+                      onFocusCapture={() => setActiveSectionId(section.id)}
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
                         <input
-                          className="field-input"
+                          ref={(node) => {
+                            sectionTitleRefs.current[section.id] = node;
+                          }}
+                          className="field-input flex-1"
                           value={section.title}
                           placeholder="Titre de section"
                           onChange={(event) =>
@@ -1529,29 +1689,67 @@ export function ExerciseLiveDetail({
                             }))
                           }
                         />
-                        <button
-                          type="button"
-                          className="chip"
-                          disabled={sectionIndex === 0}
-                          onClick={() => handleMoveSection(section.id, -1)}
-                        >
-                          Monter
-                        </button>
-                        <button
-                          type="button"
-                          className="chip"
-                          disabled={sectionIndex === overrideDoc.doc.sections.length - 1}
-                          onClick={() => handleMoveSection(section.id, 1)}
-                        >
-                          Descendre
-                        </button>
-                        <button
-                          type="button"
-                          className="chip"
-                          onClick={() => handleRemoveSection(section.id)}
-                        >
-                          Supprimer section
-                        </button>
+                        <div className="relative">
+                          <button
+                            type="button"
+                            className="chip"
+                            onClick={() =>
+                              setSectionMenuOpenId((open) =>
+                                open === section.id ? null : section.id,
+                              )
+                            }
+                          >
+                            ...
+                          </button>
+                          {sectionMenuOpenId === section.id ? (
+                            <div className="absolute right-0 z-10 mt-2 w-44 rounded-2xl border border-white/10 bg-[color:var(--surface)] p-2 shadow-lg">
+                              <button
+                                type="button"
+                                className="chip w-full justify-start"
+                                onClick={() => {
+                                  handleFocusSectionTitle(section.id);
+                                  setSectionMenuOpenId(null);
+                                }}
+                              >
+                                Renommer
+                              </button>
+                              <button
+                                type="button"
+                                className="chip w-full justify-start"
+                                disabled={sectionIndex === 0}
+                                onClick={() => {
+                                  handleMoveSection(section.id, -1);
+                                  setSectionMenuOpenId(null);
+                                }}
+                              >
+                                Monter
+                              </button>
+                              <button
+                                type="button"
+                                className="chip w-full justify-start"
+                                disabled={
+                                  sectionIndex === overrideDoc.doc.sections.length - 1
+                                }
+                                onClick={() => {
+                                  handleMoveSection(section.id, 1);
+                                  setSectionMenuOpenId(null);
+                                }}
+                              >
+                                Descendre
+                              </button>
+                              <button
+                                type="button"
+                                className="chip w-full justify-start"
+                                onClick={() => {
+                                  handleRemoveSection(section.id);
+                                  setSectionMenuOpenId(null);
+                                }}
+                              >
+                                Supprimer section
+                              </button>
+                            </div>
+                          ) : null}
+                        </div>
                       </div>
                       {section.blocks.length === 0 ? (
                         <p className="text-xs text-[color:var(--muted)]">
@@ -1559,310 +1757,350 @@ export function ExerciseLiveDetail({
                         </p>
                       ) : null}
                       <div className="stack-sm">
-                        {section.blocks.map((block, blockIndex) => (
-                          <div
-                            key={`${section.id}-${blockIndex}`}
-                            className="stack-sm rounded-2xl border border-white/10 p-3"
-                          >
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <span className="text-[10px] uppercase tracking-[0.18em] text-[color:var(--muted)]">
-                                {block.type === "markdown"
-                                  ? "Markdown"
-                                  : block.type === "bullets"
-                                    ? "Liste"
-                                    : "Média"}
-                              </span>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <button
-                                  type="button"
-                                  className="chip"
-                                  disabled={blockIndex === 0}
-                                  onClick={() =>
-                                    handleMoveBlock(section.id, blockIndex, -1)
-                                  }
-                                >
-                                  Monter
-                                </button>
-                                <button
-                                  type="button"
-                                  className="chip"
-                                  disabled={blockIndex === section.blocks.length - 1}
-                                  onClick={() =>
-                                    handleMoveBlock(section.id, blockIndex, 1)
-                                  }
-                                >
-                                  Descendre
-                                </button>
-                                <button
-                                  type="button"
-                                  className="chip"
-                                  onClick={() =>
-                                    handleRemoveBlock(section.id, blockIndex)
-                                  }
-                                >
-                                  Supprimer bloc
-                                </button>
-                              </div>
-                            </div>
-
-                            {block.type === "markdown" ? (
-                              <textarea
-                                className="field-textarea"
-                                value={block.content}
-                                onChange={(event) =>
-                                  updateSection(section.id, (current) => ({
-                                    ...current,
-                                    blocks: current.blocks.map((item, idx) =>
-                                      idx === blockIndex && item.type === "markdown"
-                                        ? { ...item, content: event.target.value }
-                                        : item,
-                                    ),
-                                  }))
-                                }
-                              />
-                            ) : null}
-
-                            {block.type === "bullets" ? (
-                              <div className="stack-sm">
-                                {block.items.map((item, itemIndex) => (
-                                  <div
-                                    key={`${section.id}-${blockIndex}-${itemIndex}`}
-                                    className="flex items-center gap-2"
+                        {section.blocks.map((block, blockIndex) => {
+                          const blockKey = `${section.id}-${blockIndex}`;
+                          const blockLabel =
+                            block.type === "markdown"
+                              ? "Texte"
+                              : block.type === "bullets"
+                                ? "Liste"
+                                : block.mediaType === "image"
+                                  ? "Photo"
+                                  : block.mediaType === "video"
+                                    ? "Vidéo"
+                                    : "Lien";
+                          const hasPhoto =
+                            block.type === "media" &&
+                            block.mediaType === "image" &&
+                            (block.mediaId || block.url);
+                      
+                          return (
+                            <div
+                              key={blockKey}
+                              className="stack-sm rounded-2xl border border-white/10 p-3"
+                            >
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <span className="text-[10px] uppercase tracking-[0.18em] text-[color:var(--muted)]">
+                                  {blockLabel}
+                                </span>
+                                <div className="relative">
+                                  <button
+                                    type="button"
+                                    className="chip"
+                                    onClick={() =>
+                                      setBlockMenuOpenKey((open) =>
+                                        open === blockKey ? null : blockKey,
+                                      )
+                                    }
                                   >
-                                    <input
-                                      className="field-input"
-                                      value={item}
-                                      onChange={(event) =>
-                                        updateSection(section.id, (current) => ({
-                                          ...current,
-                                          blocks: current.blocks.map((entry, idx) =>
-                                            idx === blockIndex && entry.type === "bullets"
-                                              ? {
-                                                  ...entry,
-                                                  items: entry.items.map((value, pos) =>
-                                                    pos === itemIndex
-                                                      ? event.target.value
-                                                      : value,
-                                                  ),
-                                                }
-                                              : entry,
-                                          ),
-                                        }))
-                                      }
-                                    />
-                                    <button
-                                      type="button"
-                                      className="chip"
-                                      onClick={() =>
-                                        updateSection(section.id, (current) => ({
-                                          ...current,
-                                          blocks: current.blocks.map((entry, idx) =>
-                                            idx === blockIndex && entry.type === "bullets"
-                                              ? {
-                                                  ...entry,
-                                                  items: entry.items.filter(
-                                                    (_, pos) => pos !== itemIndex,
-                                                  ),
-                                                }
-                                              : entry,
-                                          ),
-                                        }))
-                                      }
-                                    >
-                                      Supprimer
-                                    </button>
-                                  </div>
-                                ))}
-                                <button
-                                  type="button"
-                                  className="chip"
-                                  onClick={() =>
+                                    ...
+                                  </button>
+                                  {blockMenuOpenKey === blockKey ? (
+                                    <div className="absolute right-0 z-10 mt-2 w-44 rounded-2xl border border-white/10 bg-[color:var(--surface)] p-2 shadow-lg">
+                                      <button
+                                        type="button"
+                                        className="chip w-full justify-start"
+                                        onClick={() => {
+                                          handleFocusBlock(blockKey);
+                                          setBlockMenuOpenKey(null);
+                                        }}
+                                      >
+                                        Éditer
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="chip w-full justify-start"
+                                        disabled={blockIndex === 0}
+                                        onClick={() => {
+                                          handleMoveBlock(section.id, blockIndex, -1);
+                                          setBlockMenuOpenKey(null);
+                                        }}
+                                      >
+                                        Monter
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="chip w-full justify-start"
+                                        disabled={blockIndex === section.blocks.length - 1}
+                                        onClick={() => {
+                                          handleMoveBlock(section.id, blockIndex, 1);
+                                          setBlockMenuOpenKey(null);
+                                        }}
+                                      >
+                                        Descendre
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="chip w-full justify-start"
+                                        onClick={() => {
+                                          handleRemoveBlock(section.id, blockIndex);
+                                          setBlockMenuOpenKey(null);
+                                        }}
+                                      >
+                                        Supprimer
+                                      </button>
+                                    </div>
+                                  ) : null}
+                                </div>
+                              </div>
+                      
+                              {block.type === "markdown" ? (
+                                <textarea
+                                  ref={(node) => {
+                                    blockFieldRefs.current[blockKey] = node;
+                                  }}
+                                  className="field-textarea"
+                                  value={block.content}
+                                  onChange={(event) =>
                                     updateSection(section.id, (current) => ({
                                       ...current,
-                                      blocks: current.blocks.map((entry, idx) =>
-                                        idx === blockIndex && entry.type === "bullets"
-                                          ? {
-                                              ...entry,
-                                              items: [...entry.items, ""],
-                                            }
-                                          : entry,
+                                      blocks: current.blocks.map((item, idx) =>
+                                        idx === blockIndex && item.type === "markdown"
+                                          ? { ...item, content: event.target.value }
+                                          : item,
                                       ),
                                     }))
                                   }
-                                >
-                                  Ajouter un item
-                                </button>
-                              </div>
-                            ) : null}
-
-                            {block.type === "media" ? (
-                              <div className="stack-sm">
-                                {block.mediaType === "image" ? (
-                                  <>
-                                    <div className="flex flex-wrap items-center justify-between gap-2">
-                                      <span className="text-xs text-[color:var(--muted)]">
-                                        Photo
-                                      </span>
+                                />
+                              ) : null}
+                      
+                              {block.type === "bullets" ? (
+                                <div className="stack-sm">
+                                  {block.items.map((item, itemIndex) => (
+                                    <div
+                                      key={`${section.id}-${blockIndex}-${itemIndex}`}
+                                      className="flex items-center gap-2"
+                                    >
+                                      <input
+                                        ref={(node) => {
+                                          if (itemIndex === 0) {
+                                            blockFieldRefs.current[blockKey] = node;
+                                          }
+                                        }}
+                                        className="field-input"
+                                        value={item}
+                                        onChange={(event) =>
+                                          updateSection(section.id, (current) => ({
+                                            ...current,
+                                            blocks: current.blocks.map((entry, idx) =>
+                                              idx === blockIndex && entry.type === "bullets"
+                                                ? {
+                                                    ...entry,
+                                                    items: entry.items.map((value, pos) =>
+                                                      pos === itemIndex ? event.target.value : value,
+                                                    ),
+                                                  }
+                                                : entry,
+                                            ),
+                                          }))
+                                        }
+                                      />
                                       <button
                                         type="button"
                                         className="chip"
                                         onClick={() =>
-                                          handlePhotoUploadRequest(section.id, blockIndex)
+                                          updateSection(section.id, (current) => ({
+                                            ...current,
+                                            blocks: current.blocks.map((entry, idx) =>
+                                              idx === blockIndex && entry.type === "bullets"
+                                                ? {
+                                                    ...entry,
+                                                    items: entry.items.filter((_, pos) => pos !== itemIndex),
+                                                  }
+                                                : entry,
+                                            ),
+                                          }))
                                         }
                                       >
-                                        Remplacer
+                                        Supprimer
                                       </button>
                                     </div>
-                                    {block.mediaId ? (
-                                      <p className="text-xs text-[color:var(--muted)]">
-                                        mediaId: {block.mediaId}
-                                      </p>
-                                    ) : block.url ? (
-                                      <p className="text-xs text-[color:var(--muted)]">
-                                        URL héritée: {block.url}
-                                      </p>
-                                    ) : (
-                                      <p className="text-xs text-[color:var(--muted)]">
-                                        Aucune photo associée.
-                                      </p>
-                                    )}
-                                    {(() => {
-                                      const previewUrl =
-                                        (block.mediaId
-                                          ? mediaUrlMap[block.mediaId] ??
-                                            mediaUrlCache.get(block.mediaId)
-                                          : undefined) ?? block.url;
-                                      if (!previewUrl) {
-                                        return null;
-                                      }
-                                      return (
-                                        <>
-                                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                                          <img
-                                            src={previewUrl}
-                                            alt={block.caption ?? section.title}
-                                            className="w-full h-auto rounded-2xl ring-1 ring-white/10"
-                                          />
-                                        </>
-                                      );
-                                    })()}
-                                    <label className="field-label">
-                                      Légende (optionnel)
-                                    </label>
-                                    <input
-                                      className="field-input"
-                                      value={block.caption ?? ""}
-                                      onChange={(event) =>
-                                        updateSection(section.id, (current) => ({
-                                          ...current,
-                                          blocks: current.blocks.map((entry, idx) =>
-                                            idx === blockIndex && entry.type === "media"
-                                              ? { ...entry, caption: event.target.value }
-                                              : entry,
-                                          ),
-                                        }))
-                                      }
-                                    />
-                                  </>
-                                ) : (
-                                  <>
-                                    <label className="field-label">Type</label>
-                                    <select
-                                      className="field-input"
-                                      value={block.mediaType}
-                                      onChange={(event) =>
-                                        updateSection(section.id, (current) => ({
-                                          ...current,
-                                          blocks: current.blocks.map((entry, idx) =>
-                                            idx === blockIndex &&
-                                            entry.type === "media" &&
-                                            entry.mediaType !== "image"
-                                              ? {
-                                                  ...entry,
-                                                  mediaType: event.target.value as
-                                                    | "video"
-                                                    | "link",
+                                  ))}
+                                  <button
+                                    type="button"
+                                    className="chip"
+                                    onClick={() =>
+                                      updateSection(section.id, (current) => ({
+                                        ...current,
+                                        blocks: current.blocks.map((entry, idx) =>
+                                          idx === blockIndex && entry.type === "bullets"
+                                            ? { ...entry, items: [...entry.items, ""] }
+                                            : entry,
+                                        ),
+                                      }))
+                                    }
+                                  >
+                                    Ajouter un item
+                                  </button>
+                                </div>
+                              ) : null}
+                      
+                              {block.type === "media" ? (
+                                <div className="stack-sm">
+                                  {block.mediaType === "image" ? (
+                                    <>
+                                      <div className="flex flex-wrap items-center justify-between gap-2">
+                                        <span className="text-xs text-[color:var(--muted)]">
+                                          Photo
+                                        </span>
+                                        <div className="flex flex-wrap gap-2">
+                                          {hasPhoto ? (
+                                            <>
+                                              <button
+                                                type="button"
+                                                className="chip"
+                                                onClick={() =>
+                                                  handlePhotoUploadRequest(section.id, blockIndex)
                                                 }
-                                              : entry,
-                                          ),
-                                        }))
-                                      }
-                                    >
-                                      <option value="video">Vidéo</option>
-                                      <option value="link">Lien</option>
-                                    </select>
-                                    <label className="field-label">URL</label>
-                                    <input
-                                      className="field-input"
-                                      value={block.url}
-                                      onChange={(event) =>
-                                        updateSection(section.id, (current) => ({
-                                          ...current,
-                                          blocks: current.blocks.map((entry, idx) =>
-                                            idx === blockIndex &&
-                                            entry.type === "media" &&
-                                            entry.mediaType !== "image"
-                                              ? { ...entry, url: event.target.value }
-                                              : entry,
-                                          ),
-                                        }))
-                                      }
-                                    />
-                                    <label className="field-label">
-                                      Légende (optionnel)
-                                    </label>
-                                    <input
-                                      className="field-input"
-                                      value={block.caption ?? ""}
-                                      onChange={(event) =>
-                                        updateSection(section.id, (current) => ({
-                                          ...current,
-                                          blocks: current.blocks.map((entry, idx) =>
-                                            idx === blockIndex &&
-                                            entry.type === "media" &&
-                                            entry.mediaType !== "image"
-                                              ? { ...entry, caption: event.target.value }
-                                              : entry,
-                                          ),
-                                        }))
-                                      }
-                                    />
-                                  </>
-                                )}
-                              </div>
-                            ) : null}
-                          </div>
-                        ))}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          className="chip"
-                          onClick={() => handleAddBlock(section.id, "markdown")}
-                        >
-                          + Markdown
-                        </button>
-                        <button
-                          type="button"
-                          className="chip"
-                          onClick={() => handleAddBlock(section.id, "bullets")}
-                        >
-                          + Liste
-                        </button>
-                        <button
-                          type="button"
-                          className="chip"
-                          onClick={() => handlePhotoUploadRequest(section.id)}
-                        >
-                          + Photo
-                        </button>
-                        <button
-                          type="button"
-                          className="chip"
-                          onClick={() => handleAddBlock(section.id, "media")}
-                        >
-                          + Lien/Vidéo
-                        </button>
+                                              >
+                                                Remplacer
+                                              </button>
+                                              <button
+                                                type="button"
+                                                className="chip"
+                                                onClick={() => handleClearPhoto(section.id, blockIndex)}
+                                              >
+                                                Supprimer
+                                              </button>
+                                            </>
+                                          ) : (
+                                            <button
+                                              type="button"
+                                              className="chip"
+                                              onClick={() =>
+                                                handlePhotoUploadRequest(section.id, blockIndex)
+                                              }
+                                            >
+                                              Ajouter une photo
+                                            </button>
+                                          )}
+                                        </div>
+                                      </div>
+                                      {block.mediaId ? (
+                                        <p className="text-xs text-[color:var(--muted)]">
+                                          mediaId: {block.mediaId}
+                                        </p>
+                                      ) : block.url ? (
+                                        <p className="text-xs text-[color:var(--muted)]">
+                                          URL héritée: {block.url}
+                                        </p>
+                                      ) : (
+                                        <p className="text-xs text-[color:var(--muted)]">
+                                          Aucune photo associée.
+                                        </p>
+                                      )}
+                                      {(() => {
+                                        const previewUrl =
+                                          (block.mediaId
+                                            ? mediaUrlMap[block.mediaId] ??
+                                              mediaUrlCache.get(block.mediaId)
+                                            : undefined) ?? block.url;
+                                        if (!previewUrl) {
+                                          return null;
+                                        }
+                                        return (
+                                          <>
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                              src={previewUrl}
+                                              alt={block.caption ?? section.title}
+                                              className="w-full h-auto rounded-2xl ring-1 ring-white/10"
+                                            />
+                                          </>
+                                        );
+                                      })()}
+                                      <label className="field-label">
+                                        Légende (optionnel)
+                                      </label>
+                                      <input
+                                        ref={(node) => {
+                                          blockFieldRefs.current[blockKey] = node;
+                                        }}
+                                        className="field-input"
+                                        value={block.caption ?? ""}
+                                        onChange={(event) =>
+                                          updateSection(section.id, (current) => ({
+                                            ...current,
+                                            blocks: current.blocks.map((entry, idx) =>
+                                              idx === blockIndex && entry.type === "media"
+                                                ? { ...entry, caption: event.target.value }
+                                                : entry,
+                                            ),
+                                          }))
+                                        }
+                                      />
+                                    </>
+                                  ) : (
+                                    <>
+                                      <label className="field-label">Type</label>
+                                      <select
+                                        className="field-input"
+                                        value={block.mediaType}
+                                        onChange={(event) =>
+                                          updateSection(section.id, (current) => ({
+                                            ...current,
+                                            blocks: current.blocks.map((entry, idx) =>
+                                              idx === blockIndex &&
+                                              entry.type === "media" &&
+                                              entry.mediaType !== "image"
+                                                ? {
+                                                    ...entry,
+                                                    mediaType: event.target.value as "video" | "link",
+                                                  }
+                                                : entry,
+                                            ),
+                                          }))
+                                        }
+                                      >
+                                        <option value="video">Vidéo</option>
+                                        <option value="link">Lien</option>
+                                      </select>
+                                      <label className="field-label">URL</label>
+                                      <input
+                                        ref={(node) => {
+                                          blockFieldRefs.current[blockKey] = node;
+                                        }}
+                                        className="field-input"
+                                        value={block.url}
+                                        onChange={(event) =>
+                                          updateSection(section.id, (current) => ({
+                                            ...current,
+                                            blocks: current.blocks.map((entry, idx) =>
+                                              idx === blockIndex &&
+                                              entry.type === "media" &&
+                                              entry.mediaType !== "image"
+                                                ? { ...entry, url: event.target.value }
+                                                : entry,
+                                            ),
+                                          }))
+                                        }
+                                      />
+                                      <label className="field-label">
+                                        Légende (optionnel)
+                                      </label>
+                                      <input
+                                        className="field-input"
+                                        value={block.caption ?? ""}
+                                        onChange={(event) =>
+                                          updateSection(section.id, (current) => ({
+                                            ...current,
+                                            blocks: current.blocks.map((entry, idx) =>
+                                              idx === blockIndex &&
+                                              entry.type === "media" &&
+                                              entry.mediaType !== "image"
+                                                ? { ...entry, caption: event.target.value }
+                                                : entry,
+                                            ),
+                                          }))
+                                        }
+                                      />
+                                    </>
+                                  )}
+                                </div>
+                              ) : null}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   ))}
@@ -1877,32 +2115,81 @@ export function ExerciseLiveDetail({
                 />
               </div>
             ) : (
-              <p className="text-xs text-[color:var(--muted)]">
-                Chargement...
-              </p>
+              <p className="text-xs text-[color:var(--muted)]">Chargement...</p>
             )}
+          </div>
+          <div className="sticky bottom-0 mt-4 border-t border-white/10 bg-[color:var(--surface)] pt-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative">
+                  <button
+                    type="button"
+                    className="chip"
+                    onClick={() => setAddMenuOpen((open) => !open)}
+                    disabled={!overrideDoc || overrideDoc.doc.sections.length === 0}
+                  >
+                    Ajouter...
+                  </button>
+                  {addMenuOpen ? (
+                    <div className="absolute bottom-full left-0 z-10 mb-2 w-40 rounded-2xl border border-white/10 bg-[color:var(--surface)] p-2 shadow-lg">
+                      <button
+                        type="button"
+                        className="chip w-full justify-start"
+                        onClick={() => handleAddFromMenu("markdown")}
+                      >
+                        Texte
+                      </button>
+                      <button
+                        type="button"
+                        className="chip w-full justify-start"
+                        onClick={() => handleAddFromMenu("bullets")}
+                      >
+                        Liste
+                      </button>
+                      <button
+                        type="button"
+                        className="chip w-full justify-start"
+                        onClick={() => handleAddFromMenu("photo")}
+                      >
+                        Photo
+                      </button>
+                      <button
+                        type="button"
+                        className="chip w-full justify-start"
+                        onClick={() => handleAddFromMenu("media")}
+                      >
+                        Lien-Vidéo
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+                <span className="text-xs text-[color:var(--muted)]">
+                  {activeSection
+                    ? `Ajout dans: ${activeSection.title || "Section sans titre"}`
+                    : "Ajoutez une section pour insérer des blocs."}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button type="button" className="chip" onClick={handleCloseOverride}>
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  className="primary-button primary-button--wide"
+                  onClick={handleSaveOverride}
+                  disabled={!isDirty || isSavingOverride}
+                >
+                  Enregistrer
+                </button>
+              </div>
+            </div>
             {mediaStatus ? (
               <p className="text-xs text-[color:var(--muted)]">{mediaStatus}</p>
             ) : null}
             {submitStatus ? (
               <p className="text-xs text-[color:var(--muted)]">{submitStatus}</p>
             ) : null}
-            <div className="modal-actions">
-              <button
-                type="button"
-                className="primary-button primary-button--wide"
-                onClick={handleSaveOverride}
-              >
-                Enregistrer
-              </button>
-              <button
-                type="button"
-                className="chip"
-                onClick={() => setOverrideOpen(false)}
-              >
-                Fermer
-              </button>
-            </div>
+          </div>
           </div>
         </div>
       ) : null}
