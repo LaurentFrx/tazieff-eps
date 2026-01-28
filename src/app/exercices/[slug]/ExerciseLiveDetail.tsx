@@ -577,7 +577,8 @@ export function ExerciseLiveDetail({
               openPinModal();
             }
           }}
-          className="title-longpress"
+          className="title-longpress select-none touch-manipulation"
+          style={{ WebkitUserSelect: "none", WebkitTouchCallout: "none" }}
         >
           <h1>{merged.frontmatter.title}</h1>
         </div>
