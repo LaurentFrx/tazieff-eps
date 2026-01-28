@@ -1,5 +1,5 @@
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
-import type { ExercisePatch } from "@/lib/live/types";
+import type { ExerciseLiveDocV2, ExerciseOverridePatch } from "@/lib/live/types";
 
 export type MarkdownSection = {
   heading: string;
@@ -50,66 +50,39 @@ export function splitMarkdownSections(content: string): MarkdownSections {
   };
 }
 
-function buildMarkdownContent({ intro, sections }: MarkdownSections) {
-  const chunks: string[] = [];
-  const introTrimmed = intro.trim();
+export type ExerciseRenderOverride = {
+  frontmatter: ExerciseFrontmatter;
+  content: string;
+  override?: ExerciseLiveDocV2;
+};
 
-  if (introTrimmed) {
-    chunks.push(introTrimmed);
+function isLiveDocV2(patch: unknown): patch is ExerciseLiveDocV2 {
+  if (!patch || typeof patch !== "object") {
+    return false;
   }
-
-  for (const section of sections) {
-    const heading = section.heading.trim();
-    const body = section.body.trim();
-    if (!heading) {
-      continue;
-    }
-    chunks.push(body ? `## ${heading}\n${body}` : `## ${heading}`);
-  }
-
-  return chunks.join("\n\n").trim();
+  const candidate = patch as ExerciseLiveDocV2;
+  return (
+    candidate.version === 2 &&
+    !!candidate.doc &&
+    Array.isArray(candidate.doc.sections)
+  );
 }
 
 export function applyExercisePatch(
   base: { frontmatter: ExerciseFrontmatter; content: string },
-  patch?: ExercisePatch | null,
-): { frontmatter: ExerciseFrontmatter; content: string } {
+  patch?: ExerciseOverridePatch | null,
+): ExerciseRenderOverride {
   if (!patch) {
-    return base;
+    return { ...base };
   }
 
-  const nextFrontmatter = patch.frontmatter
-    ? { ...base.frontmatter, ...patch.frontmatter }
-    : base.frontmatter;
-
-  if (!patch.sections || Object.keys(patch.sections).length === 0) {
+  if (isLiveDocV2(patch)) {
     return {
-      frontmatter: nextFrontmatter,
+      frontmatter: base.frontmatter,
       content: base.content,
+      override: patch,
     };
   }
 
-  const parsed = splitMarkdownSections(base.content);
-  const sections = [...parsed.sections];
-  const index = new Map(sections.map((section, idx) => [section.heading, idx]));
-
-  for (const [heading, body] of Object.entries(patch.sections)) {
-    const normalizedHeading = heading.trim();
-    if (!normalizedHeading) {
-      continue;
-    }
-    const value = typeof body === "string" ? body : "";
-    const existingIndex = index.get(normalizedHeading);
-    if (existingIndex !== undefined) {
-      sections[existingIndex] = { heading: normalizedHeading, body: value };
-    } else {
-      sections.push({ heading: normalizedHeading, body: value });
-      index.set(normalizedHeading, sections.length - 1);
-    }
-  }
-
-  return {
-    frontmatter: nextFrontmatter,
-    content: buildMarkdownContent({ intro: parsed.intro, sections }),
-  };
+  return { ...base };
 }

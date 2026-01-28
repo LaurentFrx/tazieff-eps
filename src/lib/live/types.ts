@@ -5,6 +5,48 @@ export type ExercisePatch = {
   sections?: Record<string, string>;
 };
 
+export type ExerciseLiveMarkdownBlock = {
+  type: "markdown";
+  content: string;
+};
+
+export type ExerciseLiveBulletsBlock = {
+  type: "bullets";
+  items: string[];
+};
+
+export type ExerciseLiveMediaBlock =
+  | {
+      type: "media";
+      mediaType: "image";
+      mediaId?: string;
+      url?: string;
+      caption?: string;
+    }
+  | {
+      type: "media";
+      mediaType: "video" | "link";
+      url: string;
+      caption?: string;
+    };
+
+export type ExerciseLiveSection = {
+  id: string;
+  title: string;
+  blocks: Array<ExerciseLiveMarkdownBlock | ExerciseLiveBulletsBlock | ExerciseLiveMediaBlock>;
+};
+
+export type ExerciseLiveDocV2 = {
+  version: 2;
+  doc: {
+    heroImage?: { url: string; alt?: string };
+    pills?: Array<{ label: string; kind?: string }>;
+    sections: ExerciseLiveSection[];
+  };
+};
+
+export type ExerciseOverridePatch = ExercisePatch | ExerciseLiveDocV2;
+
 export type LiveExerciseData = {
   frontmatter: ExerciseFrontmatter;
   content: string;
@@ -20,7 +62,7 @@ export type LiveExerciseRow = {
 export type ExerciseOverrideRow = {
   slug: string;
   locale: string;
-  patch_json: ExercisePatch;
+  patch_json: ExerciseOverridePatch;
   updated_at?: string | null;
 };
 
