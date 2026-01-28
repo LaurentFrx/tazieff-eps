@@ -1,6 +1,6 @@
 "use client";
 
-import { appVersion, buildTimeIso, envLabel, gitShaShort } from "@/lib/buildInfo";
+import { buildInfo } from "@/lib/buildInfo";
 
 function formatBuildTimeLocal(iso: string) {
   const date = new Date(iso);
@@ -19,37 +19,43 @@ function formatBuildTimeLocal(iso: string) {
       hour12: false,
     }).formatToParts(date);
 
-    const values = Object.fromEntries(
-      parts
-        .filter((part) => part.type !== "literal")
-        .map((part) => [part.type, part.value]),
-    ) as Record<string, string>;
+    const values: Record<string, string> = {};
+    for (const part of parts) {
+      if (part.type !== "literal") {
+        values[part.type] = part.value;
+      }
+    }
 
-    if (
-      values.year &&
-      values.month &&
-      values.day &&
-      values.hour &&
-      values.minute
-    ) {
-      return `${values.year}-${values.month}-${values.day} ${values.hour}:${values.minute}`;
+    const year = values.year;
+    const month = values.month;
+    const day = values.day;
+    const hour = values.hour;
+    const minute = values.minute;
+
+    if (year && month && day && hour && minute) {
+      return `${year}-${month}-${day} ${hour}:${minute}`;
     }
   } catch {
     // Fall back to ISO when Intl or timeZone is unavailable.
+  }
+
+  const match = iso.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})/);
+  if (match) {
+    return `${match[1]} ${match[2]}:${match[3]}`;
   }
 
   return iso;
 }
 
 export function useBuildInfo() {
-  const buildTimeLocal = formatBuildTimeLocal(buildTimeIso);
-  const label = `${envLabel} · v${appVersion} · ${gitShaShort} · ${buildTimeLocal}`;
+  const buildTimeLocal = formatBuildTimeLocal(buildInfo.buildTimeIso);
+  const label = `${buildInfo.envLabel} · v${buildInfo.appVersion} · ${buildInfo.gitShaShort} · ${buildTimeLocal}`;
 
   return {
-    envLabel,
-    appVersion,
-    gitShaShort,
-    buildTimeIso,
+    envLabel: buildInfo.envLabel,
+    appVersion: buildInfo.appVersion,
+    gitShaShort: buildInfo.gitShaShort,
+    buildTimeIso: buildInfo.buildTimeIso,
     buildTimeLocal,
     label,
   };
