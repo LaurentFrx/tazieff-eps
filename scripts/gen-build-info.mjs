@@ -20,6 +20,10 @@ function normalizeString(value) {
 }
 
 function getEnvLabel() {
+  if (process.env.NODE_ENV === "development") {
+    return "local";
+  }
+
   const env = normalizeString(process.env.VERCEL_ENV);
   if (env === "production") {
     return "production";
