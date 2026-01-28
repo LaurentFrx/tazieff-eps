@@ -9,7 +9,7 @@ function formatBuildTimeLocal(iso: string) {
   }
 
   try {
-    const parts = new Intl.DateTimeFormat("fr-FR", {
+    const dtf = new Intl.DateTimeFormat("fr-FR", {
       timeZone: "Europe/Paris",
       year: "numeric",
       month: "2-digit",
@@ -17,23 +17,14 @@ function formatBuildTimeLocal(iso: string) {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
-    }).formatToParts(date);
+    });
+    const parts = Object.fromEntries(
+      dtf.formatToParts(date).map((part) => [part.type, part.value]),
+    ) as Record<string, string>;
+    const buildTimeLocal = `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}`;
 
-    const values: Record<string, string> = {};
-    for (const part of parts) {
-      if (part.type !== "literal") {
-        values[part.type] = part.value;
-      }
-    }
-
-    const year = values.year;
-    const month = values.month;
-    const day = values.day;
-    const hour = values.hour;
-    const minute = values.minute;
-
-    if (year && month && day && hour && minute) {
-      return `${year}-${month}-${day} ${hour}:${minute}`;
+    if (buildTimeLocal.includes(":") && parts.minute) {
+      return buildTimeLocal;
     }
   } catch {
     // Fall back to ISO when Intl or timeZone is unavailable.
@@ -49,7 +40,11 @@ function formatBuildTimeLocal(iso: string) {
 
 export function useBuildInfo() {
   const buildTimeLocal = formatBuildTimeLocal(buildInfo.buildTimeIso);
-  const label = `${buildInfo.envLabel} · v${buildInfo.appVersion} · ${buildInfo.gitShaShort} · ${buildTimeLocal}`;
+  const fullLine = `${buildInfo.envLabel} · v${buildInfo.appVersion} · ${buildInfo.gitShaShort} · ${buildTimeLocal}`;
+
+  if (process.env.NODE_ENV !== "production") {
+    console.log("[buildstamp]", fullLine);
+  }
 
   return {
     envLabel: buildInfo.envLabel,
@@ -57,20 +52,22 @@ export function useBuildInfo() {
     gitShaShort: buildInfo.gitShaShort,
     buildTimeIso: buildInfo.buildTimeIso,
     buildTimeLocal,
-    label,
+    fullLine,
+    label: fullLine,
   };
 }
 
 export function BuildStamp() {
-  const { label } = useBuildInfo();
+  const { fullLine } = useBuildInfo();
 
   return (
     <div
-      className="pointer-events-none fixed left-1/2 z-10 -translate-x-1/2 text-[10px] tracking-[0.2em] text-[color:var(--muted)] opacity-60"
+      className="pointer-events-none fixed left-1/2 z-10 -translate-x-1/2 whitespace-nowrap text-[10px] tabular-nums tracking-[0.2em] text-[color:var(--muted)] opacity-60"
       style={{ bottom: "calc(var(--tabbar-offset) + var(--tabbar-height) + 8px)" }}
       aria-hidden="true"
+      title={fullLine}
     >
-      {label}
+      {fullLine}
     </div>
   );
 }
