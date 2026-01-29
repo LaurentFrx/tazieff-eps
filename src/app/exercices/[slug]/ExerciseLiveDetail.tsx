@@ -371,7 +371,6 @@ export function ExerciseLiveDetail({
   const [overrideOpen, setOverrideOpen] = useState(false);
   const [overrideDoc, setOverrideDoc] = useState<ExerciseLiveDocV2 | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
-  const [addMenuOpen, setAddMenuOpen] = useState(false);
   const [sectionMenuOpenId, setSectionMenuOpenId] = useState<string | null>(null);
   const [blockMenuOpenKey, setBlockMenuOpenKey] = useState<string | null>(null);
   const [dirtySnapshot, setDirtySnapshot] = useState("");
@@ -409,6 +408,7 @@ export function ExerciseLiveDetail({
     width: number;
     placement: "top" | "bottom";
   } | null>(null);
+  const [addBlockMenuOpen, setAddBlockMenuOpen] = useState(false);
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
   const [highlightBlockKey, setHighlightBlockKey] = useState<string | null>(null);
   const [liveOpen, setLiveOpen] = useState(false);
@@ -423,6 +423,8 @@ export function ExerciseLiveDetail({
   const sectionTitleRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const blockFieldRefs = useRef<Record<string, HTMLInputElement | HTMLTextAreaElement | null>>({});
   const blockContainerRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const addBlockMenuRef = useRef<HTMLDivElement | null>(null);
+  const addBlockButtonRef = useRef<HTMLButtonElement | null>(null);
   const dropdownMenuRef = useRef<HTMLDivElement | null>(null);
   const dropdownTriggerRefs = useRef<
     Record<"type" | "muscles" | "themes", HTMLButtonElement | null>
@@ -926,6 +928,37 @@ export function ExerciseLiveDetail({
     };
   }, [pillDropdownOpen]);
 
+  useEffect(() => {
+    if (!addBlockMenuOpen) {
+      return;
+    }
+
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target as Node | null;
+      if (addBlockMenuRef.current && target && addBlockMenuRef.current.contains(target)) {
+        return;
+      }
+      if (addBlockButtonRef.current && target && addBlockButtonRef.current.contains(target)) {
+        return;
+      }
+      setAddBlockMenuOpen(false);
+    };
+
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setAddBlockMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKey);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [addBlockMenuOpen]);
+
   const showOverrideToast = (message: string, tone: "success" | "error") => {
     setOverrideToast({ message, tone });
     if (toastTimerRef.current) {
@@ -1025,7 +1058,6 @@ export function ExerciseLiveDetail({
     setHeroPreviewUrl(doc.doc.heroImage?.url?.trim() ? doc.doc.heroImage.url.trim() : null);
     setMediaStatus(null);
     setActiveSectionId(doc.doc.sections[0]?.id ?? null);
-    setAddMenuOpen(false);
     setSectionMenuOpenId(null);
     setBlockMenuOpenKey(null);
     setOverrideToast(null);
@@ -1507,7 +1539,7 @@ export function ExerciseLiveDetail({
       return;
     }
     setActiveSectionId(targetSectionId);
-    setAddMenuOpen(false);
+    setAddBlockMenuOpen(false);
     if (kind === "photo") {
       handlePhotoUploadRequest(targetSectionId);
       return;
@@ -1540,7 +1572,6 @@ export function ExerciseLiveDetail({
     setOverrideDoc(doc);
     setDirtySnapshot(snapshot);
     setActiveSectionId(doc.doc.sections[0]?.id ?? null);
-    setAddMenuOpen(false);
     setSectionMenuOpenId(null);
     setBlockMenuOpenKey(null);
     setMediaStatus(null);
@@ -1550,6 +1581,7 @@ export function ExerciseLiveDetail({
     setPillDropdownOpen(null);
     setPillSearch({ type: "", muscles: "", themes: "" });
     setPillDropdownStyle(null);
+    setAddBlockMenuOpen(false);
     setConfirmCloseOpen(false);
   };
 
@@ -2945,54 +2977,81 @@ export function ExerciseLiveDetail({
           </div>
           <div className="sticky bottom-0 mt-4 border-t border-white/10 bg-[color:var(--surface)] pt-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase tracking-[0.18em] text-[color:var(--muted)]">
+                    Section active
+                  </span>
+                  <select
+                    className="field-input"
+                    value={activeSection?.id ?? ""}
+                    onChange={(event) => {
+                      const nextValue = event.target.value;
+                      if (nextValue === "__add_section__") {
+                        handleAddSection();
+                        return;
+                      }
+                      setActiveSectionId(nextValue);
+                    }}
+                    disabled={!overrideDoc}
+                  >
+                    <option value="">Sélectionner une section…</option>
+                    {overrideDoc?.doc.sections.map((section) => (
+                      <option key={section.id} value={section.id}>
+                        {section.title || "Section sans titre"}
+                      </option>
+                    ))}
+                    <option value="__add_section__">Ajouter une section</option>
+                  </select>
+                </div>
                 <div className="relative">
                   <button
+                    ref={addBlockButtonRef}
                     type="button"
                     className="chip"
-                    onClick={() => setAddMenuOpen((open) => !open)}
+                    onClick={() => setAddBlockMenuOpen((open) => !open)}
                     disabled={!overrideDoc || overrideDoc.doc.sections.length === 0}
                   >
-                    Ajouter...
+                    Ajouter un bloc…
                   </button>
-                  {addMenuOpen ? (
-                    <div className="absolute bottom-full left-0 z-10 mb-2 w-40 rounded-2xl border border-white/10 bg-[color:var(--surface)] p-2 shadow-lg">
+                  {addBlockMenuOpen ? (
+                    <div
+                      ref={addBlockMenuRef}
+                      className="absolute bottom-full left-0 z-10 mb-2 w-44 rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-lg"
+                    >
                       <button
                         type="button"
                         className="chip w-full justify-start"
-                        onClick={() => handleAddFromMenu("markdown")}
+                        onClick={() => {
+                          handleAddFromMenu("markdown");
+                          setAddBlockMenuOpen(false);
+                        }}
                       >
                         Texte
                       </button>
                       <button
                         type="button"
                         className="chip w-full justify-start"
-                        onClick={() => handleAddFromMenu("bullets")}
+                        onClick={() => {
+                          handleAddFromMenu("bullets");
+                          setAddBlockMenuOpen(false);
+                        }}
                       >
-                        Liste
+                        Liste à puces
                       </button>
                       <button
                         type="button"
                         className="chip w-full justify-start"
-                        onClick={() => handleAddFromMenu("photo")}
+                        onClick={() => {
+                          handleAddFromMenu("photo");
+                          setAddBlockMenuOpen(false);
+                        }}
                       >
                         Photo
-                      </button>
-                      <button
-                        type="button"
-                        className="chip w-full justify-start"
-                        onClick={() => handleAddFromMenu("media")}
-                      >
-                        Lien-Vidéo
                       </button>
                     </div>
                   ) : null}
                 </div>
-                <span className="text-xs text-[color:var(--muted)]">
-                  {activeSection
-                    ? `Ajout dans: ${activeSection.title || "Section sans titre"}`
-                    : "Ajoutez une section pour insérer des blocs."}
-                </span>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <button
