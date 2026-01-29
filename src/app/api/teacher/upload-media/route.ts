@@ -15,6 +15,21 @@ function logError(code: string, status: number, message: string, details?: strin
   console.error(`[upload] code=${code} status=${status} msg=${message}${suffix}`);
 }
 
+function getSupabaseMeta(error: unknown) {
+  if (!error || typeof error !== "object") {
+    return { status: undefined, details: "", hint: "" };
+  }
+  const status =
+    "status" in error && typeof (error as { status?: number }).status === "number"
+      ? (error as { status?: number }).status
+      : undefined;
+  const details =
+    "details" in error ? String((error as { details?: string }).details ?? "") : "";
+  const hint =
+    "hint" in error ? String((error as { hint?: string }).hint ?? "") : "";
+  return { status, details, hint };
+}
+
 export async function POST(request: Request) {
   try {
     let formData: FormData;
@@ -69,6 +84,17 @@ export async function POST(request: Request) {
         : `media-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     const path = `exercises/${safeSlug}/${id}.webp`;
 
+    const supabaseUrl =
+      process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !supabaseUrl) {
+      logError("SERVER_MISCONFIG", 500, "missing_supabase_env");
+      return errorJson(
+        500,
+        "SERVER_MISCONFIG",
+        "Configuration serveur incomplète.",
+      );
+    }
+
     let arrayBuffer: ArrayBuffer;
     try {
       arrayBuffer = await (file as File).arrayBuffer();
@@ -78,7 +104,18 @@ export async function POST(request: Request) {
       return errorJson(400, "BAD_REQUEST", "Fichier illisible.");
     }
 
-    const supabase = getSupabaseServiceClient();
+    let supabase: ReturnType<typeof getSupabaseServiceClient>;
+    try {
+      supabase = getSupabaseServiceClient();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "supabase_init_failed";
+      logError("SERVER_MISCONFIG", 500, message);
+      return errorJson(
+        500,
+        "SERVER_MISCONFIG",
+        "Configuration serveur incomplète.",
+      );
+    }
     const { error: uploadError } = await supabase
       .storage
       .from(BUCKET)
@@ -88,15 +125,19 @@ export async function POST(request: Request) {
       });
 
     if (uploadError) {
-      const uploadDetails =
-        typeof uploadError === "object" && uploadError && "details" in uploadError
-          ? String((uploadError as { details?: string }).details ?? "")
-          : "";
+      const meta = getSupabaseMeta(uploadError);
+      const detailParts = [
+        `bucket=${BUCKET}`,
+        `path=${path}`,
+        meta.status !== undefined ? `status=${meta.status}` : "",
+        meta.details ? `details=${meta.details}` : "",
+        meta.hint ? `hint=${meta.hint}` : "",
+      ].filter(Boolean);
       logError(
         "SUPABASE_ERROR",
-        500,
+        meta.status ?? 500,
         uploadError.message,
-        `details=${uploadDetails}`,
+        detailParts.join(" "),
       );
       return errorJson(500, "SUPABASE_ERROR", "Erreur d'upload.");
     }
@@ -118,11 +159,19 @@ export async function POST(request: Request) {
       .single();
 
     if (error || !data) {
+      const meta = getSupabaseMeta(error);
+      const detailParts = [
+        `bucket=${BUCKET}`,
+        `path=${path}`,
+        meta.status !== undefined ? `status=${meta.status}` : "",
+        meta.details ? `details=${meta.details}` : "",
+        meta.hint ? `hint=${meta.hint}` : "",
+      ].filter(Boolean);
       logError(
         "SUPABASE_ERROR",
-        500,
+        meta.status ?? 500,
         error?.message ?? "insert_failed",
-        `details=${error?.details ?? ""}`,
+        detailParts.join(" "),
       );
       return errorJson(500, "SUPABASE_ERROR", "Erreur d'enregistrement.");
     }
