@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { StaticImageData } from "next/image";
@@ -54,6 +55,38 @@ const IMAGE_MAX_EDGE = 1600;
 const IMAGE_QUALITY = 0.82;
 const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
 const mediaUrlCache = new Map<string, string>();
+const DROPDOWN_MAX_HEIGHT = 288;
+const LEVEL_DEFAULTS = ["Débutant", "Intermédiaire", "Avancé"];
+const TYPE_DEFAULTS = [
+  "Fondamentaux",
+  "Technique",
+  "Renforcement",
+  "Gainage",
+  "Mobilité",
+  "Souplesse",
+  "Pliométrie",
+  "Endurance de force",
+  "Puissance",
+  "Hypertrophie",
+  "Échauffement",
+  "Retour au calme",
+];
+const MUSCLE_DEFAULTS = [
+  "Abdominaux",
+  "Transverse",
+  "Obliques",
+  "Dos",
+  "Pectoraux",
+  "Épaules",
+  "Biceps",
+  "Triceps",
+  "Fessiers",
+  "Quadriceps",
+  "Ischio-jambiers",
+  "Mollets",
+  "Lombaires",
+];
+const THEME_DEFAULTS = ["AFL1", "AFL2", "AFL3", "Sécurité", "Méthode", "Technique"];
 
 function parseList(value: string) {
   return value
@@ -107,6 +140,52 @@ function createBlock(type: "markdown" | "bullets" | "media") {
     return createMediaBlock();
   }
   return createMarkdownBlock();
+}
+
+function normalizeLabel(value: string) {
+  return value.trim();
+}
+
+function normalizeKey(value: string) {
+  return value.trim().toLowerCase();
+}
+
+function uniqueLabels(values: string[]) {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const value of values) {
+    const normalized = normalizeLabel(value);
+    if (!normalized) {
+      continue;
+    }
+    const key = normalizeKey(normalized);
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    result.push(normalized);
+  }
+  return result;
+}
+
+function sortLabels(values: string[]) {
+  return [...values].sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
+}
+
+function filterOptions(options: string[], query: string) {
+  const key = normalizeKey(query);
+  if (!key) {
+    return options;
+  }
+  return options.filter((option) => normalizeKey(option).includes(key));
+}
+
+function optionExists(options: string[], value: string) {
+  const key = normalizeKey(value);
+  if (!key) {
+    return false;
+  }
+  return options.some((option) => normalizeKey(option) === key);
 }
 
 type ImageSourceInfo = {
@@ -301,7 +380,6 @@ export function ExerciseLiveDetail({
     tone: "success" | "error";
   } | null>(null);
   const [isSavingOverride, setIsSavingOverride] = useState(false);
-  const [newPillLabel, setNewPillLabel] = useState("");
   const [heroPreviewUrl, setHeroPreviewUrl] = useState<string | null>(null);
   const [mediaUrlMap, setMediaUrlMap] = useState<Record<string, string>>({});
   const [mediaStatus, setMediaStatus] = useState<string | null>(null);
@@ -309,6 +387,30 @@ export function ExerciseLiveDetail({
     sectionId: string;
     blockIndex?: number;
   } | null>(null);
+  const [pillDropdownOpen, setPillDropdownOpen] = useState<
+    null | "type" | "muscles" | "themes"
+  >(null);
+  const [pillSearch, setPillSearch] = useState({
+    type: "",
+    muscles: "",
+    themes: "",
+  });
+  const [pillCustomOptions, setPillCustomOptions] = useState({
+    level: [] as string[],
+    type: [] as string[],
+    muscles: [] as string[],
+    themes: [] as string[],
+  });
+  const [levelAddOpen, setLevelAddOpen] = useState(false);
+  const [levelAddValue, setLevelAddValue] = useState("");
+  const [pillDropdownStyle, setPillDropdownStyle] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    placement: "top" | "bottom";
+  } | null>(null);
+  const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
+  const [highlightBlockKey, setHighlightBlockKey] = useState<string | null>(null);
   const [liveOpen, setLiveOpen] = useState(false);
   const [liveDraft, setLiveDraft] = useState<LiveDraft | null>(null);
   const [submitStatus, setSubmitStatus] = useState<string | null>(null);
@@ -317,8 +419,18 @@ export function ExerciseLiveDetail({
   const touchPointerActiveRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sectionTitleRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const blockFieldRefs = useRef<Record<string, HTMLInputElement | HTMLTextAreaElement | null>>({});
+  const blockContainerRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const dropdownMenuRef = useRef<HTMLDivElement | null>(null);
+  const dropdownTriggerRefs = useRef<
+    Record<"type" | "muscles" | "themes", HTMLButtonElement | null>
+  >({
+    type: null,
+    muscles: null,
+    themes: null,
+  });
 
   const merged = useMemo(
     () => applyExercisePatch(base, patch),
@@ -361,6 +473,130 @@ export function ExerciseLiveDetail({
     (overrideDoc
       ? overrideDoc.doc.sections[overrideDoc.doc.sections.length - 1] ?? null
       : null);
+  const pillState = useMemo(() => {
+    const pills = overrideDoc?.doc.pills ?? [];
+    const levelKeys = new Set(
+      [
+        ...LEVEL_DEFAULTS,
+        "debutant",
+        "débutant",
+        "intermediaire",
+        "intermédiaire",
+        "avance",
+        "avancé",
+      ].map(normalizeKey),
+    );
+    const muscleKeys = new Set((merged.frontmatter.muscles ?? []).map(normalizeKey));
+    const typeKeys = new Set((merged.frontmatter.tags ?? []).map(normalizeKey));
+    const selections = {
+      level: "",
+      type: [] as string[],
+      muscles: [] as string[],
+      themes: [] as string[],
+    };
+
+    pills.forEach((pill) => {
+      const label = normalizeLabel(pill.label);
+      if (!label) {
+        return;
+      }
+      const labelKey = normalizeKey(label);
+      const kindKey = normalizeKey(pill.kind ?? "");
+      let bucket: "level" | "type" | "muscles" | "themes" = "type";
+
+      if (["niveau", "level", "difficulty"].includes(kindKey)) {
+        bucket = "level";
+      } else if (
+        ["muscle", "muscles", "groupe-musculaire", "groupe musculaire"].includes(kindKey)
+      ) {
+        bucket = "muscles";
+      } else if (["theme", "themes", "bac", "theme-bac"].includes(kindKey)) {
+        bucket = "themes";
+      } else if (levelKeys.has(labelKey)) {
+        bucket = "level";
+      } else if (muscleKeys.has(labelKey)) {
+        bucket = "muscles";
+      } else if (labelKey.includes("bac")) {
+        bucket = "themes";
+      } else if (typeKeys.has(labelKey)) {
+        bucket = "type";
+      }
+
+      if (bucket === "level") {
+        if (!selections.level) {
+          selections.level = label;
+        } else {
+          selections.type.push(label);
+        }
+        return;
+      }
+      selections[bucket].push(label);
+    });
+
+    const nextSelections = {
+      level: selections.level,
+      type: uniqueLabels(selections.type),
+      muscles: uniqueLabels(selections.muscles),
+      themes: uniqueLabels(selections.themes),
+    };
+    const options = {
+      level: sortLabels(
+        uniqueLabels([
+          ...LEVEL_DEFAULTS,
+          nextSelections.level,
+          ...pillCustomOptions.level,
+        ]),
+      ),
+      type: sortLabels(
+        uniqueLabels([
+          ...TYPE_DEFAULTS,
+          ...(merged.frontmatter.tags ?? []),
+          ...nextSelections.type,
+          ...pillCustomOptions.type,
+        ]),
+      ),
+      muscles: sortLabels(
+        uniqueLabels([
+          ...MUSCLE_DEFAULTS,
+          ...(merged.frontmatter.muscles ?? []),
+          ...nextSelections.muscles,
+          ...pillCustomOptions.muscles,
+        ]),
+      ),
+      themes: sortLabels(
+        uniqueLabels([
+          ...THEME_DEFAULTS,
+          ...nextSelections.themes,
+          ...pillCustomOptions.themes,
+        ]),
+      ),
+    };
+
+    const normalizeSelection = (value: string, optionList: string[]) => {
+      const match = optionList.find(
+        (option) => normalizeKey(option) === normalizeKey(value),
+      );
+      return match ?? value;
+    };
+
+    const normalizedSelections = {
+      level: normalizeSelection(nextSelections.level, options.level),
+      type: nextSelections.type.map((value) => normalizeSelection(value, options.type)),
+      muscles: nextSelections.muscles.map((value) =>
+        normalizeSelection(value, options.muscles),
+      ),
+      themes: nextSelections.themes.map((value) =>
+        normalizeSelection(value, options.themes),
+      ),
+    };
+
+    return { selections: normalizedSelections, options };
+  }, [
+    overrideDoc,
+    merged.frontmatter.muscles,
+    merged.frontmatter.tags,
+    pillCustomOptions,
+  ]);
 
   useEffect(() => {
     if (!supabase) {
@@ -639,8 +875,56 @@ export function ExerciseLiveDetail({
       if (toastTimerRef.current) {
         clearTimeout(toastTimerRef.current);
       }
+      if (highlightTimerRef.current) {
+        clearTimeout(highlightTimerRef.current);
+      }
     };
   }, []);
+
+  useEffect(() => {
+    if (!pillDropdownOpen) {
+      return;
+    }
+
+    updateDropdownPosition(pillDropdownOpen);
+
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target as Node | null;
+      const menu = dropdownMenuRef.current;
+      const trigger = dropdownTriggerRefs.current[pillDropdownOpen];
+      if (menu && target && menu.contains(target)) {
+        return;
+      }
+      if (trigger && target && trigger.contains(target)) {
+        return;
+      }
+      setPillDropdownOpen(null);
+      setPillDropdownStyle(null);
+    };
+
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setPillDropdownOpen(null);
+        setPillDropdownStyle(null);
+      }
+    };
+
+    const handleReposition = () => {
+      updateDropdownPosition(pillDropdownOpen);
+    };
+
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKey);
+    window.addEventListener("resize", handleReposition);
+    window.addEventListener("scroll", handleReposition, true);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
+      window.removeEventListener("resize", handleReposition);
+      window.removeEventListener("scroll", handleReposition, true);
+    };
+  }, [pillDropdownOpen]);
 
   const showOverrideToast = (message: string, tone: "success" | "error") => {
     setOverrideToast({ message, tone });
@@ -650,6 +934,45 @@ export function ExerciseLiveDetail({
     toastTimerRef.current = setTimeout(() => {
       setOverrideToast(null);
     }, 2400);
+  };
+
+  const updateDropdownPosition = (category: "type" | "muscles" | "themes") => {
+    const trigger = dropdownTriggerRefs.current[category];
+    if (!trigger) {
+      return;
+    }
+    const rect = trigger.getBoundingClientRect();
+    const padding = 8;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    let placement: "top" | "bottom" = "bottom";
+    let top = rect.bottom + window.scrollY + 6;
+    if (spaceBelow < DROPDOWN_MAX_HEIGHT && spaceAbove > DROPDOWN_MAX_HEIGHT) {
+      placement = "top";
+      top = rect.top + window.scrollY - DROPDOWN_MAX_HEIGHT - 6;
+    }
+    setPillDropdownStyle({
+      top: Math.max(padding + window.scrollY, top),
+      left: rect.left + window.scrollX,
+      width: rect.width,
+      placement,
+    });
+  };
+
+  const highlightBlock = (blockKey: string) => {
+    setHighlightBlockKey(blockKey);
+    if (highlightTimerRef.current) {
+      clearTimeout(highlightTimerRef.current);
+    }
+    highlightTimerRef.current = setTimeout(() => {
+      setHighlightBlockKey(null);
+    }, 2000);
+    setTimeout(() => {
+      blockContainerRefs.current[blockKey]?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }, 80);
   };
 
   const openPinModal = () => {
@@ -699,7 +1022,6 @@ export function ExerciseLiveDetail({
     const snapshot = JSON.stringify(doc);
     setOverrideDoc(doc);
     setDirtySnapshot(snapshot);
-    setNewPillLabel("");
     setHeroPreviewUrl(doc.doc.heroImage?.url?.trim() ? doc.doc.heroImage.url.trim() : null);
     setMediaStatus(null);
     setActiveSectionId(doc.doc.sections[0]?.id ?? null);
@@ -707,6 +1029,10 @@ export function ExerciseLiveDetail({
     setSectionMenuOpenId(null);
     setBlockMenuOpenKey(null);
     setOverrideToast(null);
+    setPillDropdownOpen(null);
+    setPillSearch({ type: "", muscles: "", themes: "" });
+    setLevelAddOpen(false);
+    setLevelAddValue("");
     setOverrideOpen(true);
   };
 
@@ -846,6 +1172,8 @@ export function ExerciseLiveDetail({
     setSubmitStatus(null);
     setIsSavingOverride(false);
     showOverrideToast("Correction enregistrée.", "success");
+    setConfirmCloseOpen(false);
+    setOverrideOpen(false);
   };
 
   const handleSaveLive = async () => {
@@ -1017,6 +1345,7 @@ export function ExerciseLiveDetail({
         mediaUrlCache.set(data.mediaId, data.publicUrl);
         setMediaUrlMap((prev) => ({ ...prev, [data.mediaId!]: data.publicUrl! }));
       }
+      let highlightKey: string | null = null;
       updateSection(uploadTarget.sectionId, (section) => {
         const blocks = [...section.blocks];
         const nextBlock: ExerciseLiveMediaBlock = {
@@ -1027,11 +1356,17 @@ export function ExerciseLiveDetail({
         };
         if (uploadTarget.blockIndex !== undefined) {
           blocks[uploadTarget.blockIndex] = nextBlock;
+          highlightKey = `${section.id}-${uploadTarget.blockIndex}`;
         } else {
+          const nextIndex = blocks.length;
           blocks.push(nextBlock);
+          highlightKey = `${section.id}-${nextIndex}`;
         }
         return { ...section, blocks };
       });
+      if (highlightKey) {
+        highlightBlock(highlightKey);
+      }
       setMediaStatus("Photo ajoutée.");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Échec de l'upload.";
@@ -1039,41 +1374,6 @@ export function ExerciseLiveDetail({
     } finally {
       setUploadTarget(null);
     }
-  };
-
-  const handleAddPill = () => {
-    const label = newPillLabel.trim();
-    if (!label) {
-      return;
-    }
-    updateOverrideDoc((doc) => ({
-      ...doc,
-      doc: {
-        ...doc.doc,
-        pills: [...(doc.doc.pills ?? []), { label }],
-      },
-    }));
-    setNewPillLabel("");
-  };
-
-  const handleRemovePill = (index: number) => {
-    updateOverrideDoc((doc) => ({
-      ...doc,
-      doc: {
-        ...doc.doc,
-        pills: (doc.doc.pills ?? []).filter((_, idx) => idx !== index),
-      },
-    }));
-  };
-
-  const handleMovePill = (index: number, direction: number) => {
-    updateOverrideDoc((doc) => ({
-      ...doc,
-      doc: {
-        ...doc.doc,
-        pills: moveItem(doc.doc.pills ?? [], index, index + direction),
-      },
-    }));
   };
 
   const handleHeroUrlChange = (value: string) => {
@@ -1158,10 +1458,17 @@ export function ExerciseLiveDetail({
   };
 
   const handleAddBlock = (sectionId: string, type: "markdown" | "bullets" | "media") => {
-    updateSection(sectionId, (section) => ({
-      ...section,
-      blocks: [...section.blocks, createBlock(type)],
-    }));
+    let nextIndex = -1;
+    updateSection(sectionId, (section) => {
+      nextIndex = section.blocks.length;
+      return {
+        ...section,
+        blocks: [...section.blocks, createBlock(type)],
+      };
+    });
+    if (nextIndex >= 0) {
+      highlightBlock(`${sectionId}-${nextIndex}`);
+    }
   };
 
   const handleMoveBlock = (sectionId: string, blockIndex: number, direction: number) => {
@@ -1220,12 +1527,34 @@ export function ExerciseLiveDetail({
   };
 
   const handleCloseOverride = () => {
-    if (
-      isDirty &&
-      !window.confirm("Des modifications ne sont pas enregistrées. Fermer ?")
-    ) {
+    if (isDirty) {
+      setConfirmCloseOpen(true);
       return;
     }
+    setOverrideOpen(false);
+  };
+
+  const handleDiscardOverride = () => {
+    const doc = buildOverrideDoc(base, patch);
+    const snapshot = JSON.stringify(doc);
+    setOverrideDoc(doc);
+    setDirtySnapshot(snapshot);
+    setActiveSectionId(doc.doc.sections[0]?.id ?? null);
+    setAddMenuOpen(false);
+    setSectionMenuOpenId(null);
+    setBlockMenuOpenKey(null);
+    setMediaStatus(null);
+    setOverrideToast(null);
+    setLevelAddOpen(false);
+    setLevelAddValue("");
+    setPillDropdownOpen(null);
+    setPillSearch({ type: "", muscles: "", themes: "" });
+    setPillDropdownStyle(null);
+    setConfirmCloseOpen(false);
+  };
+
+  const handleCloseWithoutSave = () => {
+    setConfirmCloseOpen(false);
     setOverrideOpen(false);
   };
 
@@ -1246,6 +1575,126 @@ export function ExerciseLiveDetail({
       }
     }
   };
+
+  const updatePillSelections = (next: {
+    level: string;
+    type: string[];
+    muscles: string[];
+    themes: string[];
+  }) => {
+    updateOverrideDoc((doc) => {
+      const existing = doc.doc.pills ?? [];
+      const kindMap = new Map<string, string | undefined>(
+        existing.map((pill) => [normalizeKey(pill.label), pill.kind]),
+      );
+      const buildPills = (labels: string[], fallbackKind: string) =>
+        labels.map((label) => {
+          const cleanLabel = normalizeLabel(label);
+          const key = normalizeKey(cleanLabel);
+          const kind = kindMap.get(key) ?? fallbackKind;
+          return kind ? { label: cleanLabel, kind } : { label: cleanLabel };
+        });
+
+      const nextPills = [
+        ...(next.level ? buildPills([next.level], "level") : []),
+        ...buildPills(uniqueLabels(next.type), "type"),
+        ...buildPills(uniqueLabels(next.muscles), "muscle"),
+        ...buildPills(uniqueLabels(next.themes), "theme"),
+      ];
+
+      return {
+        ...doc,
+        doc: {
+          ...doc.doc,
+          pills: nextPills,
+        },
+      };
+    });
+  };
+
+  const setLevelSelection = (value: string) => {
+    const clean = normalizeLabel(value);
+    updatePillSelections({
+      ...pillState.selections,
+      level: clean,
+    });
+  };
+
+  const addCustomLevel = () => {
+    const term = normalizeLabel(levelAddValue);
+    if (!term) {
+      return;
+    }
+    setPillCustomOptions((prev) => ({
+      ...prev,
+      level: uniqueLabels([...prev.level, term]),
+    }));
+    setLevelSelection(term);
+    setLevelAddValue("");
+    setLevelAddOpen(false);
+  };
+
+  const toggleMultiSelection = (
+    category: "type" | "muscles" | "themes",
+    value: string,
+  ) => {
+    const clean = normalizeLabel(value);
+    if (!clean) {
+      return;
+    }
+    const current = pillState.selections[category];
+    const exists = current.some(
+      (item) => normalizeKey(item) === normalizeKey(clean),
+    );
+    const nextValues = exists
+      ? current.filter((item) => normalizeKey(item) !== normalizeKey(clean))
+      : [...current, clean];
+    updatePillSelections({
+      ...pillState.selections,
+      [category]: nextValues,
+    });
+  };
+
+  const addCustomOption = (category: "type" | "muscles" | "themes") => {
+    const term = normalizeLabel(pillSearch[category]);
+    if (!term) {
+      return;
+    }
+    setPillCustomOptions((prev) => ({
+      ...prev,
+      [category]: uniqueLabels([...prev[category], term]),
+    }));
+    setPillSearch((prev) => ({ ...prev, [category]: "" }));
+    const current = pillState.selections[category];
+    if (!current.some((item) => normalizeKey(item) === normalizeKey(term))) {
+      updatePillSelections({
+        ...pillState.selections,
+        [category]: [...current, term],
+      });
+    }
+  };
+
+  const toggleDropdown = (category: "type" | "muscles" | "themes") => {
+    setPillDropdownOpen((open) => {
+      const next = open === category ? null : category;
+      if (next) {
+        requestAnimationFrame(() => updateDropdownPosition(next));
+      } else {
+        setPillDropdownStyle(null);
+      }
+      return next;
+    });
+  };
+
+  const filteredTypeOptions = filterOptions(pillState.options.type, pillSearch.type);
+  const filteredMuscleOptions = filterOptions(
+    pillState.options.muscles,
+    pillSearch.muscles,
+  );
+  const filteredThemeOptions = filterOptions(
+    pillState.options.themes,
+    pillSearch.themes,
+  );
 
   return (
     <>
@@ -1469,6 +1918,8 @@ export function ExerciseLiveDetail({
                                 src={resolvedUrl}
                                 alt={block.caption ?? section.title}
                                 className="w-full h-auto rounded-2xl ring-1 ring-white/10"
+                                loading="lazy"
+                                decoding="async"
                               />
                             </>
                           );
@@ -1561,8 +2012,9 @@ export function ExerciseLiveDetail({
       ) : null}
 
       {overrideOpen ? (
-        <div className="modal-overlay" role="dialog" aria-modal="true">
-          <div className="modal-card flex max-h-[85vh] flex-col">
+        <>
+          <div className="modal-overlay" role="dialog" aria-modal="true">
+            <div className="modal-card flex max-h-[85vh] flex-col">
             <div className="flex flex-col gap-2 border-b border-white/10 pb-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex flex-col gap-1">
@@ -1573,89 +2025,398 @@ export function ExerciseLiveDetail({
                     </span>
                   ) : null}
                 </div>
-                {overrideToast ? (
-                  <span className="text-xs text-[color:var(--muted)]">
-                    {overrideToast.tone === "success" ? "OK: " : "Erreur: "}
-                    {overrideToast.message}
-                  </span>
-                ) : null}
+                <div className="flex flex-wrap items-center gap-2">
+                  {overrideToast ? (
+                    <span className="text-xs text-[color:var(--muted)]">
+                      {overrideToast.tone === "success" ? "OK: " : "Erreur: "}
+                      {overrideToast.message}
+                    </span>
+                  ) : null}
+                  <button
+                    type="button"
+                    className="chip"
+                    onClick={handleCloseOverride}
+                  >
+                    ✕ Fermer
+                  </button>
+                </div>
               </div>
             </div>
             <div className="flex-1 overflow-y-auto pt-4">
               {overrideDoc ? (
                 <div className="stack-md">
-                <div className="stack-sm">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">
-                      Pills
-                    </h3>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {(overrideDoc.doc.pills ?? []).map((pill, index) => (
-                      <span
-                        key={`${pill.label}-${index}`}
-                        className="pill inline-flex items-center gap-2"
+                  <div className="stack-md">
+                    <div className="stack-sm">
+                      <label className="field-label">Niveau</label>
+                      <select
+                        className="field-input"
+                        value={pillState.selections.level}
+                        onChange={(event) => setLevelSelection(event.target.value)}
                       >
-                        {pill.label}
-                        <button
-                          type="button"
-                          className="text-xs text-[color:var(--muted)] hover:text-[color:var(--ink)]"
-                          onClick={() => handleRemovePill(index)}
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                    {(overrideDoc.doc.pills ?? []).length === 0 ? (
-                      <span className="text-xs text-[color:var(--muted)]">
-                        Aucune pill.
-                      </span>
-                    ) : null}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <input
-                      className="field-input"
-                      placeholder="Ajouter une pill"
-                      value={newPillLabel}
-                      onChange={(event) => setNewPillLabel(event.target.value)}
-                    />
-                    <button
-                      type="button"
-                      className="chip"
-                      onClick={handleAddPill}
-                    >
-                      Ajouter
-                    </button>
-                  </div>
-                  {(overrideDoc.doc.pills ?? []).length > 1 ? (
-                    <div className="flex flex-wrap gap-2 text-xs text-[color:var(--muted)]">
-                      {(overrideDoc.doc.pills ?? []).map((pill, index) => (
-                        <div
-                          key={`pill-move-${pill.label}-${index}`}
-                          className="inline-flex items-center gap-2"
-                        >
-                          <span>{pill.label}</span>
+                        <option value="">Choisir un niveau…</option>
+                        {pillState.options.level.map((option) => (
+                          <option key={`level-${option}`} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                      {levelAddOpen ? (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <input
+                            className="field-input"
+                            placeholder="Nouveau niveau…"
+                            value={levelAddValue}
+                            onChange={(event) => setLevelAddValue(event.target.value)}
+                          />
                           <button
                             type="button"
                             className="chip"
-                            disabled={index === 0}
-                            onClick={() => handleMovePill(index, -1)}
+                            onClick={addCustomLevel}
                           >
-                            Monter
-                          </button>
-                          <button
-                            type="button"
-                            className="chip"
-                            disabled={index === (overrideDoc.doc.pills ?? []).length - 1}
-                            onClick={() => handleMovePill(index, 1)}
-                          >
-                            Descendre
+                            Ajouter
                           </button>
                         </div>
-                      ))}
+                      ) : (
+                        <button
+                          type="button"
+                          className="chip chip-ghost w-fit"
+                          onClick={() => setLevelAddOpen(true)}
+                        >
+                          Ajouter un niveau…
+                        </button>
+                      )}
                     </div>
-                  ) : null}
-                </div>
+
+                    <div className="stack-sm">
+                      <label className="field-label">Type</label>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          className="field-input flex items-center justify-between"
+                          ref={(node) => {
+                            dropdownTriggerRefs.current.type = node;
+                          }}
+                          onClick={() => toggleDropdown("type")}
+                        >
+                          <span>
+                            {pillState.selections.type.length > 0
+                              ? `${pillState.selections.type.length} sélectionné${
+                                  pillState.selections.type.length > 1 ? "s" : ""
+                                }`
+                              : "Sélectionner…"}
+                          </span>
+                          <span aria-hidden="true">▾</span>
+                        </button>
+                      </div>
+                      {pillDropdownOpen === "type" && pillDropdownStyle
+                        ? createPortal(
+                            <div
+                              ref={dropdownMenuRef}
+                              className="z-[80]"
+                              style={{
+                                position: "absolute",
+                                top: pillDropdownStyle.top,
+                                left: pillDropdownStyle.left,
+                                width: pillDropdownStyle.width,
+                              }}
+                            >
+                              <div className="rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-xl">
+                                <div className="sticky top-0 z-10 bg-[color:var(--bg-2)] pb-2">
+                                  <input
+                                    className="field-input"
+                                    placeholder="Rechercher…"
+                                    value={pillSearch.type}
+                                    onChange={(event) =>
+                                      setPillSearch((prev) => ({
+                                        ...prev,
+                                        type: event.target.value,
+                                      }))
+                                    }
+                                  />
+                                </div>
+                                <div
+                                  className="space-y-1 overflow-y-auto"
+                                  style={{ maxHeight: DROPDOWN_MAX_HEIGHT }}
+                                >
+                                  {filteredTypeOptions.map((option) => {
+                                    const checked = pillState.selections.type.some(
+                                      (value) => normalizeKey(value) === normalizeKey(option),
+                                    );
+                                    return (
+                                      <label
+                                        key={`type-option-${option}`}
+                                        className="flex min-h-[36px] items-center gap-3 rounded-xl px-3 py-2 text-sm hover:bg-white/10"
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={checked}
+                                          onChange={() => toggleMultiSelection("type", option)}
+                                        />
+                                        <span>{option}</span>
+                                      </label>
+                                    );
+                                  })}
+                                  {normalizeLabel(pillSearch.type) &&
+                                  !optionExists(pillState.options.type, pillSearch.type) ? (
+                                    <button
+                                      type="button"
+                                      className="chip w-full justify-start"
+                                      onClick={() => addCustomOption("type")}
+                                    >
+                                      {`Ajouter '${normalizeLabel(pillSearch.type)}'`}
+                                    </button>
+                                  ) : null}
+                                </div>
+                              </div>
+                            </div>,
+                            document.body,
+                          )
+                        : null}
+                      <div className="flex flex-wrap gap-2">
+                        {pillState.selections.type.length > 0 ? (
+                          pillState.selections.type.map((value) => (
+                            <span
+                              key={`type-pill-${value}`}
+                              className="pill inline-flex items-center gap-2"
+                            >
+                              {value}
+                              <button
+                                type="button"
+                                className="text-xs text-[color:var(--muted)] hover:text-[color:var(--ink)]"
+                                onClick={() => toggleMultiSelection("type", value)}
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-xs text-[color:var(--muted)]">
+                            Aucun type sélectionné.
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="stack-sm">
+                      <label className="field-label">Groupes musculaires</label>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          className="field-input flex items-center justify-between"
+                          ref={(node) => {
+                            dropdownTriggerRefs.current.muscles = node;
+                          }}
+                          onClick={() => toggleDropdown("muscles")}
+                        >
+                          <span>
+                            {pillState.selections.muscles.length > 0
+                              ? `${pillState.selections.muscles.length} sélectionné${
+                                  pillState.selections.muscles.length > 1 ? "s" : ""
+                                }`
+                              : "Sélectionner…"}
+                          </span>
+                          <span aria-hidden="true">▾</span>
+                        </button>
+                      </div>
+                      {pillDropdownOpen === "muscles" && pillDropdownStyle
+                        ? createPortal(
+                            <div
+                              ref={dropdownMenuRef}
+                              className="z-[80]"
+                              style={{
+                                position: "absolute",
+                                top: pillDropdownStyle.top,
+                                left: pillDropdownStyle.left,
+                                width: pillDropdownStyle.width,
+                              }}
+                            >
+                              <div className="rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-xl">
+                                <div className="sticky top-0 z-10 bg-[color:var(--bg-2)] pb-2">
+                                  <input
+                                    className="field-input"
+                                    placeholder="Rechercher…"
+                                    value={pillSearch.muscles}
+                                    onChange={(event) =>
+                                      setPillSearch((prev) => ({
+                                        ...prev,
+                                        muscles: event.target.value,
+                                      }))
+                                    }
+                                  />
+                                </div>
+                                <div
+                                  className="space-y-1 overflow-y-auto"
+                                  style={{ maxHeight: DROPDOWN_MAX_HEIGHT }}
+                                >
+                                  {filteredMuscleOptions.map((option) => {
+                                    const checked = pillState.selections.muscles.some(
+                                      (value) => normalizeKey(value) === normalizeKey(option),
+                                    );
+                                    return (
+                                      <label
+                                        key={`muscle-option-${option}`}
+                                        className="flex min-h-[36px] items-center gap-3 rounded-xl px-3 py-2 text-sm hover:bg-white/10"
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={checked}
+                                          onChange={() => toggleMultiSelection("muscles", option)}
+                                        />
+                                        <span>{option}</span>
+                                      </label>
+                                    );
+                                  })}
+                                  {normalizeLabel(pillSearch.muscles) &&
+                                  !optionExists(pillState.options.muscles, pillSearch.muscles) ? (
+                                    <button
+                                      type="button"
+                                      className="chip w-full justify-start"
+                                      onClick={() => addCustomOption("muscles")}
+                                    >
+                                      {`Ajouter '${normalizeLabel(pillSearch.muscles)}'`}
+                                    </button>
+                                  ) : null}
+                                </div>
+                              </div>
+                            </div>,
+                            document.body,
+                          )
+                        : null}
+                      <div className="flex flex-wrap gap-2">
+                        {pillState.selections.muscles.length > 0 ? (
+                          pillState.selections.muscles.map((value) => (
+                            <span
+                              key={`muscle-pill-${value}`}
+                              className="pill inline-flex items-center gap-2"
+                            >
+                              {value}
+                              <button
+                                type="button"
+                                className="text-xs text-[color:var(--muted)] hover:text-[color:var(--ink)]"
+                                onClick={() => toggleMultiSelection("muscles", value)}
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-xs text-[color:var(--muted)]">
+                            Aucun groupe sélectionné.
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="stack-sm">
+                      <label className="field-label">Thèmes Bac</label>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          className="field-input flex items-center justify-between"
+                          ref={(node) => {
+                            dropdownTriggerRefs.current.themes = node;
+                          }}
+                          onClick={() => toggleDropdown("themes")}
+                        >
+                          <span>
+                            {pillState.selections.themes.length > 0
+                              ? `${pillState.selections.themes.length} sélectionné${
+                                  pillState.selections.themes.length > 1 ? "s" : ""
+                                }`
+                              : "Sélectionner…"}
+                          </span>
+                          <span aria-hidden="true">▾</span>
+                        </button>
+                      </div>
+                      {pillDropdownOpen === "themes" && pillDropdownStyle
+                        ? createPortal(
+                            <div
+                              ref={dropdownMenuRef}
+                              className="z-[80]"
+                              style={{
+                                position: "absolute",
+                                top: pillDropdownStyle.top,
+                                left: pillDropdownStyle.left,
+                                width: pillDropdownStyle.width,
+                              }}
+                            >
+                              <div className="rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-xl">
+                                <div className="sticky top-0 z-10 bg-[color:var(--bg-2)] pb-2">
+                                  <input
+                                    className="field-input"
+                                    placeholder="Rechercher…"
+                                    value={pillSearch.themes}
+                                    onChange={(event) =>
+                                      setPillSearch((prev) => ({
+                                        ...prev,
+                                        themes: event.target.value,
+                                      }))
+                                    }
+                                  />
+                                </div>
+                                <div
+                                  className="space-y-1 overflow-y-auto"
+                                  style={{ maxHeight: DROPDOWN_MAX_HEIGHT }}
+                                >
+                                  {filteredThemeOptions.map((option) => {
+                                    const checked = pillState.selections.themes.some(
+                                      (value) => normalizeKey(value) === normalizeKey(option),
+                                    );
+                                    return (
+                                      <label
+                                        key={`theme-option-${option}`}
+                                        className="flex min-h-[36px] items-center gap-3 rounded-xl px-3 py-2 text-sm hover:bg-white/10"
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={checked}
+                                          onChange={() => toggleMultiSelection("themes", option)}
+                                        />
+                                        <span>{option}</span>
+                                      </label>
+                                    );
+                                  })}
+                                  {normalizeLabel(pillSearch.themes) &&
+                                  !optionExists(pillState.options.themes, pillSearch.themes) ? (
+                                    <button
+                                      type="button"
+                                      className="chip w-full justify-start"
+                                      onClick={() => addCustomOption("themes")}
+                                    >
+                                      {`Ajouter '${normalizeLabel(pillSearch.themes)}'`}
+                                    </button>
+                                  ) : null}
+                                </div>
+                              </div>
+                            </div>,
+                            document.body,
+                          )
+                        : null}
+                      <div className="flex flex-wrap gap-2">
+                        {pillState.selections.themes.length > 0 ? (
+                          pillState.selections.themes.map((value) => (
+                            <span
+                              key={`theme-pill-${value}`}
+                              className="pill inline-flex items-center gap-2"
+                            >
+                              {value}
+                              <button
+                                type="button"
+                                className="text-xs text-[color:var(--muted)] hover:text-[color:var(--ink)]"
+                                onClick={() => toggleMultiSelection("themes", value)}
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-xs text-[color:var(--muted)]">
+                            Aucun thème sélectionné.
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
 
                 <div className="stack-sm">
                   <div className="flex items-center justify-between gap-2">
@@ -1721,6 +2482,7 @@ export function ExerciseLiveDetail({
                       key={section.id}
                       className="stack-md"
                       onFocusCapture={() => setActiveSectionId(section.id)}
+                      onMouseDown={() => setActiveSectionId(section.id)}
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <input
@@ -1741,11 +2503,12 @@ export function ExerciseLiveDetail({
                           <button
                             type="button"
                             className="chip"
-                            onClick={() =>
+                            onClick={() => {
+                              setActiveSectionId(section.id);
                               setSectionMenuOpenId((open) =>
                                 open === section.id ? null : section.id,
-                              )
-                            }
+                              );
+                            }}
                           >
                             ...
                           </button>
@@ -1811,7 +2574,7 @@ export function ExerciseLiveDetail({
                             block.type === "markdown"
                               ? "Texte"
                               : block.type === "bullets"
-                                ? "Liste"
+                                ? "Liste à puces"
                                 : block.mediaType === "image"
                                   ? "Photo"
                                   : block.mediaType === "video"
@@ -1825,7 +2588,14 @@ export function ExerciseLiveDetail({
                           return (
                             <div
                               key={blockKey}
-                              className="stack-sm rounded-2xl border border-white/10 p-3"
+                              ref={(node) => {
+                                blockContainerRefs.current[blockKey] = node;
+                              }}
+                              className={`stack-sm rounded-2xl border border-white/10 p-3 transition ${
+                                highlightBlockKey === blockKey
+                                  ? "ring-2 ring-white/40 bg-white/5"
+                                  : ""
+                              }`}
                             >
                               <div className="flex flex-wrap items-center justify-between gap-2">
                                 <span className="text-[10px] uppercase tracking-[0.18em] text-[color:var(--muted)]">
@@ -1891,6 +2661,11 @@ export function ExerciseLiveDetail({
                                   ) : null}
                                 </div>
                               </div>
+                              {block.type === "bullets" ? (
+                                <p className="text-xs text-[color:var(--muted)]">
+                                  Une puce = une ligne courte.
+                                </p>
+                              ) : null}
                       
                               {block.type === "markdown" ? (
                                 <textarea
@@ -1978,7 +2753,7 @@ export function ExerciseLiveDetail({
                                       }))
                                     }
                                   >
-                                    Ajouter un item
+                                    Ajouter une puce
                                   </button>
                                 </div>
                               ) : null}
@@ -2052,13 +2827,15 @@ export function ExerciseLiveDetail({
                                             <img
                                               src={previewUrl}
                                               alt={block.caption ?? section.title}
-                                              className="w-full h-auto rounded-2xl ring-1 ring-white/10"
+                                              className="w-full max-w-xs h-auto rounded-2xl ring-1 ring-white/10"
+                                              loading="lazy"
+                                              decoding="async"
                                             />
                                           </>
                                         );
                                       })()}
                                       <label className="field-label">
-                                        Légende (optionnel)
+                                        Légende
                                       </label>
                                       <input
                                         ref={(node) => {
@@ -2218,9 +2995,6 @@ export function ExerciseLiveDetail({
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <button type="button" className="chip" onClick={handleCloseOverride}>
-                  Annuler
-                </button>
                 <button
                   type="button"
                   className="primary-button primary-button--wide"
@@ -2228,6 +3002,17 @@ export function ExerciseLiveDetail({
                   disabled={!isDirty || isSavingOverride}
                 >
                   Enregistrer
+                </button>
+                <button type="button" className="chip" onClick={handleCloseOverride}>
+                  Fermer
+                </button>
+                <button
+                  type="button"
+                  className="chip chip-ghost"
+                  onClick={handleDiscardOverride}
+                  disabled={!isDirty}
+                >
+                  Annuler modifications
                 </button>
               </div>
             </div>
@@ -2238,8 +3023,32 @@ export function ExerciseLiveDetail({
               <p className="text-xs text-[color:var(--muted)]">{submitStatus}</p>
             ) : null}
           </div>
+            </div>
           </div>
-        </div>
+          {confirmCloseOpen ? (
+            <div className="modal-overlay" role="dialog" aria-modal="true">
+              <div className="modal-card">
+                <h2>Modifications non enregistrées</h2>
+                <div className="modal-actions">
+                  <button
+                    type="button"
+                    className="primary-button primary-button--wide"
+                    onClick={() => setConfirmCloseOpen(false)}
+                  >
+                    Revenir
+                  </button>
+                  <button
+                    type="button"
+                    className="chip"
+                    onClick={handleCloseWithoutSave}
+                  >
+                    Fermer sans enregistrer
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </>
       ) : null}
 
       {liveOpen && liveDraft ? (
