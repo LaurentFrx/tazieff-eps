@@ -4,6 +4,7 @@ import { getSupabaseServiceClient } from "@/lib/supabase/server";
 const BUCKET = "exercise-media";
 const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const SIGNED_URL_TTL_SECONDS = 1800;
 
 function errorJson(status: number, code: string, message: string) {
   return NextResponse.json({ ok: false, code, message }, { status });
@@ -187,11 +188,43 @@ export async function POST(request: Request) {
       publicUrl = publicData.publicUrl || undefined;
     }
 
+    let bucketIsPublic: boolean | undefined;
+    if (data.bucket && "getBucket" in supabase.storage) {
+      const storageApi = supabase.storage as typeof supabase.storage & {
+        getBucket?: (bucket: string) => Promise<{
+          data?: { public?: boolean } | null;
+          error?: unknown;
+        }>;
+      };
+      if (storageApi.getBucket) {
+        const { data: bucketData, error: bucketError } = await storageApi.getBucket(
+          data.bucket,
+        );
+        if (!bucketError && bucketData) {
+          bucketIsPublic = !!bucketData.public;
+        }
+      }
+    }
+
+    let url = "";
+    if (bucketIsPublic && publicUrl) {
+      url = publicUrl;
+    } else if (data.bucket && data.path) {
+      const { data: signedData } = await supabase
+        .storage
+        .from(data.bucket)
+        .createSignedUrl(data.path, SIGNED_URL_TTL_SECONDS);
+      url = signedData?.signedUrl ?? publicUrl ?? "";
+    } else if (publicUrl) {
+      url = publicUrl;
+    }
+
     return NextResponse.json({
+      ok: true,
       mediaId: data.id,
       bucket: data.bucket,
       path: data.path,
-      publicUrl,
+      url,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "unhandled_error";

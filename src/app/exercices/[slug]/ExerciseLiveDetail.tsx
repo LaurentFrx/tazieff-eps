@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -56,6 +56,9 @@ const IMAGE_QUALITY = 0.82;
 const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
 const mediaUrlCache = new Map<string, string>();
 const DROPDOWN_MAX_HEIGHT = 288;
+const DROPDOWN_MENU_LAYER_CLASS = "z-[80]";
+const DROPDOWN_MENU_PANEL_CLASS =
+  "rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-xl";
 const LEVEL_DEFAULTS = ["Débutant", "Intermédiaire", "Avancé"];
 const TYPE_DEFAULTS = [
   "Fondamentaux",
@@ -172,6 +175,66 @@ function sortLabels(values: string[]) {
   return [...values].sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
 }
 
+type MediaInfo = {
+  mime?: string | null;
+  size?: number | null;
+  width?: number | null;
+  height?: number | null;
+};
+
+function appendCacheBust(url: string, token: number) {
+  if (!token) {
+    return url;
+  }
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}retry=${token}`;
+}
+
+function formatBytes(bytes?: number | null) {
+  if (typeof bytes !== "number" || !Number.isFinite(bytes) || bytes <= 0) {
+    return null;
+  }
+  const kb = bytes / 1024;
+  if (kb < 1024) {
+    return `${Math.round(kb)} Ko`;
+  }
+  const mb = kb / 1024;
+  const formatted = mb
+    .toFixed(mb >= 10 ? 0 : 1)
+    .replace(".", ",");
+  return `${formatted} Mo`;
+}
+
+function formatMediaInfo(info?: MediaInfo | null) {
+  if (!info) {
+    return null;
+  }
+  const parts: string[] = [];
+  if (info.mime) {
+    const format = info.mime.split("/").pop()?.trim();
+    if (format) {
+      parts.push(format.toUpperCase());
+    }
+  }
+  const width = typeof info.width === "number" ? info.width : null;
+  const height = typeof info.height === "number" ? info.height : null;
+  if (width && height) {
+    parts.push(`${width}×${height}`);
+  }
+  const size = formatBytes(info.size ?? null);
+  if (size) {
+    parts.push(size);
+  }
+  return parts.length > 0 ? parts.join(" · ") : null;
+}
+
+function formatResolveError(status?: number | null) {
+  if (typeof status === "number" && Number.isFinite(status)) {
+    return `Erreur: ${status}`;
+  }
+  return "Erreur: URL non résolue";
+}
+
 function filterOptions(options: string[], query: string) {
   const key = normalizeKey(query);
   if (!key) {
@@ -258,6 +321,106 @@ async function compressImageToWebp(sourceInfo: ImageSourceInfo) {
   });
 
   return { blob, width: targetWidth, height: targetHeight };
+}
+
+type PhotoPreviewProps = {
+  previewUrl: string | null;
+  alt: string;
+  infoLine?: string | null;
+  isResolving: boolean;
+  hasError: boolean;
+  errorDetail?: string | null;
+  onRetry: () => void;
+};
+
+function PhotoPreview({
+  previewUrl,
+  alt,
+  infoLine,
+  isResolving,
+  hasError,
+  errorDetail,
+  onRetry,
+}: PhotoPreviewProps) {
+  const [retryToken, setRetryToken] = useState(0);
+  const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
+  const [loadErrorFor, setLoadErrorFor] = useState<string | null>(null);
+
+  const displayUrl = previewUrl ? appendCacheBust(previewUrl, retryToken) : null;
+  const loadError = !!displayUrl && loadErrorFor === displayUrl;
+  const isLoading = !!displayUrl && loadedUrl !== displayUrl && !loadError;
+  const showError = loadError || (!displayUrl && hasError);
+  const showSkeleton = !showError && (isResolving || isLoading);
+  const frameClassName =
+    "h-[220px] sm:h-[240px] w-full rounded-2xl ring-1 ring-white/10";
+  const resolvedErrorDetail = showError
+    ? loadError
+      ? "Erreur: URL non résolue"
+      : errorDetail || "Erreur: URL non résolue"
+    : null;
+
+  const handleRetryClick = () => {
+    setLoadErrorFor(null);
+    setRetryToken((current) => current + 1);
+    onRetry();
+  };
+
+  return (
+    <div className="stack-sm">
+      {showError ? (
+        <div
+          className={`flex ${frameClassName} flex-col items-center justify-center gap-2 border border-white/10 bg-white/5 px-4 text-center`}
+        >
+          <p className="text-sm text-[color:var(--muted)]">Aperçu indisponible</p>
+          {resolvedErrorDetail ? (
+            <p className="text-xs text-[color:var(--muted)]">
+              {resolvedErrorDetail}
+            </p>
+          ) : null}
+          <button type="button" className="chip" onClick={handleRetryClick}>
+            Réessayer
+          </button>
+        </div>
+      ) : (
+        <div className="relative">
+          {showSkeleton ? (
+            <div
+              className={`${frameClassName} animate-pulse bg-white/5`}
+              aria-hidden="true"
+            />
+          ) : null}
+          {displayUrl ? (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={displayUrl}
+                alt={alt}
+                className={`${frameClassName} object-cover transition-opacity ${
+                  showSkeleton ? "opacity-0" : "opacity-100"
+                }`}
+                loading="lazy"
+                decoding="async"
+                onLoad={() => {
+                  if (displayUrl) {
+                    setLoadedUrl(displayUrl);
+                    setLoadErrorFor(null);
+                  }
+                }}
+                onError={() => {
+                  if (displayUrl) {
+                    setLoadErrorFor(displayUrl);
+                  }
+                }}
+              />
+            </>
+          ) : null}
+        </div>
+      )}
+      {infoLine ? (
+        <p className="text-xs text-[color:var(--muted)]">{infoLine}</p>
+      ) : null}
+    </div>
+  );
 }
 
 function isLiveDocV2(patch: ExerciseOverridePatch | null): patch is ExerciseLiveDocV2 {
@@ -381,6 +544,13 @@ export function ExerciseLiveDetail({
   const [isSavingOverride, setIsSavingOverride] = useState(false);
   const [heroPreviewUrl, setHeroPreviewUrl] = useState<string | null>(null);
   const [mediaUrlMap, setMediaUrlMap] = useState<Record<string, string>>({});
+  const [mediaInfoMap, setMediaInfoMap] = useState<Record<string, MediaInfo>>({});
+  const [mediaResolveState, setMediaResolveState] = useState<
+    Record<string, "loading" | "ready" | "error">
+  >({});
+  const [mediaResolveError, setMediaResolveError] = useState<
+    Record<string, string | null>
+  >({});
   const [mediaStatus, setMediaStatus] = useState<string | null>(null);
   const [uploadTarget, setUploadTarget] = useState<{
     sectionId: string;
@@ -433,6 +603,7 @@ export function ExerciseLiveDetail({
     muscles: null,
     themes: null,
   });
+  const mediaInfoRequestedRef = useRef<Set<string>>(new Set());
 
   const merged = useMemo(
     () => applyExercisePatch(base, patch),
@@ -817,40 +988,120 @@ export function ExerciseLiveDetail({
     };
   }, [locale, liveReady, overrideReady, slug, source, supabase]);
 
-  useEffect(() => {
-    if (!overrideDocView || !supabase) {
-      return;
-    }
-
-    let active = true;
-    const mediaIds = new Set<string>();
-    for (const section of overrideDocView.sections) {
-      for (const block of section.blocks) {
-        if (block.type === "media" && block.mediaType === "image" && block.mediaId) {
-          mediaIds.add(block.mediaId);
-        }
+  const resolveMediaInfo = useCallback(
+    async (mediaId: string, options?: { isActive?: () => boolean }) => {
+      if (!supabase) {
+        return;
       }
-    }
-
-    const resolveMedia = async (mediaId: string) => {
-      if (mediaUrlCache.has(mediaId)) {
-        const cached = mediaUrlCache.get(mediaId);
-        if (cached) {
-          setMediaUrlMap((prev) => (prev[mediaId] ? prev : { ...prev, [mediaId]: cached }));
+      const isActive = options?.isActive ?? (() => true);
+      const { data, error } = await supabase
+        .from("media_assets")
+        .select("id, mime, size, width, height")
+        .eq("id", mediaId)
+        .maybeSingle();
+      if (!isActive() || error || !data) {
+        return;
+      }
+      setMediaInfoMap((prev) => {
+        const nextInfo: MediaInfo = {
+          mime: data.mime ?? null,
+          size: data.size ?? null,
+          width: data.width ?? null,
+          height: data.height ?? null,
+        };
+        const prevInfo = prev[mediaId];
+        if (
+          prevInfo &&
+          prevInfo.mime === nextInfo.mime &&
+          prevInfo.size === nextInfo.size &&
+          prevInfo.width === nextInfo.width &&
+          prevInfo.height === nextInfo.height
+        ) {
+          return prev;
         }
+        return { ...prev, [mediaId]: nextInfo };
+      });
+    },
+    [supabase],
+  );
+
+  const resolveMediaAsset = useCallback(
+    async (
+      mediaId: string,
+      options?: { force?: boolean; isActive?: () => boolean },
+    ) => {
+      if (!supabase) {
         return;
       }
 
-      const { data } = await supabase
+      const isActive = options?.isActive ?? (() => true);
+      const cachedUrl = mediaUrlCache.get(mediaId) ?? "";
+      const shouldFetchInfo =
+        options?.force || !mediaInfoRequestedRef.current.has(mediaId);
+      if (shouldFetchInfo) {
+        mediaInfoRequestedRef.current.add(mediaId);
+        void resolveMediaInfo(mediaId, { isActive });
+      }
+
+      if (cachedUrl && !options?.force) {
+        if (!isActive()) {
+          return;
+        }
+        setMediaUrlMap((prev) =>
+          prev[mediaId] === cachedUrl ? prev : { ...prev, [mediaId]: cachedUrl },
+        );
+        setMediaResolveState((prev) =>
+          prev[mediaId] === "ready" ? prev : { ...prev, [mediaId]: "ready" },
+        );
+        setMediaResolveError((prev) =>
+          prev[mediaId] ? { ...prev, [mediaId]: null } : prev,
+        );
+        return;
+      }
+
+      if (!isActive()) {
+        return;
+      }
+      setMediaResolveState((prev) => ({ ...prev, [mediaId]: "loading" }));
+      setMediaResolveError((prev) =>
+        prev[mediaId] ? { ...prev, [mediaId]: null } : prev,
+      );
+
+      const { data, error } = await supabase
         .from("media_assets")
         .select("id, bucket, path, canonical_url")
         .eq("id", mediaId)
         .maybeSingle();
-      if (!active) {
+      if (!isActive()) {
         return;
       }
-      let url = data?.canonical_url ?? "";
-      if (!url && data?.bucket && data?.path) {
+
+      if (error || !data) {
+        if (cachedUrl) {
+          setMediaResolveState((prev) =>
+            prev[mediaId] === "ready" ? prev : { ...prev, [mediaId]: "ready" },
+          );
+          setMediaResolveError((prev) =>
+            prev[mediaId] ? { ...prev, [mediaId]: null } : prev,
+          );
+          return;
+        }
+        const status =
+          error && typeof error === "object" && "status" in error
+            ? Number((error as { status?: number }).status)
+            : undefined;
+        const reason = formatResolveError(
+          Number.isFinite(status) ? status : undefined,
+        );
+        setMediaResolveState((prev) => ({ ...prev, [mediaId]: "error" }));
+        setMediaResolveError((prev) =>
+          prev[mediaId] === reason ? prev : { ...prev, [mediaId]: reason },
+        );
+        return;
+      }
+
+      let url = data.canonical_url ?? "";
+      if (!url && data.bucket && data.path) {
         const { data: publicData } = supabase
           .storage
           .from(data.bucket)
@@ -859,18 +1110,72 @@ export function ExerciseLiveDetail({
       }
       if (url) {
         mediaUrlCache.set(mediaId, url);
-        setMediaUrlMap((prev) => ({ ...prev, [mediaId]: url }));
+        setMediaUrlMap((prev) =>
+          prev[mediaId] === url ? prev : { ...prev, [mediaId]: url },
+        );
+        setMediaResolveState((prev) => ({ ...prev, [mediaId]: "ready" }));
+        setMediaResolveError((prev) =>
+          prev[mediaId] ? { ...prev, [mediaId]: null } : prev,
+        );
+        return;
       }
-    };
 
+      if (cachedUrl) {
+        setMediaResolveState((prev) =>
+          prev[mediaId] === "ready" ? prev : { ...prev, [mediaId]: "ready" },
+        );
+        setMediaResolveError((prev) =>
+          prev[mediaId] ? { ...prev, [mediaId]: null } : prev,
+        );
+        return;
+      }
+
+      const reason = formatResolveError(null);
+      setMediaResolveState((prev) => ({ ...prev, [mediaId]: "error" }));
+      setMediaResolveError((prev) =>
+        prev[mediaId] === reason ? prev : { ...prev, [mediaId]: reason },
+      );
+    },
+    [resolveMediaInfo, supabase],
+  );
+
+  useEffect(() => {
+    if (!overrideDocView || !supabase) {
+      return;
+    }
+
+    let active = true;
+    const mediaIds = new Set<string>();
+    const resolveIds = new Set<string>();
+    for (const section of overrideDocView.sections) {
+      for (const block of section.blocks) {
+        if (
+          block.type === "media" &&
+          block.mediaType === "image" &&
+          block.mediaId &&
+          !block.url?.trim()
+        ) {
+          resolveIds.add(block.mediaId);
+        }
+        if (block.type === "media" && block.mediaType === "image" && block.mediaId) {
+          mediaIds.add(block.mediaId);
+        }
+      }
+    }
     for (const mediaId of mediaIds) {
-      void resolveMedia(mediaId);
+      if (!mediaInfoRequestedRef.current.has(mediaId)) {
+        mediaInfoRequestedRef.current.add(mediaId);
+        void resolveMediaInfo(mediaId, { isActive: () => active });
+      }
+    }
+    for (const mediaId of resolveIds) {
+      void resolveMediaAsset(mediaId, { isActive: () => active });
     }
 
     return () => {
       active = false;
     };
-  }, [overrideDocView, supabase]);
+  }, [overrideDocView, resolveMediaAsset, resolveMediaInfo, supabase]);
 
   useEffect(() => {
     return () => {
@@ -1135,14 +1440,15 @@ export function ExerciseLiveDetail({
         }
         if (block.type === "media") {
           if (block.mediaType === "image") {
+            const trimmedUrl = block.url?.trim();
             const nextBlock: ExerciseLiveMediaBlock = {
               type: "media",
               mediaType: "image",
               mediaId: block.mediaId,
               caption: block.caption?.trim() || undefined,
             };
-            if (!block.mediaId && block.url) {
-              nextBlock.url = block.url.trim();
+            if (trimmedUrl) {
+              nextBlock.url = trimmedUrl;
             }
             return nextBlock;
           }
@@ -1366,16 +1672,19 @@ export function ExerciseLiveDetail({
         return;
       }
       const data = (await response.json()) as {
+        ok?: boolean;
         mediaId?: string;
-        publicUrl?: string;
+        url?: string;
+        bucket?: string;
+        path?: string;
       };
       if (!data.mediaId) {
         setMediaStatus("Réponse invalide.");
         return;
       }
-      if (data.publicUrl) {
-        mediaUrlCache.set(data.mediaId, data.publicUrl);
-        setMediaUrlMap((prev) => ({ ...prev, [data.mediaId!]: data.publicUrl! }));
+      if (data.url) {
+        mediaUrlCache.set(data.mediaId, data.url);
+        setMediaUrlMap((prev) => ({ ...prev, [data.mediaId!]: data.url! }));
       }
       let highlightKey: string | null = null;
       updateSection(uploadTarget.sectionId, (section) => {
@@ -1384,6 +1693,7 @@ export function ExerciseLiveDetail({
           type: "media",
           mediaType: "image",
           mediaId: data.mediaId,
+          url: data.url,
           caption: "",
         };
         if (uploadTarget.blockIndex !== undefined) {
@@ -1937,11 +2247,13 @@ export function ExerciseLiveDetail({
                       className="stack-sm"
                     >
                       {block.mediaType === "image" ? (() => {
+                        const directUrl = block.url?.trim();
                         const resolvedUrl =
+                          directUrl ||
                           (block.mediaId
                             ? mediaUrlMap[block.mediaId] ??
                               mediaUrlCache.get(block.mediaId)
-                            : undefined) ?? block.url;
+                            : undefined);
                         if (resolvedUrl) {
                           return (
                             <>
@@ -2144,7 +2456,7 @@ export function ExerciseLiveDetail({
                         ? createPortal(
                             <div
                               ref={dropdownMenuRef}
-                              className="z-[80]"
+                              className={DROPDOWN_MENU_LAYER_CLASS}
                               style={{
                                 position: "absolute",
                                 top: pillDropdownStyle.top,
@@ -2152,7 +2464,7 @@ export function ExerciseLiveDetail({
                                 width: pillDropdownStyle.width,
                               }}
                             >
-                              <div className="rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-xl">
+                              <div className={DROPDOWN_MENU_PANEL_CLASS}>
                                 <div className="sticky top-0 z-10 bg-[color:var(--bg-2)] pb-2">
                                   <input
                                     className="field-input"
@@ -2254,7 +2566,7 @@ export function ExerciseLiveDetail({
                         ? createPortal(
                             <div
                               ref={dropdownMenuRef}
-                              className="z-[80]"
+                              className={DROPDOWN_MENU_LAYER_CLASS}
                               style={{
                                 position: "absolute",
                                 top: pillDropdownStyle.top,
@@ -2262,7 +2574,7 @@ export function ExerciseLiveDetail({
                                 width: pillDropdownStyle.width,
                               }}
                             >
-                              <div className="rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-xl">
+                              <div className={DROPDOWN_MENU_PANEL_CLASS}>
                                 <div className="sticky top-0 z-10 bg-[color:var(--bg-2)] pb-2">
                                   <input
                                     className="field-input"
@@ -2364,7 +2676,7 @@ export function ExerciseLiveDetail({
                         ? createPortal(
                             <div
                               ref={dropdownMenuRef}
-                              className="z-[80]"
+                              className={DROPDOWN_MENU_LAYER_CLASS}
                               style={{
                                 position: "absolute",
                                 top: pillDropdownStyle.top,
@@ -2372,7 +2684,7 @@ export function ExerciseLiveDetail({
                                 width: pillDropdownStyle.width,
                               }}
                             >
-                              <div className="rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-xl">
+                              <div className={DROPDOWN_MENU_PANEL_CLASS}>
                                 <div className="sticky top-0 z-10 bg-[color:var(--bg-2)] pb-2">
                                   <input
                                     className="field-input"
@@ -2545,7 +2857,9 @@ export function ExerciseLiveDetail({
                             ...
                           </button>
                           {sectionMenuOpenId === section.id ? (
-                            <div className="absolute right-0 z-10 mt-2 w-44 rounded-2xl border border-white/10 bg-[color:var(--surface)] p-2 shadow-lg">
+                            <div
+                              className={`absolute right-0 ${DROPDOWN_MENU_LAYER_CLASS} mt-2 w-48 ${DROPDOWN_MENU_PANEL_CLASS}`}
+                            >
                               <button
                                 type="button"
                                 className="chip w-full justify-start"
@@ -2556,6 +2870,44 @@ export function ExerciseLiveDetail({
                               >
                                 Renommer
                               </button>
+                              <div className="mt-2 border-t border-white/10 pt-2">
+                                <span className="block px-2 pb-1 text-[10px] uppercase tracking-[0.18em] text-[color:var(--muted)]">
+                                  Ajouter un bloc
+                                </span>
+                                <button
+                                  type="button"
+                                  className="chip w-full justify-start"
+                                  onClick={() => {
+                                    setActiveSectionId(section.id);
+                                    handleAddBlock(section.id, "markdown");
+                                    setSectionMenuOpenId(null);
+                                  }}
+                                >
+                                  Texte
+                                </button>
+                                <button
+                                  type="button"
+                                  className="chip w-full justify-start"
+                                  onClick={() => {
+                                    setActiveSectionId(section.id);
+                                    handleAddBlock(section.id, "bullets");
+                                    setSectionMenuOpenId(null);
+                                  }}
+                                >
+                                  Liste à puces
+                                </button>
+                                <button
+                                  type="button"
+                                  className="chip w-full justify-start"
+                                  onClick={() => {
+                                    setActiveSectionId(section.id);
+                                    handlePhotoUploadRequest(section.id);
+                                    setSectionMenuOpenId(null);
+                                  }}
+                                >
+                                  Photo
+                                </button>
+                              </div>
                               <button
                                 type="button"
                                 className="chip w-full justify-start"
@@ -2646,7 +2998,9 @@ export function ExerciseLiveDetail({
                                     ...
                                   </button>
                                   {blockMenuOpenKey === blockKey ? (
-                                    <div className="absolute right-0 z-10 mt-2 w-44 rounded-2xl border border-white/10 bg-[color:var(--surface)] p-2 shadow-lg">
+                                  <div
+                                    className={`absolute right-0 ${DROPDOWN_MENU_LAYER_CLASS} mt-2 w-44 ${DROPDOWN_MENU_PANEL_CLASS}`}
+                                  >
                                       <button
                                         type="button"
                                         className="chip w-full justify-start"
@@ -2844,28 +3198,45 @@ export function ExerciseLiveDetail({
                                           Aucune photo associée.
                                         </p>
                                       )}
-                                      {(() => {
-                                        const previewUrl =
-                                          (block.mediaId
-                                            ? mediaUrlMap[block.mediaId] ??
-                                              mediaUrlCache.get(block.mediaId)
-                                            : undefined) ?? block.url;
-                                        if (!previewUrl) {
-                                          return null;
-                                        }
-                                        return (
-                                          <>
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                              src={previewUrl}
-                                              alt={block.caption ?? section.title}
-                                              className="w-full max-w-xs h-auto rounded-2xl ring-1 ring-white/10"
-                                              loading="lazy"
-                                              decoding="async"
-                                            />
-                                          </>
-                                        );
-                                      })()}
+                                      {hasPhoto
+                                        ? (() => {
+                                            const directUrl = block.url?.trim();
+                                            const resolvedUrl = block.mediaId
+                                              ? mediaUrlMap[block.mediaId] ??
+                                                mediaUrlCache.get(block.mediaId)
+                                              : undefined;
+                                            const previewUrl =
+                                              directUrl && directUrl.length > 0
+                                                ? directUrl
+                                                : resolvedUrl ?? null;
+                                            const infoLine = block.mediaId
+                                              ? formatMediaInfo(mediaInfoMap[block.mediaId])
+                                              : null;
+                                            const resolveState = block.mediaId
+                                              ? mediaResolveState[block.mediaId]
+                                              : undefined;
+                                            const resolveError = block.mediaId
+                                              ? mediaResolveError[block.mediaId]
+                                              : null;
+                                            return (
+                                              <PhotoPreview
+                                                previewUrl={previewUrl}
+                                                alt={block.caption ?? section.title}
+                                                infoLine={infoLine}
+                                                isResolving={resolveState === "loading"}
+                                                hasError={resolveState === "error"}
+                                                errorDetail={resolveError}
+                                                onRetry={() => {
+                                                  if (!block.url?.trim() && block.mediaId) {
+                                                    void resolveMediaAsset(block.mediaId, {
+                                                      force: true,
+                                                    });
+                                                  }
+                                                }}
+                                              />
+                                            );
+                                          })()
+                                        : null}
                                       <label className="field-label">
                                         Légende
                                       </label>
