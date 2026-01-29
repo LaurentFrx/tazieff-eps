@@ -584,11 +584,17 @@ export function ExerciseLiveDetail({
   const [liveOpen, setLiveOpen] = useState(false);
   const [liveDraft, setLiveDraft] = useState<LiveDraft | null>(null);
   const [submitStatus, setSubmitStatus] = useState<string | null>(null);
+  const [blockToast, setBlockToast] = useState<{ id: number; message: string } | null>(
+    null,
+  );
+  const [blockToastVisible, setBlockToastVisible] = useState(false);
   const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pressStartRef = useRef<{ x: number; y: number } | null>(null);
   const touchPointerActiveRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const blockToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const blockToastHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sectionTitleRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const blockFieldRefs = useRef<Record<string, HTMLInputElement | HTMLTextAreaElement | null>>({});
@@ -1182,10 +1188,64 @@ export function ExerciseLiveDetail({
       if (toastTimerRef.current) {
         clearTimeout(toastTimerRef.current);
       }
+      if (blockToastTimerRef.current) {
+        clearTimeout(blockToastTimerRef.current);
+      }
+      if (blockToastHideTimerRef.current) {
+        clearTimeout(blockToastHideTimerRef.current);
+      }
       if (highlightTimerRef.current) {
         clearTimeout(highlightTimerRef.current);
       }
     };
+  }, []);
+
+  const resolveSectionTitle = useCallback(
+    (sectionId: string) => {
+      const section = overrideDoc?.doc.sections.find(
+        (item) => item.id === sectionId,
+      );
+      const label = section?.title?.trim();
+      return label && label.length > 0 ? label : "Section sans titre";
+    },
+    [overrideDoc],
+  );
+
+  const showBlockToast = useCallback(
+    (sectionId: string) => {
+      if (blockToastTimerRef.current) {
+        clearTimeout(blockToastTimerRef.current);
+      }
+      if (blockToastHideTimerRef.current) {
+        clearTimeout(blockToastHideTimerRef.current);
+      }
+      const message = `✅ Bloc ajouté dans « ${resolveSectionTitle(sectionId)} »`;
+      setBlockToast({ id: Date.now(), message });
+      setBlockToastVisible(false);
+      requestAnimationFrame(() => {
+        setBlockToastVisible(true);
+      });
+      blockToastTimerRef.current = setTimeout(() => {
+        setBlockToastVisible(false);
+        blockToastHideTimerRef.current = setTimeout(() => {
+          setBlockToast(null);
+        }, 200);
+      }, 2200);
+    },
+    [resolveSectionTitle],
+  );
+
+  const dismissBlockToast = useCallback(() => {
+    if (blockToastTimerRef.current) {
+      clearTimeout(blockToastTimerRef.current);
+    }
+    if (blockToastHideTimerRef.current) {
+      clearTimeout(blockToastHideTimerRef.current);
+    }
+    setBlockToastVisible(false);
+    blockToastHideTimerRef.current = setTimeout(() => {
+      setBlockToast(null);
+    }, 200);
   }, []);
 
   useEffect(() => {
@@ -1709,6 +1769,7 @@ export function ExerciseLiveDetail({
       if (highlightKey) {
         highlightBlock(highlightKey);
       }
+      showBlockToast(uploadTarget.sectionId);
       setMediaStatus("Photo ajoutée.");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Échec de l'upload.";
@@ -1810,6 +1871,7 @@ export function ExerciseLiveDetail({
     });
     if (nextIndex >= 0) {
       highlightBlock(`${sectionId}-${nextIndex}`);
+      showBlockToast(sectionId);
     }
   };
 
@@ -3514,6 +3576,33 @@ export function ExerciseLiveDetail({
               <p className="text-xs text-[color:var(--muted)]">{submitStatus}</p>
             ) : null}
           </div>
+          {blockToast ? (
+            <div
+              className="fixed left-1/2 z-[90] w-[min(520px,calc(100vw-32px))] -translate-x-1/2"
+              style={{
+                bottom:
+                  "calc(var(--tabbar-offset, 0px) + var(--tabbar-height, 0px) + 72px)",
+              }}
+              role="status"
+              aria-live="polite"
+            >
+              <div
+                className={`flex items-center justify-between gap-3 rounded-2xl border border-emerald-400/40 bg-emerald-400/15 px-4 py-3 text-sm text-emerald-100 shadow-lg backdrop-blur transition-all duration-200 ${
+                  blockToastVisible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
+                }`}
+              >
+                <span>{blockToast.message}</span>
+                <button
+                  type="button"
+                  className="text-emerald-100/70 hover:text-emerald-50"
+                  aria-label="Fermer"
+                  onClick={dismissBlockToast}
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          ) : null}
             </div>
           </div>
           {confirmCloseOpen ? (
