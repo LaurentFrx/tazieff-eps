@@ -48,8 +48,11 @@ type LiveDraft = {
 const POLL_INTERVAL_MS = 20000;
 const LONG_PRESS_MS = 1800;
 const MOVE_THRESHOLD_PX = 10;
+const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const IMAGE_MAX_EDGE = 1600;
-const IMAGE_QUALITY = 0.78;
+const IMAGE_QUALITY = 0.82;
+const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
 const mediaUrlCache = new Map<string, string>();
 
 function parseList(value: string) {
@@ -106,7 +109,14 @@ function createBlock(type: "markdown" | "bullets" | "media") {
   return createMarkdownBlock();
 }
 
-async function loadImageSource(file: File) {
+type ImageSourceInfo = {
+  source: CanvasImageSource;
+  width: number;
+  height: number;
+  revoke?: () => void;
+};
+
+async function loadImageSource(file: File): Promise<ImageSourceInfo> {
   if (typeof createImageBitmap === "function") {
     const bitmap = await createImageBitmap(file);
     return {
@@ -137,8 +147,8 @@ async function loadImageSource(file: File) {
   };
 }
 
-async function compressImageToWebp(file: File) {
-  const { source, width, height, revoke } = await loadImageSource(file);
+async function compressImageToWebp(sourceInfo: ImageSourceInfo) {
+  const { source, width, height, revoke } = sourceInfo;
   const maxEdge = Math.max(width, height);
   const scale = maxEdge > IMAGE_MAX_EDGE ? IMAGE_MAX_EDGE / maxEdge : 1;
   const targetWidth = Math.max(1, Math.round(width * scale));
@@ -931,31 +941,68 @@ export function ExerciseLiveDetail({
     }
     setMediaStatus("Upload en cours...");
     try {
-      const { blob, width, height } = await compressImageToWebp(file);
-      const fileName = `${
-        typeof crypto !== "undefined" && "randomUUID" in crypto
-          ? crypto.randomUUID()
-          : `photo-${Date.now()}`
-      }.webp`;
-      const uploadFile = new File([blob], fileName, { type: "image/webp" });
+      if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+        setMediaStatus("Format invalide. Utilisez JPEG, PNG ou WEBP.");
+        return;
+      }
+
+      const sourceInfo = await loadImageSource(file);
+      const maxEdge = Math.max(sourceInfo.width, sourceInfo.height);
+      const needsProcessing =
+        file.size > MAX_UPLOAD_BYTES ||
+        maxEdge > IMAGE_MAX_EDGE ||
+        file.type !== "image/webp";
+
+      let uploadFile = file;
+      let targetWidth = sourceInfo.width;
+      let targetHeight = sourceInfo.height;
+
+      if (needsProcessing) {
+        const { blob, width, height } = await compressImageToWebp(sourceInfo);
+        const baseName = file.name ? file.name.replace(/\.[^/.]+$/, "") : "photo";
+        const uniqueName =
+          typeof crypto !== "undefined" && "randomUUID" in crypto
+            ? crypto.randomUUID()
+            : `photo-${Date.now()}`;
+        const fileName = `${baseName || "photo"}-${uniqueName}.webp`;
+        uploadFile = new File([blob], fileName, { type: "image/webp" });
+        targetWidth = width;
+        targetHeight = height;
+      } else {
+        sourceInfo.revoke?.();
+      }
+
+      if (uploadFile.size > MAX_UPLOAD_BYTES) {
+        setMediaStatus("Image trop lourde après compression (max 2 Mo).");
+        return;
+      }
+
       const formData = new FormData();
       formData.append("file", uploadFile);
       formData.append("slug", slug);
       formData.append("pin", teacherPin);
-      formData.append("width", String(width));
-      formData.append("height", String(height));
+      formData.append("width", String(targetWidth));
+      formData.append("height", String(targetHeight));
 
       const response = await fetch("/api/teacher/upload-media", {
         method: "POST",
         body: formData,
       });
       if (!response.ok) {
-        if (response.status === 401) {
-          handleAuthError("PIN invalide.");
-          setMediaStatus(null);
-          return;
+        let serverMessage: string | undefined;
+        try {
+          const payload = (await response.json()) as { message?: string };
+          serverMessage = payload?.message;
+        } catch {
+          serverMessage = undefined;
         }
-        setMediaStatus("Échec de l'upload.");
+        const message = serverMessage?.trim()
+          ? serverMessage.trim()
+          : "Échec de l'upload.";
+        if (response.status === 401) {
+          handleAuthError(message);
+        }
+        setMediaStatus(`${message} (HTTP ${response.status})`);
         return;
       }
       const data = (await response.json()) as {
@@ -986,8 +1033,9 @@ export function ExerciseLiveDetail({
         return { ...section, blocks };
       });
       setMediaStatus("Photo ajoutée.");
-    } catch {
-      setMediaStatus("Échec de l'upload.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Échec de l'upload.";
+      setMediaStatus(message);
     } finally {
       setUploadTarget(null);
     }
@@ -2108,7 +2156,7 @@ export function ExerciseLiveDetail({
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept={IMAGE_ACCEPT}
                   capture="environment"
                   className="hidden"
                   onChange={handlePhotoFileChange}
