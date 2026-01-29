@@ -2389,7 +2389,15 @@ export function ExerciseLiveDetail({
             <div className="flex-1 overflow-y-auto pt-4">
               {overrideDoc ? (
                 <div className="stack-md">
-                  <div className="stack-md">
+                  <div className="rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-4 shadow-lg">
+                    <div className="stack-md">
+                      <div className="flex flex-col gap-1">
+                        <h3 className="text-base font-semibold">Catégories</h3>
+                        <p className="text-sm text-[color:var(--muted)]">
+                          Niveau, type, groupes musculaires et thèmes Bac.
+                        </p>
+                      </div>
+                      <div className="stack-md">
                     <div className="stack-sm">
                       <label className="field-label">Niveau</label>
                       <select
@@ -2760,14 +2768,19 @@ export function ExerciseLiveDetail({
                         )}
                       </div>
                     </div>
+                      </div>
+                    </div>
                   </div>
 
-                <div className="stack-sm">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">
-                      Image principale
-                    </h3>
-                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-4 shadow-lg">
+                    <div className="stack-md">
+                      <div className="flex flex-col gap-1">
+                        <h3 className="text-base font-semibold">Image principale</h3>
+                        <p className="text-sm text-[color:var(--muted)]">
+                          Image affichée en haut de la fiche.
+                        </p>
+                      </div>
+                      <div className="stack-sm">
                   <input
                     className="field-input"
                     placeholder="URL de l'image"
@@ -2806,21 +2819,31 @@ export function ExerciseLiveDetail({
                       />
                     </>
                   ) : null}
-                </div>
-
-                <div className="stack-md">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">
-                      Sections
-                    </h3>
-                    <button
-                      type="button"
-                      className="chip"
-                      onClick={handleAddSection}
-                    >
-                      Ajouter une section
-                    </button>
+                      </div>
+                    </div>
                   </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-4 shadow-lg">
+                    <div className="stack-md">
+                      <div className="flex flex-col gap-1">
+                        <h3 className="text-base font-semibold">Contenu de la fiche</h3>
+                        <p className="text-sm text-[color:var(--muted)]">
+                          Sections et blocs visibles sur la fiche (texte, liste à puces, photo).
+                        </p>
+                      </div>
+                      <div className="stack-md">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">
+                            Sections
+                          </h3>
+                          <button
+                            type="button"
+                            className="chip"
+                            onClick={handleAddSection}
+                          >
+                            Ajouter une section
+                          </button>
+                        </div>
                   {overrideDoc.doc.sections.map((section, sectionIndex) => (
                     <div
                       key={section.id}
@@ -3332,7 +3355,9 @@ export function ExerciseLiveDetail({
                       </div>
                     </div>
                   ))}
-                </div>
+                      </div>
+                    </div>
+                  </div>
                 <input
                   ref={fileInputRef}
                   type="file"
