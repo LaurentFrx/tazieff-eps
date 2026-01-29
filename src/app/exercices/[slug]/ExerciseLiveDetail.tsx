@@ -2363,11 +2363,6 @@ export function ExerciseLiveDetail({
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex flex-col gap-1">
                   <h2>Corriger la fiche</h2>
-                  {isDirty ? (
-                    <span className="text-xs text-[color:var(--muted)]">
-                      Modifications non enregistrées
-                    </span>
-                  ) : null}
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   {overrideToast ? (
@@ -2387,6 +2382,22 @@ export function ExerciseLiveDetail({
               </div>
             </div>
             <div className="flex-1 overflow-y-auto pt-4">
+              {isDirty ? (
+                <div className="sticky top-0 z-20 mb-4">
+                  <div className="flex items-center justify-between gap-3 rounded-2xl border border-amber-400/40 bg-amber-500/30 px-4 py-2 shadow-lg">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-amber-100">
+                      <span
+                        className="inline-flex h-2 w-2 rounded-full bg-amber-200"
+                        aria-hidden="true"
+                      />
+                      Modifications non enregistrées
+                    </div>
+                    <span className="text-xs text-amber-100/80">
+                      Pense à Enregistrer
+                    </span>
+                  </div>
+                </div>
+              ) : null}
               {overrideDoc ? (
                 <div className="stack-md">
                   <div className="rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-4 shadow-lg">
@@ -3375,8 +3386,17 @@ export function ExerciseLiveDetail({
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-3">
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] uppercase tracking-[0.18em] text-[color:var(--muted)]">
-                    Section active
+                  <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-[color:var(--muted)]">
+                    <span>Section active</span>
+                    <span className="rounded-full border border-emerald-400/40 bg-emerald-400/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-200">
+                      Active
+                    </span>
+                  </span>
+                  <span className="inline-flex w-fit items-center rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-1 text-xs text-emerald-100">
+                    Ajout dans :{" "}
+                    {activeSection
+                      ? activeSection.title || "Section sans titre"
+                      : "Aucune section"}
                   </span>
                   <select
                     className="field-input"
@@ -3456,18 +3476,34 @@ export function ExerciseLiveDetail({
                   onClick={handleSaveOverride}
                   disabled={!isDirty || isSavingOverride}
                 >
-                  Enregistrer
+                  <span className="inline-flex items-center gap-2">
+                    {isDirty ? (
+                      <span
+                        className="inline-flex h-2 w-2 rounded-full bg-amber-300"
+                        aria-hidden="true"
+                      />
+                    ) : null}
+                    Enregistrer
+                  </span>
                 </button>
-                <button type="button" className="chip" onClick={handleCloseOverride}>
+                <button
+                  type="button"
+                  className="chip border border-white/20 bg-white/5 hover:bg-white/10"
+                  onClick={handleCloseOverride}
+                >
                   Fermer
                 </button>
                 <button
                   type="button"
-                  className="chip chip-ghost"
+                  className={`chip ${
+                    isDirty
+                      ? "bg-red-500 text-white hover:bg-red-600"
+                      : "chip-ghost"
+                  }`}
                   onClick={handleDiscardOverride}
                   disabled={!isDirty}
                 >
-                  Annuler modifications
+                  {isDirty ? "⟲ Annuler modifications" : "Annuler modifications"}
                 </button>
               </div>
             </div>
