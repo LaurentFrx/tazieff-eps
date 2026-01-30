@@ -82,6 +82,8 @@ const themeOptions = [
   { value: "dark", labelKey: "settings.theme.dark" },
 ] as const;
 
+type UiThemePreference = (typeof themeOptions)[number]["value"];
+
 const fieldThemeOptions = [
   { value: 1, labelKey: "settings.fieldTheme.one" },
   { value: 2, labelKey: "settings.fieldTheme.two" },
@@ -114,7 +116,7 @@ function setTeacherModeSnapshot(next: TeacherModeSnapshot) {
 export default function ReglagesPage() {
   const { t, lang, setLang } = useI18n();
   const { theme, setTheme } = useTheme();
-  const currentTheme = theme ?? "system";
+  const currentTheme = (theme ?? "system") as UiThemePreference;
   const buildInfo = useBuildInfo();
   const [fieldTheme, setLocalFieldTheme] = useState<ThemePreference>(getTheme());
   const [teacherMode, setTeacherMode] = useState<TeacherModeSnapshot>(
@@ -123,8 +125,34 @@ export default function ReglagesPage() {
   const [pinModalOpen, setPinModalOpen] = useState(false);
   const [pinValue, setPinValue] = useState(teacherMode.pin);
   const [pinError, setPinError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => onThemeChange(setLocalFieldTheme), []);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => setMounted(true), []);
+
+  const ssrLang =
+    typeof document === "undefined"
+      ? lang
+      : document.documentElement.lang === "en"
+        ? "en"
+        : "fr";
+  const ssrTheme: UiThemePreference =
+    typeof document === "undefined"
+      ? currentTheme
+      : (() => {
+          const dataTheme = document.documentElement.dataset.theme;
+          if (dataTheme === "light" || dataTheme === "dark") {
+            return dataTheme;
+          }
+          if (document.documentElement.classList.contains("dark")) {
+            return "dark";
+          }
+          return "system";
+        })();
+  const stableLang = mounted ? lang : ssrLang;
+  const stableTheme = mounted ? currentTheme : ssrTheme;
+  const stableFieldTheme = mounted ? fieldTheme : 1;
 
   const openPinModal = () => {
     setPinError(null);
@@ -178,7 +206,7 @@ export default function ReglagesPage() {
               <label
                 key={option.value}
                 className={`segment-button${
-                  lang === option.value ? " is-active" : ""
+                  stableLang === option.value ? " is-active" : ""
                 }`}
               >
                 <input
@@ -186,7 +214,7 @@ export default function ReglagesPage() {
                   type="radio"
                   name="language"
                   value={option.value}
-                  checked={lang === option.value}
+                  checked={stableLang === option.value}
                   onChange={() => setLang(option.value)}
                 />
                 <span className="inline-flex items-center gap-2">
@@ -207,7 +235,7 @@ export default function ReglagesPage() {
               <label
                 key={option.value}
                 className={`segment-button${
-                  currentTheme === option.value ? " is-active" : ""
+                  stableTheme === option.value ? " is-active" : ""
                 }`}
               >
                 <input
@@ -215,7 +243,7 @@ export default function ReglagesPage() {
                   type="radio"
                   name="theme"
                   value={option.value}
-                  checked={currentTheme === option.value}
+                  checked={stableTheme === option.value}
                   onChange={() => setTheme(option.value)}
                 />
                 {t(option.labelKey)}
@@ -233,7 +261,7 @@ export default function ReglagesPage() {
               <label
                 key={option.value}
                 className={`segment-button${
-                  fieldTheme === option.value ? " is-active" : ""
+                  stableFieldTheme === option.value ? " is-active" : ""
                 }`}
               >
                 <input
@@ -241,7 +269,7 @@ export default function ReglagesPage() {
                   type="radio"
                   name="field-theme"
                   value={option.value}
-                  checked={fieldTheme === option.value}
+                  checked={stableFieldTheme === option.value}
                   onChange={() => {
                     setLocalFieldTheme(option.value);
                     setFieldTheme(option.value);
