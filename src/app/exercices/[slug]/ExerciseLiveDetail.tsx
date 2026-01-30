@@ -46,6 +46,17 @@ type LiveDraft = {
   content: string;
 };
 
+type TeacherModeSnapshot = {
+  unlocked: boolean;
+  pin: string;
+};
+
+declare global {
+  interface Window {
+    __teacherMode?: TeacherModeSnapshot;
+  }
+}
+
 const POLL_INTERVAL_MS = 20000;
 const LONG_PRESS_MS = 1800;
 const MOVE_THRESHOLD_PX = 10;
@@ -90,6 +101,28 @@ const MUSCLE_DEFAULTS = [
   "Lombaires",
 ];
 const THEME_DEFAULTS = ["AFL1", "AFL2", "AFL3", "Sécurité", "Méthode", "Technique"];
+const DEFAULT_TEACHER_MODE: TeacherModeSnapshot = { unlocked: false, pin: "" };
+
+function getTeacherModeSnapshot(): TeacherModeSnapshot {
+  if (typeof window === "undefined") {
+    return { ...DEFAULT_TEACHER_MODE };
+  }
+  const snapshot = window.__teacherMode;
+  if (!snapshot) {
+    return { ...DEFAULT_TEACHER_MODE };
+  }
+  return {
+    unlocked: Boolean(snapshot.unlocked),
+    pin: snapshot.pin ?? "",
+  };
+}
+
+function setTeacherModeSnapshot(next: TeacherModeSnapshot) {
+  if (typeof window === "undefined") {
+    return;
+  }
+  window.__teacherMode = next;
+}
 
 function parseList(value: string) {
   return value
@@ -528,8 +561,10 @@ export function ExerciseLiveDetail({
   const [overrideReady, setOverrideReady] = useState(false);
   const [liveReady, setLiveReady] = useState(false);
   const [pinModalOpen, setPinModalOpen] = useState(false);
-  const [teacherUnlocked, setTeacherUnlocked] = useState(false);
-  const [teacherPin, setTeacherPin] = useState("");
+  const [teacherUnlocked, setTeacherUnlocked] = useState(
+    () => getTeacherModeSnapshot().unlocked,
+  );
+  const [teacherPin, setTeacherPin] = useState(() => getTeacherModeSnapshot().pin);
   const [teacherError, setTeacherError] = useState<string | null>(null);
   const [overrideOpen, setOverrideOpen] = useState(false);
   const [overrideDoc, setOverrideDoc] = useState<ExerciseLiveDocV2 | null>(null);
@@ -613,6 +648,10 @@ export function ExerciseLiveDetail({
     themes: null,
   });
   const mediaInfoRequestedRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    setTeacherModeSnapshot({ unlocked: teacherUnlocked, pin: teacherPin });
+  }, [teacherPin, teacherUnlocked]);
 
   const merged = useMemo(
     () => applyExercisePatch(base, patch),
@@ -2308,6 +2347,17 @@ export function ExerciseLiveDetail({
         ) : (
           <div className="text-sm text-[color:var(--muted)]">Sans matériel spécifique.</div>
         )}
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            className={`chip border border-white/15${
+              teacherUnlocked ? " bg-emerald-400/15 text-emerald-100" : " bg-white/10"
+            }`}
+            onClick={teacherUnlocked ? openOverrideEditor : openPinModal}
+          >
+            {teacherUnlocked ? "✏️ Mode prof actif" : "🔒 Mode prof (PIN)"}
+          </button>
+        </div>
       </header>
 
       {teacherUnlocked ? (

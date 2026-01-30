@@ -13,6 +13,17 @@ const languageOptions = [
 
 type LanguageValue = (typeof languageOptions)[number]["value"];
 
+type TeacherModeSnapshot = {
+  unlocked: boolean;
+  pin: string;
+};
+
+declare global {
+  interface Window {
+    __teacherMode?: TeacherModeSnapshot;
+  }
+}
+
 const FlagIcon = ({ locale }: { locale: LanguageValue }) => {
   if (locale === "fr") {
     return (
@@ -77,14 +88,70 @@ const fieldThemeOptions = [
   { value: 3, labelKey: "settings.fieldTheme.three" },
 ] as const;
 
+const DEFAULT_TEACHER_MODE: TeacherModeSnapshot = { unlocked: false, pin: "" };
+
+function getTeacherModeSnapshot(): TeacherModeSnapshot {
+  if (typeof window === "undefined") {
+    return { ...DEFAULT_TEACHER_MODE };
+  }
+  const snapshot = window.__teacherMode;
+  if (!snapshot) {
+    return { ...DEFAULT_TEACHER_MODE };
+  }
+  return {
+    unlocked: Boolean(snapshot.unlocked),
+    pin: snapshot.pin ?? "",
+  };
+}
+
+function setTeacherModeSnapshot(next: TeacherModeSnapshot) {
+  if (typeof window === "undefined") {
+    return;
+  }
+  window.__teacherMode = next;
+}
+
 export default function ReglagesPage() {
   const { t, lang, setLang } = useI18n();
   const { theme, setTheme } = useTheme();
   const currentTheme = theme ?? "system";
   const buildInfo = useBuildInfo();
   const [fieldTheme, setLocalFieldTheme] = useState<ThemePreference>(getTheme());
+  const [teacherMode, setTeacherMode] = useState<TeacherModeSnapshot>(
+    () => getTeacherModeSnapshot(),
+  );
+  const [pinModalOpen, setPinModalOpen] = useState(false);
+  const [pinValue, setPinValue] = useState(teacherMode.pin);
+  const [pinError, setPinError] = useState<string | null>(null);
 
   useEffect(() => onThemeChange(setLocalFieldTheme), []);
+
+  const openPinModal = () => {
+    setPinError(null);
+    setPinValue(teacherMode.pin);
+    setPinModalOpen(true);
+  };
+
+  const handleUnlock = (event?: React.FormEvent) => {
+    event?.preventDefault();
+    if (!pinValue.trim()) {
+      setPinError("PIN requis.");
+      return;
+    }
+    const next = { unlocked: true, pin: pinValue.trim() };
+    setTeacherModeSnapshot(next);
+    setTeacherMode(next);
+    setPinError(null);
+    setPinModalOpen(false);
+  };
+
+  const handleDisable = () => {
+    const next = { unlocked: false, pin: "" };
+    setTeacherModeSnapshot(next);
+    setTeacherMode(next);
+    setPinValue("");
+    setPinError(null);
+  };
 
   const handleCopy = async () => {
     if (!navigator?.clipboard) {
@@ -188,6 +255,38 @@ export default function ReglagesPage() {
         <div className="settings-card">
           <div className="flex items-start justify-between gap-4">
             <div>
+              <h2 className="settings-heading">Mode prof</h2>
+              <p className="settings-help">Accès aux outils d’édition (PIN requis).</p>
+            </div>
+            <span
+              className={`rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${
+                teacherMode.unlocked
+                  ? "border-emerald-400/40 bg-emerald-400/15 text-emerald-100"
+                  : "border-white/10 bg-white/5 text-[color:var(--muted)]"
+              }`}
+            >
+              {teacherMode.unlocked ? "Déverrouillé" : "Verrouillé"}
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {teacherMode.unlocked ? (
+              <button type="button" className="chip" onClick={handleDisable}>
+                Désactiver
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="primary-button primary-button--wide"
+                onClick={openPinModal}
+              >
+                Activer (PIN)
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="settings-card">
+          <div className="flex items-start justify-between gap-4">
+            <div>
               <h2 className="settings-heading">{t("settings.about")}</h2>
             </div>
             <button
@@ -204,6 +303,37 @@ export default function ReglagesPage() {
           </div>
         </div>
       </div>
+      {pinModalOpen ? (
+        <div className="modal-overlay" role="dialog" aria-modal="true">
+          <div className="modal-card">
+            <h2>PIN professeur</h2>
+            <form className="stack-md" onSubmit={handleUnlock}>
+              <input
+                className="field-input"
+                type="password"
+                value={pinValue}
+                onChange={(event) => setPinValue(event.target.value)}
+                placeholder="PIN requis"
+              />
+              {pinError ? (
+                <p className="text-xs text-[color:var(--muted)]">{pinError}</p>
+              ) : null}
+              <div className="modal-actions">
+                <button type="submit" className="primary-button primary-button--wide">
+                  Déverrouiller
+                </button>
+                <button
+                  type="button"
+                  className="chip"
+                  onClick={() => setPinModalOpen(false)}
+                >
+                  Annuler
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
