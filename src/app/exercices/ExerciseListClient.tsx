@@ -305,7 +305,7 @@ export function ExerciseListClient({
               <article className="card">
                 <ExerciseCard exercise={exercise} isLive={exercise.isLive} />
                 <div className="chip-row chip-row--compact">
-                  {exercise.isLive ? (
+                  {exercise.isLive === true ? (
                     <span className="pill pill-live">LIVE</span>
                   ) : null}
                   {exercise.tags.slice(0, 3).map((tag) => (

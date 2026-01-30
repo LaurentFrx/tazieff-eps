@@ -617,7 +617,7 @@ export function ExerciseLiveDetail({
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
   const [highlightBlockKey, setHighlightBlockKey] = useState<string | null>(null);
   const [liveOpen, setLiveOpen] = useState(false);
-  const [liveExists, setLiveExists] = useState(source === "live");
+  const [liveExists, setLiveExists] = useState(false);
   const [liveDraft, setLiveDraft] = useState<LiveDraft | null>(null);
   const [deleteLiveOpen, setDeleteLiveOpen] = useState(false);
   const [isDeletingLive, setIsDeletingLive] = useState(false);
@@ -659,7 +659,7 @@ export function ExerciseLiveDetail({
   );
   const overrideDocView = merged.override?.doc;
 
-  const isLive = source === "live" ? liveExists : liveExists || !!patch;
+  const hasLive = !!liveExists;
   const isMdx = source === "mdx";
   const difficulty = merged.frontmatter.level ?? "intermediaire";
   const baseHeroImage = merged.frontmatter.media
@@ -928,7 +928,8 @@ export function ExerciseLiveDetail({
             return;
           }
           const row = payload.new as LiveExerciseRow;
-          setLiveExists(true);
+          const exists = Boolean(row?.data_json);
+          setLiveExists(exists);
           if (source === "live" && row?.data_json) {
             setBase({
               frontmatter: row.data_json.frontmatter,
@@ -974,6 +975,12 @@ export function ExerciseLiveDetail({
   }, [locale, slug, source, supabase]);
 
   useEffect(() => {
+    if (process.env.NODE_ENV === "development") {
+      console.debug("[live] slug=%s locale=%s liveExists=%o", slug, locale, liveExists);
+    }
+  }, [liveExists, locale, slug]);
+
+  useEffect(() => {
     if (!supabase) {
       return;
     }
@@ -1010,6 +1017,7 @@ export function ExerciseLiveDetail({
         return;
       }
       if (error) {
+        setLiveExists(false);
         return;
       }
       setLiveExists(!!data);
@@ -2304,7 +2312,7 @@ export function ExerciseLiveDetail({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <DifficultyPill level={difficulty} />
-          {isLive ? <span className="pill pill-live">LIVE</span> : null}
+          {hasLive ? <span className="pill pill-live">LIVE</span> : null}
           {merged.frontmatter.muscles.map((muscle) => (
             <span key={muscle} className="pill">
               {muscle}
