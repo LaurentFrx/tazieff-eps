@@ -582,7 +582,10 @@ export function ExerciseLiveDetail({
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
   const [highlightBlockKey, setHighlightBlockKey] = useState<string | null>(null);
   const [liveOpen, setLiveOpen] = useState(false);
+  const [liveExists, setLiveExists] = useState(source === "live");
   const [liveDraft, setLiveDraft] = useState<LiveDraft | null>(null);
+  const [deleteLiveOpen, setDeleteLiveOpen] = useState(false);
+  const [isDeletingLive, setIsDeletingLive] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<string | null>(null);
   const [blockToast, setBlockToast] = useState<{ id: number; message: string } | null>(
     null,
@@ -617,7 +620,8 @@ export function ExerciseLiveDetail({
   );
   const overrideDocView = merged.override?.doc;
 
-  const isLive = source === "live" || !!patch;
+  const isLive = source === "live" ? liveExists : liveExists || !!patch;
+  const isMdx = source === "mdx";
   const difficulty = merged.frontmatter.level ?? "intermediaire";
   const baseHeroImage = merged.frontmatter.media
     ? {
@@ -850,7 +854,7 @@ export function ExerciseLiveDetail({
   }, [locale, slug, supabase]);
 
   useEffect(() => {
-    if (!supabase || source !== "live") {
+    if (!supabase) {
       return;
     }
 
@@ -881,10 +885,12 @@ export function ExerciseLiveDetail({
             return;
           }
           if (payload.eventType === "DELETE") {
+            setLiveExists(false);
             return;
           }
           const row = payload.new as LiveExerciseRow;
-          if (row?.data_json) {
+          setLiveExists(true);
+          if (source === "live" && row?.data_json) {
             setBase({
               frontmatter: row.data_json.frontmatter,
               content: row.data_json.content,
@@ -898,11 +904,15 @@ export function ExerciseLiveDetail({
         }
         if (status === "SUBSCRIBED") {
           retry = 0;
-          setLiveReady(true);
+          if (source === "live") {
+            setLiveReady(true);
+          }
           return;
         }
         if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-          setLiveReady(false);
+          if (source === "live") {
+            setLiveReady(false);
+          }
           channel.unsubscribe();
           retryTimeout = setTimeout(
             setupChannel,
@@ -951,16 +961,20 @@ export function ExerciseLiveDetail({
     };
 
     const fetchLive = async () => {
-      if (source !== "live") {
-        return;
-      }
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("live_exercises")
         .select("slug, locale, data_json, updated_at")
         .eq("slug", slug)
         .eq("locale", locale)
         .maybeSingle();
-      if (!active || !data?.data_json) {
+      if (!active) {
+        return;
+      }
+      if (error) {
+        return;
+      }
+      setLiveExists(!!data);
+      if (source !== "live" || !data?.data_json) {
         return;
       }
       setBase({
@@ -1434,6 +1448,9 @@ export function ExerciseLiveDetail({
   };
 
   const openLiveEditor = () => {
+    if (isMdx) {
+      return;
+    }
     setSubmitStatus(null);
     setLiveDraft({
       slug: "",
@@ -1619,7 +1636,56 @@ export function ExerciseLiveDetail({
       return;
     }
     setSubmitStatus("Exercice LIVE créé.");
+    setLiveExists(true);
     setLiveOpen(false);
+  };
+
+  const handleDeleteLive = async () => {
+    if (!teacherPin) {
+      handleAuthError("PIN requis.");
+      return;
+    }
+    setIsDeletingLive(true);
+    let response: Response;
+    try {
+      response = await fetch(
+        `/api/teacher/live-exercise?slug=${encodeURIComponent(slug)}&locale=${encodeURIComponent(locale)}`,
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pin: teacherPin }),
+        },
+      );
+    } catch {
+      setIsDeletingLive(false);
+      showOverrideToast("Échec de la suppression.", "error");
+      return;
+    }
+
+    let payload: { ok?: boolean; code?: string; message?: string } | null = null;
+    try {
+      payload = (await response.json()) as {
+        ok?: boolean;
+        code?: string;
+        message?: string;
+      };
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok || !payload?.ok) {
+      if (response.status === 401) {
+        handleAuthError("PIN invalide.");
+      }
+      showOverrideToast(payload?.message ?? "Échec de la suppression.", "error");
+      setIsDeletingLive(false);
+      return;
+    }
+
+    setLiveExists(false);
+    setDeleteLiveOpen(false);
+    showOverrideToast("Version LIVE supprimée.", "success");
+    setIsDeletingLive(false);
   };
 
   const updateOverrideDoc = (
@@ -2255,13 +2321,26 @@ export function ExerciseLiveDetail({
             >
               Corriger cette fiche
             </button>
-            <button
-              type="button"
-              className="primary-button primary-button--wide"
-              onClick={openLiveEditor}
-            >
-              Créer un exercice LIVE
-            </button>
+            {isMdx ? (
+              <span title="Exercice déjà dans le catalogue. Utilise Enregistrer.">
+                <button
+                  type="button"
+                  className="primary-button primary-button--wide opacity-60 cursor-not-allowed"
+                  onClick={openLiveEditor}
+                  disabled
+                >
+                  Créer un exercice LIVE
+                </button>
+              </span>
+            ) : (
+              <button
+                type="button"
+                className="primary-button primary-button--wide"
+                onClick={openLiveEditor}
+              >
+                Créer un exercice LIVE
+              </button>
+            )}
           </div>
           {submitStatus ? (
             <p className="text-xs text-[color:var(--muted)]">{submitStatus}</p>
@@ -3569,6 +3648,20 @@ export function ExerciseLiveDetail({
                 </button>
               </div>
             </div>
+            {liveExists ? (
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3">
+                <p className="text-xs text-[color:var(--muted)]">
+                  Supprime la version LIVE (pastille LIVE). N’affecte pas la fiche catalogue.
+                </p>
+                <button
+                  type="button"
+                  className="chip bg-red-500 text-white hover:bg-red-600"
+                  onClick={() => setDeleteLiveOpen(true)}
+                >
+                  Supprimer la version LIVE
+                </button>
+              </div>
+            ) : null}
             {mediaStatus ? (
               <p className="text-xs text-[color:var(--muted)]">{mediaStatus}</p>
             ) : null}
@@ -3623,6 +3716,34 @@ export function ExerciseLiveDetail({
                     onClick={handleCloseWithoutSave}
                   >
                     Fermer sans enregistrer
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : null}
+          {deleteLiveOpen ? (
+            <div className="modal-overlay" role="dialog" aria-modal="true">
+              <div className="modal-card">
+                <h2>Supprimer la version LIVE (pastille LIVE)</h2>
+                <p className="text-sm text-[color:var(--muted)]">
+                  Cette action est irréversible. La fiche catalogue (MDX) n’est pas affectée.
+                </p>
+                <div className="modal-actions">
+                  <button
+                    type="button"
+                    className="chip"
+                    onClick={() => setDeleteLiveOpen(false)}
+                    disabled={isDeletingLive}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="button"
+                    className="primary-button primary-button--wide bg-red-500 text-white hover:bg-red-600"
+                    onClick={handleDeleteLive}
+                    disabled={isDeletingLive}
+                  >
+                    {isDeletingLive ? "Suppression..." : "Supprimer la version LIVE"}
                   </button>
                 </div>
               </div>

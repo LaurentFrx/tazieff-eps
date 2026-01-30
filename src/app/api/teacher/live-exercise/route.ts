@@ -18,6 +18,16 @@ type LiveStats = {
   blocks: number | null;
 };
 
+type LiveDeletePayload = {
+  pin?: string;
+};
+
+type ErrorPayload = {
+  ok: false;
+  code: string;
+  message: string;
+};
+
 function getLiveStats(content: string): LiveStats {
   if (!content.trim()) {
     return { sections: null, blocks: null };
@@ -46,6 +56,12 @@ function logLiveError({
       code ?? "unknown"
     } status=${status} msg=${msg}`,
   );
+}
+
+function jsonError(code: string, message: string, status: number) {
+  return NextResponse.json({ ok: false, code, message } satisfies ErrorPayload, {
+    status,
+  });
 }
 
 export async function POST(request: Request) {
@@ -149,6 +165,44 @@ export async function POST(request: Request) {
       stats.sections ?? "unknown"
     } blocks=${stats.blocks ?? "unknown"}`,
   );
+
+  return NextResponse.json({ ok: true });
+}
+
+export async function DELETE(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const slug = searchParams.get("slug")?.trim() ?? "";
+  const locale = searchParams.get("locale")?.trim() ?? "";
+
+  let payload: LiveDeletePayload | null = null;
+  try {
+    payload = (await request.json()) as LiveDeletePayload;
+  } catch {
+    payload = null;
+  }
+
+  if (!slug || !locale) {
+    return jsonError("missing_fields", "Champs requis manquants.", 400);
+  }
+
+  if (!payload?.pin) {
+    return jsonError("missing_fields", "PIN requis.", 400);
+  }
+
+  if (payload.pin !== process.env.TEACHER_PIN) {
+    return jsonError("invalid_pin", "PIN invalide.", 401);
+  }
+
+  const supabase = getSupabaseServiceClient();
+  const { error } = await supabase
+    .from("live_exercises")
+    .delete()
+    .eq("slug", slug)
+    .eq("locale", locale);
+
+  if (error) {
+    return jsonError("delete_failed", "Erreur de suppression.", 500);
+  }
 
   return NextResponse.json({ ok: true });
 }
