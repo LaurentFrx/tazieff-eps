@@ -131,27 +131,8 @@ export default function ReglagesPage() {
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
-  const ssrLang =
-    typeof document === "undefined"
-      ? lang
-      : document.documentElement.lang === "en"
-        ? "en"
-        : "fr";
-  const ssrTheme: UiThemePreference =
-    typeof document === "undefined"
-      ? currentTheme
-      : (() => {
-          const dataTheme = document.documentElement.dataset.theme;
-          if (dataTheme === "light" || dataTheme === "dark") {
-            return dataTheme;
-          }
-          if (document.documentElement.classList.contains("dark")) {
-            return "dark";
-          }
-          return "system";
-        })();
-  const stableLang = mounted ? lang : ssrLang;
-  const stableTheme = mounted ? currentTheme : ssrTheme;
+  const stableLang = mounted ? lang : lang;
+  const stableTheme = mounted ? currentTheme : "system";
   const stableFieldTheme = mounted ? fieldTheme : 1;
 
   const openPinModal = () => {
