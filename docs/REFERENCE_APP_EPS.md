@@ -38,3 +38,25 @@ Avant de valider une modification, répondre OUI à ces 3 questions :
 - (3) Le contenu reste-t-il dans `content/**` et les médias dans `public/media/**` ? ✅
 
 Si une réponse est NON → ne pas implémenter, proposer une alternative rétrocompatible.
+
+## Supabase — RLS sur media_assets
+
+### Contexte
+Security Advisor signale que la table `public.media_assets` est exposée via PostgREST avec RLS désactivée.
+
+### Décision (Option B)
+Le client (browser) lit `public.media_assets` via la clé anon (ex: `ExerciseLiveDetail.tsx`), donc on active RLS **et** on ajoute une policy SELECT pour les rôles `anon` et `authenticated`.
+
+### SQL à exécuter dans Supabase
+```sql
+alter table public.media_assets enable row level security;
+create policy "media_assets_select_public"
+on public.media_assets
+for select
+to anon, authenticated
+using (true);
+```
+
+### Notes
+- Les routes API côté serveur utilisent le service role → bypass RLS, donc pas d'impact.
+- Si besoin de restreindre plus tard: remplacer `using (true)` par des règles (ex: stockage privé + signed URLs, policy par bucket/ownership).
