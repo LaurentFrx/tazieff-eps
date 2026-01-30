@@ -1486,7 +1486,7 @@ export function ExerciseLiveDetail({
 
   const handleSaveOverride = async () => {
     if (!teacherPin) {
-      handleAuthError("PIN requis.");
+      showOverrideToast("PIN requis.", "error");
       return;
     }
     if (!overrideDoc) {
@@ -1684,7 +1684,7 @@ export function ExerciseLiveDetail({
 
     setLiveExists(false);
     setDeleteLiveOpen(false);
-    showOverrideToast("Version LIVE supprimée.", "success");
+    showOverrideToast("Version LIVE supprimée", "success");
     setIsDeletingLive(false);
   };
 
@@ -2541,6 +2541,32 @@ export function ExerciseLiveDetail({
               ) : null}
               {overrideDoc ? (
                 <div className="stack-md">
+                  {liveExists ? (
+                    <div className="rounded-2xl border border-red-400/40 bg-red-500/10 p-4 shadow-lg">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center gap-2">
+                            <span aria-hidden="true">⚠️</span>
+                            <h3 className="text-base font-semibold">Version LIVE</h3>
+                            <span className="rounded-full border border-red-400/60 bg-red-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-red-100">
+                              LIVE actif
+                            </span>
+                          </div>
+                          <p className="text-sm text-[color:var(--muted)]">
+                            Une version LIVE existe pour cette fiche. Tu peux la supprimer
+                            (la fiche MDX reste intacte).
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          className="primary-button primary-button--wide bg-red-500 text-white hover:bg-red-600"
+                          onClick={() => setDeleteLiveOpen(true)}
+                        >
+                          Supprimer la version LIVE…
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
                   <div className="rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-4 shadow-lg">
                     <div className="stack-md">
                       <div className="flex flex-col gap-1">
@@ -3648,20 +3674,6 @@ export function ExerciseLiveDetail({
                 </button>
               </div>
             </div>
-            {liveExists ? (
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3">
-                <p className="text-xs text-[color:var(--muted)]">
-                  Supprime la version LIVE (pastille LIVE). N’affecte pas la fiche catalogue.
-                </p>
-                <button
-                  type="button"
-                  className="chip bg-red-500 text-white hover:bg-red-600"
-                  onClick={() => setDeleteLiveOpen(true)}
-                >
-                  Supprimer la version LIVE
-                </button>
-              </div>
-            ) : null}
             {mediaStatus ? (
               <p className="text-xs text-[color:var(--muted)]">{mediaStatus}</p>
             ) : null}
@@ -3728,6 +3740,22 @@ export function ExerciseLiveDetail({
                 <p className="text-sm text-[color:var(--muted)]">
                   Cette action est irréversible. La fiche catalogue (MDX) n’est pas affectée.
                 </p>
+                <div className="stack-sm">
+                  <p className="text-xs text-[color:var(--muted)]">
+                    Slug: <span className="font-semibold text-[color:var(--ink)]">{slug}</span>
+                    {" • "}
+                    Locale:{" "}
+                    <span className="font-semibold text-[color:var(--ink)]">{locale}</span>
+                  </p>
+                  <label className="field-label">PIN professeur</label>
+                  <input
+                    className="field-input"
+                    type="password"
+                    value={teacherPin}
+                    onChange={(event) => setTeacherPin(event.target.value)}
+                    placeholder="PIN requis"
+                  />
+                </div>
                 <div className="modal-actions">
                   <button
                     type="button"
@@ -3741,7 +3769,7 @@ export function ExerciseLiveDetail({
                     type="button"
                     className="primary-button primary-button--wide bg-red-500 text-white hover:bg-red-600"
                     onClick={handleDeleteLive}
-                    disabled={isDeletingLive}
+                    disabled={isDeletingLive || !teacherPin}
                   >
                     {isDeletingLive ? "Suppression..." : "Supprimer la version LIVE"}
                   </button>
