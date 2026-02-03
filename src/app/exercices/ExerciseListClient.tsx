@@ -35,6 +35,8 @@ declare global {
 
 const POLL_INTERVAL_MS = 20000;
 const THEME_OPTIONS = [1, 2, 3] as const;
+const NO_EQUIPMENT_ID = "sans-materiel";
+const NO_EQUIPMENT_LABEL = "Sans matériel";
 type ThemeOption = (typeof THEME_OPTIONS)[number];
 const LEVEL_LABELS: Record<Difficulty, string> = {
   debutant: "Débutant",
@@ -481,10 +483,19 @@ export function ExerciseListClient({
 
   const equipmentOptions = useMemo(() => {
     const equipmentSet = new Set<string>();
+    let hasNoEquipment = false;
     visibleExercises.forEach((exercise) => {
-      exercise.equipment?.forEach((item) => equipmentSet.add(item));
+      const items = (exercise.equipment ?? [])
+        .map((item) => item?.trim())
+        .filter((item): item is string => Boolean(item));
+      if (items.length === 0) {
+        hasNoEquipment = true;
+        return;
+      }
+      items.forEach((item) => equipmentSet.add(item));
     });
-    return Array.from(equipmentSet).sort((a, b) => a.localeCompare(b, "fr"));
+    const sorted = Array.from(equipmentSet).sort((a, b) => a.localeCompare(b, "fr"));
+    return hasNoEquipment ? [NO_EQUIPMENT_ID, ...sorted] : sorted;
   }, [visibleExercises]);
 
   const tagOptions = useMemo(() => {
@@ -499,6 +510,10 @@ export function ExerciseListClient({
 
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
+    const selectedHasNoEquipment = selectedEquipment.includes(NO_EQUIPMENT_ID);
+    const selectedEquipmentValues = selectedEquipment.filter(
+      (item) => item !== NO_EQUIPMENT_ID,
+    );
 
     return visibleExercises.filter((exercise) => {
       if (onlyFavorites && !favorites.includes(exercise.slug)) {
@@ -512,9 +527,16 @@ export function ExerciseListClient({
       }
 
       if (selectedEquipment.length > 0) {
-        const equipment = exercise.equipment ?? [];
-        const hasEquipment = selectedEquipment.some((item) => equipment.includes(item));
-        if (!hasEquipment) {
+        const exEquipments = (exercise.equipment ?? [])
+          .map((item) => item?.trim())
+          .filter((item): item is string => Boolean(item));
+        const isNoEquipment = exEquipments.length === 0;
+        const hasSelectedEquipment =
+          selectedEquipmentValues.length > 0 &&
+          exEquipments.some((item) => selectedEquipmentValues.includes(item));
+        const matches =
+          (selectedHasNoEquipment && isNoEquipment) || hasSelectedEquipment;
+        if (!matches) {
           return false;
         }
       }
@@ -701,6 +723,9 @@ export function ExerciseListClient({
             selected={selectedEquipment}
             onToggleOption={toggleEquipment}
             onClear={() => setSelectedEquipment([])}
+            formatLabel={(value) =>
+              value === NO_EQUIPMENT_ID ? NO_EQUIPMENT_LABEL : value
+            }
             open={openFilter === "equipment"}
             onToggle={() => toggleFilter("equipment")}
           />
