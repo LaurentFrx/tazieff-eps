@@ -2,14 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import logo from "../../public/media/branding/logo-eps.webp";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
 export function AppHeader() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const settingsLabel = t("settings.open");
   const pathname = usePathname();
+  const router = useRouter();
   const isSettingsPage = pathname?.startsWith("/reglages");
   const headerConfig = (() => {
     if (!pathname) {
@@ -49,6 +50,7 @@ export function AppHeader() {
   const brandSubtitleClass = `brand-subtitle${
     headerConfig ? " brand-subtitle--page" : ""
   }`;
+  const backLabel = lang === "en" ? "Back" : "Retour";
 
   if (pathname === "/") {
     return null;
@@ -67,8 +69,24 @@ export function AppHeader() {
           ) : null}
         </div>
       </div>
-      {!isSettingsPage && (
-        <div className="header-actions">
+      <div className="header-actions">
+        {isSettingsPage ? (
+          <button
+            type="button"
+            className="icon-button"
+            aria-label={backLabel}
+            title={backLabel}
+            onClick={() => {
+              if (typeof window !== "undefined" && window.history.length > 1) {
+                router.back();
+                return;
+              }
+              router.push("/exercices");
+            }}
+          >
+            <span aria-hidden="true">←</span>
+          </button>
+        ) : (
           <Link
             href="/reglages"
             className="icon-button"
@@ -77,8 +95,8 @@ export function AppHeader() {
           >
             <span aria-hidden="true">⚙️</span>
           </Link>
-        </div>
-      )}
+        )}
+      </div>
     </header>
   );
 }
