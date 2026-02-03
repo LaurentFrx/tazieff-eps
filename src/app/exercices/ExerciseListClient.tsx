@@ -9,11 +9,6 @@ import type { Lang } from "@/lib/i18n/I18nProvider";
 import type { LiveExerciseListItem, LiveExerciseRow } from "@/lib/live/types";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
-  getTheme,
-  onThemeChange,
-  type ThemePreference,
-} from "@/lib/storage";
-import {
   EMPTY_FAVORITES_SERVER_SNAPSHOT,
   getFavoritesSnapshot,
   subscribeFavorites,
@@ -233,7 +228,6 @@ export function ExerciseListClient({
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedThemes, setSelectedThemes] = useState<ThemeOption[]>([]);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
-  const [onlyCompatible, setOnlyCompatible] = useState(false);
   const [teacherMode] = useState<TeacherModeSnapshot>(() => getTeacherModeSnapshot());
   const [createStatus, setCreateStatus] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -241,11 +235,6 @@ export function ExerciseListClient({
     subscribeFavorites,
     getFavoritesSnapshot,
     () => EMPTY_FAVORITES_SERVER_SNAPSHOT,
-  );
-  const theme = useSyncExternalStore<ThemePreference>(
-    (callback) => onThemeChange(() => callback()),
-    getTheme,
-    () => 1 as ThemePreference,
   );
   const teacherUnlocked = teacherMode.unlocked;
   const teacherPin = teacherMode.pin;
@@ -413,14 +402,6 @@ export function ExerciseListClient({
         return false;
       }
 
-      if (
-        onlyCompatible &&
-        selectedThemes.length === 0 &&
-        !exercise.themeCompatibility.includes(theme)
-      ) {
-        return false;
-      }
-
       if (selectedLevels.length > 0) {
         if (!exercise.level || !selectedLevels.includes(exercise.level)) {
           return false;
@@ -463,14 +444,12 @@ export function ExerciseListClient({
   }, [
     favorites,
     visibleExercises,
-    onlyCompatible,
     onlyFavorites,
     query,
     selectedEquipment,
     selectedLevels,
     selectedTags,
     selectedThemes,
-    theme,
   ]);
 
   const toggleLevel = (level: Difficulty) => {
@@ -497,7 +476,6 @@ export function ExerciseListClient({
         ? prev.filter((item) => item !== themeValue)
         : [...prev, themeValue],
     );
-    setOnlyCompatible(false);
   };
 
   const handleCreateExercise = async () => {
@@ -583,28 +561,6 @@ export function ExerciseListClient({
         <div className="chip-row">
           <button
             type="button"
-            className={`chip${onlyFavorites ? " is-active" : ""}`}
-            onClick={() => setOnlyFavorites((prev) => !prev)}
-          >
-            Favoris
-          </button>
-          <button
-            type="button"
-            className={`chip${onlyCompatible ? " is-active" : ""}`}
-            onClick={() =>
-              setOnlyCompatible((prev) => {
-                const next = !prev;
-                if (next) {
-                  setSelectedThemes([]);
-                }
-                return next;
-              })
-            }
-          >
-            Compatibles thème {theme}
-          </button>
-          <button
-            type="button"
             className="chip chip-clear"
             onClick={() => {
               setQuery("");
@@ -613,7 +569,6 @@ export function ExerciseListClient({
               setSelectedTags([]);
               setSelectedThemes([]);
               setOnlyFavorites(false);
-              setOnlyCompatible(false);
             }}
           >
             Réinitialiser
@@ -650,6 +605,17 @@ export function ExerciseListClient({
             onClear={() => setSelectedThemes([])}
             formatLabel={(value) => `Thème ${value}`}
           />
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium">Favoris</span>
+            <select
+              className="field-input"
+              value={onlyFavorites ? "only" : "all"}
+              onChange={(event) => setOnlyFavorites(event.target.value === "only")}
+            >
+              <option value="all">Tous</option>
+              <option value="only">Favoris uniquement</option>
+            </select>
+          </div>
         </div>
       </div>
 
