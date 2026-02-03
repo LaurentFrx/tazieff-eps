@@ -37,6 +37,14 @@ const POLL_INTERVAL_MS = 20000;
 const THEME_OPTIONS = [1, 2, 3] as const;
 const NO_EQUIPMENT_ID = "sans-materiel";
 const NO_EQUIPMENT_LABEL = "Sans matériel";
+const CHIP_VARIANTS = [
+  "bg-blue-500/10 border-blue-400/30 text-blue-100",
+  "bg-emerald-500/10 border-emerald-400/30 text-emerald-100",
+  "bg-violet-500/10 border-violet-400/30 text-violet-100",
+  "bg-amber-500/10 border-amber-400/30 text-amber-100",
+  "bg-cyan-500/10 border-cyan-400/30 text-cyan-100",
+  "bg-rose-500/10 border-rose-400/30 text-rose-100",
+] as const;
 type ThemeOption = (typeof THEME_OPTIONS)[number];
 const LEVEL_LABELS: Record<Difficulty, string> = {
   debutant: "Débutant",
@@ -123,30 +131,37 @@ type SingleSelectMenuProps<T> = {
   onToggle: () => void;
 };
 
-function formatSelectedLabels<T extends MultiSelectValue>(
+function chipVariant(id: MultiSelectValue) {
+  const key = String(id);
+  let hash = 0;
+  for (let index = 0; index < key.length; index += 1) {
+    hash += key.charCodeAt(index);
+  }
+  return CHIP_VARIANTS[hash % CHIP_VARIANTS.length];
+}
+
+function renderSelectedChips<T extends MultiSelectValue>(
   selected: readonly T[],
   options: readonly T[],
   formatLabel?: (value: T) => string,
 ) {
   if (selected.length === 0) {
-    return "Tous";
+    return <span className="text-xs text-[color:var(--muted)]">Tous</span>;
   }
 
-  const getLabel = (value: T) => (formatLabel ? formatLabel(value) : String(value));
   const selectedSet = new Set(selected);
-  const orderedLabels = options.filter((option) => selectedSet.has(option)).map(getLabel);
-  const labels = orderedLabels.length > 0 ? orderedLabels : selected.map(getLabel);
+  const orderedValues = options.filter((option) => selectedSet.has(option));
+  const values = orderedValues.length > 0 ? orderedValues : selected;
+  const getLabel = (value: T) => (formatLabel ? formatLabel(value) : String(value));
 
-  if (labels.length === 0) {
-    return "Tous";
-  }
-  if (labels.length === 1) {
-    return labels[0];
-  }
-  if (labels.length === 2) {
-    return `${labels[0]}, ${labels[1]}`;
-  }
-  return `${labels[0]}, ${labels[1]} +${labels.length - 2}`;
+  return values.map((value) => (
+    <span
+      key={`chip-${String(value)}`}
+      className={`rounded-full border px-2 py-0.5 text-xs font-medium ${chipVariant(value)}`}
+    >
+      {getLabel(value)}
+    </span>
+  ));
 }
 
 function MultiSelectMenu<T extends MultiSelectValue>({
@@ -159,7 +174,7 @@ function MultiSelectMenu<T extends MultiSelectValue>({
   open,
   onToggle,
 }: MultiSelectMenuProps<T>) {
-  const summary = formatSelectedLabels(selected, options, formatLabel);
+  const ringClass = open ? "ring-2 ring-red-400/60" : "ring-1 ring-white/10";
 
   if (options.length === 0) {
     return null;
@@ -169,13 +184,15 @@ function MultiSelectMenu<T extends MultiSelectValue>({
     <div className="relative">
       <button
         type="button"
-        className="field-input flex items-center justify-between gap-3"
+        className={`field-input flex items-center justify-between gap-3 ${ringClass}`}
         onClick={onToggle}
         aria-expanded={open}
       >
-        <span className="flex min-w-0 flex-col items-start">
+        <span className="flex min-w-0 flex-1 flex-col items-start gap-2">
           <span className="text-sm font-medium">{label}</span>
-          <span className="truncate text-xs text-[color:var(--muted)]">{summary}</span>
+          <span className="flex w-full flex-wrap items-center gap-2">
+            {renderSelectedChips(selected, options, formatLabel)}
+          </span>
         </span>
         <span aria-hidden="true">▾</span>
       </button>
@@ -228,6 +245,7 @@ function SingleSelectMenu<T>({
 }: SingleSelectMenuProps<T>) {
   const menuId = useId();
   const summary = formatLabel ? formatLabel(selected) : String(selected);
+  const ringClass = open ? "ring-2 ring-red-400/60" : "ring-1 ring-white/10";
 
   if (options.length === 0) {
     return null;
@@ -237,7 +255,7 @@ function SingleSelectMenu<T>({
     <div className="relative">
       <button
         type="button"
-        className="field-input flex items-center justify-between gap-3"
+        className={`field-input flex items-center justify-between gap-3 ${ringClass}`}
         onClick={onToggle}
         aria-expanded={open}
       >
