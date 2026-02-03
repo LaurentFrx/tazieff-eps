@@ -121,6 +121,32 @@ type SingleSelectMenuProps<T> = {
   onToggle: () => void;
 };
 
+function formatSelectedLabels<T extends MultiSelectValue>(
+  selected: readonly T[],
+  options: readonly T[],
+  formatLabel?: (value: T) => string,
+) {
+  if (selected.length === 0) {
+    return "Tous";
+  }
+
+  const getLabel = (value: T) => (formatLabel ? formatLabel(value) : String(value));
+  const selectedSet = new Set(selected);
+  const orderedLabels = options.filter((option) => selectedSet.has(option)).map(getLabel);
+  const labels = orderedLabels.length > 0 ? orderedLabels : selected.map(getLabel);
+
+  if (labels.length === 0) {
+    return "Tous";
+  }
+  if (labels.length === 1) {
+    return labels[0];
+  }
+  if (labels.length === 2) {
+    return `${labels[0]}, ${labels[1]}`;
+  }
+  return `${labels[0]}, ${labels[1]} +${labels.length - 2}`;
+}
+
 function MultiSelectMenu<T extends MultiSelectValue>({
   label,
   options,
@@ -131,10 +157,7 @@ function MultiSelectMenu<T extends MultiSelectValue>({
   open,
   onToggle,
 }: MultiSelectMenuProps<T>) {
-  const summary =
-    selected.length > 0
-      ? `${selected.length} sélectionné${selected.length > 1 ? "s" : ""}`
-      : "Tous";
+  const summary = formatSelectedLabels(selected, options, formatLabel);
 
   if (options.length === 0) {
     return null;
@@ -148,9 +171,9 @@ function MultiSelectMenu<T extends MultiSelectValue>({
         onClick={onToggle}
         aria-expanded={open}
       >
-        <span className="flex flex-col items-start">
+        <span className="flex min-w-0 flex-col items-start">
           <span className="text-sm font-medium">{label}</span>
-          <span className="text-xs text-[color:var(--muted)]">{summary}</span>
+          <span className="truncate text-xs text-[color:var(--muted)]">{summary}</span>
         </span>
         <span aria-hidden="true">▾</span>
       </button>
@@ -216,9 +239,9 @@ function SingleSelectMenu<T>({
         onClick={onToggle}
         aria-expanded={open}
       >
-        <span className="flex flex-col items-start">
+        <span className="flex min-w-0 flex-col items-start">
           <span className="text-sm font-medium">{label}</span>
-          <span className="text-xs text-[color:var(--muted)]">{summary}</span>
+          <span className="truncate text-xs text-[color:var(--muted)]">{summary}</span>
         </span>
         <span aria-hidden="true">▾</span>
       </button>
