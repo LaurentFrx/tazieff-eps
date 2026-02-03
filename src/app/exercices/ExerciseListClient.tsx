@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useId, useMemo, useState, useSyncExternalStore } from "react";
 import { ExerciseCard } from "@/components/ExerciseCard";
 import type { Difficulty } from "@/lib/content/schema";
 import type { Lang } from "@/lib/i18n/I18nProvider";
@@ -109,6 +109,14 @@ type MultiSelectMenuProps<T extends MultiSelectValue> = {
 
 type ExerciseListItem = LiveExerciseListItem & { status?: ExerciseStatus };
 
+type SingleSelectMenuProps<T> = {
+  label: string;
+  options: readonly T[];
+  selected: T;
+  onSelect: (value: T) => void;
+  formatLabel?: (value: T) => string;
+};
+
 function MultiSelectMenu<T extends MultiSelectValue>({
   label,
   options,
@@ -167,6 +175,69 @@ function MultiSelectMenu<T extends MultiSelectValue>({
                     type="checkbox"
                     checked={isActive}
                     onChange={() => onToggle(option)}
+                  />
+                  <span>{labelValue}</span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function SingleSelectMenu<T>({
+  label,
+  options,
+  selected,
+  onSelect,
+  formatLabel,
+}: SingleSelectMenuProps<T>) {
+  const [open, setOpen] = useState(false);
+  const menuId = useId();
+  const summary = formatLabel ? formatLabel(selected) : String(selected);
+
+  if (options.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        className="field-input flex items-center justify-between gap-3"
+        onClick={() => setOpen((prev) => !prev)}
+        aria-expanded={open}
+      >
+        <span className="flex flex-col items-start">
+          <span className="text-sm font-medium">{label}</span>
+          <span className="text-xs text-[color:var(--muted)]">{summary}</span>
+        </span>
+        <span aria-hidden="true">▾</span>
+      </button>
+      {open ? (
+        <div className="absolute z-20 mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-lg">
+          <div className="flex items-center justify-between px-2 pb-2">
+            <span className="text-xs text-[color:var(--muted)]">
+              {options.length} option{options.length > 1 ? "s" : ""}
+            </span>
+          </div>
+          <div className="max-h-56 space-y-1 overflow-y-auto">
+            {options.map((option, index) => {
+              const isActive = Object.is(selected, option);
+              const labelValue = formatLabel ? formatLabel(option) : String(option);
+
+              return (
+                <label
+                  key={`${menuId}-${index}`}
+                  className="flex min-h-[36px] items-center gap-3 rounded-xl px-3 py-2 text-sm hover:bg-white/10"
+                >
+                  <input
+                    type="radio"
+                    name={menuId}
+                    checked={isActive}
+                    onChange={() => onSelect(option)}
                   />
                   <span>{labelValue}</span>
                 </label>
@@ -605,17 +676,13 @@ export function ExerciseListClient({
             onClear={() => setSelectedThemes([])}
             formatLabel={(value) => `Thème ${value}`}
           />
-          <div className="flex flex-col gap-2">
-            <span className="text-sm font-medium">Favoris</span>
-            <select
-              className="field-input"
-              value={onlyFavorites ? "only" : "all"}
-              onChange={(event) => setOnlyFavorites(event.target.value === "only")}
-            >
-              <option value="all">Tous</option>
-              <option value="only">Favoris uniquement</option>
-            </select>
-          </div>
+          <SingleSelectMenu
+            label="Favoris"
+            options={[false, true]}
+            selected={onlyFavorites}
+            onSelect={(value) => setOnlyFavorites(value)}
+            formatLabel={(value) => (value ? "Favoris uniquement" : "Tous")}
+          />
         </div>
       </div>
 
