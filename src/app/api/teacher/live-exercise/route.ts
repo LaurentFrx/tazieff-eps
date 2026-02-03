@@ -10,6 +10,7 @@ type LiveExercisePayload = {
   dataJson?: {
     frontmatter?: unknown;
     content?: string;
+    status?: "draft" | "ready";
   };
 };
 
@@ -27,6 +28,28 @@ type ErrorPayload = {
   code: string;
   message: string;
 };
+
+const LEVEL_VALUES = new Set(["debutant", "intermediaire", "avance"]);
+
+function toCleanString(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function toStringArray(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.map((item) => toCleanString(item)).filter(Boolean);
+}
+
+function toThemeArray(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value
+    .map((item) => Number(item))
+    .filter((item) => item === 1 || item === 2 || item === 3) as Array<1 | 2 | 3>;
+}
 
 function getLiveStats(content: string): LiveStats {
   if (!content.trim()) {
@@ -104,11 +127,36 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "PIN invalide." }, { status: 401 });
   }
 
-  const parsedFrontmatter = ExerciseFrontmatterSchema.safeParse({
-    ...(dataJson.frontmatter as Record<string, unknown>),
+  const rawFrontmatter = (dataJson.frontmatter as Record<string, unknown>) ?? {};
+  const title = toCleanString(rawFrontmatter.title);
+  const tags = toStringArray(rawFrontmatter.tags);
+  const muscles = toStringArray(rawFrontmatter.muscles);
+  const themeCompatibility = toThemeArray(rawFrontmatter.themeCompatibility);
+  const levelRaw = toCleanString(rawFrontmatter.level);
+  const level = LEVEL_VALUES.has(levelRaw)
+    ? (levelRaw as "debutant" | "intermediaire" | "avance")
+    : undefined;
+  const equipment = toStringArray(rawFrontmatter.equipment);
+  const media = toCleanString(rawFrontmatter.media);
+  const content = typeof dataJson.content === "string" ? dataJson.content : "";
+  const hasRequired =
+    Boolean(title) &&
+    tags.length > 0 &&
+    muscles.length > 0 &&
+    themeCompatibility.length > 0;
+  const status: "draft" | "ready" = hasRequired ? "ready" : "draft";
+  const normalizedFrontmatter = {
+    title,
     slug,
-  });
-  if (!parsedFrontmatter.success) {
+    tags,
+    level,
+    themeCompatibility,
+    muscles,
+    equipment: equipment.length > 0 ? equipment : undefined,
+    media: media || undefined,
+  };
+  const parsedFrontmatter = ExerciseFrontmatterSchema.safeParse(normalizedFrontmatter);
+  if (status === "ready" && !parsedFrontmatter.success) {
     logLiveError({
       slug,
       locale,
@@ -119,18 +167,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Frontmatter invalide." }, { status: 400 });
   }
 
-  const content = typeof dataJson.content === "string" ? dataJson.content : "";
-  if (!content.trim()) {
-    logLiveError({
-      slug,
-      locale,
-      status: 400,
-      code: "content_required",
-      msg: "Contenu requis.",
-    });
-    return NextResponse.json({ error: "Contenu requis." }, { status: 400 });
-  }
-
   const supabase = getSupabaseServiceClient();
   const updatedAt = new Date().toISOString();
   const stats = getLiveStats(content);
@@ -138,11 +174,14 @@ export async function POST(request: Request) {
     .from("live_exercises")
     .upsert(
       {
-        slug: parsedFrontmatter.data.slug,
+        slug,
         locale,
         data_json: {
-          frontmatter: parsedFrontmatter.data,
+          frontmatter: parsedFrontmatter.success
+            ? parsedFrontmatter.data
+            : normalizedFrontmatter,
           content,
+          status,
         },
         updated_at: updatedAt,
       },

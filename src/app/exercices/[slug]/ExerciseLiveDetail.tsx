@@ -4,13 +4,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import type { StaticImageData } from "next/image";
+import NextImage, { type StaticImageData } from "next/image";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import DifficultyPill from "@/components/DifficultyPill";
 import { FavoriteToggle } from "@/components/FavoriteToggle";
 import { HeroMedia } from "@/components/media/HeroMedia";
 import s1001 from "../../../../public/images/exos/s1-001.webp";
+import logo from "../../../../public/media/branding/logo-eps.webp";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
-import { ExerciseFrontmatterSchema } from "@/lib/content/schema";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Lang } from "@/lib/i18n/messages";
 import { mdxComponents } from "@/lib/mdx/components";
 import { applyExercisePatch, splitMarkdownSections } from "@/lib/live/patch";
@@ -32,6 +35,7 @@ type ExerciseLiveDetailProps = {
   baseFrontmatter: ExerciseFrontmatter;
   baseContent: string;
   initialPatch: ExerciseOverridePatch | null;
+  onRevalidate?: (slug: string) => Promise<void>;
 };
 
 type LiveDraft = {
@@ -45,6 +49,8 @@ type LiveDraft = {
   media: string;
   content: string;
 };
+
+type ExerciseStatus = "draft" | "ready";
 
 type TeacherModeSnapshot = {
   unlocked: boolean;
@@ -551,7 +557,11 @@ export function ExerciseLiveDetail({
   baseFrontmatter,
   baseContent,
   initialPatch,
+  onRevalidate,
 }: ExerciseLiveDetailProps) {
+  const { t } = useI18n();
+  const settingsLabel = t("settings.open");
+  const searchParams = useSearchParams();
   const supabase = getSupabaseBrowserClient();
   const [base, setBase] = useState(() => ({
     frontmatter: baseFrontmatter,
@@ -640,6 +650,7 @@ export function ExerciseLiveDetail({
   const addBlockMenuRef = useRef<HTMLDivElement | null>(null);
   const addBlockButtonRef = useRef<HTMLButtonElement | null>(null);
   const dropdownMenuRef = useRef<HTMLDivElement | null>(null);
+  const autoEditHandledRef = useRef(false);
   const dropdownTriggerRefs = useRef<
     Record<"type" | "muscles" | "themes", HTMLButtonElement | null>
   >({
@@ -659,9 +670,9 @@ export function ExerciseLiveDetail({
   );
   const overrideDocView = merged.override?.doc;
 
-  const hasLive = !!liveExists;
-  const isMdx = source === "mdx";
   const difficulty = merged.frontmatter.level ?? "intermediaire";
+  const displayTitle =
+    merged.frontmatter.title?.trim() || "Brouillon sans titre";
   const baseHeroImage = merged.frontmatter.media
     ? {
         "/images/exos/s1-001.webp": s1001,
@@ -674,13 +685,13 @@ export function ExerciseLiveDetail({
       ? overrideHeroUrl
         ? {
             src: overrideHeroUrl,
-            alt: overrideHero.alt ?? merged.frontmatter.title,
+            alt: overrideHero.alt ?? displayTitle,
             width: HERO_OVERRIDE_DIMENSIONS.width,
             height: HERO_OVERRIDE_DIMENSIONS.height,
           }
         : null
       : baseHeroImage
-        ? { src: baseHeroImage, alt: merged.frontmatter.title }
+        ? { src: baseHeroImage, alt: displayTitle }
         : null;
   const tagPills: Array<{ label: string; kind?: string }> =
     overrideDocView?.pills ??
@@ -819,6 +830,53 @@ export function ExerciseLiveDetail({
     merged.frontmatter.tags,
     pillCustomOptions,
   ]);
+
+  const saveMeta = useMemo(() => {
+    const tags = uniqueLabels(
+      pillState.selections.type.map((value) => normalizeLabel(value)),
+    ).filter(Boolean);
+    const muscles = uniqueLabels(
+      pillState.selections.muscles.map((value) => normalizeLabel(value)),
+    ).filter(Boolean);
+    const title = merged.frontmatter.title?.trim() ?? "";
+    const themes = merged.frontmatter.themeCompatibility ?? [];
+    const missing: string[] = [];
+
+    if (!title) {
+      missing.push("titre");
+    }
+    if (tags.length === 0) {
+      missing.push("tags");
+    }
+    if (muscles.length === 0) {
+      missing.push("muscles");
+    }
+    if (themes.length === 0) {
+      missing.push("thèmes");
+    }
+
+    return {
+      status: missing.length === 0 ? ("ready" as ExerciseStatus) : ("draft" as ExerciseStatus),
+      missing,
+      tags,
+      muscles,
+    };
+  }, [
+    merged.frontmatter.title,
+    merged.frontmatter.themeCompatibility,
+    pillState.selections.muscles,
+    pillState.selections.type,
+  ]);
+
+  const triggerRevalidate = useCallback(
+    (targetSlug: string) => {
+      if (!onRevalidate) {
+        return;
+      }
+      void onRevalidate(targetSlug);
+    },
+    [onRevalidate],
+  );
 
   useEffect(() => {
     if (!supabase) {
@@ -1475,7 +1533,7 @@ export function ExerciseLiveDetail({
     }
   };
 
-  const openOverrideEditor = () => {
+  const openOverrideEditor = useCallback(() => {
     setSubmitStatus(null);
     const doc = buildOverrideDoc(base, patch);
     const snapshot = JSON.stringify(doc);
@@ -1492,26 +1550,21 @@ export function ExerciseLiveDetail({
     setLevelAddOpen(false);
     setLevelAddValue("");
     setOverrideOpen(true);
-  };
+  }, [base, patch]);
 
-  const openLiveEditor = () => {
-    if (isMdx) {
+  useEffect(() => {
+    if (autoEditHandledRef.current) {
       return;
     }
-    setSubmitStatus(null);
-    setLiveDraft({
-      slug: "",
-      title: merged.frontmatter.title,
-      tags: merged.frontmatter.tags.join(", "),
-      muscles: merged.frontmatter.muscles.join(", "),
-      themeCompatibility: merged.frontmatter.themeCompatibility.join(", "),
-      level: merged.frontmatter.level ?? "",
-      equipment: merged.frontmatter.equipment?.join(", ") ?? "",
-      media: merged.frontmatter.media ?? "",
-      content: merged.content,
-    });
-    setLiveOpen(true);
-  };
+    autoEditHandledRef.current = true;
+    if (!teacherUnlocked) {
+      return;
+    }
+    if (searchParams?.get("edit") !== "1") {
+      return;
+    }
+    openOverrideEditor();
+  }, [openOverrideEditor, searchParams, teacherUnlocked]);
 
   const handleUnlock = (event?: React.FormEvent) => {
     event?.preventDefault();
@@ -1540,6 +1593,9 @@ export function ExerciseLiveDetail({
       setSubmitStatus("Aucune modification.");
       return;
     }
+    const saveStatus = saveMeta.status;
+    const statusLabel =
+      saveStatus === "draft" ? "Brouillon enregistré." : "Exercice enregistré.";
     const heroImage = overrideDoc.doc.heroImage
       ? {
           url: overrideDoc.doc.heroImage.url.trim(),
@@ -1628,14 +1684,48 @@ export function ExerciseLiveDetail({
       showOverrideToast("Échec de l'enregistrement.", "error");
       return;
     }
+
+    if (source === "live") {
+      const liveResponse = await fetch("/api/teacher/live-exercise", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pin: teacherPin,
+          slug,
+          locale,
+          dataJson: {
+            frontmatter: {
+              ...merged.frontmatter,
+              slug,
+              title: merged.frontmatter.title?.trim() ?? "",
+              tags: saveMeta.tags,
+              muscles: saveMeta.muscles,
+              themeCompatibility: merged.frontmatter.themeCompatibility ?? [],
+            },
+            content: base.content,
+            status: saveStatus,
+          },
+        }),
+      });
+      if (!liveResponse.ok) {
+        if (liveResponse.status === 401) {
+          handleAuthError("PIN invalide.");
+        }
+        setSubmitStatus(null);
+        setIsSavingOverride(false);
+        showOverrideToast("Échec de la mise à jour.", "error");
+        return;
+      }
+    }
     setPatch(patchJson);
     setOverrideDoc(patchJson);
     setDirtySnapshot(JSON.stringify(patchJson));
     setSubmitStatus(null);
     setIsSavingOverride(false);
-    showOverrideToast("Correction enregistrée.", "success");
+    showOverrideToast(statusLabel, "success");
     setConfirmCloseOpen(false);
     setOverrideOpen(false);
+    triggerRevalidate(slug);
   };
 
   const handleSaveLive = async () => {
@@ -1646,30 +1736,42 @@ export function ExerciseLiveDetail({
     if (!liveDraft) {
       return;
     }
-    const frontmatter = ExerciseFrontmatterSchema.safeParse({
-      title: liveDraft.title,
-      slug: liveDraft.slug,
-      tags: parseList(liveDraft.tags),
-      level: liveDraft.level || undefined,
-      themeCompatibility: parseThemeCompatibility(liveDraft.themeCompatibility),
-      muscles: parseList(liveDraft.muscles),
-      equipment: liveDraft.equipment ? parseList(liveDraft.equipment) : undefined,
-      media: liveDraft.media || undefined,
-    });
-    if (!frontmatter.success) {
-      setSubmitStatus("Champs invalides (titre, slug, tags, muscles, thèmes).");
+    const slugValue = liveDraft.slug.trim();
+    if (!slugValue) {
+      setSubmitStatus("Slug requis.");
       return;
     }
+    const title = liveDraft.title.trim();
+    const tags = parseList(liveDraft.tags);
+    const muscles = parseList(liveDraft.muscles);
+    const themeCompatibility = parseThemeCompatibility(liveDraft.themeCompatibility);
+    const hasRequired =
+      Boolean(title) &&
+      tags.length > 0 &&
+      muscles.length > 0 &&
+      themeCompatibility.length > 0;
+    const status: ExerciseStatus = hasRequired ? "ready" : "draft";
+    const frontmatter = {
+      title,
+      slug: slugValue,
+      tags,
+      level: liveDraft.level || undefined,
+      themeCompatibility,
+      muscles,
+      equipment: liveDraft.equipment ? parseList(liveDraft.equipment) : undefined,
+      media: liveDraft.media || undefined,
+    };
     const response = await fetch("/api/teacher/live-exercise", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         pin: teacherPin,
-        slug: frontmatter.data.slug,
+        slug: slugValue,
         locale,
         dataJson: {
-          frontmatter: frontmatter.data,
+          frontmatter,
           content: liveDraft.content,
+          status,
         },
       }),
     });
@@ -1682,9 +1784,12 @@ export function ExerciseLiveDetail({
       setSubmitStatus("Échec de la création.");
       return;
     }
-    setSubmitStatus("Exercice LIVE créé.");
+    setSubmitStatus(
+      status === "draft" ? "Brouillon enregistré." : "Exercice enregistré.",
+    );
     setLiveExists(true);
     setLiveOpen(false);
+    triggerRevalidate(slugValue);
   };
 
   const handleDeleteLive = async () => {
@@ -1731,8 +1836,9 @@ export function ExerciseLiveDetail({
 
     setLiveExists(false);
     setDeleteLiveOpen(false);
-    showOverrideToast("Version LIVE supprimée", "success");
+    showOverrideToast("Version supprimée", "success");
     setIsDeletingLive(false);
+    triggerRevalidate(slug);
   };
 
   const updateOverrideDoc = (
@@ -2215,104 +2321,127 @@ export function ExerciseLiveDetail({
 
   return (
     <>
-      <header className="page-header">
-        <p className="eyebrow">Exercices</p>
-        <div
-          role="button"
-          tabIndex={0}
-          onPointerDown={(event) => {
-            if (event.ctrlKey || event.shiftKey) {
-              event.preventDefault();
-              cancelLongPress();
-              openPinModal();
-              return;
-            }
-            if (event.pointerType === "touch") {
-              touchPointerActiveRef.current = true;
-            } else {
-              event.preventDefault();
-            }
-            startLongPress(event.clientX, event.clientY);
-          }}
-          onPointerMove={(event) => {
-            cancelLongPressOnMove(event.clientX, event.clientY);
-          }}
-          onPointerUp={() => {
-            cancelLongPress();
-            touchPointerActiveRef.current = false;
-          }}
-          onPointerLeave={() => {
-            cancelLongPress();
-            touchPointerActiveRef.current = false;
-          }}
-          onPointerCancel={() => {
-            cancelLongPress();
-            touchPointerActiveRef.current = false;
-          }}
-          onMouseDown={(event) => {
-            if (event.ctrlKey || event.shiftKey) {
-              event.preventDefault();
-              cancelLongPress();
-              openPinModal();
-              return;
-            }
-            event.preventDefault();
-          }}
-          onTouchStart={(event) => {
-            if (touchPointerActiveRef.current) {
-              return;
-            }
-            const touch = event.touches[0];
-            if (!touch) {
-              return;
-            }
-            startLongPress(touch.clientX, touch.clientY);
-          }}
-          onTouchMove={(event) => {
-            if (touchPointerActiveRef.current) {
-              return;
-            }
-            const touch = event.touches[0];
-            if (!touch) {
-              return;
-            }
-            cancelLongPressOnMove(touch.clientX, touch.clientY);
-          }}
-          onTouchEnd={() => {
-            cancelLongPress();
-            touchPointerActiveRef.current = false;
-          }}
-          onTouchCancel={() => {
-            cancelLongPress();
-            touchPointerActiveRef.current = false;
-          }}
-          onContextMenu={(event) => {
-            event.preventDefault();
-          }}
-          onClick={(event) => {
-            if (event.ctrlKey || event.shiftKey) {
-              event.preventDefault();
-              cancelLongPress();
-              openPinModal();
-            }
-          }}
-          onKeyDown={(event) => {
-            if (teacherUnlocked) {
-              return;
-            }
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              openPinModal();
-            }
-          }}
-          className="title-longpress select-none touch-manipulation"
-          style={{ WebkitUserSelect: "none", WebkitTouchCallout: "none" }}
-        >
-          <h1>{merged.frontmatter.title}</h1>
-        </div>
+      <style>{`
+        .app-shell > .app-header {
+          display: none;
+        }
+      `}</style>
+      <div className="page-header">
+        <header className="app-header">
+          <div className="brand">
+            <Link href="/" aria-label="Accueil">
+              <NextImage src={logo} alt="EPS" className="h-20 w-auto" />
+            </Link>
+            <div
+              role="button"
+              tabIndex={0}
+              onPointerDown={(event) => {
+                if (event.ctrlKey || event.shiftKey) {
+                  event.preventDefault();
+                  cancelLongPress();
+                  openPinModal();
+                  return;
+                }
+                if (event.pointerType === "touch") {
+                  touchPointerActiveRef.current = true;
+                } else {
+                  event.preventDefault();
+                }
+                startLongPress(event.clientX, event.clientY);
+              }}
+              onPointerMove={(event) => {
+                cancelLongPressOnMove(event.clientX, event.clientY);
+              }}
+              onPointerUp={() => {
+                cancelLongPress();
+                touchPointerActiveRef.current = false;
+              }}
+              onPointerLeave={() => {
+                cancelLongPress();
+                touchPointerActiveRef.current = false;
+              }}
+              onPointerCancel={() => {
+                cancelLongPress();
+                touchPointerActiveRef.current = false;
+              }}
+              onMouseDown={(event) => {
+                if (event.ctrlKey || event.shiftKey) {
+                  event.preventDefault();
+                  cancelLongPress();
+                  openPinModal();
+                  return;
+                }
+                event.preventDefault();
+              }}
+              onTouchStart={(event) => {
+                if (touchPointerActiveRef.current) {
+                  return;
+                }
+                const touch = event.touches[0];
+                if (!touch) {
+                  return;
+                }
+                startLongPress(touch.clientX, touch.clientY);
+              }}
+              onTouchMove={(event) => {
+                if (touchPointerActiveRef.current) {
+                  return;
+                }
+                const touch = event.touches[0];
+                if (!touch) {
+                  return;
+                }
+                cancelLongPressOnMove(touch.clientX, touch.clientY);
+              }}
+              onTouchEnd={() => {
+                cancelLongPress();
+                touchPointerActiveRef.current = false;
+              }}
+              onTouchCancel={() => {
+                cancelLongPress();
+                touchPointerActiveRef.current = false;
+              }}
+              onContextMenu={(event) => {
+                event.preventDefault();
+              }}
+              onClick={(event) => {
+                if (event.ctrlKey || event.shiftKey) {
+                  event.preventDefault();
+                  cancelLongPress();
+                  openPinModal();
+                }
+              }}
+              onKeyDown={(event) => {
+                if (teacherUnlocked) {
+                  return;
+                }
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  openPinModal();
+                }
+              }}
+              className="brand-text"
+              style={{ WebkitUserSelect: "none", WebkitTouchCallout: "none" }}
+            >
+              <span className="brand-title brand-title--page">
+                {displayTitle}
+              </span>
+              <span className="brand-subtitle brand-subtitle--page">Exercices</span>
+            </div>
+          </div>
+          <div className="header-actions">
+            <Link
+              href="/reglages"
+              className="icon-button"
+              aria-label={settingsLabel}
+              title={settingsLabel}
+            >
+              <span aria-hidden="true">⚙️</span>
+            </Link>
+          </div>
+        </header>
         <div className="flex flex-wrap items-center gap-2">
           <DifficultyPill level={difficulty} />
-          {hasLive ? <span className="pill pill-live">LIVE</span> : null}
           {merged.frontmatter.muscles.map((muscle) => (
             <span key={muscle} className="pill">
               {muscle}
@@ -2355,18 +2484,7 @@ export function ExerciseLiveDetail({
         ) : (
           <div className="text-sm text-[color:var(--muted)]">Sans matériel spécifique.</div>
         )}
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            className={`chip border border-white/15${
-              teacherUnlocked ? " bg-emerald-400/15 text-emerald-100" : " bg-white/10"
-            }`}
-            onClick={teacherUnlocked ? openOverrideEditor : openPinModal}
-          >
-            {teacherUnlocked ? "✏️ Mode prof actif" : "🔒 Mode prof (PIN)"}
-          </button>
-        </div>
-      </header>
+      </div>
 
       {teacherUnlocked ? (
         <div className="teacher-panel">
@@ -2377,28 +2495,8 @@ export function ExerciseLiveDetail({
               className="primary-button primary-button--wide"
               onClick={openOverrideEditor}
             >
-              Corriger cette fiche
+              Modifier l’exercice
             </button>
-            {isMdx ? (
-              <span title="Exercice déjà dans le catalogue. Utilise Enregistrer.">
-                <button
-                  type="button"
-                  className="primary-button primary-button--wide opacity-60 cursor-not-allowed"
-                  onClick={openLiveEditor}
-                  disabled
-                >
-                  Créer un exercice LIVE
-                </button>
-              </span>
-            ) : (
-              <button
-                type="button"
-                className="primary-button primary-button--wide"
-                onClick={openLiveEditor}
-              >
-                Créer un exercice LIVE
-              </button>
-            )}
           </div>
           {submitStatus ? (
             <p className="text-xs text-[color:var(--muted)]">{submitStatus}</p>
@@ -2605,13 +2703,13 @@ export function ExerciseLiveDetail({
                         <div className="flex flex-col gap-2">
                           <div className="flex items-center gap-2">
                             <span aria-hidden="true">⚠️</span>
-                            <h3 className="text-base font-semibold">Version LIVE</h3>
+                            <h3 className="text-base font-semibold">Version enregistrée</h3>
                             <span className="rounded-full border border-red-400/60 bg-red-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-red-100">
-                              LIVE actif
+                              Version active
                             </span>
                           </div>
                           <p className="text-sm text-[color:var(--muted)]">
-                            Une version LIVE existe pour cette fiche. Tu peux la supprimer
+                            Une version enregistrée existe pour cette fiche. Tu peux la supprimer
                             (la fiche MDX reste intacte).
                           </p>
                         </div>
@@ -2620,7 +2718,7 @@ export function ExerciseLiveDetail({
                           className="primary-button primary-button--wide bg-red-500 text-white hover:bg-red-600"
                           onClick={() => setDeleteLiveOpen(true)}
                         >
-                          Supprimer la version LIVE…
+                          Supprimer la version enregistrée…
                         </button>
                       </div>
                     </div>
@@ -3731,6 +3829,19 @@ export function ExerciseLiveDetail({
                   {isDirty ? "⟲ Annuler modifications" : "Annuler modifications"}
                 </button>
               </div>
+              {!isDirty && !isSavingOverride ? (
+                <p className="text-xs text-[color:var(--muted)]">
+                  Modifie au moins un élément pour enregistrer.
+                </p>
+              ) : null}
+              {isDirty && saveMeta.status === "draft" ? (
+                <p className="text-xs text-[color:var(--muted)]">
+                  {saveMeta.missing.length > 0
+                    ? `Champs requis manquants : ${saveMeta.missing.join(", ")}. `
+                    : ""}
+                  Enregistrement en brouillon.
+                </p>
+              ) : null}
             </div>
             {mediaStatus ? (
               <p className="text-xs text-[color:var(--muted)]">{mediaStatus}</p>
@@ -3794,7 +3905,7 @@ export function ExerciseLiveDetail({
           {deleteLiveOpen ? (
             <div className="modal-overlay" role="dialog" aria-modal="true">
               <div className="modal-card">
-                <h2>Supprimer la version LIVE (pastille LIVE)</h2>
+                <h2>Supprimer la version enregistrée</h2>
                 <p className="text-sm text-[color:var(--muted)]">
                   Cette action est irréversible. La fiche catalogue (MDX) n’est pas affectée.
                 </p>
@@ -3829,7 +3940,7 @@ export function ExerciseLiveDetail({
                     onClick={handleDeleteLive}
                     disabled={isDeletingLive || !teacherPin}
                   >
-                    {isDeletingLive ? "Suppression..." : "Supprimer la version LIVE"}
+                    {isDeletingLive ? "Suppression..." : "Supprimer la version enregistrée"}
                   </button>
                 </div>
               </div>
@@ -3841,7 +3952,7 @@ export function ExerciseLiveDetail({
       {liveOpen && liveDraft ? (
         <div className="modal-overlay" role="dialog" aria-modal="true">
           <div className="modal-card">
-            <h2>Créer un exercice LIVE</h2>
+            <h2>Créer un exercice</h2>
             <div className="stack-md">
               <label className="field-label">Slug</label>
               <input

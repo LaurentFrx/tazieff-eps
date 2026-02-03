@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { ExerciseCard } from "@/components/ExerciseCard";
-import { Chips } from "@/components/Chips";
-import type { ExerciseFrontmatter } from "@/lib/content/schema";
+import type { Difficulty } from "@/lib/content/schema";
 import type { Lang } from "@/lib/i18n/I18nProvider";
 import type { LiveExerciseListItem, LiveExerciseRow } from "@/lib/live/types";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -20,30 +20,202 @@ import {
 } from "@/lib/favoritesStore";
 
 type ExerciseListClientProps = {
-  exercises: ExerciseFrontmatter[];
+  exercises: LiveExerciseListItem[];
   liveExercises: LiveExerciseRow[];
   locale: Lang;
 };
 
+type ExerciseStatus = "draft" | "ready";
+
+type TeacherModeSnapshot = {
+  unlocked: boolean;
+  pin: string;
+};
+
+declare global {
+  interface Window {
+    __teacherMode?: TeacherModeSnapshot;
+  }
+}
+
 const POLL_INTERVAL_MS = 20000;
+const THEME_OPTIONS = [1, 2, 3] as const;
+type ThemeOption = (typeof THEME_OPTIONS)[number];
+const LEVEL_LABELS: Record<Difficulty, string> = {
+  debutant: "Débutant",
+  intermediaire: "Intermédiaire",
+  avance: "Avancé",
+};
+const DEFAULT_TEACHER_MODE: TeacherModeSnapshot = { unlocked: false, pin: "" };
+const NEW_EXERCISE_CONTENT = `## Consignes
+- À compléter
+
+## Dosage
+- À compléter
+
+## Erreurs fréquentes
+- À compléter
+
+## Sécurité
+- À compléter
+`;
+
+function getTeacherModeSnapshot(): TeacherModeSnapshot {
+  if (typeof window === "undefined") {
+    return { ...DEFAULT_TEACHER_MODE };
+  }
+  const snapshot = window.__teacherMode;
+  if (!snapshot) {
+    return { ...DEFAULT_TEACHER_MODE };
+  }
+  return {
+    unlocked: Boolean(snapshot.unlocked),
+    pin: snapshot.pin ?? "",
+  };
+}
+
+function getUniqueExerciseSlug(existingSlugs: Set<string>) {
+  let maxIndex = 0;
+  existingSlugs.forEach((slug) => {
+    const match = slug.match(/^s1-(\d+)$/);
+    if (!match) {
+      return;
+    }
+    const value = Number(match[1]);
+    if (Number.isNaN(value)) {
+      return;
+    }
+    maxIndex = Math.max(maxIndex, value);
+  });
+
+  const nextIndex = maxIndex + 1;
+  const candidate = `s1-${String(nextIndex).padStart(3, "0")}`;
+  if (!existingSlugs.has(candidate)) {
+    return candidate;
+  }
+
+  const fallback = `exo-${Date.now()}`;
+  if (!existingSlugs.has(fallback)) {
+    return fallback;
+  }
+
+  return `exo-${Date.now()}-${Math.random().toString(16).slice(2, 6)}`;
+}
+
+type MultiSelectValue = string | number;
+type MultiSelectMenuProps<T extends MultiSelectValue> = {
+  label: string;
+  options: readonly T[];
+  selected: readonly T[];
+  onToggle: (value: T) => void;
+  onClear: () => void;
+  formatLabel?: (value: T) => string;
+};
+
+type ExerciseListItem = LiveExerciseListItem & { status?: ExerciseStatus };
+
+function MultiSelectMenu<T extends MultiSelectValue>({
+  label,
+  options,
+  selected,
+  onToggle,
+  onClear,
+  formatLabel,
+}: MultiSelectMenuProps<T>) {
+  const [open, setOpen] = useState(false);
+  const summary =
+    selected.length > 0
+      ? `${selected.length} sélectionné${selected.length > 1 ? "s" : ""}`
+      : "Tous";
+
+  if (options.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        className="field-input flex items-center justify-between gap-3"
+        onClick={() => setOpen((prev) => !prev)}
+        aria-expanded={open}
+      >
+        <span className="flex flex-col items-start">
+          <span className="text-sm font-medium">{label}</span>
+          <span className="text-xs text-[color:var(--muted)]">{summary}</span>
+        </span>
+        <span aria-hidden="true">▾</span>
+      </button>
+      {open ? (
+        <div className="absolute z-20 mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-lg">
+          <div className="flex items-center justify-between px-2 pb-2">
+            <span className="text-xs text-[color:var(--muted)]">
+              {options.length} option{options.length > 1 ? "s" : ""}
+            </span>
+            {selected.length > 0 ? (
+              <button type="button" className="chip chip-clear" onClick={onClear}>
+                Tout effacer
+              </button>
+            ) : null}
+          </div>
+          <div className="max-h-56 space-y-1 overflow-y-auto">
+            {options.map((option) => {
+              const isActive = selected.includes(option);
+              const labelValue = formatLabel ? formatLabel(option) : String(option);
+
+              return (
+                <label
+                  key={`${label}-${labelValue}`}
+                  className="flex min-h-[36px] items-center gap-3 rounded-xl px-3 py-2 text-sm hover:bg-white/10"
+                >
+                  <input
+                    type="checkbox"
+                    checked={isActive}
+                    onChange={() => onToggle(option)}
+                  />
+                  <span>{labelValue}</span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 function mergeExercises(
-  exercises: ExerciseFrontmatter[],
+  exercises: LiveExerciseListItem[],
   liveExercises: LiveExerciseRow[],
-): LiveExerciseListItem[] {
-  const existing = new Set(exercises.map((exercise) => exercise.slug));
+): ExerciseListItem[] {
+  if (liveExercises.length === 0) {
+    return exercises;
+  }
+
+  const mdxItems = exercises.filter((exercise) => !exercise.isLive);
+  const existing = new Set(mdxItems.map((exercise) => exercise.slug));
   const liveItems = liveExercises
     .map((row) => ({
-      ...row.data_json.frontmatter,
+      ...(row.data_json as LiveExerciseRow["data_json"] & { status?: ExerciseStatus })
+        .frontmatter,
       slug: row.slug,
       isLive: true,
+      status: (row.data_json as LiveExerciseRow["data_json"] & { status?: ExerciseStatus })
+        .status,
     }))
     .filter((exercise) => !existing.has(exercise.slug));
 
   return [
-    ...exercises.map((exercise) => ({ ...exercise, isLive: false })),
+    ...mdxItems,
     ...liveItems,
-  ].sort((a, b) => a.title.localeCompare(b.title, "fr"));
+  ].sort((a, b) => {
+    const statusA = (a as ExerciseListItem).status ?? "ready";
+    const statusB = (b as ExerciseListItem).status ?? "ready";
+    if (statusA !== statusB) {
+      return statusA === "draft" ? 1 : -1;
+    }
+    return a.title.localeCompare(b.title, "fr");
+  });
 }
 
 export function ExerciseListClient({
@@ -51,13 +223,20 @@ export function ExerciseListClient({
   liveExercises,
   locale,
 }: ExerciseListClientProps) {
+  const router = useRouter();
   const supabase = getSupabaseBrowserClient();
   const [liveRows, setLiveRows] = useState<LiveExerciseRow[]>(liveExercises);
   const [realtimeReady, setRealtimeReady] = useState(false);
   const [query, setQuery] = useState("");
+  const [selectedLevels, setSelectedLevels] = useState<Difficulty[]>([]);
+  const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedThemes, setSelectedThemes] = useState<ThemeOption[]>([]);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [onlyCompatible, setOnlyCompatible] = useState(false);
+  const [teacherMode] = useState<TeacherModeSnapshot>(() => getTeacherModeSnapshot());
+  const [createStatus, setCreateStatus] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
   const favorites = useSyncExternalStore(
     subscribeFavorites,
     getFavoritesSnapshot,
@@ -68,6 +247,8 @@ export function ExerciseListClient({
     getTheme,
     () => 1 as ThemePreference,
   );
+  const teacherUnlocked = teacherMode.unlocked;
+  const teacherPin = teacherMode.pin;
 
   useEffect(() => {
     if (!supabase) {
@@ -187,33 +368,87 @@ export function ExerciseListClient({
     () => mergeExercises(exercises, liveRows),
     [exercises, liveRows],
   );
+  const visibleExercises = useMemo(
+    () =>
+      teacherUnlocked
+        ? mergedExercises
+        : mergedExercises.filter((exercise) => exercise.status !== "draft"),
+    [mergedExercises, teacherUnlocked],
+  );
 
-  const tags = useMemo(() => {
+  const levelOptions = useMemo(() => {
+    const levels = new Set<Difficulty>();
+    visibleExercises.forEach((exercise) => {
+      if (exercise.level) {
+        levels.add(exercise.level);
+      }
+    });
+    const levelOrder: Difficulty[] = ["debutant", "intermediaire", "avance"];
+    return levelOrder.filter((level) => levels.has(level));
+  }, [visibleExercises]);
+
+  const equipmentOptions = useMemo(() => {
+    const equipmentSet = new Set<string>();
+    visibleExercises.forEach((exercise) => {
+      exercise.equipment?.forEach((item) => equipmentSet.add(item));
+    });
+    return Array.from(equipmentSet).sort((a, b) => a.localeCompare(b, "fr"));
+  }, [visibleExercises]);
+
+  const tagOptions = useMemo(() => {
     const tagSet = new Set<string>();
-    mergedExercises.forEach((exercise) => {
+    visibleExercises.forEach((exercise) => {
       exercise.tags.forEach((tag) => tagSet.add(tag));
     });
     return Array.from(tagSet).sort((a, b) => a.localeCompare(b, "fr"));
-  }, [mergedExercises]);
+  }, [visibleExercises]);
+
+  const themeOptions = THEME_OPTIONS;
 
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
-    return mergedExercises.filter((exercise) => {
+    return visibleExercises.filter((exercise) => {
       if (onlyFavorites && !favorites.includes(exercise.slug)) {
         return false;
       }
 
       if (
         onlyCompatible &&
+        selectedThemes.length === 0 &&
         !exercise.themeCompatibility.includes(theme)
       ) {
         return false;
       }
 
+      if (selectedLevels.length > 0) {
+        if (!exercise.level || !selectedLevels.includes(exercise.level)) {
+          return false;
+        }
+      }
+
+      if (selectedEquipment.length > 0) {
+        const equipment = exercise.equipment ?? [];
+        const hasEquipment = selectedEquipment.some((item) => equipment.includes(item));
+        if (!hasEquipment) {
+          return false;
+        }
+      }
+
       if (selectedTags.length > 0) {
         const hasTag = selectedTags.some((tag) => exercise.tags.includes(tag));
         if (!hasTag) {
+          return false;
+        }
+      }
+
+      if (selectedThemes.length > 0) {
+        const compat = exercise.themeCompatibility ?? [];
+        if (compat.length === 0) {
+          return false;
+        }
+        const hasTheme = selectedThemes.some((item) => compat.includes(item));
+        if (!hasTheme) {
           return false;
         }
       }
@@ -227,13 +462,28 @@ export function ExerciseListClient({
     });
   }, [
     favorites,
-    mergedExercises,
+    visibleExercises,
     onlyCompatible,
     onlyFavorites,
     query,
+    selectedEquipment,
+    selectedLevels,
     selectedTags,
+    selectedThemes,
     theme,
   ]);
+
+  const toggleLevel = (level: Difficulty) => {
+    setSelectedLevels((prev) =>
+      prev.includes(level) ? prev.filter((item) => item !== level) : [...prev, level],
+    );
+  };
+
+  const toggleEquipment = (item: string) => {
+    setSelectedEquipment((prev) =>
+      prev.includes(item) ? prev.filter((value) => value !== item) : [...prev, item],
+    );
+  };
 
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) =>
@@ -241,9 +491,88 @@ export function ExerciseListClient({
     );
   };
 
+  const toggleTheme = (themeValue: ThemeOption) => {
+    setSelectedThemes((prev) =>
+      prev.includes(themeValue)
+        ? prev.filter((item) => item !== themeValue)
+        : [...prev, themeValue],
+    );
+    setOnlyCompatible(false);
+  };
+
+  const handleCreateExercise = async () => {
+    if (!teacherUnlocked) {
+      return;
+    }
+    setCreateStatus(null);
+    if (!teacherPin) {
+      setCreateStatus("PIN requis.");
+      return;
+    }
+
+    setIsCreating(true);
+    setCreateStatus("Création en cours...");
+
+    const existingSlugs = new Set(mergedExercises.map((exercise) => exercise.slug));
+    const slug = getUniqueExerciseSlug(existingSlugs);
+
+    let response: Response;
+    try {
+      response = await fetch("/api/teacher/live-exercise", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pin: teacherPin,
+          slug,
+          locale,
+          dataJson: {
+            frontmatter: {
+              title: "Nouvel exercice",
+              slug,
+              tags: [],
+              themeCompatibility: [1],
+              muscles: [],
+            },
+            content: NEW_EXERCISE_CONTENT,
+            status: "draft",
+          },
+        }),
+      });
+    } catch {
+      setIsCreating(false);
+      setCreateStatus("Échec de la création.");
+      return;
+    }
+
+    if (!response.ok) {
+      setIsCreating(false);
+      setCreateStatus(response.status === 401 ? "PIN invalide." : "Échec de la création.");
+      return;
+    }
+
+    setIsCreating(false);
+    setCreateStatus(null);
+    router.push(`/exercices/${encodeURIComponent(slug)}?edit=1`);
+  };
+
   return (
     <div className="stack-lg">
       <div className="filter-panel">
+        {teacherUnlocked ? (
+          <div className="flex flex-wrap items-center gap-3">
+            {createStatus ? (
+              <span className="text-xs text-[color:var(--muted)]">{createStatus}</span>
+            ) : null}
+            <button
+              type="button"
+              className="primary-button primary-button--wide"
+              onClick={handleCreateExercise}
+              disabled={isCreating}
+            >
+              {isCreating ? "Création..." : "+ Nouvel exercice"}
+            </button>
+          </div>
+        ) : null}
         <input
           className="field-input"
           type="search"
@@ -262,7 +591,15 @@ export function ExerciseListClient({
           <button
             type="button"
             className={`chip${onlyCompatible ? " is-active" : ""}`}
-            onClick={() => setOnlyCompatible((prev) => !prev)}
+            onClick={() =>
+              setOnlyCompatible((prev) => {
+                const next = !prev;
+                if (next) {
+                  setSelectedThemes([]);
+                }
+                return next;
+              })
+            }
           >
             Compatibles thème {theme}
           </button>
@@ -271,7 +608,10 @@ export function ExerciseListClient({
             className="chip chip-clear"
             onClick={() => {
               setQuery("");
+              setSelectedLevels([]);
+              setSelectedEquipment([]);
               setSelectedTags([]);
+              setSelectedThemes([]);
               setOnlyFavorites(false);
               setOnlyCompatible(false);
             }}
@@ -279,13 +619,38 @@ export function ExerciseListClient({
             Réinitialiser
           </button>
         </div>
-        <Chips
-          label="Tags"
-          items={tags}
-          activeItems={selectedTags}
-          onToggle={toggleTag}
-          onClear={() => setSelectedTags([])}
-        />
+        <div className="grid gap-2 md:grid-cols-4">
+          <MultiSelectMenu
+            label="Niveau"
+            options={levelOptions}
+            selected={selectedLevels}
+            onToggle={toggleLevel}
+            onClear={() => setSelectedLevels([])}
+            formatLabel={(value) => LEVEL_LABELS[value]}
+          />
+          <MultiSelectMenu
+            label="Matériel"
+            options={equipmentOptions}
+            selected={selectedEquipment}
+            onToggle={toggleEquipment}
+            onClear={() => setSelectedEquipment([])}
+          />
+          <MultiSelectMenu
+            label="Tags"
+            options={tagOptions}
+            selected={selectedTags}
+            onToggle={toggleTag}
+            onClear={() => setSelectedTags([])}
+          />
+          <MultiSelectMenu
+            label="Thèmes"
+            options={themeOptions}
+            selected={selectedThemes}
+            onToggle={toggleTheme}
+            onClear={() => setSelectedThemes([])}
+            formatLabel={(value) => `Thème ${value}`}
+          />
+        </div>
       </div>
 
       <p className="text-sm text-[color:var(--muted)]">
@@ -303,10 +668,16 @@ export function ExerciseListClient({
           filtered.map((exercise) => (
             <Link key={exercise.slug} href={`/exercices/${exercise.slug}`}>
               <article className="card">
-                <ExerciseCard exercise={exercise} isLive={exercise.isLive} />
+                <ExerciseCard
+                  exercise={{
+                    ...exercise,
+                    title: exercise.title?.trim() || "Brouillon sans titre",
+                  }}
+                  isLive={exercise.isLive}
+                />
                 <div className="chip-row chip-row--compact">
-                  {exercise.isLive === true ? (
-                    <span className="pill pill-live">LIVE</span>
+                  {teacherUnlocked && exercise.status === "draft" ? (
+                    <span className="pill pill-live">BROUILLON</span>
                   ) : null}
                   {exercise.tags.slice(0, 3).map((tag) => (
                     <span key={tag} className="chip">
