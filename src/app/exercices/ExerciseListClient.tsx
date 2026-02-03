@@ -102,9 +102,11 @@ type MultiSelectMenuProps<T extends MultiSelectValue> = {
   label: string;
   options: readonly T[];
   selected: readonly T[];
-  onToggle: (value: T) => void;
+  onToggleOption: (value: T) => void;
   onClear: () => void;
   formatLabel?: (value: T) => string;
+  open: boolean;
+  onToggle: () => void;
 };
 
 type ExerciseListItem = LiveExerciseListItem & { status?: ExerciseStatus };
@@ -115,17 +117,20 @@ type SingleSelectMenuProps<T> = {
   selected: T;
   onSelect: (value: T) => void;
   formatLabel?: (value: T) => string;
+  open: boolean;
+  onToggle: () => void;
 };
 
 function MultiSelectMenu<T extends MultiSelectValue>({
   label,
   options,
   selected,
-  onToggle,
+  onToggleOption,
   onClear,
   formatLabel,
+  open,
+  onToggle,
 }: MultiSelectMenuProps<T>) {
-  const [open, setOpen] = useState(false);
   const summary =
     selected.length > 0
       ? `${selected.length} sélectionné${selected.length > 1 ? "s" : ""}`
@@ -140,7 +145,7 @@ function MultiSelectMenu<T extends MultiSelectValue>({
       <button
         type="button"
         className="field-input flex items-center justify-between gap-3"
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={onToggle}
         aria-expanded={open}
       >
         <span className="flex flex-col items-start">
@@ -150,7 +155,7 @@ function MultiSelectMenu<T extends MultiSelectValue>({
         <span aria-hidden="true">▾</span>
       </button>
       {open ? (
-        <div className="absolute z-20 mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-lg">
+        <div className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-lg">
           <div className="flex items-center justify-between px-2 pb-2">
             <span className="text-xs text-[color:var(--muted)]">
               {options.length} option{options.length > 1 ? "s" : ""}
@@ -174,7 +179,7 @@ function MultiSelectMenu<T extends MultiSelectValue>({
                   <input
                     type="checkbox"
                     checked={isActive}
-                    onChange={() => onToggle(option)}
+                    onChange={() => onToggleOption(option)}
                   />
                   <span>{labelValue}</span>
                 </label>
@@ -193,8 +198,9 @@ function SingleSelectMenu<T>({
   selected,
   onSelect,
   formatLabel,
+  open,
+  onToggle,
 }: SingleSelectMenuProps<T>) {
-  const [open, setOpen] = useState(false);
   const menuId = useId();
   const summary = formatLabel ? formatLabel(selected) : String(selected);
 
@@ -207,7 +213,7 @@ function SingleSelectMenu<T>({
       <button
         type="button"
         className="field-input flex items-center justify-between gap-3"
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={onToggle}
         aria-expanded={open}
       >
         <span className="flex flex-col items-start">
@@ -217,7 +223,7 @@ function SingleSelectMenu<T>({
         <span aria-hidden="true">▾</span>
       </button>
       {open ? (
-        <div className="absolute z-20 mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-lg">
+        <div className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-lg">
           <div className="flex items-center justify-between px-2 pb-2">
             <span className="text-xs text-[color:var(--muted)]">
               {options.length} option{options.length > 1 ? "s" : ""}
@@ -299,6 +305,9 @@ export function ExerciseListClient({
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedThemes, setSelectedThemes] = useState<ThemeOption[]>([]);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
+  const [openFilter, setOpenFilter] = useState<
+    "level" | "equipment" | "tags" | "themes" | "favorites" | null
+  >(null);
   const [teacherMode] = useState<TeacherModeSnapshot>(() => getTeacherModeSnapshot());
   const [createStatus, setCreateStatus] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -549,6 +558,12 @@ export function ExerciseListClient({
     );
   };
 
+  const toggleFilter = (
+    filter: "level" | "equipment" | "tags" | "themes" | "favorites",
+  ) => {
+    setOpenFilter((prev) => (prev === filter ? null : filter));
+  };
+
   const handleCreateExercise = async () => {
     if (!teacherUnlocked) {
       return;
@@ -640,6 +655,7 @@ export function ExerciseListClient({
               setSelectedTags([]);
               setSelectedThemes([]);
               setOnlyFavorites(false);
+              setOpenFilter(null);
             }}
           >
             Réinitialiser
@@ -650,31 +666,39 @@ export function ExerciseListClient({
             label="Niveau"
             options={levelOptions}
             selected={selectedLevels}
-            onToggle={toggleLevel}
+            onToggleOption={toggleLevel}
             onClear={() => setSelectedLevels([])}
             formatLabel={(value) => LEVEL_LABELS[value]}
+            open={openFilter === "level"}
+            onToggle={() => toggleFilter("level")}
           />
           <MultiSelectMenu
             label="Matériel"
             options={equipmentOptions}
             selected={selectedEquipment}
-            onToggle={toggleEquipment}
+            onToggleOption={toggleEquipment}
             onClear={() => setSelectedEquipment([])}
+            open={openFilter === "equipment"}
+            onToggle={() => toggleFilter("equipment")}
           />
           <MultiSelectMenu
             label="Tags"
             options={tagOptions}
             selected={selectedTags}
-            onToggle={toggleTag}
+            onToggleOption={toggleTag}
             onClear={() => setSelectedTags([])}
+            open={openFilter === "tags"}
+            onToggle={() => toggleFilter("tags")}
           />
           <MultiSelectMenu
             label="Thèmes"
             options={themeOptions}
             selected={selectedThemes}
-            onToggle={toggleTheme}
+            onToggleOption={toggleTheme}
             onClear={() => setSelectedThemes([])}
             formatLabel={(value) => `Thème ${value}`}
+            open={openFilter === "themes"}
+            onToggle={() => toggleFilter("themes")}
           />
           <SingleSelectMenu
             label="Favoris"
@@ -682,6 +706,8 @@ export function ExerciseListClient({
             selected={onlyFavorites}
             onSelect={(value) => setOnlyFavorites(value)}
             formatLabel={(value) => (value ? "Favoris uniquement" : "Tous")}
+            open={openFilter === "favorites"}
+            onToggle={() => toggleFilter("favorites")}
           />
         </div>
       </div>
