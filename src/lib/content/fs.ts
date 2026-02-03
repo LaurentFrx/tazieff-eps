@@ -149,7 +149,22 @@ export async function getAllExercises(): Promise<ExerciseFrontmatter[]> {
 export async function getExercise(
   slug: string,
 ): Promise<MdxResult<ExerciseFrontmatter> | null> {
-  return readBySlug("exercices", slug, ExerciseFrontmatterSchema);
+  const direct = await readBySlug("exercices", slug, ExerciseFrontmatterSchema);
+  if (direct) {
+    return direct;
+  }
+
+  const dir = getContentDir("exercices");
+  const files = await listMdxFiles(dir);
+  for (const file of files) {
+    const fullPath = path.join(dir, file);
+    const result = await readMdxFile(fullPath, ExerciseFrontmatterSchema);
+    if (result.frontmatter.slug === slug) {
+      return result;
+    }
+  }
+
+  return null;
 }
 
 export async function getAllSeances(): Promise<SeanceFrontmatter[]> {

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { getExercise } from "@/lib/content/fs";
@@ -15,6 +16,13 @@ const LANG_COOKIE = "eps_lang";
 
 function getInitialLang(value?: string): Lang {
   return value === "en" ? "en" : "fr";
+}
+
+async function revalidateExercises(slug: string) {
+  "use server";
+  revalidateTag("exercises", "max");
+  revalidatePath("/exercices");
+  revalidatePath(`/exercices/${slug}`, "page");
 }
 
 export async function generateMetadata({
@@ -67,6 +75,7 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
         baseFrontmatter={baseFrontmatter}
         baseContent={baseContent}
         initialPatch={initialPatch}
+        onRevalidate={revalidateExercises}
       />
     </section>
   );

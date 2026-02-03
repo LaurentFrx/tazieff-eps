@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { exercisesIndex } from "@/lib/content/fs";
+import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
 import { ExerciseListClient } from "@/app/exercices/ExerciseListClient";
 import type { Lang } from "@/lib/i18n/messages";
 import { fetchLiveExercises } from "@/lib/live/queries";
@@ -13,7 +13,7 @@ function getInitialLang(value?: string): Lang {
 export default async function ExercicesPage() {
   const cookieStore = await cookies();
   const locale = getInitialLang(cookieStore.get(LANG_COOKIE)?.value);
-  const exercises = await exercisesIndex();
+  const exercises = await getExercisesIndex(locale);
   const liveExercises = await fetchLiveExercises(locale);
 
   return (
