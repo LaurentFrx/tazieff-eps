@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import DifficultyPill from "@/components/DifficultyPill";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
 
@@ -6,6 +9,19 @@ export type ExerciseCardProps = {
   exercise: ExerciseFrontmatter;
   isLive?: boolean;
 };
+
+function toThumbSrc(src?: string) {
+  if (!src) {
+    return undefined;
+  }
+  if (!src.startsWith("/images/exos/")) {
+    return src;
+  }
+  if (src.startsWith("/images/exos/thumb-")) {
+    return src;
+  }
+  return src.replace("/images/exos/", "/images/exos/thumb-");
+}
 
 function formatMuscles(muscles?: string[]) {
   if (!muscles || muscles.length === 0) {
@@ -33,17 +49,30 @@ function formatEquipment(equipment?: string[]) {
 export function ExerciseCard({ exercise }: ExerciseCardProps) {
   const difficulty = exercise.level ?? "intermediaire";
   const muscles = formatMuscles(exercise.muscles);
+  const primarySrc = toThumbSrc(exercise.media) ?? exercise.media;
+  const [imageSrc, setImageSrc] = useState<string | undefined>(primarySrc);
+
+  useEffect(() => {
+    setImageSrc(primarySrc);
+  }, [primarySrc]);
+
+  const handleImageError = () => {
+    if (exercise.media && imageSrc !== exercise.media) {
+      setImageSrc(exercise.media);
+    }
+  };
 
   return (
     <div className="flex items-start gap-4">
       <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-xl ring-1 ring-white/10">
-        {exercise.media ? (
+        {imageSrc ? (
           <Image
-            src={exercise.media}
+            src={imageSrc}
             alt={exercise.title}
             fill
             sizes="72px"
             className="object-cover"
+            onError={handleImageError}
           />
         ) : (
           <div className="h-full w-full bg-[color:var(--bg-2)]" />
