@@ -943,7 +943,13 @@ export function ExerciseListClient({
         </div>
       </div>
 
-      <div className={isGridView ? "card-grid" : "flex flex-col gap-2"}>
+      <div
+        className={
+          isGridView
+            ? "grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5"
+            : "flex flex-col gap-3"
+        }
+      >
         {filtered.length === 0 ? (
           <div className="card">
             <h2>Aucun exercice ne correspond</h2>
@@ -952,7 +958,7 @@ export function ExerciseListClient({
         ) : isGridView ? (
           filtered.map((exercise) => (
             <Link key={exercise.slug} href={`/exercices/${exercise.slug}`}>
-              <article className="card">
+              <article className="card p-4">
                 <ExerciseCard
                   exercise={{
                     ...exercise,
@@ -977,7 +983,7 @@ export function ExerciseListClient({
               href={`/exercices/${exercise.slug}`}
               className="block"
             >
-              <article className="rounded-[var(--radius)] border border-[color:var(--border)] bg-[color:var(--card)] px-3 py-2 shadow-sm backdrop-blur">
+              <article className="rounded-[var(--radius)] border border-[color:var(--border)] bg-[color:var(--card)] px-4 py-3 shadow-sm backdrop-blur">
                 <ExerciseCard
                   exercise={{
                     ...exercise,

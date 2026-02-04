@@ -46,12 +46,12 @@ export function ExerciseCard({
   const title = exercise.title?.trim() || "Brouillon sans titre";
   const isList = variant === "list";
   const thumbClass = isList
-    ? "h-12 w-12 rounded-xl"
-    : "h-44 w-full rounded-2xl";
-  const sizes = isList ? "48px" : "(max-width: 768px) 100vw, 360px";
+    ? "h-24 w-24 rounded-2xl"
+    : "h-40 w-full rounded-2xl";
+  const sizes = isList ? "96px" : "(max-width: 768px) 100vw, 360px";
 
   return (
-    <div className={isList ? "flex items-center gap-3" : "flex flex-col gap-3"}>
+    <div className={isList ? "flex items-center gap-4" : "flex flex-col gap-3"}>
       <div
         className={`relative shrink-0 overflow-hidden ring-1 ring-white/10 ${thumbClass}`}
       >
@@ -77,7 +77,7 @@ export function ExerciseCard({
       {isList ? (
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h2 className="min-w-0 flex-1 truncate text-sm font-semibold text-[color:var(--ink)]">
+            <h2 className="min-w-0 flex-1 truncate text-base font-semibold text-[color:var(--ink)] md:text-lg">
               {title}
             </h2>
             {isLive ? (
