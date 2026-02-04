@@ -380,13 +380,12 @@ function FavoriteIconButton({
   active,
   variant = "inline",
 }: FavoriteIconButtonProps) {
-  const sizeClass =
-    variant === "overlay" ? "p-1" : "h-9 w-9 text-base";
+  const sizeClass = variant === "overlay" ? "p-1" : "p-1";
   const variantClass =
     variant === "overlay"
       ? "border-transparent bg-black/35 text-white/70 backdrop-blur ring-1 ring-white/10"
-      : "border-white/10 bg-[color:var(--card)] text-[color:var(--ink)]";
-  const stateClass = variant === "overlay" ? "" : active ? "ring-2 ring-white/30" : "opacity-70 hover:opacity-100";
+      : "border-transparent bg-black/40 text-white/70 backdrop-blur ring-1 ring-white/15";
+  const stateClass = "";
   const label = active ? "Retirer des favoris" : "Ajouter aux favoris";
 
   return (
@@ -402,7 +401,7 @@ function FavoriteIconButton({
         toggleFavorite(slug);
       }}
     >
-      {variant === "overlay" ? (
+      {variant === "overlay" || variant === "inline" ? (
         <svg
           aria-hidden="true"
           viewBox="0 0 20 20"
@@ -833,29 +832,33 @@ export function ExerciseListClient({
             </button>
           </div>
         ) : null}
-        <input
-          className="field-input"
-          type="search"
-          placeholder="Rechercher un exercice"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
-        <div className="chip-row">
-          <button
-            type="button"
-            className="chip chip-clear"
-            onClick={() => {
-              setQuery("");
-              setSelectedLevels([]);
-              setSelectedEquipment([]);
-              setSelectedTags([]);
-              setSelectedThemes([]);
-              setOnlyFavorites(false);
-              setOpenFilter(null);
-            }}
-          >
-            Réinitialiser
-          </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex-1 min-w-0 basis-full sm:basis-auto">
+            <input
+              className="field-input"
+              type="search"
+              placeholder="Rechercher un exercice"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </div>
+          <div className="chip-row shrink-0">
+            <button
+              type="button"
+              className="chip chip-clear px-3 py-2"
+              onClick={() => {
+                setQuery("");
+                setSelectedLevels([]);
+                setSelectedEquipment([]);
+                setSelectedTags([]);
+                setSelectedThemes([]);
+                setOnlyFavorites(false);
+                setOpenFilter(null);
+              }}
+            >
+              Réinitialiser
+            </button>
+          </div>
         </div>
         <div className="grid gap-2 md:grid-cols-4">
           <MultiSelectMenu
@@ -961,7 +964,7 @@ export function ExerciseListClient({
         className={
           isGridView
             ? "grid grid-cols-3 items-start gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-4 md:gap-3 lg:grid-cols-6 lg:gap-4"
-            : "flex flex-col gap-3"
+            : "flex flex-col gap-1"
         }
       >
         {filtered.length === 0 ? (
@@ -997,7 +1000,7 @@ export function ExerciseListClient({
               href={`/exercices/${exercise.slug}`}
               className="block"
             >
-              <article className="rounded-[var(--radius)] border border-[color:var(--border)] bg-[color:var(--card)] px-4 py-3 shadow-sm backdrop-blur">
+              <article className="rounded-[var(--radius)] border border-[color:var(--border)] bg-[color:var(--card)] px-3 py-2 shadow-sm backdrop-blur">
                 <ExerciseCard
                   exercise={{
                     ...exercise,
