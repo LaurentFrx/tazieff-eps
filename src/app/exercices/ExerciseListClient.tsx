@@ -12,6 +12,7 @@ import {
   EMPTY_FAVORITES_SERVER_SNAPSHOT,
   getFavoritesSnapshot,
   subscribeFavorites,
+  toggleFavorite,
 } from "@/lib/favoritesStore";
 
 type ExerciseListClientProps = {
@@ -21,6 +22,7 @@ type ExerciseListClientProps = {
 };
 
 type ExerciseStatus = "draft" | "ready";
+type ViewMode = "grid" | "list";
 
 type TeacherModeSnapshot = {
   unlocked: boolean;
@@ -37,6 +39,8 @@ const POLL_INTERVAL_MS = 20000;
 const THEME_OPTIONS = [1, 2, 3] as const;
 const NO_EQUIPMENT_ID = "sans-materiel";
 const NO_EQUIPMENT_LABEL = "Sans matériel";
+const VIEW_MODE_STORAGE_KEY = "exercisesViewMode";
+const DEFAULT_VIEW_MODE: ViewMode = "grid";
 const CHIP_VARIANTS = [
   "bg-blue-500/10 border-blue-400/30 text-blue-100",
   "bg-emerald-500/10 border-emerald-400/30 text-emerald-100",
@@ -299,6 +303,109 @@ function SingleSelectMenu<T>({
   );
 }
 
+let cachedViewModeRaw: string | null = null;
+let cachedViewMode: ViewMode = DEFAULT_VIEW_MODE;
+const viewModeListeners = new Set<() => void>();
+
+function emitViewMode() {
+  viewModeListeners.forEach((listener) => listener());
+}
+
+function normalizeViewMode(value: string | null): ViewMode {
+  return value === "grid" || value === "list" ? value : DEFAULT_VIEW_MODE;
+}
+
+function getViewModeSnapshot(): ViewMode {
+  if (typeof window === "undefined") {
+    return cachedViewMode;
+  }
+
+  const raw = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+  if (raw === cachedViewModeRaw) {
+    return cachedViewMode;
+  }
+
+  cachedViewModeRaw = raw;
+  cachedViewMode = normalizeViewMode(raw);
+  return cachedViewMode;
+}
+
+function setStoredViewMode(next: ViewMode) {
+  if (cachedViewModeRaw === next && cachedViewMode === next) {
+    return;
+  }
+
+  cachedViewMode = next;
+  cachedViewModeRaw = next;
+
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, next);
+  }
+
+  emitViewMode();
+}
+
+function onViewModeStorage(event: StorageEvent) {
+  if (event.key !== VIEW_MODE_STORAGE_KEY) {
+    return;
+  }
+  cachedViewModeRaw = null;
+  getViewModeSnapshot();
+  emitViewMode();
+}
+
+function subscribeViewMode(callback: () => void) {
+  viewModeListeners.add(callback);
+
+  if (typeof window !== "undefined" && viewModeListeners.size === 1) {
+    window.addEventListener("storage", onViewModeStorage);
+  }
+
+  return () => {
+    viewModeListeners.delete(callback);
+    if (viewModeListeners.size === 0 && typeof window !== "undefined") {
+      window.removeEventListener("storage", onViewModeStorage);
+    }
+  };
+}
+
+type FavoriteIconButtonProps = {
+  slug: string;
+  active: boolean;
+  variant?: "overlay" | "inline";
+};
+
+function FavoriteIconButton({
+  slug,
+  active,
+  variant = "inline",
+}: FavoriteIconButtonProps) {
+  const sizeClass = variant === "overlay" ? "h-8 w-8 text-sm" : "h-9 w-9 text-base";
+  const variantClass =
+    variant === "overlay"
+      ? "border-white/20 bg-black/40 text-white backdrop-blur-sm"
+      : "border-white/10 bg-[color:var(--card)] text-[color:var(--ink)]";
+  const stateClass = active ? "ring-2 ring-white/30" : "opacity-70 hover:opacity-100";
+  const label = active ? "Retirer des favoris" : "Ajouter aux favoris";
+
+  return (
+    <button
+      type="button"
+      className={`inline-flex items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent)] ${sizeClass} ${variantClass} ${stateClass}`}
+      aria-pressed={active}
+      aria-label={label}
+      title={label}
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        toggleFavorite(slug);
+      }}
+    >
+      <span aria-hidden="true">{active ? "★" : "☆"}</span>
+    </button>
+  );
+}
+
 function mergeExercises(
   exercises: LiveExerciseListItem[],
   liveExercises: LiveExerciseRow[],
@@ -361,6 +468,12 @@ export function ExerciseListClient({
   );
   const teacherUnlocked = teacherMode.unlocked;
   const teacherPin = teacherMode.pin;
+
+  const viewMode = useSyncExternalStore(
+    subscribeViewMode,
+    getViewModeSnapshot,
+    () => DEFAULT_VIEW_MODE,
+  );
 
   useEffect(() => {
     if (!supabase) {
@@ -682,6 +795,12 @@ export function ExerciseListClient({
     router.push(`/exercices/${encodeURIComponent(slug)}?edit=1`);
   };
 
+  const handleViewModeChange = (mode: ViewMode) => {
+    setStoredViewMode(mode);
+  };
+
+  const isGridView = viewMode === "grid";
+
   return (
     <div className="stack-lg">
       <div className="filter-panel">
@@ -778,18 +897,59 @@ export function ExerciseListClient({
         </div>
       </div>
 
-      <p className="text-sm text-[color:var(--muted)]">
-        {filtered.length} exercice{filtered.length > 1 ? "s" : ""} trouvé
-        {filtered.length > 1 ? "s" : ""}
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-[color:var(--muted)]">
+          {filtered.length} exercice{filtered.length > 1 ? "s" : ""} trouvé
+          {filtered.length > 1 ? "s" : ""}
+        </p>
+        <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[color:var(--card)] p-1">
+          <button
+            type="button"
+            className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent)] ${
+              isGridView
+                ? "border-white/20 bg-[color:var(--bg-2)] text-[color:var(--ink)] opacity-100 ring-1 ring-white/30"
+                : "border-transparent text-[color:var(--muted)] opacity-60 hover:opacity-100"
+            }`}
+            aria-pressed={isGridView}
+            aria-label="Vue grille"
+            title="Vue grille"
+            onClick={() => handleViewModeChange("grid")}
+          >
+            <svg aria-hidden="true" viewBox="0 0 20 20" className="h-5 w-5" fill="currentColor">
+              <rect x="3" y="3" width="6" height="6" rx="1.5" />
+              <rect x="11" y="3" width="6" height="6" rx="1.5" />
+              <rect x="3" y="11" width="6" height="6" rx="1.5" />
+              <rect x="11" y="11" width="6" height="6" rx="1.5" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent)] ${
+              !isGridView
+                ? "border-white/20 bg-[color:var(--bg-2)] text-[color:var(--ink)] opacity-100 ring-1 ring-white/30"
+                : "border-transparent text-[color:var(--muted)] opacity-60 hover:opacity-100"
+            }`}
+            aria-pressed={!isGridView}
+            aria-label="Vue liste"
+            title="Vue liste"
+            onClick={() => handleViewModeChange("list")}
+          >
+            <svg aria-hidden="true" viewBox="0 0 20 20" className="h-5 w-5" fill="currentColor">
+              <rect x="3" y="4" width="14" height="2" rx="1" />
+              <rect x="3" y="9" width="14" height="2" rx="1" />
+              <rect x="3" y="14" width="14" height="2" rx="1" />
+            </svg>
+          </button>
+        </div>
+      </div>
 
-      <div className="card-grid">
+      <div className={isGridView ? "card-grid" : "flex flex-col gap-2"}>
         {filtered.length === 0 ? (
           <div className="card">
             <h2>Aucun exercice ne correspond</h2>
             <p>Ajustez vos filtres ou vos mots-clés.</p>
           </div>
-        ) : (
+        ) : isGridView ? (
           filtered.map((exercise) => (
             <Link key={exercise.slug} href={`/exercices/${exercise.slug}`}>
               <article className="card">
@@ -799,20 +959,39 @@ export function ExerciseListClient({
                     title: exercise.title?.trim() || "Brouillon sans titre",
                   }}
                   isLive={exercise.isLive}
+                  favoriteAction={
+                    <FavoriteIconButton
+                      slug={exercise.slug}
+                      active={favorites.includes(exercise.slug)}
+                      variant="overlay"
+                    />
+                  }
                 />
-                <div className="chip-row chip-row--compact">
-                  {teacherUnlocked && exercise.status === "draft" ? (
-                    <span className="pill pill-live">BROUILLON</span>
-                  ) : null}
-                  {exercise.tags.slice(0, 3).map((tag) => (
-                    <span key={tag} className="chip">
-                      {tag}
-                    </span>
-                  ))}
-                  <span className="chip chip-ghost">
-                    Thèmes {exercise.themeCompatibility.join(", ")}
-                  </span>
-                </div>
+              </article>
+            </Link>
+          ))
+        ) : (
+          filtered.map((exercise) => (
+            <Link
+              key={exercise.slug}
+              href={`/exercices/${exercise.slug}`}
+              className="block"
+            >
+              <article className="rounded-[var(--radius)] border border-[color:var(--border)] bg-[color:var(--card)] px-3 py-2 shadow-sm backdrop-blur">
+                <ExerciseCard
+                  exercise={{
+                    ...exercise,
+                    title: exercise.title?.trim() || "Brouillon sans titre",
+                  }}
+                  isLive={exercise.isLive}
+                  variant="list"
+                  favoriteAction={
+                    <FavoriteIconButton
+                      slug={exercise.slug}
+                      active={favorites.includes(exercise.slug)}
+                    />
+                  }
+                />
               </article>
             </Link>
           ))

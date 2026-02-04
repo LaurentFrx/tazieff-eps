@@ -1,13 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import DifficultyPill from "@/components/DifficultyPill";
+import { useEffect, useState, type ReactNode } from "react";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
 
 export type ExerciseCardProps = {
   exercise: ExerciseFrontmatter;
   isLive?: boolean;
+  variant?: "grid" | "list";
+  favoriteAction?: ReactNode;
 };
 
 function toThumbSrc(src?: string) {
@@ -23,32 +24,12 @@ function toThumbSrc(src?: string) {
   return src.replace("/images/exos/", "/images/exos/thumb-");
 }
 
-function formatMuscles(muscles?: string[]) {
-  if (!muscles || muscles.length === 0) {
-    return null;
-  }
-
-  const cleaned = muscles.map((muscle) => muscle.trim()).filter(Boolean);
-  if (cleaned.length === 0) {
-    return null;
-  }
-
-  const visible = cleaned.slice(0, 3);
-  const extra = cleaned.length - visible.length;
-  return extra > 0
-    ? `${visible.join(" • ")} • +${extra}`
-    : visible.join(" • ");
-}
-
-function formatEquipment(equipment?: string[]) {
-  return equipment && equipment.length > 0
-    ? `Matériel: ${equipment.join(", ")}`
-    : "Sans matériel spécifique.";
-}
-
-export function ExerciseCard({ exercise }: ExerciseCardProps) {
-  const difficulty = exercise.level ?? "intermediaire";
-  const muscles = formatMuscles(exercise.muscles);
+export function ExerciseCard({
+  exercise,
+  isLive,
+  variant = "grid",
+  favoriteAction,
+}: ExerciseCardProps) {
   const primarySrc = toThumbSrc(exercise.media) ?? exercise.media;
   const [imageSrc, setImageSrc] = useState<string | undefined>(primarySrc);
 
@@ -62,34 +43,54 @@ export function ExerciseCard({ exercise }: ExerciseCardProps) {
     }
   };
 
+  const title = exercise.title?.trim() || "Brouillon sans titre";
+  const isList = variant === "list";
+  const thumbClass = isList
+    ? "h-12 w-12 rounded-xl"
+    : "h-44 w-full rounded-2xl";
+  const sizes = isList ? "48px" : "(max-width: 768px) 100vw, 360px";
+
   return (
-    <div className="flex items-start gap-4">
-      <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-xl ring-1 ring-white/10">
+    <div className={isList ? "flex items-center gap-3" : "flex flex-col gap-3"}>
+      <div
+        className={`relative shrink-0 overflow-hidden ring-1 ring-white/10 ${thumbClass}`}
+      >
         {imageSrc ? (
           <Image
             src={imageSrc}
-            alt={exercise.title}
+            alt={title}
             fill
-            sizes="72px"
+            sizes={sizes}
             className="object-cover"
             onError={handleImageError}
           />
         ) : (
           <div className="h-full w-full bg-[color:var(--bg-2)]" />
         )}
-      </div>
-      <div className="min-w-0 flex-1">
-        <h2 className="text-lg font-semibold truncate">{exercise.title}</h2>
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-[color:var(--muted)]">
-          <DifficultyPill level={difficulty} />
-          <span>{formatEquipment(exercise.equipment)}</span>
-        </div>
-        {muscles ? (
-          <p className="mt-1 text-xs text-[color:var(--muted)] opacity-70">
-            {muscles}
-          </p>
+        {!isList && favoriteAction ? (
+          <div className="absolute right-3 top-3">{favoriteAction}</div>
+        ) : null}
+        {!isList && isLive ? (
+          <span className="absolute left-3 top-3 pill pill-live">LIVE</span>
         ) : null}
       </div>
+      {isList ? (
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <h2 className="min-w-0 flex-1 truncate text-sm font-semibold text-[color:var(--ink)]">
+              {title}
+            </h2>
+            {isLive ? (
+              <span className="pill pill-live shrink-0">LIVE</span>
+            ) : null}
+          </div>
+        </div>
+      ) : (
+        <h2 className="text-base font-semibold text-[color:var(--ink)]">{title}</h2>
+      )}
+      {isList && favoriteAction ? (
+        <div className="shrink-0">{favoriteAction}</div>
+      ) : null}
     </div>
   );
 }
