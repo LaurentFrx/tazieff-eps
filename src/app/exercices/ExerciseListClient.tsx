@@ -161,7 +161,7 @@ function renderSelectedChips<T extends MultiSelectValue>(
   return values.map((value) => (
     <span
       key={`chip-${String(value)}`}
-      className={`rounded-full border px-2 py-0.5 text-xs font-medium ${chipVariant(value)}`}
+      className={`rounded-full border px-2 py-0.5 text-[13px] font-medium ${chipVariant(value)}`}
     >
       {getLabel(value)}
     </span>
@@ -380,12 +380,13 @@ function FavoriteIconButton({
   active,
   variant = "inline",
 }: FavoriteIconButtonProps) {
-  const sizeClass = variant === "overlay" ? "h-8 w-8 text-sm" : "h-9 w-9 text-base";
+  const sizeClass =
+    variant === "overlay" ? "p-1" : "h-9 w-9 text-base";
   const variantClass =
     variant === "overlay"
-      ? "border-white/20 bg-black/40 text-white backdrop-blur-sm"
+      ? "border-transparent bg-black/35 text-white/70 backdrop-blur ring-1 ring-white/10"
       : "border-white/10 bg-[color:var(--card)] text-[color:var(--ink)]";
-  const stateClass = active ? "ring-2 ring-white/30" : "opacity-70 hover:opacity-100";
+  const stateClass = variant === "overlay" ? "" : active ? "ring-2 ring-white/30" : "opacity-70 hover:opacity-100";
   const label = active ? "Retirer des favoris" : "Ajouter aux favoris";
 
   return (
@@ -401,7 +402,20 @@ function FavoriteIconButton({
         toggleFavorite(slug);
       }}
     >
-      <span aria-hidden="true">{active ? "★" : "☆"}</span>
+      {variant === "overlay" ? (
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 20 20"
+          className={`h-4 w-4 ${active ? "text-yellow-400" : "text-white/70"}`}
+          fill={active ? "currentColor" : "none"}
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <path d="M10 2.2l2.2 4.46 4.93.72-3.56 3.47.84 4.91L10 13.9l-4.41 2.32.84-4.91-3.56-3.47 4.93-.72L10 2.2z" />
+        </svg>
+      ) : (
+        <span aria-hidden="true">{active ? "★" : "☆"}</span>
+      )}
     </button>
   );
 }
@@ -946,7 +960,7 @@ export function ExerciseListClient({
       <div
         className={
           isGridView
-            ? "grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5"
+            ? "grid grid-cols-3 items-start gap-2 sm:grid-cols-4 sm:gap-3 md:grid-cols-4 md:gap-3 lg:grid-cols-6 lg:gap-4"
             : "flex flex-col gap-3"
         }
       >
@@ -958,7 +972,7 @@ export function ExerciseListClient({
         ) : isGridView ? (
           filtered.map((exercise) => (
             <Link key={exercise.slug} href={`/exercices/${exercise.slug}`}>
-              <article className="card p-4">
+              <article className="card self-start !p-2 !min-h-0 !h-auto">
                 <ExerciseCard
                   exercise={{
                     ...exercise,
