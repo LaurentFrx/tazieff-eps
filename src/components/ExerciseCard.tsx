@@ -14,19 +14,6 @@ export type ExerciseCardProps = {
 
 type ImageCandidate = string | StaticImageData;
 
-function toThumbSrc(src?: string) {
-  if (!src) {
-    return undefined;
-  }
-  if (!src.startsWith("/images/exos/")) {
-    return src;
-  }
-  if (src.startsWith("/images/exos/thumb-")) {
-    return src;
-  }
-  return src.replace("/images/exos/", "/images/exos/thumb-");
-}
-
 type SrcParts = {
   dir: string;
   filename: string;
@@ -125,16 +112,25 @@ function ExerciseCardImage({
   favoriteAction,
 }: ExerciseCardImageProps) {
   const [candidateIndex, setCandidateIndex] = useState(0);
+  const [errored, setErrored] = useState(false);
   const imageSrc = candidates[candidateIndex];
-  const isFallbackLogo = !isList && imageSrc === logo;
+  const isFallbackLogo = imageSrc === logo || errored;
   const imageTone = isFallbackLogo
     ? "grayscale opacity-60 brightness-90"
     : "";
 
   const handleImageError = () => {
-    setCandidateIndex((prev) =>
-      prev < candidates.length - 1 ? prev + 1 : prev,
-    );
+    setCandidateIndex((prev) => {
+      if (prev >= candidates.length - 1) {
+        setErrored(true);
+        return prev;
+      }
+      const nextIndex = prev + 1;
+      if (nextIndex >= candidates.length - 1) {
+        setErrored(true);
+      }
+      return nextIndex;
+    });
   };
 
   return (
@@ -167,13 +163,9 @@ export function ExerciseCard({
 }: ExerciseCardProps) {
   const title = exercise.title?.trim() || "Brouillon sans titre";
   const isList = variant === "list";
-  const primarySrc = toThumbSrc(exercise.media) ?? exercise.media;
   const listCandidates = useMemo(
-    () =>
-      uniqueCandidates(
-        [primarySrc, exercise.media].filter(Boolean) as ImageCandidate[],
-      ),
-    [exercise.media, primarySrc],
+    () => buildGridCandidates(exercise.media),
+    [exercise.media],
   );
   const gridCandidates = useMemo(
     () => buildGridCandidates(exercise.media),
