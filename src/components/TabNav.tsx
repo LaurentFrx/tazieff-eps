@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
 const tabs = [
@@ -26,6 +27,39 @@ const tabs = [
 export function TabNav() {
   const pathname = usePathname() ?? "";
   const { t } = useI18n();
+  const [hideBottomNav, setHideBottomNav] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia(
+      "(max-width: 767px) and (orientation: landscape)",
+    );
+    const compute = () => {
+      setHideBottomNav(media.matches);
+    };
+    compute();
+
+    window.addEventListener("resize", compute);
+    window.addEventListener("orientationchange", compute);
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", compute);
+    } else {
+      media.addListener(compute);
+    }
+
+    return () => {
+      window.removeEventListener("resize", compute);
+      window.removeEventListener("orientationchange", compute);
+      if (typeof media.removeEventListener === "function") {
+        media.removeEventListener("change", compute);
+      } else {
+        media.removeListener(compute);
+      }
+    };
+  }, []);
+
+  if (hideBottomNav) {
+    return null;
+  }
 
   return (
     <nav className="tab-nav" aria-label="Primary">
