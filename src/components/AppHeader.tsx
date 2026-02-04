@@ -25,7 +25,10 @@ export function AppHeader() {
     }
 
     if (pathname === "/exercices") {
-      return { title: "Bibliothèque d'exercices", subtitle: "Exercices" };
+      return {
+        title: "Bibliothèque d'exercices",
+        subtitle: "EXERCICES & ETIREMENTS",
+      };
     }
 
     if (pathname === "/seances") {

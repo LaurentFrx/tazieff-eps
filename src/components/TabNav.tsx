@@ -30,11 +30,11 @@ export function TabNav() {
   const [hideBottomNav, setHideBottomNav] = useState(false);
 
   useEffect(() => {
-    const media = window.matchMedia(
-      "(max-width: 767px) and (orientation: landscape)",
-    );
+    const media = window.matchMedia("(orientation: landscape)");
     const compute = () => {
-      setHideBottomNav(media.matches);
+      const isLandscape = media.matches;
+      const isPhoneWidth = window.innerWidth < 900;
+      setHideBottomNav(isLandscape && isPhoneWidth);
     };
     compute();
 
