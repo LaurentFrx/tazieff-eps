@@ -1,0 +1,1997 @@
+[
+  {
+    "code": "S1-01",
+    "title": "PLANCHE FRONTALE SUR COUDES",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Deltoides, grand droit des abdominaux, transverse, grand fessier Fonction: Anti-extension (gainage du tronc).",
+    "objective": "Renforcer la sangle abdominale et ameliorer la stabilite du tronc.",
+    "anatomy": "Deltoides, grand droit des abdominaux, transverse, grand fessier Fonction: Anti-extension (gainage du tronc).",
+    "key_points": [
+      "points cles",
+      "Bassin en position neutre",
+      "regard vers le sol",
+      "respiration continue",
+      "Execution: regard vers le sol",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Bassin neutre: eviter de",
+      "creuser le bas du dos.",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,"
+    ],
+    "regress": "Plancher: genoux au sol / appui mains / duree reduite.",
+    "progress": "Levier plus long, instabilite (Swiss ball) ou duree +.",
+    "dosage": "3-5 x 20-60 s Repos 30-60 s Qualite de posture.",
+    "image": "/exercises/S1/S1-01.webp"
+  },
+  {
+    "code": "S1-02",
+    "title": "PLANCHE FRONTALE SUR MAINS",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Deltoides, pectoraux, grand droit des abdominaux, denteles Fonction: Anti-extension (gainage du tronc).",
+    "objective": "Renforcer la sangle abdominale et ameliorer la stabilite du tronc.",
+    "anatomy": "Deltoides, pectoraux, grand droit des abdominaux, denteles Fonction: Anti-extension (gainage du tronc).",
+    "key_points": [
+      "points cles",
+      "Paumes bien ancrees au sol",
+      "bras verrouilles sans hyperextension",
+      "nuque alignee avec colonne",
+      "Execution: bras verrouilles sans hyperextension",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Bassin neutre: eviter de",
+      "creuser le bas du dos.",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,"
+    ],
+    "regress": "Plancher: genoux au sol / appui mains / duree reduite.",
+    "progress": "Levier plus long, instabilite (Swiss ball) ou duree +.",
+    "dosage": "3-5 x 20-60 s Repos 30-60 s Qualite de posture.",
+    "image": "/exercises/S1/S1-02.webp"
+  },
+  {
+    "code": "S1-03",
+    "title": "PLANCHE LATERALE COUDE DROIT",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Obliques externes et internes droits, carre des lombes, deltoides Fonction: Anti-inclinaison + anti-rotation (obliques).",
+    "objective": "Renforcer la sangle abdominale et ameliorer la stabilite du tronc.",
+    "anatomy": "Obliques externes et internes droits, carre des lombes, deltoides Fonction: Anti-inclinaison + anti-rotation (obliques).",
+    "key_points": [
+      "points cles",
+      "Hanches hautes et stables",
+      "corps parfaitement aligne lateralement",
+      "pas de rotation du bassin",
+      "Execution: corps parfaitement aligne lateralement",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Bassin neutre: eviter de",
+      "creuser le bas du dos.",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,"
+    ],
+    "regress": "Plancher: genoux au sol / appui mains / duree reduite.",
+    "progress": "Levier plus long, instabilite (Swiss ball) ou duree +.",
+    "dosage": "3-5 x 20-60 s Repos 30-60 s Qualite de posture.",
+    "image": "/exercises/S1/S1-03.webp"
+  },
+  {
+    "code": "S1-04",
+    "title": "PLANCHE LATERALE COUDE GAUCHE",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Obliques externes et internes gauches, carre des lombes, deltoides Fonction: Anti-inclinaison + anti-rotation (obliques).",
+    "objective": "Renforcer la sangle abdominale et ameliorer la stabilite du tronc.",
+    "anatomy": "Obliques externes et internes gauches, carre des lombes, deltoides Fonction: Anti-inclinaison + anti-rotation (obliques).",
+    "key_points": [
+      "points cles",
+      "Symetrie parfaite avec version droite",
+      "maintien de l'alignement",
+      "engagement constant du core",
+      "Execution: maintien de l'alignement",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Bassin neutre: eviter de",
+      "creuser le bas du dos.",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,"
+    ],
+    "regress": "Plancher: genoux au sol / appui mains / duree reduite.",
+    "progress": "Levier plus long, instabilite (Swiss ball) ou duree +.",
+    "dosage": "3-5 x 20-60 s Repos 30-60 s Qualite de posture.",
+    "image": "/exercises/S1/S1-04.webp"
+  },
+  {
+    "code": "S1-05",
+    "title": "PLANCHE HAUTE PIEDS SUR SWISS BALL",
+    "level": "Intermediaire",
+    "equipment": "Tapis, Swiss ball (ballon de gym 65cm)",
+    "muscles": "Grand droit, transverse, obliques, deltoides, stabilisateurs Fonction: Anti-extension (gainage du tronc).",
+    "objective": "Renforcer la sangle abdominale et ameliorer la stabilite du tronc.",
+    "anatomy": "Grand droit, transverse, obliques, deltoides, stabilisateurs Fonction: Anti-extension (gainage du tronc).",
+    "key_points": [
+      "points cles",
+      "Controle de l'instabilite",
+      "engagement core maximal",
+      "micro-ajustements constants pour equilibre",
+      "Execution: engagement core maximal",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Bassin neutre: eviter de",
+      "creuser le bas du dos.",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,"
+    ],
+    "regress": "Plancher: genoux au sol / appui mains / duree reduite.",
+    "progress": "Levier plus long, instabilite (Swiss ball) ou duree +.",
+    "dosage": "3-5 x 20-60 s Repos 30-60 s Qualite de posture.",
+    "image": "/exercises/S1/S1-05.webp"
+  },
+  {
+    "code": "S1-06",
+    "title": "HOLLOW BODY HOLD",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Grand droit des abdominaux, transverse, psoas-iliaque, denteles Fonction: Anti-extension + controle bassin.",
+    "objective": "Renforcer la sangle abdominale et ameliorer la stabilite du tronc.",
+    "anatomy": "Grand droit des abdominaux, transverse, psoas-iliaque, denteles Fonction: Anti-extension + controle bassin.",
+    "key_points": [
+      "points cles",
+      "Lombes IMPERATIVEMENT plaquees au sol",
+      "menton rentre",
+      "tension isometrique totale",
+      "Execution: menton rentre",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Bassin neutre: eviter de",
+      "creuser le bas du dos.",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,"
+    ],
+    "regress": "Une jambe pliee / bras le long du corps, lombes collees.",
+    "progress": "Bras au-dessus de la tete / jambes plus basses.",
+    "dosage": "3-5 x 20-60 s Repos 30-60 s Qualite de posture.",
+    "image": "/exercises/S1/S1-06.webp"
+  },
+  {
+    "code": "S1-07",
+    "title": "SUPERMAN / EXTENSION DORSALE",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Erecteurs du rachis, grand fessier, ischio-jambiers, dorsaux Fonction: Controle moteur + renforcement.",
+    "objective": "Renforcer Erecteurs du rachis et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Erecteurs du rachis, grand fessier, ischio-jambiers, dorsaux Fonction: Controle moteur + renforcement.",
+    "key_points": [
+      "points cles",
+      "Controler l'amplitude (ne pas cambrer excessivement)",
+      "regard vers le sol",
+      "mouvement lent et maitrise",
+      "Execution: regard vers le sol",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S1/S1-07.webp"
+  },
+  {
+    "code": "S1-08",
+    "title": "L-SIT AU SOL",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Grand droit, psoas-iliaque, triceps brachiaux, deltoides Fonction: Controle moteur + renforcement.",
+    "objective": "Renforcer Grand droit et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Grand droit, psoas-iliaque, triceps brachiaux, deltoides Fonction: Controle moteur + renforcement.",
+    "key_points": [
+      "points cles",
+      "Depression scapulaire active",
+      "jambes parfaitement horizontales",
+      "pieds en flexion",
+      "Execution: jambes parfaitement horizontales",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S1/S1-08.webp"
+  },
+  {
+    "code": "S1-09",
+    "title": "L-SIT AUX BARRES PARALLELES",
+    "level": "Intermediaire",
+    "equipment": "Barres paralleles",
+    "muscles": "Grand droit, transverse, psoas, triceps, deltoides, trapezes Fonction: Controle moteur + renforcement.",
+    "objective": "Renforcer Grand droit et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Grand droit, transverse, psoas, triceps, deltoides, trapezes Fonction: Controle moteur + renforcement.",
+    "key_points": [
+      "points cles",
+      "Depression scapulaire maximale",
+      "compression hanches intense",
+      "orteils pointes",
+      "Execution: compression hanches intense",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S1/S1-09.webp"
+  },
+  {
+    "code": "S1-10",
+    "title": "DEAD BUG",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Transverse de l'abdomen, grand droit, obliques, stabilisateurs Fonction: Stabilite lombo-pelvienne",
+    "objective": "Renforcer la sangle abdominale et ameliorer la stabilite du tronc. tronc stable pendant le mouvement. Priorite: controle bassin (anti-rotation/anti-extension).",
+    "anatomy": "Transverse de l'abdomen, grand droit, obliques, stabilisateurs Fonction: Stabilite lombo-pelvienne",
+    "key_points": [
+      "points cles",
+      "Lombes collees au sol pendant tout le mouvement",
+      "coordination contro-laterale",
+      "tempo lent et controle",
+      "Execution: coordination contro-laterale",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite). lent -> controle -> plus rapide/circuit.",
+    "dosage": "3-4 x 8-12 / cote Tempo lent, controle bassin. Gainage dynamique & abdominaux GAINAGE DYNAMIQUE & ABDOMINAUX (15 exercices) Reperes pedagogiques series courtes puis temps de travail.",
+    "image": "/exercises/S1/S1-10.webp"
+  },
+  {
+    "code": "S2-01",
+    "title": "MOUNTAIN CLIMBERS",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Grand droit des abdominaux, obliques, psoas, deltoides, cardio Fonction: Gainage dynamique + cardio.",
+    "objective": "Renforcer la sangle abdominale et ameliorer le renforcement fonctionnel. respiration rythmee tempo controle ou explosif selon objectif Respiration: reguliere (pas d'apnee prolongee).",
+    "anatomy": "Grand droit des abdominaux, obliques, psoas, deltoides, cardio Fonction: Gainage dynamique + cardio.",
+    "key_points": [
+      "points cles",
+      "Hanches stables sans balancement"
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-6 x 20-40 s Repos 20-40 s Tronc stable.",
+    "image": "/exercises/S2/S2-01.webp"
+  },
+  {
+    "code": "S2-02",
+    "title": "MOUNTAIN CLIMBERS AVEC MEDECINE-BALL",
+    "level": "Intermediaire",
+    "equipment": "Medecine-ball 4-6 kg, tapis",
+    "muscles": "Grand droit, obliques, deltoides, stabilisateurs profonds, Fonction: Gainage dynamique + cardio.",
+    "objective": "Renforcer la sangle abdominale et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Grand droit, obliques, deltoides, stabilisateurs profonds, Fonction: Gainage dynamique + cardio.",
+    "key_points": [
+      "points cles",
+      "Controle absolu de l'instabilite du ballon",
+      "grip ferme",
+      "engagement core renforce",
+      "Execution: grip ferme",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-6 x 20-40 s Repos 20-40 s Tronc stable.",
+    "image": "/exercises/S2/S2-02.webp"
+  },
+  {
+    "code": "S2-03",
+    "title": "PLANCHE AVEC SHOULDER TAPS",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Obliques, transverse, grand droit, deltoides, anti-rotation Fonction: Anti-extension (gainage du tronc).",
+    "objective": "Renforcer la sangle abdominale et ameliorer la stabilite du tronc.",
+    "anatomy": "Obliques, transverse, grand droit, deltoides, anti-rotation Fonction: Anti-extension (gainage du tronc).",
+    "key_points": [
+      "points cles",
+      "Hanches absolument immobiles (pas de rotation)",
+      "transfert de poids lateral controle",
+      "alternance reguliere",
+      "Execution: transfert de poids lateral controle",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Bassin neutre: eviter de",
+      "creuser le bas du dos.",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,"
+    ],
+    "regress": "Plancher: genoux au sol / appui mains / duree reduite.",
+    "progress": "Levier plus long, instabilite (Swiss ball) ou duree +.",
+    "dosage": "3-5 x 20-60 s Repos 30-60 s Qualite de posture.",
+    "image": "/exercises/S2/S2-03.webp"
+  },
+  {
+    "code": "S2-04",
+    "title": "BIRD DOG",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Erecteurs du rachis, fessiers, dorsaux, deltoides, equilibre Fonction: Controle moteur + renforcement.",
+    "objective": "Renforcer Erecteurs du rachis et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Erecteurs du rachis, fessiers, dorsaux, deltoides, equilibre Fonction: Controle moteur + renforcement.",
+    "key_points": [
+      "points cles",
+      "Dos absolument neutre (pas de cambrure)",
+      "bras et jambe alignes horizontalement",
+      "tempo lent",
+      "Execution: bras et jambe alignes horizontalement",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S2/S2-04.webp"
+  },
+  {
+    "code": "S2-05",
+    "title": "BEAR CRAWL",
+    "level": "Intermediaire",
+    "equipment": "Sol libre (espace suffisant)",
+    "muscles": "Grand droit, transverse, deltoides, quadriceps, coordination Fonction: Controle moteur + renforcement.",
+    "objective": "Renforcer Grand droit et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Grand droit, transverse, deltoides, quadriceps, coordination Fonction: Controle moteur + renforcement.",
+    "key_points": [
+      "points cles",
+      "Dos parfaitement plat",
+      "genoux frolent le sol sans toucher (5cm)",
+      "mouvement fluide et coordonne",
+      "Execution: genoux frolent le sol sans toucher (5cm)",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S2/S2-05.webp"
+  },
+  {
+    "code": "S2-06",
+    "title": "CRUNCH CLASSIQUE",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Grand droit des abdominaux (portion superieure) Fonction: Flexion controlee du tronc.",
+    "objective": "Renforcer Grand droit des abdominaux (portion superieure) et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Grand droit des abdominaux (portion superieure) Fonction: Flexion controlee du tronc.",
+    "key_points": [
+      "points cles",
+      "Ne JAMAIS tirer sur la nuque",
+      "regard oblique vers plafond",
+      "lombes au sol",
+      "Execution: regard oblique vers plafond",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 10-20 reps Repos 45-75 s Controle.",
+    "image": "/exercises/S2/S2-06.webp"
+  },
+  {
+    "code": "S2-07",
+    "title": "CRUNCH CROISE",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Obliques externes et internes, grand droit des abdominaux Fonction: Flexion controlee du tronc.",
+    "objective": "Renforcer Obliques externes et internes et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Obliques externes et internes, grand droit des abdominaux Fonction: Flexion controlee du tronc.",
+    "key_points": [
+      "points cles",
+      "Rotation vient du tronc (pas seulement du coude)",
+      "alterner les cotes de facon equilibree",
+      "controle de la descente",
+      "Execution: alterner les cotes de facon equilibree",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 10-20 reps Repos 45-75 s Controle.",
+    "image": "/exercises/S2/S2-07.webp"
+  },
+  {
+    "code": "S2-08",
+    "title": "BICYCLE CRUNCH",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Obliques, grand droit, psoas-iliaque, rotation et flexion Fonction: Flexion controlee du tronc.",
+    "objective": "Renforcer Obliques et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Obliques, grand droit, psoas-iliaque, rotation et flexion Fonction: Flexion controlee du tronc.",
+    "key_points": [
+      "points cles",
+      "Rotation maximale du tronc",
+      "jambe opposee tendue rase le sol",
+      "rythme soutenu",
+      "Execution: jambe opposee tendue rase le sol",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 10-20 reps Repos 45-75 s Controle.",
+    "image": "/exercises/S2/S2-08.webp"
+  },
+  {
+    "code": "S2-09",
+    "title": "RELEVE DE JAMBES AU SOL",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Grand droit (portion inferieure), psoas-iliaque, tension-fasciae latae Fonction: Flexion de hanche + gainage.",
+    "objective": "Renforcer Grand droit (portion inferieure) et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Grand droit (portion inferieure), psoas-iliaque, tension-fasciae latae Fonction: Flexion de hanche + gainage.",
+    "key_points": [
+      "points cles",
+      "Mains sous fessiers pour proteger les lombes",
+      "jambes tendues ou legerement flechies",
+      "controle excentrique",
+      "Execution: jambes tendues ou legerement flechies",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 10-20 reps Repos 45-75 s Controle.",
+    "image": "/exercises/S2/S2-09.webp"
+  },
+  {
+    "code": "S2-10",
+    "title": "RELEVE DE JAMBES SUSPENDU BARRE FIXE",
+    "level": "Intermediaire",
+    "equipment": "Barre de traction",
+    "muscles": "Grand droit, psoas, grand dorsal, avant-bras (grip) Fonction: Flexion de hanche + gainage.",
+    "objective": "Renforcer Grand droit et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Grand droit, psoas, grand dorsal, avant-bras (grip) Fonction: Flexion de hanche + gainage.",
+    "key_points": [
+      "points cles",
+      "Limiter le balancement",
+      "engagement scapulaire",
+      "version genoux plies (debutant) vs jambes tendues (avance)",
+      "Execution: engagement scapulaire",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 10-20 reps Repos 45-75 s Controle.",
+    "image": "/exercises/S2/S2-10.webp"
+  },
+  {
+    "code": "S2-11",
+    "title": "V-UPS / V-SIT",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Grand droit complet, psoas-iliaque, equilibre Fonction: Stabilite + mobilite globale.",
+    "objective": "Renforcer Grand droit complet et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Grand droit complet, psoas-iliaque, equilibre Fonction: Stabilite + mobilite globale.",
+    "key_points": [
+      "points cles",
+      "Equilibre sur les fessiers",
+      "toucher les orteils au sommet",
+      "descente controlee sans poser completement le dos",
+      "Execution: toucher les orteils au sommet",
+      "Respiration: reguliere (pas d'apnee prolongee).",
+      "4 reps / cote x 2-4",
+      "Priorite technique."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "Contenu a completer",
+    "image": "/exercises/S2/S2-11.webp"
+  },
+  {
+    "code": "S2-12",
+    "title": "RUSSIAN TWISTS AVEC MEDECINE-BALL",
+    "level": "Intermediaire",
+    "equipment": "Medecine-ball 3-5 kg",
+    "muscles": "Obliques externes et internes, grand droit, rotation Fonction: Rotation controlee (obliques) / anti-rotation.",
+    "objective": "Renforcer Obliques externes et internes et ameliorer la stabilite en rotation.",
+    "anatomy": "Obliques externes et internes, grand droit, rotation Fonction: Rotation controlee (obliques) / anti-rotation.",
+    "key_points": [
+      "points cles",
+      "Rotation vient du tronc (pas seulement des bras)",
+      "regard suit le ballon",
+      "tempo controle",
+      "Execution: regard suit le ballon",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 10-20 reps Repos 45-75 s Controle.",
+    "image": "/exercises/S2/S2-12.webp"
+  },
+  {
+    "code": "S2-13",
+    "title": "PALLOF PRESS AVEC ELASTIQUE",
+    "level": "Intermediaire",
+    "equipment": "Elastique de resistance fixe a hauteur poitrine",
+    "muscles": "Obliques, transverse, grand droit, anti-rotation, deltoides Fonction: Controle moteur + renforcement.",
+    "objective": "Renforcer Obliques et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Obliques, transverse, grand droit, anti-rotation, deltoides Fonction: Controle moteur + renforcement.",
+    "key_points": [
+      "points cles",
+      "Resister activement a la traction laterale",
+      "bras completement tendus devant",
+      "bassin stable",
+      "Execution: bras completement tendus devant",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S2/S2-13.webp"
+  },
+  {
+    "code": "S2-14",
+    "title": "AB WHEEL ROLLOUT",
+    "level": "Intermediaire",
+    "equipment": "Roulette abdominale (ab wheel)",
+    "muscles": "Grand droit, transverse, grand dorsal, denteles, deltoides Fonction: Controle moteur + renforcement.",
+    "objective": "Renforcer Grand droit et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Grand droit, transverse, grand dorsal, denteles, deltoides Fonction: Controle moteur + renforcement.",
+    "key_points": [
+      "points cles",
+      "Ne JAMAIS cambrer les lombes",
+      "amplitude progressive",
+      "engagement core constant",
+      "Execution: amplitude progressive",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S2/S2-14.webp"
+  },
+  {
+    "code": "S2-15",
+    "title": "PLANCHE LATERALE AVEC ROTATION",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Obliques, denteles, deltoides, rotation thoracique Fonction: Anti-inclinaison + anti-rotation (obliques).",
+    "objective": "Renforcer la sangle abdominale et ameliorer la stabilite du tronc. equilibre poussee/tirage + stabilite scapulaire. Consignes: epaules basses, amplitude controlee, gainage.",
+    "anatomy": "Obliques, denteles, deltoides, rotation thoracique Fonction: Anti-inclinaison + anti-rotation (obliques).",
+    "key_points": [
+      "points cles",
+      "Hanches stables pendant rotation",
+      "rotation controlee du tronc",
+      "regard suit la main mobile",
+      "Execution: rotation controlee du tronc",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Bassin neutre: eviter de",
+      "creuser le bas du dos.",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,"
+    ],
+    "regress": "Plancher: genoux au sol / appui mains / duree reduite.",
+    "progress": "Levier plus long, instabilite (Swiss ball) ou duree +. assiste -> standard -> variantes/charge.",
+    "dosage": "3-5 x 20-60 s Repos 30-60 s Qualite de posture. Haut du corps HAUT DU CORPS (20 exercices) Reperes pedagogiques 6-15 reps, controle excentrique.",
+    "image": "/exercises/S2/S2-15.webp"
+  },
+  {
+    "code": "S3-01",
+    "title": "POMPES CLASSIQUES",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Pectoraux, triceps, deltoides anterieurs Fonction: Poussee horizontale + stabilite scapulaire.",
+    "objective": "Renforcer la poussee (pectoraux/triceps) et la stabilite des epaules.",
+    "anatomy": "Pectoraux, triceps, deltoides anterieurs Fonction: Poussee horizontale + stabilite scapulaire.",
+    "key_points": [
+      "points cles",
+      "Coudes a 45 du corps",
+      "corps rigide parfaitement aligne",
+      "descente jusqu'a ce que poitrine frole le sol",
+      "Execution: corps rigide parfaitement aligne",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 6-15 reps Repos 60-90 s.",
+    "image": "/exercises/S3/S3-01.webp"
+  },
+  {
+    "code": "S3-02",
+    "title": "POMPES DIAMANT",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Triceps (emphase), pectoraux internes, deltoides anterieurs Fonction: Poussee horizontale + stabilite scapulaire.",
+    "objective": "Renforcer la poussee (pectoraux/triceps) et la stabilite des epaules.",
+    "anatomy": "Triceps (emphase), pectoraux internes, deltoides anterieurs Fonction: Poussee horizontale + stabilite scapulaire.",
+    "key_points": [
+      "points cles",
+      "Index et pouces se touchent formant diamant",
+      "coudes serres le long du corps",
+      "amplitude complete",
+      "Execution: coudes serres le long du corps",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 6-15 reps Repos 60-90 s.",
+    "image": "/exercises/S3/S3-02.webp"
+  },
+  {
+    "code": "S3-03",
+    "title": "POMPES DECLINEES (PIEDS SURELEVES)",
+    "level": "Intermediaire",
+    "equipment": "Tapis, banc ou plinth 40-60cm",
+    "muscles": "Deltoides anterieurs (emphase), pectoraux superieurs, triceps Fonction: Poussee horizontale + stabilite scapulaire.",
+    "objective": "Renforcer la poussee (pectoraux/triceps) et la stabilite des epaules.",
+    "anatomy": "Deltoides anterieurs (emphase), pectoraux superieurs, triceps Fonction: Poussee horizontale + stabilite scapulaire.",
+    "key_points": [
+      "points cles",
+      "Resistance accrue sur haut du corps",
+      "maintien alignement corporel",
+      "controle de la descente",
+      "Execution: maintien alignement corporel",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 6-15 reps Repos 60-90 s.",
+    "image": "/exercises/S3/S3-03.webp"
+  },
+  {
+    "code": "S3-04",
+    "title": "POMPES INCLINEES (MAINS SURELEVEES)",
+    "level": "Intermediaire",
+    "equipment": "Banc ou plinth 40-60cm",
+    "muscles": "Pectoraux inferieurs, triceps, deltoides anterieurs Fonction: Poussee horizontale + stabilite scapulaire.",
+    "objective": "Renforcer la poussee (pectoraux/triceps) et la stabilite des epaules.",
+    "anatomy": "Pectoraux inferieurs, triceps, deltoides anterieurs Fonction: Poussee horizontale + stabilite scapulaire.",
+    "key_points": [
+      "points cles",
+      "Variante facilitee pour progresser vers pompes au sol",
+      "maintien du gainage corporel",
+      "excellent pour debutants",
+      "Execution: maintien du gainage corporel",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 6-15 reps Repos 60-90 s.",
+    "image": "/exercises/S3/S3-04.webp"
+  },
+  {
+    "code": "S3-05",
+    "title": "POMPES AVEC ROTATION",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Pectoraux, deltoides, obliques, denteles, rotation Fonction: Poussee horizontale + stabilite scapulaire.",
+    "objective": "Renforcer la poussee (pectoraux/triceps) et la stabilite des epaules.",
+    "anatomy": "Pectoraux, deltoides, obliques, denteles, rotation Fonction: Poussee horizontale + stabilite scapulaire.",
+    "key_points": [
+      "points cles",
+      "Rotation complete du tronc a",
+      "bras forme ligne verticale parfaite",
+      "equilibre et controle",
+      "Execution: bras forme ligne verticale parfaite",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 6-15 reps Repos 60-90 s.",
+    "image": "/exercises/S3/S3-05.webp"
+  },
+  {
+    "code": "S3-06",
+    "title": "DIPS AUX BARRES PARALLELES",
+    "level": "Intermediaire",
+    "equipment": "Barres paralleles",
+    "muscles": "Triceps, pectoraux inferieurs, deltoides anterieurs Fonction: Poussee (triceps/pectoraux) +",
+    "objective": "Renforcer la poussee (pectoraux/triceps) et la stabilite des epaules.",
+    "anatomy": "Triceps, pectoraux inferieurs, deltoides anterieurs Fonction: Poussee (triceps/pectoraux) +",
+    "key_points": [
+      "points cles",
+      "Coudes a 90 maximum en bas",
+      "buste legerement penche (focus pectoraux) ou droit (focus",
+      "triceps)",
+      "amplitude controlee",
+      "Execution: buste legerement penche (focus pectoraux) ou droit"
+    ],
+    "safety": [
+      "Epaules basses: eviter de",
+      "s'affaisser en bas du",
+      "mouvement.",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S3/S3-06.webp"
+  },
+  {
+    "code": "S3-07",
+    "title": "TRACTIONS PRONATION",
+    "level": "Intermediaire",
+    "equipment": "Barre de traction",
+    "muscles": "Grand dorsal, biceps, grand rond, trapezes, rhomboides Fonction: Tirage vertical (grand dorsal) + gainage.",
+    "objective": "Renforcer le tirage (dos/biceps) et ameliorer la posture.",
+    "anatomy": "Grand dorsal, biceps, grand rond, trapezes, rhomboides Fonction: Tirage vertical (grand dorsal) + gainage.",
+    "key_points": [
+      "points cles",
+      "Descente complete bras tendus",
+      "pas de balancement (kipping)",
+      "poitrine vers la barre",
+      "Execution: pas de balancement (kipping)",
+      "Respiration: reguliere (pas d'apnee prolongee).",
+      "6 x 3-10 reps",
+      "Repos 90 s",
+      "Technique."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "Contenu a completer",
+    "image": "/exercises/S3/S3-07.webp"
+  },
+  {
+    "code": "S3-08",
+    "title": "TRACTIONS SUPINATION",
+    "level": "Intermediaire",
+    "equipment": "Barre de traction",
+    "muscles": "Biceps (emphase), grand dorsal, grand rond, brachial Fonction: Tirage vertical (grand dorsal) + gainage.",
+    "objective": "Renforcer le tirage (dos/biceps) et ameliorer la posture.",
+    "anatomy": "Biceps (emphase), grand dorsal, grand rond, brachial Fonction: Tirage vertical (grand dorsal) + gainage.",
+    "key_points": [
+      "points cles",
+      "Plus facile que pronation",
+      "focus biceps accru",
+      "amplitude complete",
+      "Execution: focus biceps accru",
+      "Respiration: reguliere (pas d'apnee prolongee).",
+      "6 x 3-10 reps",
+      "Repos 90 s",
+      "Technique."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "Contenu a completer",
+    "image": "/exercises/S3/S3-08.webp"
+  },
+  {
+    "code": "S3-09",
+    "title": "TRACTIONS PRISE NEUTRE",
+    "level": "Intermediaire",
+    "equipment": "Aucun",
+    "muscles": "Biceps, brachial, grand dorsal, grand rond Fonction: Tirage vertical (grand dorsal) + gainage.",
+    "objective": "Renforcer le tirage (dos/biceps) et ameliorer la posture.",
+    "anatomy": "Biceps, brachial, grand dorsal, grand rond Fonction: Tirage vertical (grand dorsal) + gainage.",
+    "key_points": [
+      "points cles",
+      "Prise confortable pour les articulations",
+      "force equilibree entre dos et bras",
+      "alternative aux prises pronation/supination",
+      "Execution: force equilibree entre dos et bras",
+      "Respiration: reguliere (pas d'apnee prolongee).",
+      "6 x 3-10 reps",
+      "Repos 90 s",
+      "Technique."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "Contenu a completer",
+    "image": "/exercises/S3/S3-09.webp"
+  },
+  {
+    "code": "S3-10",
+    "title": "DEVELOPPE HALTERES COUCHE SUR BANC",
+    "level": "Intermediaire",
+    "equipment": "Banc plat, halteres 6-12 kg",
+    "muscles": "Pectoraux, deltoides anterieurs, triceps Fonction: Controle moteur + renforcement.",
+    "objective": "Renforcer Pectoraux et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Pectoraux, deltoides anterieurs, triceps Fonction: Controle moteur + renforcement.",
+    "key_points": [
+      "points cles",
+      "Omoplates serrees contre le banc",
+      "pieds au sol",
+      "trajectoire legerement convergente",
+      "Execution: pieds au sol",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S3/S3-10.webp"
+  },
+  {
+    "code": "S3-11",
+    "title": "DEVELOPPE HALTERES INCLINE",
+    "level": "Intermediaire",
+    "equipment": "Banc inclinable (30-45 ), halteres 6-10 kg",
+    "muscles": "Pectoraux superieurs (portion claviculaire), deltoides Fonction: Controle moteur + renforcement.",
+    "objective": "Renforcer Pectoraux superieurs (portion claviculaire) et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Pectoraux superieurs (portion claviculaire), deltoides Fonction: Controle moteur + renforcement.",
+    "key_points": [
+      "points cles",
+      "Angle optimal 30-45",
+      "pas trop vertical (solliciterait trop epaules)",
+      "amplitude complete",
+      "Execution: pas trop vertical (solliciterait trop epaules)",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S3/S3-11.webp"
+  },
+  {
+    "code": "S3-12",
+    "title": "ROWING HALTERE UN BRAS",
+    "level": "Intermediaire",
+    "equipment": "Banc, haltere 8-15 kg",
+    "muscles": "Grand dorsal, trapezes moyens, rhomboides, biceps Fonction: Tirage horizontal + posture.",
+    "objective": "Renforcer le tirage (dos/biceps) et ameliorer la posture.",
+    "anatomy": "Grand dorsal, trapezes moyens, rhomboides, biceps Fonction: Tirage horizontal + posture.",
+    "key_points": [
+      "points cles",
+      "Dos plat imperatif",
+      "tirer le coude vers l'arriere (pas vers le haut)",
+      "serrer l'omoplate en fin de mouvement",
+      "Execution: tirer le coude vers l'arriere (pas vers le haut)",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S3/S3-12.webp"
+  },
+  {
+    "code": "S3-13",
+    "title": "ROWING HALTERES PENCHE",
+    "level": "Intermediaire",
+    "equipment": "Halteres 8-12 kg",
+    "muscles": "Grand dorsal, trapezes, rhomboides, erecteurs du rachis Fonction: Tirage horizontal + posture.",
+    "objective": "Renforcer le tirage (dos/biceps) et ameliorer la posture.",
+    "anatomy": "Grand dorsal, trapezes, rhomboides, erecteurs du rachis Fonction: Tirage horizontal + posture.",
+    "key_points": [
+      "points cles",
+      "Dos neutre CRUCIAL (pas de flexion)",
+      "genoux legerement flechis",
+      "coudes le long du corps",
+      "Execution: genoux legerement flechis",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S3/S3-13.webp"
+  },
+  {
+    "code": "S3-14",
+    "title": "ELEVATIONS LATERALES HALTERES",
+    "level": "Intermediaire",
+    "equipment": "Halteres 4-8 kg",
+    "muscles": "Deltoides moyens (faisceau lateral) Fonction: Controle moteur + renforcement.",
+    "objective": "Renforcer Deltoides moyens (faisceau lateral) et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Deltoides moyens (faisceau lateral) Fonction: Controle moteur + renforcement.",
+    "key_points": [
+      "points cles",
+      "Legere flexion des coudes",
+      "monter jusqu'a l'horizontal",
+      "paumes legerement inclinees vers l'avant",
+      "Execution: monter jusqu'a l'horizontal",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S3/S3-14.webp"
+  },
+  {
+    "code": "S3-15",
+    "title": "ELEVATIONS FRONTALES HALTERES",
+    "level": "Intermediaire",
+    "equipment": "Halteres 4-8 kg",
+    "muscles": "Deltoides anterieurs, portion claviculaire des pectoraux Fonction: Controle moteur + renforcement.",
+    "objective": "Renforcer Deltoides anterieurs et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Deltoides anterieurs, portion claviculaire des pectoraux Fonction: Controle moteur + renforcement.",
+    "key_points": [
+      "points cles",
+      "Bras tendus ou legerement flechis",
+      "ne pas depasser la hauteur des epaules",
+      "buste stable",
+      "Execution: ne pas depasser la hauteur des epaules",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S3/S3-15.webp"
+  },
+  {
+    "code": "S3-16",
+    "title": "CURL BICEPS HALTERES DEBOUT",
+    "level": "Intermediaire",
+    "equipment": "Halteres 6-12 kg",
+    "muscles": "Biceps brachial (chef long et court), brachial Fonction: Controle moteur + renforcement.",
+    "objective": "Renforcer Biceps brachial (chef long et court) et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Biceps brachial (chef long et court), brachial Fonction: Controle moteur + renforcement.",
+    "key_points": [
+      "points cles",
+      "Coudes fixes le long du corps",
+      "supination complete",
+      "contraction volontaire au sommet",
+      "Execution: supination complete",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S3/S3-16.webp"
+  },
+  {
+    "code": "S3-17",
+    "title": "CURL BICEPS MARTEAU",
+    "level": "Intermediaire",
+    "equipment": "Halteres 8-12 kg",
+    "muscles": "Biceps, brachial, brachio-radial (avant-bras) Fonction: Controle moteur + renforcement.",
+    "objective": "Renforcer Biceps et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Biceps, brachial, brachio-radial (avant-bras) Fonction: Controle moteur + renforcement.",
+    "key_points": [
+      "points cles",
+      "Prise neutre maintenue tout au long",
+      "permet plus de charge que supination",
+      "excellent pour avant-bras",
+      "Execution: permet plus de charge que supination",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S3/S3-17.webp"
+  },
+  {
+    "code": "S3-18",
+    "title": "EXTENSION TRICEPS OVERHEAD HALTERE",
+    "level": "Intermediaire",
+    "equipment": "Haltere 6-10 kg",
+    "muscles": "Triceps brachial (chef long emphase) Fonction: Controle moteur + renforcement.",
+    "objective": "Renforcer Triceps brachial (chef long emphase) et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Triceps brachial (chef long emphase) Fonction: Controle moteur + renforcement.",
+    "key_points": [
+      "points cles",
+      "Coudes serres pres des oreilles",
+      "amplitude maximale",
+      "controle de la trajectoire",
+      "Execution: amplitude maximale",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S3/S3-18.webp"
+  },
+  {
+    "code": "S3-19",
+    "title": "KICKBACK TRICEPS HALTERE",
+    "level": "Intermediaire",
+    "equipment": "Haltere 4-8 kg, banc",
+    "muscles": "Triceps brachial Fonction: Controle moteur + renforcement.",
+    "objective": "Renforcer Triceps brachial et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Triceps brachial Fonction: Controle moteur + renforcement.",
+    "key_points": [
+      "points cles",
+      "Coude stationnaire parallele au tronc",
+      "extension complete avec contraction volontaire",
+      "un bras a la fois",
+      "Execution: extension complete avec contraction volontaire",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S3/S3-19.webp"
+  },
+  {
+    "code": "S3-20",
+    "title": "FACE PULLS ELASTIQUE",
+    "level": "Intermediaire",
+    "equipment": "Elastique de resistance fixe a hauteur tete",
+    "muscles": "Trapezes moyens/inferieurs, deltoides posterieurs, rhomboides, Fonction: Tirage vertical (grand dorsal) + gainage.",
+    "objective": "Renforcer le tirage (dos/biceps) et ameliorer la posture. force + stabilite hanches/genoux. Priorites: alignement, appuis, amplitude sans douleur.",
+    "anatomy": "Trapezes moyens/inferieurs, deltoides posterieurs, rhomboides, Fonction: Tirage vertical (grand dorsal) + gainage.",
+    "key_points": [
+      "points cles",
+      "Finir mains a cote des oreilles",
+      "coudes hauts et ecartes",
+      "serrage scapulaire intense",
+      "Execution: coudes hauts et ecartes",
+      "Respiration: reguliere (pas d'apnee prolongee).",
+      "6 x 3-10 reps",
+      "Repos 90 s",
+      "Technique.",
+      "Bas du corps",
+      "BAS DU CORPS (15 exercices)",
+      "Reperes pedagogiques",
+      "qualite technique avant vitesse/charge."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite). amplitude -> unilateral -> charge/plyometrie.",
+    "dosage": "Contenu a completer",
+    "image": "/exercises/S3/S3-20.webp"
+  },
+  {
+    "code": "S4-01",
+    "title": "SQUAT CLASSIQUE AU POIDS DU CORPS",
+    "level": "Intermediaire",
+    "equipment": "Aucun",
+    "muscles": "Quadriceps, grand fessier, erecteurs du rachis, adducteurs Fonction: Extension hanche/genou (patron squat).",
+    "objective": "Developper force et stabilite du bas du corps (hanches/genoux).",
+    "anatomy": "Quadriceps, grand fessier, erecteurs du rachis, adducteurs Fonction: Extension hanche/genou (patron squat).",
+    "key_points": [
+      "points cles",
+      "Genoux alignes avec les pieds",
+      "poids sur les talons",
+      "dos droit",
+      "Execution: poids sur les talons",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S4/S4-01.webp"
+  },
+  {
+    "code": "S4-02",
+    "title": "GOBLET SQUAT AVEC KETTLEBELL",
+    "level": "Intermediaire",
+    "equipment": "Kettlebell 8-16 kg",
+    "muscles": "Quadriceps, grand fessier, adducteurs, abdominaux (stabilisation) Fonction: Extension hanche/genou (patron squat).",
+    "objective": "Developper force et stabilite du bas du corps (hanches/genoux).",
+    "anatomy": "Quadriceps, grand fessier, adducteurs, abdominaux (stabilisation) Fonction: Extension hanche/genou (patron squat).",
+    "key_points": [
+      "points cles",
+      "Kettlebell contre la poitrine",
+      "coudes vers le bas",
+      "posture verticale facilitee",
+      "Execution: coudes vers le bas",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S4/S4-02.webp"
+  },
+  {
+    "code": "S4-03",
+    "title": "SQUAT BULGARE (SPLIT SQUAT ARRIERE)",
+    "level": "Intermediaire",
+    "equipment": "Banc ou plinth 40-60cm, option halteres",
+    "muscles": "Quadriceps (jambe avant), grand fessier, equilibre Fonction: Extension hanche/genou (patron squat).",
+    "objective": "Developper force et stabilite du bas du corps (hanches/genoux).",
+    "anatomy": "Quadriceps (jambe avant), grand fessier, equilibre Fonction: Extension hanche/genou (patron squat).",
+    "key_points": [
+      "points cles",
+      "Buste vertical",
+      "genou avant ne depasse pas l'orteil",
+      "80% du poids sur jambe avant",
+      "Execution: genou avant ne depasse pas l'orteil",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S4/S4-03.webp"
+  },
+  {
+    "code": "S4-04",
+    "title": "FENTES AVANT MARCHEES",
+    "level": "Intermediaire",
+    "equipment": "Aucun ou halteres legers",
+    "muscles": "Quadriceps, grand fessier, ischio-jambiers, equilibre dynamique Fonction: Unilateral: stabilite + force jambes.",
+    "objective": "Developper force et stabilite du bas du corps (hanches/genoux).",
+    "anatomy": "Quadriceps, grand fessier, ischio-jambiers, equilibre dynamique Fonction: Unilateral: stabilite + force jambes.",
+    "key_points": [
+      "points cles",
+      "Pas ample",
+      "genoux a 90 les deux jambes",
+      "torse droit",
+      "Execution: genoux a 90 les deux jambes",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S4/S4-04.webp"
+  },
+  {
+    "code": "S4-05",
+    "title": "FENTES ARRIERE",
+    "level": "Intermediaire",
+    "equipment": "Aucun ou halteres",
+    "muscles": "Quadriceps, grand fessier, ischio-jambiers Fonction: Unilateral: stabilite + force jambes.",
+    "objective": "Developper force et stabilite du bas du corps (hanches/genoux).",
+    "anatomy": "Quadriceps, grand fessier, ischio-jambiers Fonction: Unilateral: stabilite + force jambes.",
+    "key_points": [
+      "points cles",
+      "Plus facile pour l'equilibre que fentes avant",
+      "controle de la descente",
+      "alterner les jambes",
+      "Execution: controle de la descente",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S4/S4-05.webp"
+  },
+  {
+    "code": "S4-06",
+    "title": "FENTES LATERALES",
+    "level": "Intermediaire",
+    "equipment": "Aucun ou halteres legers",
+    "muscles": "Adducteurs, quadriceps, grand fessier, abducteurs Fonction: Unilateral: stabilite + force jambes.",
+    "objective": "Developper force et stabilite du bas du corps (hanches/genoux).",
+    "anatomy": "Adducteurs, quadriceps, grand fessier, abducteurs Fonction: Unilateral: stabilite + force jambes.",
+    "key_points": [
+      "points cles",
+      "Pieds paralleles",
+      "genou plie aligne avec l'orteil",
+      "buste legerement penche",
+      "Execution: genou plie aligne avec l'orteil",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S4/S4-06.webp"
+  },
+  {
+    "code": "S4-07",
+    "title": "SOULEVE DE TERRE ROUMAIN HALTERES",
+    "level": "Intermediaire",
+    "equipment": "Halteres 10-15 kg",
+    "muscles": "Ischio-jambiers, grand fessier, erecteurs du rachis Fonction: Hip hinge (ischios/fessiers) + dos",
+    "objective": "Renforcer la chaine posterieure (ischios/fessiers) et le controle du dos.",
+    "anatomy": "Ischio-jambiers, grand fessier, erecteurs du rachis Fonction: Hip hinge (ischios/fessiers) + dos",
+    "key_points": [
+      "points cles",
+      "Dos plat IMPERATIF",
+      "halteres rasent les jambes",
+      "flexion de hanche (pas du dos)",
+      "Execution: halteres rasent les jambes",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Dos neutre: charniere",
+      "hanche, eviter l'arrondi.",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,"
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 6-12 reps Repos 60-120 s.",
+    "image": "/exercises/S4/S4-07.webp"
+  },
+  {
+    "code": "S4-08",
+    "title": "HIP THRUST AU SOL",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Grand fessier, ischio-jambiers, erecteurs du rachis Fonction: Extension de hanche (fessiers).",
+    "objective": "Renforcer Grand fessier et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Grand fessier, ischio-jambiers, erecteurs du rachis Fonction: Extension de hanche (fessiers).",
+    "key_points": [
+      "points cles",
+      "Alignement epaules-hanches-genoux au sommet",
+      "contraction volontaire intense des fessiers",
+      "menton rentre",
+      "Execution: contraction volontaire intense des fessiers",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S4/S4-08.webp"
+  },
+  {
+    "code": "S4-09",
+    "title": "HIP THRUST SUR BANC AVEC CHARGE",
+    "level": "Intermediaire",
+    "equipment": "Banc, medecine-ball ou haltere 8-15 kg",
+    "muscles": "Grand fessier, ischio-jambiers Fonction: Extension de hanche (fessiers).",
+    "objective": "Renforcer Grand fessier et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Grand fessier, ischio-jambiers Fonction: Extension de hanche (fessiers).",
+    "key_points": [
+      "points cles",
+      "Amplitude accrue vs version au sol",
+      "tibias verticaux au sommet",
+      "regard neutre",
+      "Execution: tibias verticaux au sommet",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S4/S4-09.webp"
+  },
+  {
+    "code": "S4-10",
+    "title": "GLUTE BRIDGE",
+    "level": "Intermediaire",
+    "equipment": "Tapis de sol",
+    "muscles": "Grand fessier, erecteurs du rachis Fonction: Extension de hanche (fessiers).",
+    "objective": "Renforcer Grand fessier et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Grand fessier, erecteurs du rachis Fonction: Extension de hanche (fessiers).",
+    "key_points": [
+      "points cles",
+      "Version statique du hip thrust",
+      "contraction maintenue 20-60 secondes",
+      "respiration controlee",
+      "Execution: contraction maintenue 20-60 secondes",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S4/S4-10.webp"
+  },
+  {
+    "code": "S4-11",
+    "title": "STEP-UPS SUR CAISSON",
+    "level": "Intermediaire",
+    "equipment": "Plinth ou caisson 40-60cm",
+    "muscles": "Quadriceps, grand fessier, equilibre Fonction: Controle moteur + renforcement.",
+    "objective": "Developper force et stabilite du bas du corps (hanches/genoux).",
+    "anatomy": "Quadriceps, grand fessier, equilibre Fonction: Controle moteur + renforcement.",
+    "key_points": [
+      "points cles",
+      "Pousser uniquement sur le talon de la jambe haute",
+      "buste droit",
+      "ne pas pousser avec le pied arriere",
+      "Execution: buste droit",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S4/S4-11.webp"
+  },
+  {
+    "code": "S4-12",
+    "title": "PISTOL SQUAT",
+    "level": "Intermediaire",
+    "equipment": "Aucun (option TRX pour assistance)",
+    "muscles": "Quadriceps, grand fessier, equilibre, mobilite cheville Fonction: Extension hanche/genou (patron squat).",
+    "objective": "Developper force et stabilite du bas du corps (hanches/genoux).",
+    "anatomy": "Quadriceps, grand fessier, equilibre, mobilite cheville Fonction: Extension hanche/genou (patron squat).",
+    "key_points": [
+      "points cles",
+      "Mobilite de cheville cruciale",
+      "bras devant pour contre-balance",
+      "profondeur maximale",
+      "Execution: bras devant pour contre-balance",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
+    "image": "/exercises/S4/S4-12.webp"
+  },
+  {
+    "code": "S4-13",
+    "title": "NORDIC CURLS A L'ESPALIER",
+    "level": "Intermediaire",
+    "equipment": "Espalier (echelle suedoise), tapis",
+    "muscles": "Ischio-jambiers (excentrique intense), grand fessier, erecteurs du rachis Fonction: Excentrique ischio-jambiers.",
+    "objective": "Renforcer Ischio-jambiers (excentrique intense) et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Ischio-jambiers (excentrique intense), grand fessier, erecteurs du rachis Fonction: Excentrique ischio-jambiers.",
+    "key_points": [
+      "points cles",
+      "Mouvement excentrique lent et controle",
+      "corps aligne genoux-epaules",
+      "assistance mains au sol si besoin",
+      "Execution: corps aligne genoux-epaules",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Nordic partiel + assistance mains.",
+    "progress": "Nordic complet excentrique lent (3-5 s).",
+    "dosage": "2-4 x 3-6 reps Repos 90-120 s.",
+    "image": "/exercises/S4/S4-13.webp"
+  },
+  {
+    "code": "S4-14",
+    "title": "MOLLETS DEBOUT",
+    "level": "Intermediaire",
+    "equipment": "Step ou rebord, option halteres",
+    "muscles": "Gastrocnemiens, soleaires Fonction: Extension cheville (mollets).",
+    "objective": "Renforcer Gastrocnemiens et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Gastrocnemiens, soleaires Fonction: Extension cheville (mollets).",
+    "key_points": [
+      "points cles",
+      "Amplitude complete (etirement et contraction max)",
+      "tempo controle 2-1-2",
+      "option unilateral pour intensite accrue",
+      "Execution: tempo controle 2-1-2",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere."
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-5 x 12-20 reps Tempo controle (2-1-2).",
+    "image": "/exercises/S4/S4-14.webp"
+  },
+  {
+    "code": "S4-15",
+    "title": "JUMP SQUATS",
+    "level": "Intermediaire",
+    "equipment": "Aucun Aucun Aucun Plinth ou caisson 50-70cm Halteres 6-12 kg Kettlebell 12-20 kg Kettlebell 8-12 kg Halteres 10-15 kg Medecine-ball 4-6 kg, mur avec cible 3m Halteres ou kettlebells lourds 15-25 kg chaque Plinth ou caisson 40-70cm",
+    "muscles": "Quadriceps, grand fessier, mollets, puissance explosive, pliometrie Fonction: Pliometrie (puissance) + reception. Corps complet, systeme cardiovasculaire, coordination Fonction: Coordination + cardio. Corps complet, cardio (intensite reduite) Fonction: Poussee horizontale + stabilite scapulaire. Corps complet, puissance explosive, pliometrie avancee Fonction: Coordination + cardio. Quadriceps, fessiers, deltoides, triceps, cardio, coordination Fonction: Squat + poussee verticale (complet). Grand fessier, ischio-jambiers, erecteurs du rachis, deltoides, cardio Fonction: Hinge explosif (puissance). Corps complet, deltoides (stabilisation), mobilite, coordination Fonction: Stabilite + mobilite globale. Ischio-jambiers, grand fessier, erecteurs du rachis Fonction: Hip hinge (ischios/fessiers) + dos Quadriceps, fessiers, deltoides, cardio, coordination Fonction: Squat + lancer (puissance/capacite). Trapezes, avant-bras (grip), abdominaux (gainage Fonction: Anti-flexion + grip (gainage en marche). Quadriceps, grand fessier, mollets, puissance explosive, pliometrie Fonction: Controle moteur + renforcement.",
+    "objective": "Developper force et stabilite du bas du corps (hanches/genoux). mouvements complets, coordination et capacite cardio. Priorites: enchainements propres, respiration rythmee. Renforcer Corps complet et ameliorer un mouvement complet. Renforcer la poussee (pectoraux/triceps) et la stabilite des epaules. Developper force et stabilite du bas du corps (hanches/genoux). Renforcer Quadriceps et ameliorer un mouvement complet. Renforcer la chaine posterieure (ischios/fessiers) et le controle du dos. Renforcer Corps complet et ameliorer le renforcement fonctionnel. Renforcer la chaine posterieure (ischios/fessiers) et le controle du dos. Renforcer Quadriceps et ameliorer un mouvement complet. Renforcer Trapezes et ameliorer le renforcement fonctionnel. Renforcer Quadriceps et ameliorer le renforcement fonctionnel.",
+    "anatomy": "Quadriceps, grand fessier, mollets, puissance explosive, pliometrie Fonction: Pliometrie (puissance) + reception. Corps complet, systeme cardiovasculaire, coordination Fonction: Coordination + cardio. Corps complet, cardio (intensite reduite) Fonction: Poussee horizontale + stabilite scapulaire. Corps complet, puissance explosive, pliometrie avancee Fonction: Coordination + cardio. Quadriceps, fessiers, deltoides, triceps, cardio, coordination Fonction: Squat + poussee verticale (complet). Grand fessier, ischio-jambiers, erecteurs du rachis, deltoides, cardio Fonction: Hinge explosif (puissance). Corps complet, deltoides (stabilisation), mobilite, coordination Fonction: Stabilite + mobilite globale. Ischio-jambiers, grand fessier, erecteurs du rachis Fonction: Hip hinge (ischios/fessiers) + dos Quadriceps, fessiers, deltoides, cardio, coordination Fonction: Squat + lancer (puissance/capacite). Trapezes, avant-bras (grip), abdominaux (gainage Fonction: Anti-flexion + grip (gainage en marche). Quadriceps, grand fessier, mollets, puissance explosive, pliometrie Fonction: Controle moteur + renforcement.",
+    "key_points": [
+      "points cles",
+      "Reception douce sur avant-pieds puis talons",
+      "amortissement genou",
+      "bras comme balancier",
+      "Execution: amortissement genou",
+      "Respiration: reguliere (pas d'apnee prolongee).",
+      "points cles",
+      "Enchainement fluide squat planche pompe squat saut",
+      "respiration rythmee",
+      "pompe complete",
+      "Execution: respiration rythmee",
+      "Respiration: reguliere (pas d'apnee prolongee).",
+      "points cles",
+      "Version facilitee sans pompe",
+      "points cles",
+      "Burpee complet puis saut sur caisson au lieu de saut vertical",
+      "reception stable sur caisson",
+      "redescendre controle",
+      "Execution: reception stable sur caisson",
+      "Respiration: reguliere (pas d'apnee prolongee).",
+      "points cles",
+      "Mouvement fluide sans pause entre squat et developpe",
+      "explosion des jambes initie le press",
+      "coordination",
+      "Execution: explosion des jambes initie le press",
+      "Respiration: reguliere (pas d'apnee prolongee).",
+      "points cles",
+      "Mouvement vient des HANCHES (pas des bras)",
+      "bras tendus",
+      "kettlebell a hauteur epaules/yeux",
+      "Execution: bras tendus",
+      "Respiration: reguliere (pas d'apnee prolongee).",
+      "points cles",
+      "Regard fixe sur kettlebell en permanence",
+      "7 etapes precises (sol coude main genou fente debout)",
+      "controle total",
+      "Execution: 7 etapes precises",
+      "(sol coude main genou fente debout)",
+      "4 reps / cote x 2-4",
+      "Priorite technique.",
+      "S5-07 Souleve de terre roumain halteres",
+      "(Romanian Deadlift)",
+      "Intermediaire",
+      "points cles",
+      "Dos plat IMPERATIF",
+      "halteres rasent les jambes",
+      "flexion de hanche (pas du dos)",
+      "Execution: halteres rasent les jambes",
+      "Respiration: reguliere (pas d'apnee prolongee).",
+      "points cles",
+      "Squat profond puis explosion",
+      "lancer vient des jambes (pas juste bras)",
+      "reception amortie en squat",
+      "Execution: lancer vient des jambes (pas juste bras)",
+      "Respiration: reguliere (pas d'apnee prolongee).",
+      "points cles",
+      "Posture droite imperative",
+      "epaules en arriere et basses",
+      "pas controles",
+      "Execution: epaules en arriere et basses",
+      "Respiration: reguliere (pas d'apnee prolongee).",
+      "points cles",
+      "Balancier des bras",
+      "reception douce pieds complets sur caisson",
+      "extension hanches complete en l'air",
+      "Execution: reception douce pieds complets sur caisson",
+      "Respiration: reguliere (pas d'apnee prolongee)."
+    ],
+    "safety": [
+      "Reception douce: genoux",
+      "alignes, amortir et stabiliser.",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere.",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere.",
+      "Reception douce: genoux",
+      "alignes, amortir et stabiliser.",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere.",
+      "Dos neutre: charniere",
+      "hanche, eviter l'arrondi.",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere.",
+      "Dos neutre: charniere",
+      "hanche, eviter l'arrondi.",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere.",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,",
+      "mouvement propre,",
+      "respiration reguliere.",
+      "Reception douce: genoux",
+      "alignes, amortir et stabiliser.",
+      "Amplitude adaptee: aucune",
+      "douleur articulaire.",
+      "Controle: gainage actif,"
+    ],
+    "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains). Burpee sans pompe/sans saut (step-back). Burpee sans pompe/sans saut (step-back). Burpee sans pompe/sans saut (step-back). Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains). Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains). Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains). Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains). Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains). Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains). Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
+    "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite). simplifier -> enchainer -> intensifier. Burpee complet + rythme plus eleve. tempo soutenu progression vers burpees complets Respiration: reguliere (pas d'apnee prolongee). Burpee complet + rythme plus eleve. Burpee complet + rythme plus eleve. Ajouter une charge, augmenter le tempo ou la difficulte (instabilite). Ajouter une charge, augmenter le tempo ou la difficulte (instabilite). Ajouter une charge, augmenter le tempo ou la difficulte (instabilite). Ajouter une charge, augmenter le tempo ou la difficulte (instabilite). Ajouter une charge, augmenter le tempo ou la difficulte (instabilite). Ajouter une charge, augmenter le tempo ou la difficulte (instabilite). Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
+    "dosage": "3-6 x 4-8 sauts Repos 60-90 s Qualite. Fonctionnels & composes EXERCICES FONCTIONNELS & COMPOSES (10 exercices Reperes pedagogiques temps/circuits selon le niveau. S5-01 BURPEES COMPLETS (Full Burpees) Intermediaire 3-5 x 6-12 reps ou 20-40 s travail / 20-40 s repos. S5-02 BURPEES SANS POMPE (DEBUTANT) Debutant 3-5 x 6-15 reps Repos 60-90 s. S5-03 BURPEES SUR STEP (BOX JUMP BURPEES) Avance 3-6 x 4-8 sauts Repos 60-90 s Qualite. S5-04 THRUSTERS HALTERES (Dumbbell Thrusters) Intermediaire-Avance 3-5 x 8-15 reps Repos 60-90 s. S5-05 KETTLEBELL SWING (Balancement kettlebell) Intermediaire-Avance 4-6 x 10-20 reps Repos 45-75 s Explosif. S5-06 TURKISH GET-UP (RELEVE TURC) Avance 3-5 x 6-12 reps Repos 60-120 s. S5-08 WALL BALLS (Lancers muraux) Intermediaire-Avance 3-5 x 8-15 reps Repos 60-90 s. S5-09 FARMERS WALK (MARCHE DU FERMIER) Intermediaire 3-5 x 20-40 m Repos 60-90 s. S5-10 BOX JUMPS (SAUTS SUR CAISSON) Intermediaire-Avance 3-6 x 4-8 sauts Repos 60-90 s Qualite.",
+    "image": "/exercises/S4/S4-15.webp"
+  },
+  {
+    "code": "S5-01",
+    "title": "BURPEES COMPLETS (Full Burpees) 76 BURPEES SANS POMPE (DEBUTANT)",
+    "level": "Intermediaire",
+    "equipment": "Aucun",
+    "muscles": "Contenu a completer",
+    "objective": "Contenu a completer",
+    "anatomy": "Contenu a completer",
+    "key_points": [
+      "Contenu a completer"
+    ],
+    "safety": [
+      "Contenu a completer"
+    ],
+    "regress": "Contenu a completer",
+    "progress": "Contenu a completer",
+    "dosage": "Contenu a completer",
+    "image": "/exercises/S5/S5-01.webp"
+  },
+  {
+    "code": "S5-02",
+    "title": "BURPEES COMPLETS (Full Burpees) 76 BURPEES SANS POMPE (DEBUTANT)",
+    "level": "Intermediaire",
+    "equipment": "Aucun",
+    "muscles": "Contenu a completer",
+    "objective": "Contenu a completer",
+    "anatomy": "Contenu a completer",
+    "key_points": [
+      "Contenu a completer"
+    ],
+    "safety": [
+      "Contenu a completer"
+    ],
+    "regress": "Contenu a completer",
+    "progress": "Contenu a completer",
+    "dosage": "Contenu a completer",
+    "image": "/exercises/S5/S5-02.webp"
+  },
+  {
+    "code": "S5-03",
+    "title": "BURPEES SUR STEP (BOX JUMP",
+    "level": "Intermediaire",
+    "equipment": "Aucun",
+    "muscles": "Contenu a completer",
+    "objective": "Contenu a completer",
+    "anatomy": "Contenu a completer",
+    "key_points": [
+      "Contenu a completer"
+    ],
+    "safety": [
+      "Contenu a completer"
+    ],
+    "regress": "Contenu a completer",
+    "progress": "Contenu a completer",
+    "dosage": "Contenu a completer",
+    "image": "/exercises/S5/S5-03.webp"
+  },
+  {
+    "code": "S5-04",
+    "title": "BURPEES) THRUSTERS HALTERES (Dumbbell",
+    "level": "Intermediaire",
+    "equipment": "Aucun",
+    "muscles": "Contenu a completer",
+    "objective": "Contenu a completer",
+    "anatomy": "Contenu a completer",
+    "key_points": [
+      "Contenu a completer"
+    ],
+    "safety": [
+      "Contenu a completer"
+    ],
+    "regress": "Contenu a completer",
+    "progress": "Contenu a completer",
+    "dosage": "Contenu a completer",
+    "image": "/exercises/S5/S5-04.webp"
+  },
+  {
+    "code": "S5-05",
+    "title": "KETTLEBELL SWING (Balancement",
+    "level": "Intermediaire",
+    "equipment": "Aucun",
+    "muscles": "Contenu a completer",
+    "objective": "Contenu a completer",
+    "anatomy": "Contenu a completer",
+    "key_points": [
+      "Contenu a completer"
+    ],
+    "safety": [
+      "Contenu a completer"
+    ],
+    "regress": "Contenu a completer",
+    "progress": "Contenu a completer",
+    "dosage": "Contenu a completer",
+    "image": "/exercises/S5/S5-05.webp"
+  },
+  {
+    "code": "S5-06",
+    "title": "kettlebell) TURKISH GET-UP (RELEVE TURC)",
+    "level": "Intermediaire",
+    "equipment": "Aucun",
+    "muscles": "Contenu a completer",
+    "objective": "Contenu a completer",
+    "anatomy": "Contenu a completer",
+    "key_points": [
+      "Contenu a completer"
+    ],
+    "safety": [
+      "Contenu a completer"
+    ],
+    "regress": "Contenu a completer",
+    "progress": "Contenu a completer",
+    "dosage": "Contenu a completer",
+    "image": "/exercises/S5/S5-06.webp"
+  },
+  {
+    "code": "S5-07",
+    "title": "Souleve de terre roumain halteres",
+    "level": "Intermediaire",
+    "equipment": "Aucun",
+    "muscles": "Contenu a completer",
+    "objective": "Contenu a completer",
+    "anatomy": "Contenu a completer",
+    "key_points": [
+      "Contenu a completer"
+    ],
+    "safety": [
+      "Contenu a completer"
+    ],
+    "regress": "Contenu a completer",
+    "progress": "Contenu a completer",
+    "dosage": "Contenu a completer",
+    "image": "/exercises/S5/S5-07.webp"
+  },
+  {
+    "code": "S5-08",
+    "title": "(Romanian Deadlift) WALL BALLS (Lancers muraux)",
+    "level": "Intermediaire",
+    "equipment": "Aucun",
+    "muscles": "Contenu a completer",
+    "objective": "Contenu a completer",
+    "anatomy": "Contenu a completer",
+    "key_points": [
+      "Contenu a completer"
+    ],
+    "safety": [
+      "Contenu a completer"
+    ],
+    "regress": "Contenu a completer",
+    "progress": "Contenu a completer",
+    "dosage": "Contenu a completer",
+    "image": "/exercises/S5/S5-08.webp"
+  },
+  {
+    "code": "S5-09",
+    "title": "FARMERS WALK (MARCHE DU",
+    "level": "Intermediaire",
+    "equipment": "Aucun",
+    "muscles": "Contenu a completer",
+    "objective": "Contenu a completer",
+    "anatomy": "Contenu a completer",
+    "key_points": [
+      "Contenu a completer"
+    ],
+    "safety": [
+      "Contenu a completer"
+    ],
+    "regress": "Contenu a completer",
+    "progress": "Contenu a completer",
+    "dosage": "Contenu a completer",
+    "image": "/exercises/S5/S5-09.webp"
+  },
+  {
+    "code": "S5-10",
+    "title": "FERMIER) BOX JUMPS (SAUTS SUR CAISSON)",
+    "level": "Intermediaire",
+    "equipment": "Aucun",
+    "muscles": "Contenu a completer",
+    "objective": "alignement + respiration en maintien. Criteres: bassin neutre, nuque longue, corps en bloc.",
+    "anatomy": "Contenu a completer",
+    "key_points": [
+      "Contenu a completer"
+    ],
+    "safety": [
+      "Contenu a completer"
+    ],
+    "regress": "Contenu a completer",
+    "progress": "duree -> leviers -> instabilite.",
+    "dosage": "20-60 s, qualite avant quantite.",
+    "image": "/exercises/S5/S5-10.webp"
+  }
+]
