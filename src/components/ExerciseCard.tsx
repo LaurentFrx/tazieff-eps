@@ -90,6 +90,7 @@ function buildGridCandidates(src?: string): ImageCandidate[] {
     candidates.push(`${dir}thumb.${basename}.webp${suffix}`);
   }
 
+  candidates.push(src);
   candidates.push(logo);
   return uniqueCandidates(candidates);
 }
