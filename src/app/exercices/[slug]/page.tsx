@@ -73,6 +73,9 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
   }
 
   if (v2Exercise && !result && !liveExercise) {
+    const muscles = v2Exercise.musclesList ?? v2Exercise.muscles;
+    const equipment = v2Exercise.equipmentList ?? v2Exercise.equipment;
+    const difficulty = v2Exercise.difficulty ?? v2Exercise.level;
     return (
       <section className="page">
         <article className="card space-y-4">
@@ -93,6 +96,111 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
               height={720}
               className="h-auto w-full object-cover"
             />
+          </div>
+          <div className="space-y-6">
+            {v2Exercise.summary ? (
+              <section className="space-y-2">
+                <h2 className="text-base font-semibold text-[color:var(--ink)]">
+                  Résumé
+                </h2>
+                <p className="text-sm text-[color:var(--ink)]">
+                  {v2Exercise.summary}
+                </p>
+              </section>
+            ) : null}
+            {v2Exercise.executionSteps?.length ? (
+              <section className="space-y-2">
+                <h2 className="text-base font-semibold text-[color:var(--ink)]">
+                  Exécution
+                </h2>
+                <ul className="list-disc space-y-1 pl-5 text-sm text-[color:var(--ink)]">
+                  {v2Exercise.executionSteps.map((step) => (
+                    <li key={step}>{step}</li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+            {v2Exercise.breathing ? (
+              <section className="space-y-2">
+                <h2 className="text-base font-semibold text-[color:var(--ink)]">
+                  Respiration
+                </h2>
+                <p className="text-sm text-[color:var(--ink)]">
+                  {v2Exercise.breathing}
+                </p>
+              </section>
+            ) : null}
+            {v2Exercise.tips?.length ? (
+              <section className="space-y-2">
+                <h2 className="text-base font-semibold text-[color:var(--ink)]">
+                  Conseils
+                </h2>
+                <ul className="list-disc space-y-1 pl-5 text-sm text-[color:var(--ink)]">
+                  {v2Exercise.tips.map((tip) => (
+                    <li key={tip}>{tip}</li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+            {v2Exercise.commonMistakes?.length ? (
+              <section className="space-y-2">
+                <h2 className="text-base font-semibold text-[color:var(--ink)]">
+                  Erreurs fréquentes
+                </h2>
+                <ul className="list-disc space-y-1 pl-5 text-sm text-[color:var(--ink)]">
+                  {v2Exercise.commonMistakes.map((mistake) => (
+                    <li key={mistake}>{mistake}</li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+            {v2Exercise.safety?.length ? (
+              <section className="space-y-2">
+                <h2 className="text-base font-semibold text-[color:var(--ink)]">
+                  Sécurité
+                </h2>
+                <ul className="list-disc space-y-1 pl-5 text-sm text-[color:var(--ink)]">
+                  {v2Exercise.safety.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+            {muscles?.length || equipment?.length || difficulty ? (
+              <section className="space-y-2">
+                <h2 className="text-base font-semibold text-[color:var(--ink)]">
+                  Muscles / Matériel / Difficulté
+                </h2>
+                <div className="grid gap-4 text-sm text-[color:var(--ink)] md:grid-cols-3">
+                  {muscles?.length ? (
+                    <div className="space-y-1">
+                      <p className="font-semibold">Muscles</p>
+                      <ul className="list-disc space-y-1 pl-5">
+                        {muscles.map((muscle) => (
+                          <li key={muscle}>{muscle}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                  {equipment?.length ? (
+                    <div className="space-y-1">
+                      <p className="font-semibold">Matériel</p>
+                      <ul className="list-disc space-y-1 pl-5">
+                        {equipment.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                  {difficulty ? (
+                    <div className="space-y-1">
+                      <p className="font-semibold">Difficulté</p>
+                      <p>{difficulty}</p>
+                    </div>
+                  ) : null}
+                </div>
+              </section>
+            ) : null}
           </div>
         </article>
       </section>

@@ -12,12 +12,35 @@ type V2ImportRawEntry = {
   equipment?: string;
   muscles?: string;
   image?: string;
+  objective?: string;
+  key_points?: string[];
+  safety?: string[];
+  regress?: string;
+  progress?: string;
+  dosage?: string;
+  summary?: string;
+  executionSteps?: string[];
+  breathing?: string;
+  tips?: string[];
+  commonMistakes?: string[];
+  difficulty?: string;
+  musclesList?: string[];
+  equipmentList?: string[];
 };
 
 export type V2ImportExercise = ExerciseFrontmatter & {
   source: "v2";
   imageSrc: string;
   thumbSrc: string;
+  summary?: string;
+  executionSteps?: string[];
+  breathing?: string;
+  tips?: string[];
+  commonMistakes?: string[];
+  safety?: string[];
+  musclesList?: string[];
+  equipmentList?: string[];
+  difficulty?: string;
 };
 
 const V2_IMPORT_ROOT = path.join(process.cwd(), "public", "import", "v2");
@@ -69,6 +92,16 @@ function splitList(raw?: string) {
     .map((item) => item.trim())
     .filter(Boolean);
   return Array.from(new Set(parts));
+}
+
+function normalizeStringList(raw?: string[] | string) {
+  if (!raw) {
+    return [];
+  }
+  if (Array.isArray(raw)) {
+    return raw.map((item) => normalizeText(item)).filter(Boolean);
+  }
+  return splitList(raw);
 }
 
 function normalizeComparable(value: string) {
@@ -155,9 +188,22 @@ async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | nul
 
   const title = normalizeText(raw.title) || code;
   const slug = toSlug(code);
-  const muscles = normalizeMuscles(raw.muscles);
-  const equipment = normalizeEquipment(raw.equipment);
+  const musclesList = normalizeStringList(raw.musclesList ?? raw.muscles);
+  const equipmentList = normalizeStringList(raw.equipmentList ?? raw.equipment);
+  const muscles =
+    musclesList.length > 0 ? musclesList : normalizeMuscles(raw.muscles);
+  const equipment =
+    equipmentList.length > 0 ? equipmentList : normalizeEquipment(raw.equipment);
   const level = normalizeDifficulty(raw.level);
+  const summary = normalizeText(raw.summary ?? raw.objective) || undefined;
+  const executionSteps = normalizeStringList(
+    raw.executionSteps ?? raw.key_points,
+  );
+  const breathing = normalizeText(raw.breathing) || undefined;
+  const tips = normalizeStringList(raw.tips);
+  const commonMistakes = normalizeStringList(raw.commonMistakes);
+  const safety = normalizeStringList(raw.safety);
+  const difficulty = normalizeText(raw.difficulty ?? raw.level) || undefined;
 
   return {
     title,
@@ -171,6 +217,16 @@ async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | nul
     source: "v2",
     imageSrc,
     thumbSrc: imageSrc,
+    summary,
+    executionSteps: executionSteps.length > 0 ? executionSteps : undefined,
+    breathing,
+    tips: tips.length > 0 ? tips : undefined,
+    commonMistakes:
+      commonMistakes.length > 0 ? commonMistakes : undefined,
+    safety: safety.length > 0 ? safety : undefined,
+    musclesList: musclesList.length > 0 ? musclesList : undefined,
+    equipmentList: equipmentList.length > 0 ? equipmentList : undefined,
+    difficulty,
   };
 }
 
