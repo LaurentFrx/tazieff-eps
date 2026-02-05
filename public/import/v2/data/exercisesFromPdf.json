@@ -25,7 +25,8 @@
     "regress": "Plancher: genoux au sol / appui mains / duree reduite.",
     "progress": "Levier plus long, instabilite (Swiss ball) ou duree +.",
     "dosage": "3-5 x 20-60 s Repos 30-60 s Qualite de posture.",
-    "image": "/exercises/S1/S1-01.webp"
+    "image": "/import/v2/v2-s1-01.webp",
+    "thumb": "/import/v2/thumb-v2-s1-01.webp"
   },
   {
     "code": "S1-02",
@@ -53,7 +54,8 @@
     "regress": "Plancher: genoux au sol / appui mains / duree reduite.",
     "progress": "Levier plus long, instabilite (Swiss ball) ou duree +.",
     "dosage": "3-5 x 20-60 s Repos 30-60 s Qualite de posture.",
-    "image": "/exercises/S1/S1-02.webp"
+    "image": "/import/v2/v2-s1-02.webp",
+    "thumb": "/import/v2/thumb-v2-s1-02.webp"
   },
   {
     "code": "S1-03",
@@ -81,7 +83,8 @@
     "regress": "Plancher: genoux au sol / appui mains / duree reduite.",
     "progress": "Levier plus long, instabilite (Swiss ball) ou duree +.",
     "dosage": "3-5 x 20-60 s Repos 30-60 s Qualite de posture.",
-    "image": "/exercises/S1/S1-03.webp"
+    "image": "/import/v2/v2-s1-03.webp",
+    "thumb": "/import/v2/thumb-v2-s1-03.webp"
   },
   {
     "code": "S1-04",
@@ -109,7 +112,8 @@
     "regress": "Plancher: genoux au sol / appui mains / duree reduite.",
     "progress": "Levier plus long, instabilite (Swiss ball) ou duree +.",
     "dosage": "3-5 x 20-60 s Repos 30-60 s Qualite de posture.",
-    "image": "/exercises/S1/S1-04.webp"
+    "image": "/import/v2/v2-s1-04.webp",
+    "thumb": "/import/v2/thumb-v2-s1-04.webp"
   },
   {
     "code": "S1-05",
@@ -137,7 +141,8 @@
     "regress": "Plancher: genoux au sol / appui mains / duree reduite.",
     "progress": "Levier plus long, instabilite (Swiss ball) ou duree +.",
     "dosage": "3-5 x 20-60 s Repos 30-60 s Qualite de posture.",
-    "image": "/exercises/S1/S1-05.webp"
+    "image": "/import/v2/v2-s1-05.webp",
+    "thumb": "/import/v2/thumb-v2-s1-05.webp"
   },
   {
     "code": "S1-06",
@@ -165,7 +170,8 @@
     "regress": "Une jambe pliee / bras le long du corps, lombes collees.",
     "progress": "Bras au-dessus de la tete / jambes plus basses.",
     "dosage": "3-5 x 20-60 s Repos 30-60 s Qualite de posture.",
-    "image": "/exercises/S1/S1-06.webp"
+    "image": "/import/v2/v2-s1-06.webp",
+    "thumb": "/import/v2/thumb-v2-s1-06.webp"
   },
   {
     "code": "S1-07",
@@ -193,7 +199,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S1/S1-07.webp"
+    "image": "/import/v2/v2-s1-07.webp",
+    "thumb": "/import/v2/thumb-v2-s1-07.webp"
   },
   {
     "code": "S1-08",
@@ -221,7 +228,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S1/S1-08.webp"
+    "image": "/import/v2/v2-s1-08.webp",
+    "thumb": "/import/v2/thumb-v2-s1-08.webp"
   },
   {
     "code": "S1-09",
@@ -249,7 +257,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S1/S1-09.webp"
+    "image": "/import/v2/v2-s1-09.webp",
+    "thumb": "/import/v2/thumb-v2-s1-09.webp"
   },
   {
     "code": "S1-10",
@@ -277,7 +286,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite). lent -> controle -> plus rapide/circuit.",
     "dosage": "3-4 x 8-12 / cote Tempo lent, controle bassin. Gainage dynamique & abdominaux GAINAGE DYNAMIQUE & ABDOMINAUX (15 exercices) Reperes pedagogiques series courtes puis temps de travail.",
-    "image": "/exercises/S1/S1-10.webp"
+    "image": "/import/v2/v2-s1-10.webp",
+    "thumb": "/import/v2/thumb-v2-s1-10.webp"
   },
   {
     "code": "S2-01",
@@ -301,7 +311,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-6 x 20-40 s Repos 20-40 s Tronc stable.",
-    "image": "/exercises/S2/S2-01.webp"
+    "image": "/import/v2/v2-s2-01.webp",
+    "thumb": "/import/v2/thumb-v2-s2-01.webp"
   },
   {
     "code": "S2-02",
@@ -329,7 +340,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-6 x 20-40 s Repos 20-40 s Tronc stable.",
-    "image": "/exercises/S2/S2-02.webp"
+    "image": "/import/v2/v2-s2-02.webp",
+    "thumb": "/import/v2/thumb-v2-s2-02.webp"
   },
   {
     "code": "S2-03",
@@ -357,7 +369,8 @@
     "regress": "Plancher: genoux au sol / appui mains / duree reduite.",
     "progress": "Levier plus long, instabilite (Swiss ball) ou duree +.",
     "dosage": "3-5 x 20-60 s Repos 30-60 s Qualite de posture.",
-    "image": "/exercises/S2/S2-03.webp"
+    "image": "/import/v2/v2-s2-03.webp",
+    "thumb": "/import/v2/thumb-v2-s2-03.webp"
   },
   {
     "code": "S2-04",
@@ -385,7 +398,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S2/S2-04.webp"
+    "image": "/import/v2/v2-s2-04.webp",
+    "thumb": "/import/v2/thumb-v2-s2-04.webp"
   },
   {
     "code": "S2-05",
@@ -413,7 +427,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S2/S2-05.webp"
+    "image": "/import/v2/v2-s2-05.webp",
+    "thumb": "/import/v2/thumb-v2-s2-05.webp"
   },
   {
     "code": "S2-06",
@@ -441,7 +456,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 10-20 reps Repos 45-75 s Controle.",
-    "image": "/exercises/S2/S2-06.webp"
+    "image": "/import/v2/v2-s2-06.webp",
+    "thumb": "/import/v2/thumb-v2-s2-06.webp"
   },
   {
     "code": "S2-07",
@@ -469,7 +485,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 10-20 reps Repos 45-75 s Controle.",
-    "image": "/exercises/S2/S2-07.webp"
+    "image": "/import/v2/v2-s2-07.webp",
+    "thumb": "/import/v2/thumb-v2-s2-07.webp"
   },
   {
     "code": "S2-08",
@@ -615,7 +632,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 10-20 reps Repos 45-75 s Controle.",
-    "image": "/exercises/S2/S2-12.webp"
+    "image": "/import/v2/v2-s2-12.webp",
+    "thumb": "/import/v2/thumb-v2-s2-12.webp"
   },
   {
     "code": "S2-13",
@@ -643,7 +661,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S2/S2-13.webp"
+    "image": "/import/v2/v2-s2-13.webp",
+    "thumb": "/import/v2/thumb-v2-s2-13.webp"
   },
   {
     "code": "S2-14",
@@ -671,7 +690,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S2/S2-14.webp"
+    "image": "/import/v2/v2-s2-14.webp",
+    "thumb": "/import/v2/thumb-v2-s2-14.webp"
   },
   {
     "code": "S2-15",
@@ -699,7 +719,8 @@
     "regress": "Plancher: genoux au sol / appui mains / duree reduite.",
     "progress": "Levier plus long, instabilite (Swiss ball) ou duree +. assiste -> standard -> variantes/charge.",
     "dosage": "3-5 x 20-60 s Repos 30-60 s Qualite de posture. Haut du corps HAUT DU CORPS (20 exercices) Reperes pedagogiques 6-15 reps, controle excentrique.",
-    "image": "/exercises/S2/S2-15.webp"
+    "image": "/import/v2/v2-s2-15.webp",
+    "thumb": "/import/v2/thumb-v2-s2-15.webp"
   },
   {
     "code": "S3-01",
@@ -727,7 +748,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 6-15 reps Repos 60-90 s.",
-    "image": "/exercises/S3/S3-01.webp"
+    "image": "/import/v2/v2-s3-01.webp",
+    "thumb": "/import/v2/thumb-v2-s3-01.webp"
   },
   {
     "code": "S3-02",
@@ -755,7 +777,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 6-15 reps Repos 60-90 s.",
-    "image": "/exercises/S3/S3-02.webp"
+    "image": "/import/v2/v2-s3-02.webp",
+    "thumb": "/import/v2/thumb-v2-s3-02.webp"
   },
   {
     "code": "S3-03",
@@ -783,7 +806,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 6-15 reps Repos 60-90 s.",
-    "image": "/exercises/S3/S3-03.webp"
+    "image": "/import/v2/v2-s3-03.webp",
+    "thumb": "/import/v2/thumb-v2-s3-03.webp"
   },
   {
     "code": "S3-04",
@@ -811,7 +835,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 6-15 reps Repos 60-90 s.",
-    "image": "/exercises/S3/S3-04.webp"
+    "image": "/import/v2/v2-s3-04.webp",
+    "thumb": "/import/v2/thumb-v2-s3-04.webp"
   },
   {
     "code": "S3-05",
@@ -839,7 +864,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 6-15 reps Repos 60-90 s.",
-    "image": "/exercises/S3/S3-05.webp"
+    "image": "/import/v2/v2-s3-05.webp",
+    "thumb": "/import/v2/thumb-v2-s3-05.webp"
   },
   {
     "code": "S3-06",
@@ -867,7 +893,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S3/S3-06.webp"
+    "image": "/import/v2/v2-s3-06.webp",
+    "thumb": "/import/v2/thumb-v2-s3-06.webp"
   },
   {
     "code": "S3-07",
@@ -898,7 +925,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "Contenu a completer",
-    "image": "/exercises/S3/S3-07.webp"
+    "image": "/import/v2/v2-s3-07.webp",
+    "thumb": "/import/v2/thumb-v2-s3-07.webp"
   },
   {
     "code": "S3-08",
@@ -929,7 +957,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "Contenu a completer",
-    "image": "/exercises/S3/S3-08.webp"
+    "image": "/import/v2/v2-s3-08.webp",
+    "thumb": "/import/v2/thumb-v2-s3-08.webp"
   },
   {
     "code": "S3-09",
@@ -960,7 +989,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "Contenu a completer",
-    "image": "/exercises/S3/S3-09.webp"
+    "image": "/import/v2/v2-s3-09.webp",
+    "thumb": "/import/v2/thumb-v2-s3-09.webp"
   },
   {
     "code": "S3-10",
@@ -988,7 +1018,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S3/S3-10.webp"
+    "image": "/import/v2/v2-s3-10.webp",
+    "thumb": "/import/v2/thumb-v2-s3-10.webp"
   },
   {
     "code": "S3-11",
@@ -1016,7 +1047,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S3/S3-11.webp"
+    "image": "/import/v2/v2-s3-11.webp",
+    "thumb": "/import/v2/thumb-v2-s3-11.webp"
   },
   {
     "code": "S3-12",
@@ -1044,7 +1076,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S3/S3-12.webp"
+    "image": "/import/v2/v2-s3-12.webp",
+    "thumb": "/import/v2/thumb-v2-s3-12.webp"
   },
   {
     "code": "S3-13",
@@ -1072,7 +1105,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S3/S3-13.webp"
+    "image": "/import/v2/v2-s3-13.webp",
+    "thumb": "/import/v2/thumb-v2-s3-13.webp"
   },
   {
     "code": "S3-14",
@@ -1100,7 +1134,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S3/S3-14.webp"
+    "image": "/import/v2/v2-s3-14.webp",
+    "thumb": "/import/v2/thumb-v2-s3-14.webp"
   },
   {
     "code": "S3-15",
@@ -1128,7 +1163,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S3/S3-15.webp"
+    "image": "/import/v2/v2-s3-15.webp",
+    "thumb": "/import/v2/thumb-v2-s3-15.webp"
   },
   {
     "code": "S3-16",
@@ -1156,7 +1192,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S3/S3-16.webp"
+    "image": "/import/v2/v2-s3-16.webp",
+    "thumb": "/import/v2/thumb-v2-s3-16.webp"
   },
   {
     "code": "S3-17",
@@ -1184,7 +1221,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S3/S3-17.webp"
+    "image": "/import/v2/v2-s3-17.webp",
+    "thumb": "/import/v2/thumb-v2-s3-17.webp"
   },
   {
     "code": "S3-18",
@@ -1212,7 +1250,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S3/S3-18.webp"
+    "image": "/import/v2/v2-s3-18.webp",
+    "thumb": "/import/v2/thumb-v2-s3-18.webp"
   },
   {
     "code": "S3-19",
@@ -1240,7 +1279,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S3/S3-19.webp"
+    "image": "/import/v2/v2-s3-19.webp",
+    "thumb": "/import/v2/thumb-v2-s3-19.webp"
   },
   {
     "code": "S3-20",
@@ -1275,7 +1315,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite). amplitude -> unilateral -> charge/plyometrie.",
     "dosage": "Contenu a completer",
-    "image": "/exercises/S3/S3-20.webp"
+    "image": "/import/v2/v2-s3-20.webp",
+    "thumb": "/import/v2/thumb-v2-s3-20.webp"
   },
   {
     "code": "S4-01",
@@ -1303,7 +1344,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S4/S4-01.webp"
+    "image": "/import/v2/v2-s4-01.webp",
+    "thumb": "/import/v2/thumb-v2-s4-01.webp"
   },
   {
     "code": "S4-02",
@@ -1331,7 +1373,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S4/S4-02.webp"
+    "image": "/import/v2/v2-s4-02.webp",
+    "thumb": "/import/v2/thumb-v2-s4-02.webp"
   },
   {
     "code": "S4-03",
@@ -1359,7 +1402,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S4/S4-03.webp"
+    "image": "/import/v2/v2-s4-03.webp",
+    "thumb": "/import/v2/thumb-v2-s4-03.webp"
   },
   {
     "code": "S4-04",
@@ -1387,7 +1431,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S4/S4-04.webp"
+    "image": "/import/v2/v2-s4-04.webp",
+    "thumb": "/import/v2/thumb-v2-s4-04.webp"
   },
   {
     "code": "S4-05",
@@ -1415,7 +1460,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S4/S4-05.webp"
+    "image": "/import/v2/v2-s4-05.webp",
+    "thumb": "/import/v2/thumb-v2-s4-05.webp"
   },
   {
     "code": "S4-06",
@@ -1443,7 +1489,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S4/S4-06.webp"
+    "image": "/import/v2/v2-s4-06.webp",
+    "thumb": "/import/v2/thumb-v2-s4-06.webp"
   },
   {
     "code": "S4-07",
@@ -1471,7 +1518,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 6-12 reps Repos 60-120 s.",
-    "image": "/exercises/S4/S4-07.webp"
+    "image": "/import/v2/v2-s4-07.webp",
+    "thumb": "/import/v2/thumb-v2-s4-07.webp"
   },
   {
     "code": "S4-08",
@@ -1499,7 +1547,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S4/S4-08.webp"
+    "image": "/import/v2/v2-s4-08.webp",
+    "thumb": "/import/v2/thumb-v2-s4-08.webp"
   },
   {
     "code": "S4-09",
@@ -1527,7 +1576,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S4/S4-09.webp"
+    "image": "/import/v2/v2-s4-09.webp",
+    "thumb": "/import/v2/thumb-v2-s4-09.webp"
   },
   {
     "code": "S4-10",
@@ -1555,7 +1605,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S4/S4-10.webp"
+    "image": "/import/v2/v2-s4-10.webp",
+    "thumb": "/import/v2/thumb-v2-s4-10.webp"
   },
   {
     "code": "S4-11",
@@ -1583,7 +1634,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S4/S4-11.webp"
+    "image": "/import/v2/v2-s4-11.webp",
+    "thumb": "/import/v2/thumb-v2-s4-11.webp"
   },
   {
     "code": "S4-12",
@@ -1611,7 +1663,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 8-15 reps Repos 60-90 s.",
-    "image": "/exercises/S4/S4-12.webp"
+    "image": "/import/v2/v2-s4-12.webp",
+    "thumb": "/import/v2/thumb-v2-s4-12.webp"
   },
   {
     "code": "S4-13",
@@ -1639,7 +1692,8 @@
     "regress": "Nordic partiel + assistance mains.",
     "progress": "Nordic complet excentrique lent (3-5 s).",
     "dosage": "2-4 x 3-6 reps Repos 90-120 s.",
-    "image": "/exercises/S4/S4-13.webp"
+    "image": "/import/v2/v2-s4-13.webp",
+    "thumb": "/import/v2/thumb-v2-s4-13.webp"
   },
   {
     "code": "S4-14",
@@ -1667,7 +1721,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 12-20 reps Tempo controle (2-1-2).",
-    "image": "/exercises/S4/S4-14.webp"
+    "image": "/import/v2/v2-s4-14.webp",
+    "thumb": "/import/v2/thumb-v2-s4-14.webp"
   },
   {
     "code": "S4-15",
@@ -1806,7 +1861,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains). Burpee sans pompe/sans saut (step-back). Burpee sans pompe/sans saut (step-back). Burpee sans pompe/sans saut (step-back). Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains). Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains). Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains). Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains). Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains). Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains). Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite). simplifier -> enchainer -> intensifier. Burpee complet + rythme plus eleve. tempo soutenu progression vers burpees complets Respiration: reguliere (pas d'apnee prolongee). Burpee complet + rythme plus eleve. Burpee complet + rythme plus eleve. Ajouter une charge, augmenter le tempo ou la difficulte (instabilite). Ajouter une charge, augmenter le tempo ou la difficulte (instabilite). Ajouter une charge, augmenter le tempo ou la difficulte (instabilite). Ajouter une charge, augmenter le tempo ou la difficulte (instabilite). Ajouter une charge, augmenter le tempo ou la difficulte (instabilite). Ajouter une charge, augmenter le tempo ou la difficulte (instabilite). Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-6 x 4-8 sauts Repos 60-90 s Qualite. Fonctionnels & composes EXERCICES FONCTIONNELS & COMPOSES (10 exercices Reperes pedagogiques temps/circuits selon le niveau. S5-01 BURPEES COMPLETS (Full Burpees) Intermediaire 3-5 x 6-12 reps ou 20-40 s travail / 20-40 s repos. S5-02 BURPEES SANS POMPE (DEBUTANT) Debutant 3-5 x 6-15 reps Repos 60-90 s. S5-03 BURPEES SUR STEP (BOX JUMP BURPEES) Avance 3-6 x 4-8 sauts Repos 60-90 s Qualite. S5-04 THRUSTERS HALTERES (Dumbbell Thrusters) Intermediaire-Avance 3-5 x 8-15 reps Repos 60-90 s. S5-05 KETTLEBELL SWING (Balancement kettlebell) Intermediaire-Avance 4-6 x 10-20 reps Repos 45-75 s Explosif. S5-06 TURKISH GET-UP (RELEVE TURC) Avance 3-5 x 6-12 reps Repos 60-120 s. S5-08 WALL BALLS (Lancers muraux) Intermediaire-Avance 3-5 x 8-15 reps Repos 60-90 s. S5-09 FARMERS WALK (MARCHE DU FERMIER) Intermediaire 3-5 x 20-40 m Repos 60-90 s. S5-10 BOX JUMPS (SAUTS SUR CAISSON) Intermediaire-Avance 3-6 x 4-8 sauts Repos 60-90 s Qualite.",
-    "image": "/exercises/S4/S4-15.webp"
+    "image": "/import/v2/v2-s4-15.webp",
+    "thumb": "/import/v2/thumb-v2-s4-15.webp"
   },
   {
     "code": "S5-01",
@@ -1825,7 +1881,8 @@
     "regress": "Contenu a completer",
     "progress": "Contenu a completer",
     "dosage": "Contenu a completer",
-    "image": "/exercises/S5/S5-01.webp"
+    "image": "/import/v2/v2-s5-01.webp",
+    "thumb": "/import/v2/thumb-v2-s5-01.webp"
   },
   {
     "code": "S5-02",
@@ -1844,7 +1901,8 @@
     "regress": "Contenu a completer",
     "progress": "Contenu a completer",
     "dosage": "Contenu a completer",
-    "image": "/exercises/S5/S5-02.webp"
+    "image": "/import/v2/v2-s5-02.webp",
+    "thumb": "/import/v2/thumb-v2-s5-02.webp"
   },
   {
     "code": "S5-03",
@@ -1863,7 +1921,8 @@
     "regress": "Contenu a completer",
     "progress": "Contenu a completer",
     "dosage": "Contenu a completer",
-    "image": "/exercises/S5/S5-03.webp"
+    "image": "/import/v2/v2-s5-03.webp",
+    "thumb": "/import/v2/thumb-v2-s5-03.webp"
   },
   {
     "code": "S5-04",
@@ -1882,7 +1941,8 @@
     "regress": "Contenu a completer",
     "progress": "Contenu a completer",
     "dosage": "Contenu a completer",
-    "image": "/exercises/S5/S5-04.webp"
+    "image": "/import/v2/v2-s5-04.webp",
+    "thumb": "/import/v2/thumb-v2-s5-04.webp"
   },
   {
     "code": "S5-05",
@@ -1901,7 +1961,8 @@
     "regress": "Contenu a completer",
     "progress": "Contenu a completer",
     "dosage": "Contenu a completer",
-    "image": "/exercises/S5/S5-05.webp"
+    "image": "/import/v2/v2-s5-05.webp",
+    "thumb": "/import/v2/thumb-v2-s5-05.webp"
   },
   {
     "code": "S5-06",
@@ -1920,7 +1981,8 @@
     "regress": "Contenu a completer",
     "progress": "Contenu a completer",
     "dosage": "Contenu a completer",
-    "image": "/exercises/S5/S5-06.webp"
+    "image": "/import/v2/v2-s5-06.webp",
+    "thumb": "/import/v2/thumb-v2-s5-06.webp"
   },
   {
     "code": "S5-07",
@@ -1939,7 +2001,8 @@
     "regress": "Contenu a completer",
     "progress": "Contenu a completer",
     "dosage": "Contenu a completer",
-    "image": "/exercises/S5/S5-07.webp"
+    "image": "/import/v2/v2-s5-07.webp",
+    "thumb": "/import/v2/thumb-v2-s5-07.webp"
   },
   {
     "code": "S5-08",
@@ -1958,7 +2021,8 @@
     "regress": "Contenu a completer",
     "progress": "Contenu a completer",
     "dosage": "Contenu a completer",
-    "image": "/exercises/S5/S5-08.webp"
+    "image": "/import/v2/v2-s5-08.webp",
+    "thumb": "/import/v2/thumb-v2-s5-08.webp"
   },
   {
     "code": "S5-09",
@@ -1977,7 +2041,8 @@
     "regress": "Contenu a completer",
     "progress": "Contenu a completer",
     "dosage": "Contenu a completer",
-    "image": "/exercises/S5/S5-09.webp"
+    "image": "/import/v2/v2-s5-09.webp",
+    "thumb": "/import/v2/thumb-v2-s5-09.webp"
   },
   {
     "code": "S5-10",
@@ -1996,6 +2061,7 @@
     "regress": "Contenu a completer",
     "progress": "duree -> leviers -> instabilite.",
     "dosage": "20-60 s, qualite avant quantite.",
-    "image": "/exercises/S5/S5-10.webp"
+    "image": "/import/v2/v2-s5-10.webp",
+    "thumb": "/import/v2/thumb-v2-s5-10.webp"
   }
 ]
