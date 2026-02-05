@@ -497,7 +497,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 10-20 reps Repos 45-75 s Controle.",
-    "image": "/exercises/S2/S2-08.webp"
+    "image": "/import/v2/v2-s2-08.webp",
+    "thumb": "/import/v2/thumb-v2-s2-08.webp"
   },
   {
     "code": "S2-09",
@@ -525,7 +526,8 @@
     "regress": "Reduire l'amplitude et/ou utiliser un appui (banc, TRX, mains).",
     "progress": "Ajouter une charge, augmenter le tempo ou la difficulte (instabilite).",
     "dosage": "3-5 x 10-20 reps Repos 45-75 s Controle.",
-    "image": "/exercises/S2/S2-09.webp"
+    "image": "/import/v2/v2-s2-09.webp",
+    "thumb": "/import/v2/thumb-v2-s2-09.webp"
   },
   {
     "code": "S2-10",
