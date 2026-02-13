@@ -9,6 +9,7 @@ import { applyExercisePatch } from "@/lib/live/patch";
 import { fetchExerciseOverride, fetchLiveExercise } from "@/lib/live/queries";
 import type { Lang } from "@/lib/i18n/messages";
 import { ExerciseLiveDetail } from "@/app/exercices/[slug]/ExerciseLiveDetail";
+import { ExerciseVideoPlayer } from "@/components/ExerciseVideoPlayer";
 
 type ExercicePageProps = {
   params: Promise<{ slug: string }>;
@@ -90,19 +91,11 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
           </h1>
           <div className="overflow-hidden rounded-[var(--radius)] border border-white/10">
             {v2Exercise.videoSrc ? (
-              <video
+              <ExerciseVideoPlayer
                 src={v2Exercise.videoSrc}
                 poster={v2Exercise.imageSrc}
-                autoPlay
-                loop
-                muted
-                controls
-                preload="metadata"
-                playsInline
                 className="h-auto w-full object-cover"
-              >
-                Votre navigateur ne supporte pas la lecture vidéo.
-              </video>
+              />
             ) : (
               <Image
                 src={v2Exercise.imageSrc}
