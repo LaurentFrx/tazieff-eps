@@ -9,7 +9,6 @@ import { applyExercisePatch } from "@/lib/live/patch";
 import { fetchExerciseOverride, fetchLiveExercise } from "@/lib/live/queries";
 import type { Lang } from "@/lib/i18n/messages";
 import { ExerciseLiveDetail } from "@/app/exercices/[slug]/ExerciseLiveDetail";
-import { ExerciseVideoPlayer } from "@/components/ExerciseVideoPlayer";
 
 type ExercicePageProps = {
   params: Promise<{ slug: string }>;
@@ -90,21 +89,13 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
             {v2Exercise.title}
           </h1>
           <div className="overflow-hidden rounded-[var(--radius)] border border-white/10">
-            {v2Exercise.videoSrc ? (
-              <ExerciseVideoPlayer
-                src={v2Exercise.videoSrc}
-                poster={v2Exercise.imageSrc}
-                className="h-auto w-full object-cover"
-              />
-            ) : (
-              <Image
-                src={v2Exercise.imageSrc}
-                alt={v2Exercise.title}
-                width={960}
-                height={720}
-                className="h-auto w-full object-cover"
-              />
-            )}
+            <Image
+              src={v2Exercise.imageSrc}
+              alt={v2Exercise.title}
+              width={960}
+              height={720}
+              className="h-auto w-full object-cover"
+            />
           </div>
           <div className="space-y-6">
             {v2Exercise.summary ? (
