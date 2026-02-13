@@ -93,6 +93,9 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
               <video
                 src={v2Exercise.videoSrc}
                 poster={v2Exercise.imageSrc}
+                autoPlay
+                loop
+                muted
                 controls
                 preload="metadata"
                 playsInline
