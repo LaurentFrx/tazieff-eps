@@ -12,6 +12,9 @@ type V2ImportRawEntry = {
   equipment?: string;
   muscles?: string;
   image?: string;
+  video?: string;
+  thumb?: string;
+  thumb169?: string;
   objective?: string;
   key_points?: string[];
   safety?: string[];
@@ -32,6 +35,8 @@ export type V2ImportExercise = ExerciseFrontmatter & {
   source: "v2";
   imageSrc: string;
   thumbSrc: string;
+  thumb169Src: string;
+  videoSrc?: string;
   summary?: string;
   executionSteps?: string[];
   breathing?: string;
@@ -139,20 +144,9 @@ function toSlug(code: string) {
   return `v2-${slugify(code)}`;
 }
 
-function resolveImageSrc(code: string, rawImage?: string) {
-  const image = normalizeText(rawImage);
-  if (image) {
-    if (image.startsWith("/import/v2/")) {
-      return image;
-    }
-    if (image.startsWith("import/v2/")) {
-      return `/${image}`;
-    }
-    if (image.startsWith("/exercises/")) {
-      return `/import/v2${image}`;
-    }
-  }
+const VIDEO_EXTENSIONS = new Set([".webm", ".mp4", ".mov", ".m4v", ".ogv", ".ogg"]);
 
+function defaultImageSrc(code: string) {
   const series = normalizeText(code.split("-")[0]).toUpperCase();
   if (!series) {
     return null;
@@ -160,8 +154,51 @@ function resolveImageSrc(code: string, rawImage?: string) {
   return `/import/v2/exercises/${series}/${code}.webp`;
 }
 
-function toPublicPath(imageSrc: string) {
-  return path.join(process.cwd(), "public", imageSrc.replace(/^\/+/, ""));
+function normalizeAssetSrc(rawAsset?: string) {
+  const asset = normalizeText(rawAsset);
+  if (!asset) {
+    return null;
+  }
+  if (/^[a-z]+:\/\//i.test(asset) || asset.startsWith("data:") || asset.startsWith("//")) {
+    return asset;
+  }
+  if (asset.startsWith("/import/v2/")) {
+    return asset;
+  }
+  if (asset.startsWith("import/v2/")) {
+    return `/${asset}`;
+  }
+  if (asset.startsWith("/exercises/")) {
+    return `/import/v2${asset}`;
+  }
+  if (asset.startsWith("exercises/")) {
+    return `/import/v2/${asset}`;
+  }
+  if (asset.startsWith("/")) {
+    return asset;
+  }
+  return `/${asset}`;
+}
+
+function stripQueryAndHash(src: string) {
+  const queryIndex = src.indexOf("?");
+  const hashIndex = src.indexOf("#");
+  const cutIndex = [queryIndex, hashIndex]
+    .filter((index) => index >= 0)
+    .sort((a, b) => a - b)[0];
+  if (cutIndex === undefined) {
+    return src;
+  }
+  return src.slice(0, cutIndex);
+}
+
+function isVideoAsset(src: string) {
+  const ext = path.extname(stripQueryAndHash(src)).toLowerCase();
+  return VIDEO_EXTENSIONS.has(ext);
+}
+
+function toPublicPath(assetSrc: string) {
+  return path.join(process.cwd(), "public", assetSrc.replace(/^\/+/, ""));
 }
 
 async function fileExists(filePath: string) {
@@ -173,16 +210,69 @@ async function fileExists(filePath: string) {
   }
 }
 
+async function assetExists(assetSrc: string) {
+  if (!assetSrc.startsWith("/")) {
+    return true;
+  }
+  return fileExists(toPublicPath(assetSrc));
+}
+
+async function firstExisting(candidates: Array<string | null | undefined>) {
+  for (const candidate of candidates) {
+    if (!candidate) {
+      continue;
+    }
+    if (await assetExists(candidate)) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
 async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | null> {
   const code = normalizeText(raw.code);
   if (!code) {
     return null;
   }
-  const imageSrc = resolveImageSrc(code, raw.image);
-  if (!imageSrc) {
-    return null;
+
+  let imageCandidate = normalizeAssetSrc(raw.image);
+  let videoCandidate = normalizeAssetSrc(raw.video);
+  const thumbCandidate = normalizeAssetSrc(raw.thumb);
+  const thumb169Candidate = normalizeAssetSrc(raw.thumb169);
+  const defaultImage = defaultImageSrc(code);
+
+  // Backward compatibility: an old `image` value can be a direct video URL.
+  if (!videoCandidate && imageCandidate && isVideoAsset(imageCandidate)) {
+    videoCandidate = imageCandidate;
+    imageCandidate = null;
   }
-  if (!(await fileExists(toPublicPath(imageSrc)))) {
+
+  const thumb169Src = await firstExisting([
+    thumb169Candidate,
+    thumbCandidate,
+    imageCandidate,
+    defaultImage,
+  ]);
+  const imageSrc = await firstExisting([
+    imageCandidate,
+    thumb169Src,
+    thumbCandidate,
+    defaultImage,
+  ]);
+  const thumbSrc = await firstExisting([
+    thumbCandidate,
+    thumb169Candidate,
+    imageSrc,
+    defaultImage,
+  ]);
+  const videoSrc = await firstExisting([videoCandidate]);
+
+  const resolvedImageSrc = imageSrc ?? thumb169Src ?? thumbSrc;
+  const resolvedThumbSrc = thumbSrc ?? thumb169Src ?? resolvedImageSrc;
+  const resolvedThumb169Src = thumb169Src ?? thumbSrc ?? resolvedImageSrc;
+  const mediaSrc = resolvedThumbSrc ?? resolvedThumb169Src ?? resolvedImageSrc;
+
+  if (!resolvedImageSrc || !resolvedThumbSrc || !resolvedThumb169Src || !mediaSrc) {
     return null;
   }
 
@@ -213,10 +303,12 @@ async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | nul
     themeCompatibility: [...DEFAULT_THEMES],
     muscles,
     equipment,
-    media: imageSrc,
+    media: mediaSrc,
     source: "v2",
-    imageSrc,
-    thumbSrc: imageSrc,
+    imageSrc: resolvedImageSrc,
+    thumbSrc: resolvedThumbSrc,
+    thumb169Src: resolvedThumb169Src,
+    videoSrc: videoSrc ?? undefined,
     summary,
     executionSteps: executionSteps.length > 0 ? executionSteps : undefined,
     breathing,

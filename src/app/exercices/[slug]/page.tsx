@@ -89,13 +89,26 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
             {v2Exercise.title}
           </h1>
           <div className="overflow-hidden rounded-[var(--radius)] border border-white/10">
-            <Image
-              src={v2Exercise.imageSrc}
-              alt={v2Exercise.title}
-              width={960}
-              height={720}
-              className="h-auto w-full object-cover"
-            />
+            {v2Exercise.videoSrc ? (
+              <video
+                src={v2Exercise.videoSrc}
+                poster={v2Exercise.imageSrc}
+                controls
+                preload="metadata"
+                playsInline
+                className="h-auto w-full object-cover"
+              >
+                Votre navigateur ne supporte pas la lecture vidéo.
+              </video>
+            ) : (
+              <Image
+                src={v2Exercise.imageSrc}
+                alt={v2Exercise.title}
+                width={960}
+                height={720}
+                className="h-auto w-full object-cover"
+              />
+            )}
           </div>
           <div className="space-y-6">
             {v2Exercise.summary ? (
