@@ -101,7 +101,8 @@
       "Tapis de sol"
     ],
     "image": "/images/exos/S1-002.webm",
-    "thumb": "/import/v2/thumb-v2-s1-02.webp"
+    "thumb": "/import/v2/thumb-v2-s1-02.webp",
+    "thumb169": "/images/exos/thumb169-s1-002.webp"
   },
   {
     "code": "S1-03",

@@ -12,6 +12,8 @@ type V2ImportRawEntry = {
   equipment?: string;
   muscles?: string;
   image?: string;
+  thumb?: string;
+  thumb169?: string;
   objective?: string;
   key_points?: string[];
   safety?: string[];
@@ -32,6 +34,7 @@ export type V2ImportExercise = ExerciseFrontmatter & {
   source: "v2";
   imageSrc: string;
   thumbSrc: string;
+  thumb169Src?: string;
   summary?: string;
   executionSteps?: string[];
   breathing?: string;
@@ -160,6 +163,17 @@ function resolveImageSrc(code: string, rawImage?: string) {
   return `/import/v2/exercises/${series}/${code}.webp`;
 }
 
+function resolveAssetSrc(rawAsset?: string) {
+  const asset = normalizeText(rawAsset);
+  if (!asset) {
+    return null;
+  }
+  if (asset.startsWith("/")) {
+    return asset;
+  }
+  return `/${asset}`;
+}
+
 function toPublicPath(imageSrc: string) {
   return path.join(process.cwd(), "public", imageSrc.replace(/^\/+/, ""));
 }
@@ -171,6 +185,17 @@ async function fileExists(filePath: string) {
   } catch {
     return false;
   }
+}
+
+async function resolveExistingAsset(rawAsset?: string) {
+  const asset = resolveAssetSrc(rawAsset);
+  if (!asset) {
+    return null;
+  }
+  if (await fileExists(toPublicPath(asset))) {
+    return asset;
+  }
+  return null;
 }
 
 async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | null> {
@@ -185,6 +210,8 @@ async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | nul
   if (!(await fileExists(toPublicPath(imageSrc)))) {
     return null;
   }
+  const thumbSrc = (await resolveExistingAsset(raw.thumb)) ?? imageSrc;
+  const thumb169Src = (await resolveExistingAsset(raw.thumb169)) ?? thumbSrc;
 
   const title = normalizeText(raw.title) || code;
   const slug = toSlug(code);
@@ -216,7 +243,8 @@ async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | nul
     media: imageSrc,
     source: "v2",
     imageSrc,
-    thumbSrc: imageSrc,
+    thumbSrc,
+    thumb169Src,
     summary,
     executionSteps: executionSteps.length > 0 ? executionSteps : undefined,
     breathing,

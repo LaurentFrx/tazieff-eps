@@ -6,7 +6,10 @@ import logo from "../../public/media/branding/logo-eps.webp";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
 
 export type ExerciseCardProps = {
-  exercise: ExerciseFrontmatter;
+  exercise: ExerciseFrontmatter & {
+    thumbSrc?: string;
+    thumb169Src?: string;
+  };
   isLive?: boolean;
   variant?: "grid" | "list";
   favoriteAction?: ReactNode;
@@ -76,9 +79,10 @@ function buildGridCandidates(src?: string): ImageCandidate[] {
 
   const { dir, filename, basename, ext, suffix } = parsed;
   const isWebp = ext.toLowerCase() === ".webp";
+  const startsWithThumb = basename.toLowerCase().startsWith("thumb");
   const candidates: ImageCandidate[] = [];
 
-  if (filename.startsWith("thumb-")) {
+  if (startsWithThumb) {
     candidates.push(src);
   } else if (isWebp) {
     candidates.push(`${dir}thumb-${filename}${suffix}`);
@@ -164,13 +168,15 @@ export function ExerciseCard({
 }: ExerciseCardProps) {
   const title = exercise.title?.trim() || "Brouillon sans titre";
   const isList = variant === "list";
+  const gridMedia = exercise.thumbSrc ?? exercise.media ?? exercise.thumb169Src;
+  const listMedia = exercise.thumb169Src ?? exercise.thumbSrc ?? exercise.media;
   const listCandidates = useMemo(
-    () => buildGridCandidates(exercise.media),
-    [exercise.media],
+    () => buildGridCandidates(listMedia),
+    [listMedia],
   );
   const gridCandidates = useMemo(
-    () => buildGridCandidates(exercise.media),
-    [exercise.media],
+    () => buildGridCandidates(gridMedia),
+    [gridMedia],
   );
   const candidates = isList ? listCandidates : gridCandidates;
   const candidatesKey = useMemo(
