@@ -38,8 +38,8 @@ export type V2ImportExercise = ExerciseFrontmatter & {
   thumbSrc: string;
   thumb169Src?: string;
   thumb916Src?: string;
-  thumbListSrc: string;
-  thumbListAspect: "16/9" | "9/16" | "1/1";
+  thumbListSrc?: string;
+  thumbListAspect?: "16/9" | "9/16" | "1/1";
   summary?: string;
   executionSteps?: string[];
   breathing?: string;
@@ -215,9 +215,12 @@ async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | nul
   if (!(await fileExists(toPublicPath(imageSrc)))) {
     return null;
   }
+  const slug = toSlug(code);
   const thumbSrc = (await resolveExistingAsset(raw.thumb)) ?? imageSrc;
   const thumb169Src = (await resolveExistingAsset(raw.thumb169)) ?? undefined;
   const thumb916Src =
+    (await resolveExistingAsset(`/images/exos/thumb916-${slug}.webp`)) ??
+    (await resolveExistingAsset(`/import/v2/thumb916-${slug}.webp`)) ??
     (await resolveExistingAsset(raw.thumb916)) ??
     (await resolveExistingAsset(raw.thumb9x16)) ??
     undefined;
@@ -229,7 +232,6 @@ async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | nul
       : "1/1";
 
   const title = normalizeText(raw.title) || code;
-  const slug = toSlug(code);
   const musclesList = normalizeStringList(raw.musclesList ?? raw.muscles);
   const equipmentList = normalizeStringList(raw.equipmentList ?? raw.equipment);
   const muscles =

@@ -12,6 +12,7 @@ export type ExerciseCardProps = {
     thumb916Src?: string;
     thumbListSrc?: string;
     thumbListAspect?: "16/9" | "9/16" | "1/1";
+    imageSrc?: string;
   };
   isLive?: boolean;
   variant?: "grid" | "list";
@@ -180,10 +181,9 @@ export function ExerciseCard({
     exercise.thumb169Src ??
     exercise.thumb916Src ??
     exercise.thumbSrc ??
+    exercise.imageSrc ??
     exercise.media;
-  const listAspect =
-    exercise.thumbListAspect ??
-    (exercise.thumb169Src ? "16/9" : exercise.thumb916Src ? "9/16" : "1/1");
+  const listAspect = exercise.thumbListAspect ?? "16/9";
   const listCandidates = useMemo(
     () => buildGridCandidates(listMedia),
     [listMedia],
