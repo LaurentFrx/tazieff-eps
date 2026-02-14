@@ -224,12 +224,21 @@ async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | nul
     (await resolveExistingAsset(raw.thumb916)) ??
     (await resolveExistingAsset(raw.thumb9x16)) ??
     undefined;
-  const thumbListSrc = thumb169Src ?? thumb916Src ?? thumbSrc ?? imageSrc;
-  const thumbListAspect = thumb169Src
-    ? "16/9"
-    : thumb916Src
-      ? "9/16"
-      : "1/1";
+  let thumbListSrc: string | undefined;
+  let thumbListAspect: "16/9" | "9/16" | "1/1";
+  if (thumb169Src) {
+    thumbListSrc = thumb169Src;
+    thumbListAspect = "16/9";
+  } else if (thumb916Src) {
+    thumbListSrc = thumb916Src;
+    thumbListAspect = "9/16";
+  } else if (thumbSrc) {
+    thumbListSrc = thumbSrc;
+    thumbListAspect = "1/1";
+  } else {
+    thumbListSrc = imageSrc;
+    thumbListAspect = "1/1";
+  }
 
   const title = normalizeText(raw.title) || code;
   const musclesList = normalizeStringList(raw.musclesList ?? raw.muscles);

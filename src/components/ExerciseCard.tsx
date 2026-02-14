@@ -183,7 +183,7 @@ export function ExerciseCard({
     exercise.thumbSrc ??
     exercise.imageSrc ??
     exercise.media;
-  const aspect = exercise.thumbListAspect ?? "16/9";
+  const aspect = exercise.thumbListAspect ?? "1/1";
   const is169 = aspect === "16/9";
   const listCandidates = useMemo(
     () => buildGridCandidates(listMedia),
