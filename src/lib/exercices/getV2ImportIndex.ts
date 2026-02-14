@@ -14,6 +14,8 @@ type V2ImportRawEntry = {
   image?: string;
   thumb?: string;
   thumb169?: string;
+  thumb916?: string;
+  thumb9x16?: string;
   objective?: string;
   key_points?: string[];
   safety?: string[];
@@ -35,6 +37,9 @@ export type V2ImportExercise = ExerciseFrontmatter & {
   imageSrc: string;
   thumbSrc: string;
   thumb169Src?: string;
+  thumb916Src?: string;
+  thumbListSrc: string;
+  thumbListAspect: "16/9" | "9/16" | "1/1";
   summary?: string;
   executionSteps?: string[];
   breathing?: string;
@@ -211,7 +216,17 @@ async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | nul
     return null;
   }
   const thumbSrc = (await resolveExistingAsset(raw.thumb)) ?? imageSrc;
-  const thumb169Src = (await resolveExistingAsset(raw.thumb169)) ?? thumbSrc;
+  const thumb169Src = (await resolveExistingAsset(raw.thumb169)) ?? undefined;
+  const thumb916Src =
+    (await resolveExistingAsset(raw.thumb916)) ??
+    (await resolveExistingAsset(raw.thumb9x16)) ??
+    undefined;
+  const thumbListSrc = thumb169Src ?? thumb916Src ?? thumbSrc ?? imageSrc;
+  const thumbListAspect = thumb169Src
+    ? "16/9"
+    : thumb916Src
+      ? "9/16"
+      : "1/1";
 
   const title = normalizeText(raw.title) || code;
   const slug = toSlug(code);
@@ -245,6 +260,9 @@ async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | nul
     imageSrc,
     thumbSrc,
     thumb169Src,
+    thumb916Src,
+    thumbListSrc,
+    thumbListAspect,
     summary,
     executionSteps: executionSteps.length > 0 ? executionSteps : undefined,
     breathing,

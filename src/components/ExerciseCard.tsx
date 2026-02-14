@@ -1,7 +1,7 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import logo from "../../public/media/branding/logo-eps.webp";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
 
@@ -9,6 +9,9 @@ export type ExerciseCardProps = {
   exercise: ExerciseFrontmatter & {
     thumbSrc?: string;
     thumb169Src?: string;
+    thumb916Src?: string;
+    thumbListSrc?: string;
+    thumbListAspect?: "16/9" | "9/16" | "1/1";
   };
   isLive?: boolean;
   variant?: "grid" | "list";
@@ -104,6 +107,7 @@ type ExerciseCardImageProps = {
   title: string;
   sizes: string;
   thumbClass: string;
+  thumbStyle?: CSSProperties;
   isList: boolean;
   favoriteAction?: ReactNode;
 };
@@ -113,6 +117,7 @@ function ExerciseCardImage({
   title,
   sizes,
   thumbClass,
+  thumbStyle,
   isList,
   favoriteAction,
 }: ExerciseCardImageProps) {
@@ -141,6 +146,7 @@ function ExerciseCardImage({
   return (
     <div
       className={`relative shrink-0 overflow-hidden ring-1 ring-white/10 ${thumbClass}`}
+      style={thumbStyle}
     >
       {imageSrc ? (
         <Image
@@ -169,7 +175,15 @@ export function ExerciseCard({
   const title = exercise.title?.trim() || "Brouillon sans titre";
   const isList = variant === "list";
   const gridMedia = exercise.thumbSrc ?? exercise.media ?? exercise.thumb169Src;
-  const listMedia = exercise.thumb169Src ?? exercise.thumbSrc ?? exercise.media;
+  const listMedia =
+    exercise.thumbListSrc ??
+    exercise.thumb169Src ??
+    exercise.thumb916Src ??
+    exercise.thumbSrc ??
+    exercise.media;
+  const listAspect =
+    exercise.thumbListAspect ??
+    (exercise.thumb169Src ? "16/9" : exercise.thumb916Src ? "9/16" : "1/1");
   const listCandidates = useMemo(
     () => buildGridCandidates(listMedia),
     [listMedia],
@@ -189,8 +203,11 @@ export function ExerciseCard({
     [candidates],
   );
   const thumbClass = isList
-    ? "h-24 w-24 rounded-2xl"
+    ? "w-24 rounded-2xl"
     : "aspect-square w-full rounded-2xl";
+  const thumbStyle = isList
+    ? ({ aspectRatio: listAspect } satisfies CSSProperties)
+    : undefined;
   const sizes = isList
     ? "96px"
     : "(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 16vw";
@@ -203,6 +220,7 @@ export function ExerciseCard({
         title={title}
         sizes={sizes}
         thumbClass={thumbClass}
+        thumbStyle={thumbStyle}
         isList={isList}
         favoriteAction={favoriteAction}
       />
