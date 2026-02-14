@@ -204,7 +204,7 @@ export function ExerciseCard({
     [candidates],
   );
   const thumbClass = isList
-    ? `${is169 ? "w-32 sm:w-36" : "w-24"} rounded-2xl`
+    ? `${is169 ? "w-32 sm:w-36" : "w-24"} flex-none rounded-2xl`
     : "aspect-square w-full rounded-2xl";
   const thumbStyle = isList
     ? ({ aspectRatio: aspect } satisfies CSSProperties)

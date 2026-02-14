@@ -229,32 +229,14 @@ async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | nul
   }
   const slug = toSlug(code);
   const thumbSrc = (await resolveExistingAsset(raw.thumb)) ?? imageSrc;
-  const rawThumb169 = normalizePublicUrl(raw.thumb169 ?? raw.thumb169Src);
-  let thumb169Src = rawThumb169;
-  if (rawThumb169 && !(await resolveExistingAsset(rawThumb169))) {
-    thumb169Src = thumbSrc;
-  }
-  const thumb916Src =
-    (await resolveExistingAsset(`/images/exos/thumb916-${slug}.webp`)) ??
-    (await resolveExistingAsset(`/import/v2/thumb916-${slug}.webp`)) ??
-    (await resolveExistingAsset(raw.thumb916)) ??
-    (await resolveExistingAsset(raw.thumb9x16)) ??
-    undefined;
-  let thumbListSrc: string | undefined;
-  let thumbListAspect: "16/9" | "9/16" | "1/1";
-  if (thumb169Src) {
-    thumbListSrc = thumb169Src;
-    thumbListAspect = "16/9";
-  } else if (thumb916Src) {
-    thumbListSrc = thumb916Src;
-    thumbListAspect = "9/16";
-  } else if (thumbSrc) {
-    thumbListSrc = thumbSrc;
-    thumbListAspect = "1/1";
-  } else {
-    thumbListSrc = imageSrc;
-    thumbListAspect = "1/1";
-  }
+  const thumb169Src = normalizePublicUrl(raw.thumb169 ?? raw.thumb169Src);
+  const thumb916Src = normalizePublicUrl(raw.thumb916 ?? raw.thumb9x16);
+  const thumbListSrc = thumb169Src ?? thumb916Src ?? thumbSrc ?? imageSrc;
+  const thumbListAspect = thumbListSrc.includes("thumb169-")
+    ? "16/9"
+    : thumbListSrc.includes("thumb916-")
+      ? "9/16"
+      : "1/1";
 
   const title = normalizeText(raw.title) || code;
   const musclesList = normalizeStringList(raw.musclesList ?? raw.muscles);
