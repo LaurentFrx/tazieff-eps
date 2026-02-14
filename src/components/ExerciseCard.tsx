@@ -183,7 +183,8 @@ export function ExerciseCard({
     exercise.thumbSrc ??
     exercise.imageSrc ??
     exercise.media;
-  const listAspect = exercise.thumbListAspect ?? "16/9";
+  const aspect = exercise.thumbListAspect ?? "16/9";
+  const is169 = aspect === "16/9";
   const listCandidates = useMemo(
     () => buildGridCandidates(listMedia),
     [listMedia],
@@ -203,13 +204,15 @@ export function ExerciseCard({
     [candidates],
   );
   const thumbClass = isList
-    ? "w-24 rounded-2xl"
+    ? `${is169 ? "w-32 sm:w-36" : "w-24"} rounded-2xl`
     : "aspect-square w-full rounded-2xl";
   const thumbStyle = isList
-    ? ({ aspectRatio: listAspect } satisfies CSSProperties)
+    ? ({ aspectRatio: aspect } satisfies CSSProperties)
     : undefined;
   const sizes = isList
-    ? "96px"
+    ? is169
+      ? "(max-width: 640px) 128px, 144px"
+      : "96px"
     : "(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 16vw";
 
   return (
