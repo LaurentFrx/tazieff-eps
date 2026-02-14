@@ -12,9 +12,10 @@ type V2ImportRawEntry = {
   equipment?: string;
   muscles?: string;
   image?: string;
-  video?: string;
   thumb?: string;
   thumb169?: string;
+  thumb916?: string;
+  thumb9x16?: string;
   objective?: string;
   key_points?: string[];
   safety?: string[];
@@ -35,8 +36,10 @@ export type V2ImportExercise = ExerciseFrontmatter & {
   source: "v2";
   imageSrc: string;
   thumbSrc: string;
-  thumb169Src: string;
-  videoSrc?: string;
+  thumb169Src?: string;
+  thumb916Src?: string;
+  thumbListSrc?: string;
+  thumbListAspect?: "16/9" | "9/16" | "1/1";
   summary?: string;
   executionSteps?: string[];
   breathing?: string;
@@ -144,9 +147,20 @@ function toSlug(code: string) {
   return `v2-${slugify(code)}`;
 }
 
-const VIDEO_EXTENSIONS = new Set([".webm", ".mp4", ".mov", ".m4v", ".ogv", ".ogg"]);
+function resolveImageSrc(code: string, rawImage?: string) {
+  const image = normalizeText(rawImage);
+  if (image) {
+    if (image.startsWith("/import/v2/")) {
+      return image;
+    }
+    if (image.startsWith("import/v2/")) {
+      return `/${image}`;
+    }
+    if (image.startsWith("/exercises/")) {
+      return `/import/v2${image}`;
+    }
+  }
 
-function defaultImageSrc(code: string) {
   const series = normalizeText(code.split("-")[0]).toUpperCase();
   if (!series) {
     return null;
@@ -154,25 +168,10 @@ function defaultImageSrc(code: string) {
   return `/import/v2/exercises/${series}/${code}.webp`;
 }
 
-function normalizeAssetSrc(rawAsset?: string) {
+function resolveAssetSrc(rawAsset?: string) {
   const asset = normalizeText(rawAsset);
   if (!asset) {
     return null;
-  }
-  if (/^[a-z]+:\/\//i.test(asset) || asset.startsWith("data:") || asset.startsWith("//")) {
-    return asset;
-  }
-  if (asset.startsWith("/import/v2/")) {
-    return asset;
-  }
-  if (asset.startsWith("import/v2/")) {
-    return `/${asset}`;
-  }
-  if (asset.startsWith("/exercises/")) {
-    return `/import/v2${asset}`;
-  }
-  if (asset.startsWith("exercises/")) {
-    return `/import/v2/${asset}`;
   }
   if (asset.startsWith("/")) {
     return asset;
@@ -180,25 +179,8 @@ function normalizeAssetSrc(rawAsset?: string) {
   return `/${asset}`;
 }
 
-function stripQueryAndHash(src: string) {
-  const queryIndex = src.indexOf("?");
-  const hashIndex = src.indexOf("#");
-  const cutIndex = [queryIndex, hashIndex]
-    .filter((index) => index >= 0)
-    .sort((a, b) => a - b)[0];
-  if (cutIndex === undefined) {
-    return src;
-  }
-  return src.slice(0, cutIndex);
-}
-
-function isVideoAsset(src: string) {
-  const ext = path.extname(stripQueryAndHash(src)).toLowerCase();
-  return VIDEO_EXTENSIONS.has(ext);
-}
-
-function toPublicPath(assetSrc: string) {
-  return path.join(process.cwd(), "public", assetSrc.replace(/^\/+/, ""));
+function toPublicPath(imageSrc: string) {
+  return path.join(process.cwd(), "public", imageSrc.replace(/^\/+/, ""));
 }
 
 async function fileExists(filePath: string) {
@@ -210,21 +192,13 @@ async function fileExists(filePath: string) {
   }
 }
 
-async function assetExists(assetSrc: string) {
-  if (!assetSrc.startsWith("/")) {
-    return true;
+async function resolveExistingAsset(rawAsset?: string) {
+  const asset = resolveAssetSrc(rawAsset);
+  if (!asset) {
+    return null;
   }
-  return fileExists(toPublicPath(assetSrc));
-}
-
-async function firstExisting(candidates: Array<string | null | undefined>) {
-  for (const candidate of candidates) {
-    if (!candidate) {
-      continue;
-    }
-    if (await assetExists(candidate)) {
-      return candidate;
-    }
+  if (await fileExists(toPublicPath(asset))) {
+    return asset;
   }
   return null;
 }
@@ -234,50 +208,30 @@ async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | nul
   if (!code) {
     return null;
   }
-
-  let imageCandidate = normalizeAssetSrc(raw.image);
-  let videoCandidate = normalizeAssetSrc(raw.video);
-  const thumbCandidate = normalizeAssetSrc(raw.thumb);
-  const thumb169Candidate = normalizeAssetSrc(raw.thumb169);
-  const defaultImage = defaultImageSrc(code);
-
-  // Backward compatibility: an old `image` value can be a direct video URL.
-  if (!videoCandidate && imageCandidate && isVideoAsset(imageCandidate)) {
-    videoCandidate = imageCandidate;
-    imageCandidate = null;
-  }
-
-  const thumb169Src = await firstExisting([
-    thumb169Candidate,
-    thumbCandidate,
-    imageCandidate,
-    defaultImage,
-  ]);
-  const imageSrc = await firstExisting([
-    imageCandidate,
-    thumb169Src,
-    thumbCandidate,
-    defaultImage,
-  ]);
-  const thumbSrc = await firstExisting([
-    thumbCandidate,
-    thumb169Candidate,
-    imageSrc,
-    defaultImage,
-  ]);
-  const videoSrc = await firstExisting([videoCandidate]);
-
-  const resolvedImageSrc = imageSrc ?? thumb169Src ?? thumbSrc;
-  const resolvedThumbSrc = thumbSrc ?? thumb169Src ?? resolvedImageSrc;
-  const resolvedThumb169Src = thumb169Src ?? thumbSrc ?? resolvedImageSrc;
-  const mediaSrc = resolvedThumbSrc ?? resolvedThumb169Src ?? resolvedImageSrc;
-
-  if (!resolvedImageSrc || !resolvedThumbSrc || !resolvedThumb169Src || !mediaSrc) {
+  const imageSrc = resolveImageSrc(code, raw.image);
+  if (!imageSrc) {
     return null;
   }
+  if (!(await fileExists(toPublicPath(imageSrc)))) {
+    return null;
+  }
+  const slug = toSlug(code);
+  const thumbSrc = (await resolveExistingAsset(raw.thumb)) ?? imageSrc;
+  const thumb169Src = (await resolveExistingAsset(raw.thumb169)) ?? undefined;
+  const thumb916Src =
+    (await resolveExistingAsset(`/images/exos/thumb916-${slug}.webp`)) ??
+    (await resolveExistingAsset(`/import/v2/thumb916-${slug}.webp`)) ??
+    (await resolveExistingAsset(raw.thumb916)) ??
+    (await resolveExistingAsset(raw.thumb9x16)) ??
+    undefined;
+  const thumbListSrc = thumb169Src ?? thumb916Src ?? thumbSrc ?? imageSrc;
+  const thumbListAspect = thumb169Src
+    ? "16/9"
+    : thumb916Src
+      ? "9/16"
+      : "1/1";
 
   const title = normalizeText(raw.title) || code;
-  const slug = toSlug(code);
   const musclesList = normalizeStringList(raw.musclesList ?? raw.muscles);
   const equipmentList = normalizeStringList(raw.equipmentList ?? raw.equipment);
   const muscles =
@@ -303,12 +257,14 @@ async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | nul
     themeCompatibility: [...DEFAULT_THEMES],
     muscles,
     equipment,
-    media: mediaSrc,
+    media: imageSrc,
     source: "v2",
-    imageSrc: resolvedImageSrc,
-    thumbSrc: resolvedThumbSrc,
-    thumb169Src: resolvedThumb169Src,
-    videoSrc: videoSrc ?? undefined,
+    imageSrc,
+    thumbSrc,
+    thumb169Src,
+    thumb916Src,
+    thumbListSrc,
+    thumbListAspect,
     summary,
     executionSteps: executionSteps.length > 0 ? executionSteps : undefined,
     breathing,
