@@ -14,6 +14,7 @@ type V2ImportRawEntry = {
   image?: string;
   thumb?: string;
   thumb169?: string;
+  thumb169Src?: string;
   thumb916?: string;
   thumb9x16?: string;
   objective?: string;
@@ -179,6 +180,17 @@ function resolveAssetSrc(rawAsset?: string) {
   return `/${asset}`;
 }
 
+function normalizePublicUrl(rawPath?: string) {
+  const normalized = normalizeText(rawPath);
+  if (!normalized) {
+    return undefined;
+  }
+  const withoutPublic = normalized.startsWith("public/")
+    ? normalized.slice("public".length)
+    : normalized;
+  return withoutPublic.startsWith("/") ? withoutPublic : `/${withoutPublic}`;
+}
+
 function toPublicPath(imageSrc: string) {
   return path.join(process.cwd(), "public", imageSrc.replace(/^\/+/, ""));
 }
@@ -217,7 +229,11 @@ async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | nul
   }
   const slug = toSlug(code);
   const thumbSrc = (await resolveExistingAsset(raw.thumb)) ?? imageSrc;
-  const thumb169Src = (await resolveExistingAsset(raw.thumb169)) ?? undefined;
+  const rawThumb169 = normalizePublicUrl(raw.thumb169 ?? raw.thumb169Src);
+  let thumb169Src = rawThumb169;
+  if (rawThumb169 && !(await resolveExistingAsset(rawThumb169))) {
+    thumb169Src = thumbSrc;
+  }
   const thumb916Src =
     (await resolveExistingAsset(`/images/exos/thumb916-${slug}.webp`)) ??
     (await resolveExistingAsset(`/import/v2/thumb916-${slug}.webp`)) ??
