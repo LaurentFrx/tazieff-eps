@@ -51,7 +51,7 @@ export function mergeExercises(
     })
     .filter((exercise) => !existing.has(exercise.slug));
 
-  return [...mdxItems, ...liveItems].sort((a, b) => {
+  return ([...mdxItems, ...liveItems] as ExerciseListItem[]).sort((a, b) => {
     const statusA = a.status ?? "ready";
     const statusB = b.status ?? "ready";
     if (statusA !== statusB) {
