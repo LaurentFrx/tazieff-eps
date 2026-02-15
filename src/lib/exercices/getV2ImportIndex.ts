@@ -145,28 +145,15 @@ function slugify(value: string) {
 }
 
 function toSlug(code: string) {
-  return `v2-${slugify(code)}`;
+  return slugify(code);
 }
 
-function resolveImageSrc(code: string, rawImage?: string) {
-  const image = normalizeText(rawImage);
-  if (image) {
-    if (image.startsWith("/import/v2/")) {
-      return image;
-    }
-    if (image.startsWith("import/v2/")) {
-      return `/${image}`;
-    }
-    if (image.startsWith("/exercises/")) {
-      return `/import/v2${image}`;
-    }
-  }
-
-  const series = normalizeText(code.split("-")[0]).toUpperCase();
-  if (!series) {
+function resolveImageSrc(code: string, _rawImage?: string) {
+  const slug = slugify(code);
+  if (!slug) {
     return null;
   }
-  return `/import/v2/exercises/${series}/${code}.webp`;
+  return `/images/exos/${slug}.webp`;
 }
 
 function resolveAssetSrc(rawAsset?: string) {
@@ -228,13 +215,22 @@ async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | nul
     return null;
   }
   const slug = toSlug(code);
-  const thumbSrc = (await resolveExistingAsset(raw.thumb)) ?? imageSrc;
-  const thumb169Src = normalizePublicUrl(raw.thumb169 ?? raw.thumb169Src);
-  const thumb916Src = normalizePublicUrl(raw.thumb916 ?? raw.thumb9x16);
+  const thumbCandidate = `/images/exos/thumb-${slug}.webp`;
+  const thumbSrc = (await fileExists(toPublicPath(thumbCandidate)))
+    ? thumbCandidate
+    : imageSrc;
+  const thumb169Candidate = `/images/exos/thumb169-${slug}.webp`;
+  const thumb169Src = (await fileExists(toPublicPath(thumb169Candidate)))
+    ? thumb169Candidate
+    : undefined;
+  const thumb916Candidate = `/images/exos/thumb916-${slug}.webp`;
+  const thumb916Src = (await fileExists(toPublicPath(thumb916Candidate)))
+    ? thumb916Candidate
+    : undefined;
   const thumbListSrc = thumb169Src ?? thumb916Src ?? thumbSrc ?? imageSrc;
-  const thumbListAspect = thumbListSrc.includes("thumb169-")
+  const thumbListAspect: "16/9" | "9/16" | "1/1" = thumb169Src
     ? "16/9"
-    : thumbListSrc.includes("thumb916-")
+    : thumb916Src
       ? "9/16"
       : "1/1";
 
@@ -336,8 +332,7 @@ async function readFilesystemEntries() {
         continue;
       }
       const code = path.parse(entry.name).name;
-      const imageSrc = `/import/v2/exercises/${seriesName}/${entry.name}`;
-      const built = await buildEntry({ code, title: code, image: imageSrc });
+      const built = await buildEntry({ code, title: code });
       if (built) {
         items.push(built);
       }
