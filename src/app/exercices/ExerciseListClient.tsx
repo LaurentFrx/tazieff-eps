@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import type { Difficulty } from "@/lib/content/schema";
 import type { Lang } from "@/lib/i18n/I18nProvider";
 import type { LiveExerciseListItem, LiveExerciseRow } from "@/lib/live/types";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
   mergeExercises,
   filterVisibleExercises,
@@ -13,6 +12,7 @@ import {
 } from "@/lib/exercices/filters";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useTeacherMode } from "@/hooks/useTeacherMode";
+import { useExercisesLiveSync } from "@/hooks/useExercisesLiveSync";
 import { ExerciseFilters } from "@/components/exercices/ExerciseFilters";
 import { ExerciseGrid } from "@/components/exercices/ExerciseGrid";
 import type { ViewMode } from "@/components/exercices/ExerciseGrid";
@@ -34,7 +34,6 @@ type ExerciseListClientProps = {
 
 const VIEW_MODE_STORAGE_KEY = "exercisesViewMode";
 const DEFAULT_VIEW_MODE: ViewMode = "grid";
-const POLL_INTERVAL_MS = 20000;
 
 let cachedViewModeRaw: string | null = null;
 let cachedViewMode: ViewMode = DEFAULT_VIEW_MODE;
@@ -113,9 +112,8 @@ export function ExerciseListClient({
   liveExercises,
   locale,
 }: ExerciseListClientProps) {
-  const supabase = getSupabaseBrowserClient();
-  const [liveRows, setLiveRows] = useState<LiveExerciseRow[]>(liveExercises);
-  const [realtimeReady, setRealtimeReady] = useState(false);
+  // Phase 4 hook — Supabase realtime + polling
+  const { liveExercises: liveRows } = useExercisesLiveSync(locale, liveExercises);
 
   // Phase 2 hooks
   const { favorites } = useFavorites();
@@ -138,128 +136,6 @@ export function ExerciseListClient({
     getViewModeSnapshot,
     () => DEFAULT_VIEW_MODE,
   );
-
-  // ---------------------------------------------------------------------------
-  // Supabase realtime sync
-  // ---------------------------------------------------------------------------
-
-  useEffect(() => {
-    if (!supabase) {
-      return;
-    }
-
-    let active = true;
-    let retry = 0;
-    let retryTimeout: ReturnType<typeof setTimeout> | null = null;
-    let channel = supabase.channel(`live-exercises-${locale}`);
-
-    const upsertRow = (row: LiveExerciseRow) => {
-      setLiveRows((prev) => {
-        const next = prev.filter((item) => item.slug !== row.slug);
-        next.push(row);
-        return next;
-      });
-    };
-
-    const setupChannel = () => {
-      channel = supabase.channel(`live-exercises-${locale}`);
-      channel.on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "live_exercises",
-          filter: `locale=eq.${locale}`,
-        },
-        (payload) => {
-          if (!active) {
-            return;
-          }
-          if (payload.eventType === "DELETE") {
-            const deleted = payload.old as LiveExerciseRow;
-            setLiveRows((prev) => prev.filter((item) => item.slug !== deleted.slug));
-            return;
-          }
-          const row = payload.new as LiveExerciseRow;
-          upsertRow(row);
-        },
-      );
-
-      channel.subscribe((status) => {
-        if (!active) {
-          return;
-        }
-        if (status === "SUBSCRIBED") {
-          retry = 0;
-          setRealtimeReady(true);
-          return;
-        }
-        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-          setRealtimeReady(false);
-          channel.unsubscribe();
-          retryTimeout = setTimeout(
-            setupChannel,
-            Math.min(30000, 2000 * Math.pow(2, retry)),
-          );
-          retry += 1;
-        }
-      });
-    };
-
-    setupChannel();
-
-    return () => {
-      active = false;
-      if (retryTimeout) {
-        clearTimeout(retryTimeout);
-      }
-      supabase.removeChannel(channel);
-    };
-  }, [locale, supabase]);
-
-  // ---------------------------------------------------------------------------
-  // Polling fallback
-  // ---------------------------------------------------------------------------
-
-  useEffect(() => {
-    if (!supabase || realtimeReady) {
-      return;
-    }
-
-    let active = true;
-    let interval: ReturnType<typeof setInterval> | null = null;
-
-    const fetchLatest = async () => {
-      if (!active || document.visibilityState !== "visible") {
-        return;
-      }
-      const { data } = await supabase
-        .from("live_exercises")
-        .select("slug, locale, data_json, updated_at")
-        .eq("locale", locale);
-      if (!active || !data) {
-        return;
-      }
-      setLiveRows(data as LiveExerciseRow[]);
-    };
-
-    fetchLatest();
-    interval = setInterval(fetchLatest, POLL_INTERVAL_MS);
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible") {
-        fetchLatest();
-      }
-    };
-    document.addEventListener("visibilitychange", handleVisibility);
-
-    return () => {
-      active = false;
-      if (interval) {
-        clearInterval(interval);
-      }
-      document.removeEventListener("visibilitychange", handleVisibility);
-    };
-  }, [locale, realtimeReady, supabase]);
 
   // ---------------------------------------------------------------------------
   // Memoized data pipeline (Phase 1 functions)
