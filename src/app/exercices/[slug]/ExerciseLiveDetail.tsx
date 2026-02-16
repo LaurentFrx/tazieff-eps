@@ -543,10 +543,13 @@ function buildOverrideDoc(
 }
 
 type HeroRender =
-  | { src: string; alt: string; width: number; height: number }
-  | { src: StaticImageData; alt: string };
+  | { type: "video"; src: string; alt: string }
+  | { type?: "image"; src: string; alt: string; width: number; height: number }
+  | { type?: "image"; src: StaticImageData; alt: string };
 
-function isHeroUrl(hero: HeroRender): hero is Extract<HeroRender, { src: string }> {
+function isHeroUrl(
+  hero: HeroRender,
+): hero is Extract<HeroRender, { src: string }> {
   return typeof hero.src === "string";
 }
 
@@ -673,26 +676,38 @@ export function ExerciseLiveDetail({
   const difficulty = merged.frontmatter.level ?? "intermediaire";
   const displayTitle =
     merged.frontmatter.title?.trim() || "Brouillon sans titre";
+
+  // Video hero resolution (priority over image)
+  const exerciseSlug = merged.frontmatter.slug;
+  const videoSlugs: Record<string, string> = {
+    "s1-002": "/images/exos/S1-002.webm",
+  };
+  const videoSrc = exerciseSlug ? videoSlugs[exerciseSlug.toLowerCase()] : undefined;
+
   const baseHeroImage = merged.frontmatter.media
     ? {
         "/images/exos/s1-001.webp": s1001,
       }[merged.frontmatter.media]
     : undefined;
+
   const overrideHero = overrideDocView?.heroImage;
   const overrideHeroUrl = overrideHero?.url?.trim() ?? "";
   const hero: HeroRender | null =
     overrideDocView && overrideHero
       ? overrideHeroUrl
         ? {
+            type: "image",
             src: overrideHeroUrl,
             alt: overrideHero.alt ?? displayTitle,
             width: HERO_OVERRIDE_DIMENSIONS.width,
             height: HERO_OVERRIDE_DIMENSIONS.height,
           }
         : null
-      : baseHeroImage
-        ? { src: baseHeroImage, alt: displayTitle }
-        : null;
+      : videoSrc
+        ? { type: "video", src: videoSrc, alt: displayTitle }
+        : baseHeroImage
+          ? { type: "image", src: baseHeroImage, alt: displayTitle }
+          : null;
   const tagPills: Array<{ label: string; kind?: string }> =
     overrideDocView?.pills ??
     (merged.frontmatter.tags ?? []).map((label) => ({ label }));
@@ -2329,6 +2344,26 @@ export function ExerciseLiveDetail({
       <div className="page-header">
         <header className="app-header">
           <div className="brand">
+            <Link
+              href="/exercices"
+              aria-label="Retour aux exercices"
+              className="icon-button"
+              style={{ marginRight: "0.5rem" }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-6 h-6"
+                aria-hidden="true"
+              >
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+            </Link>
             <Link href="/" aria-label="Accueil">
               <NextImage src={logo} alt="EPS" className="h-20 w-auto" />
             </Link>
@@ -2426,7 +2461,6 @@ export function ExerciseLiveDetail({
               <span className="brand-title brand-title--page">
                 {displayTitle}
               </span>
-              <span className="brand-subtitle brand-subtitle--page">Exercices</span>
             </div>
           </div>
           <div className="header-actions">
@@ -2449,8 +2483,11 @@ export function ExerciseLiveDetail({
           ))}
         </div>
         {hero ? (
-          isHeroUrl(hero) ? (
+          hero.type === "video" ? (
+            <HeroMedia type="video" src={hero.src} alt={hero.alt} />
+          ) : isHeroUrl(hero) ? (
             <HeroMedia
+              type="image"
               src={hero.src}
               alt={hero.alt}
               width={hero.width}
@@ -2458,7 +2495,7 @@ export function ExerciseLiveDetail({
               priority
             />
           ) : (
-            <HeroMedia src={hero.src} alt={hero.alt} priority />
+            <HeroMedia type="image" src={hero.src} alt={hero.alt} priority />
           )
         ) : null}
         <div className="meta-row">
