@@ -688,6 +688,13 @@ export function ExerciseLiveDetail({
     ? `/images/exos/${exerciseSlug.toLowerCase()}.webm`
     : undefined;
 
+  console.log("[ExerciseLiveDetail] Debug hero:", {
+    slug: exerciseSlug,
+    videoSrc,
+    media: merged.frontmatter.media,
+    source,
+  });
+
   const baseHeroImage = merged.frontmatter.media
     ? {
         "/images/exos/s1-001.webp": s1001,
@@ -719,6 +726,8 @@ export function ExerciseLiveDetail({
         : baseHeroImage
           ? { type: "image", src: baseHeroImage, alt: displayTitle }
           : null;
+
+  console.log("[ExerciseLiveDetail] Hero resolved:", hero);
   const tagPills: Array<{ label: string; kind?: string }> =
     overrideDocView?.pills ??
     (merged.frontmatter.tags ?? []).map((label) => ({ label }));

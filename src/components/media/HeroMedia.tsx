@@ -53,7 +53,15 @@ export function HeroMedia(props: HeroMediaProps) {
           muted
           loop
           playsInline
-          onError={() => setVideoError(true)}
+          controls={false}
+          preload="auto"
+          onError={(e) => {
+            console.error("[HeroMedia] Video load error:", props.src, e);
+            setVideoError(true);
+          }}
+          onLoadedData={() => {
+            console.log("[HeroMedia] Video loaded successfully:", props.src);
+          }}
           className="w-full h-auto"
           aria-label={alt}
         />
