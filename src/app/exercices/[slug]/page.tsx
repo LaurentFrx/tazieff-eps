@@ -1,10 +1,9 @@
-import Image from "next/image";
 import type { Metadata } from "next";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { getExercise } from "@/lib/content/fs";
-import { getV2ImportIndex } from "@/lib/exercices/getV2ImportIndex";
+import { getImportedExercisesIndex } from "@/lib/exercices/getImportedExercisesIndex";
 import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
 import { applyExercisePatch } from "@/lib/live/patch";
 import { fetchExerciseOverride, fetchLiveExercise } from "@/lib/live/queries";
@@ -28,9 +27,49 @@ async function revalidateExercises(slug: string) {
   revalidatePath(`/exercices/${slug}`, "page");
 }
 
-async function getV2Exercise(slug: string) {
-  const v2Items = await getV2ImportIndex();
-  return v2Items.find((item) => item.slug === slug) ?? null;
+async function getImportedExercise(slug: string) {
+  const importedItems = await getImportedExercisesIndex();
+  return importedItems.find((item) => item.slug === slug) ?? null;
+}
+
+function convertImportedToContent(imported: Awaited<ReturnType<typeof getImportedExercise>>): string {
+  if (!imported) return "";
+
+  const sections: string[] = [];
+
+  if (imported.summary) {
+    sections.push(`## Résumé\n\n${imported.summary}`);
+  }
+
+  if (imported.executionSteps?.length) {
+    sections.push(
+      `## Exécution\n\n${imported.executionSteps.map((step) => `- ${step}`).join("\n")}`
+    );
+  }
+
+  if (imported.breathing) {
+    sections.push(`## Respiration\n\n${imported.breathing}`);
+  }
+
+  if (imported.tips?.length) {
+    sections.push(
+      `## Conseils\n\n${imported.tips.map((tip) => `- ${tip}`).join("\n")}`
+    );
+  }
+
+  if (imported.commonMistakes?.length) {
+    sections.push(
+      `## Erreurs fréquentes\n\n${imported.commonMistakes.map((mistake) => `- ${mistake}`).join("\n")}`
+    );
+  }
+
+  if (imported.safety?.length) {
+    sections.push(
+      `## Sécurité\n\n${imported.safety.map((item) => `- ${item}`).join("\n")}`
+    );
+  }
+
+  return sections.join("\n\n");
 }
 
 export async function generateStaticParams() {
@@ -48,15 +87,14 @@ export async function generateMetadata({
   const locale = getInitialLang(cookieStore.get(LANG_COOKIE)?.value);
   const result = await getExercise(slug);
   const liveExercise = result ? null : await fetchLiveExercise(slug, locale);
+  const importedExercise = result || liveExercise ? null : await getImportedExercise(slug);
 
-  const v2Exercise = result || liveExercise ? null : await getV2Exercise(slug);
-
-  if (!result && !liveExercise && !v2Exercise) {
+  if (!result && !liveExercise && !importedExercise) {
     return { title: "Exercice introuvable" };
   }
 
-  if (v2Exercise) {
-    return { title: v2Exercise.title };
+  if (importedExercise) {
+    return { title: importedExercise.title };
   }
 
   const base = result
@@ -74,151 +112,25 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
   const locale = getInitialLang(cookieStore.get(LANG_COOKIE)?.value);
   const result = await getExercise(slug);
   const liveExercise = result ? null : await fetchLiveExercise(slug, locale);
-  const v2Exercise = result || liveExercise ? null : await getV2Exercise(slug);
+  const importedExercise = result || liveExercise ? null : await getImportedExercise(slug);
 
-  if (!result && !liveExercise && !v2Exercise) {
+  if (!result && !liveExercise && !importedExercise) {
     notFound();
   }
 
-  if (v2Exercise && !result && !liveExercise) {
-    const muscles = v2Exercise.musclesList ?? v2Exercise.muscles;
-    const equipment = v2Exercise.equipmentList ?? v2Exercise.equipment;
-    const difficulty = v2Exercise.difficulty ?? v2Exercise.level;
-    return (
-      <section className="page">
-        <article className="card space-y-4">
-          <div className="inline-flex items-center gap-2 text-xs text-[color:var(--muted)]">
-            <span className="rounded-full border border-white/10 px-2 py-1">
-              Source v2 import
-            </span>
-            <span>Fiche importée</span>
-          </div>
-          <h1 className="text-xl font-semibold text-[color:var(--ink)]">
-            {v2Exercise.title}
-          </h1>
-          <div className="overflow-hidden rounded-[var(--radius)] border border-white/10">
-            <Image
-              src={v2Exercise.imageSrc}
-              alt={v2Exercise.title}
-              width={960}
-              height={720}
-              className="h-auto w-full object-cover"
-            />
-          </div>
-          <div className="space-y-6">
-            {v2Exercise.summary ? (
-              <section className="space-y-2">
-                <h2 className="text-base font-semibold text-[color:var(--ink)]">
-                  Résumé
-                </h2>
-                <p className="text-sm text-[color:var(--ink)]">
-                  {v2Exercise.summary}
-                </p>
-              </section>
-            ) : null}
-            {v2Exercise.executionSteps?.length ? (
-              <section className="space-y-2">
-                <h2 className="text-base font-semibold text-[color:var(--ink)]">
-                  Exécution
-                </h2>
-                <ul className="list-disc space-y-1 pl-5 text-sm text-[color:var(--ink)]">
-                  {v2Exercise.executionSteps.map((step) => (
-                    <li key={step}>{step}</li>
-                  ))}
-                </ul>
-              </section>
-            ) : null}
-            {v2Exercise.breathing ? (
-              <section className="space-y-2">
-                <h2 className="text-base font-semibold text-[color:var(--ink)]">
-                  Respiration
-                </h2>
-                <p className="text-sm text-[color:var(--ink)]">
-                  {v2Exercise.breathing}
-                </p>
-              </section>
-            ) : null}
-            {v2Exercise.tips?.length ? (
-              <section className="space-y-2">
-                <h2 className="text-base font-semibold text-[color:var(--ink)]">
-                  Conseils
-                </h2>
-                <ul className="list-disc space-y-1 pl-5 text-sm text-[color:var(--ink)]">
-                  {v2Exercise.tips.map((tip) => (
-                    <li key={tip}>{tip}</li>
-                  ))}
-                </ul>
-              </section>
-            ) : null}
-            {v2Exercise.commonMistakes?.length ? (
-              <section className="space-y-2">
-                <h2 className="text-base font-semibold text-[color:var(--ink)]">
-                  Erreurs fréquentes
-                </h2>
-                <ul className="list-disc space-y-1 pl-5 text-sm text-[color:var(--ink)]">
-                  {v2Exercise.commonMistakes.map((mistake) => (
-                    <li key={mistake}>{mistake}</li>
-                  ))}
-                </ul>
-              </section>
-            ) : null}
-            {v2Exercise.safety?.length ? (
-              <section className="space-y-2">
-                <h2 className="text-base font-semibold text-[color:var(--ink)]">
-                  Sécurité
-                </h2>
-                <ul className="list-disc space-y-1 pl-5 text-sm text-[color:var(--ink)]">
-                  {v2Exercise.safety.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </section>
-            ) : null}
-            {muscles?.length || equipment?.length || difficulty ? (
-              <section className="space-y-2">
-                <h2 className="text-base font-semibold text-[color:var(--ink)]">
-                  Muscles / Matériel / Difficulté
-                </h2>
-                <div className="grid gap-4 text-sm text-[color:var(--ink)] md:grid-cols-3">
-                  {muscles?.length ? (
-                    <div className="space-y-1">
-                      <p className="font-semibold">Muscles</p>
-                      <ul className="list-disc space-y-1 pl-5">
-                        {muscles.map((muscle) => (
-                          <li key={muscle}>{muscle}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
-                  {equipment?.length ? (
-                    <div className="space-y-1">
-                      <p className="font-semibold">Matériel</p>
-                      <ul className="list-disc space-y-1 pl-5">
-                        {equipment.map((item) => (
-                          <li key={item}>{item}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
-                  {difficulty ? (
-                    <div className="space-y-1">
-                      <p className="font-semibold">Difficulté</p>
-                      <p>{difficulty}</p>
-                    </div>
-                  ) : null}
-                </div>
-              </section>
-            ) : null}
-          </div>
-        </article>
-      </section>
-    );
-  }
-
+  // Determine source and prepare data for ExerciseLiveDetail
+  const source = result ? "mdx" : liveExercise ? "live" : "imported";
   const baseFrontmatter = result
     ? result.frontmatter
-    : liveExercise!.data_json.frontmatter;
-  const baseContent = result ? result.content : liveExercise!.data_json.content;
+    : liveExercise
+      ? liveExercise.data_json.frontmatter
+      : importedExercise!;
+  const baseContent = result
+    ? result.content
+    : liveExercise
+      ? liveExercise.data_json.content
+      : convertImportedToContent(importedExercise);
+
   const override = await fetchExerciseOverride(slug, locale);
   const initialPatch = override?.patch_json ?? null;
 
@@ -228,7 +140,7 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
         key={`${slug}-${locale}`}
         slug={slug}
         locale={locale}
-        source={result ? "mdx" : "live"}
+        source={source}
         baseFrontmatter={baseFrontmatter}
         baseContent={baseContent}
         initialPatch={initialPatch}

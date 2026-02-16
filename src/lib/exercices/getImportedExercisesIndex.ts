@@ -5,7 +5,7 @@ import path from "node:path";
 import { cache } from "react";
 import type { Difficulty, ExerciseFrontmatter } from "@/lib/content/schema";
 
-type V2ImportRawEntry = {
+type ImportedExerciseRawEntry = {
   code?: string;
   title?: string;
   level?: string;
@@ -33,8 +33,8 @@ type V2ImportRawEntry = {
   equipmentList?: string[];
 };
 
-export type V2ImportExercise = ExerciseFrontmatter & {
-  source: "v2";
+export type ImportedExercise = ExerciseFrontmatter & {
+  source: "imported";
   imageSrc: string;
   thumbSrc: string;
   thumb169Src?: string;
@@ -52,18 +52,18 @@ export type V2ImportExercise = ExerciseFrontmatter & {
   difficulty?: string;
 };
 
-const V2_IMPORT_ROOT = path.join(process.cwd(), "public", "import", "v2");
-const V2_DATA_FILE = path.join(V2_IMPORT_ROOT, "data", "exercisesFromPdf.json");
-const V2_EXERCISES_DIR = path.join(V2_IMPORT_ROOT, "exercises");
-const DEFAULT_TAGS = ["import-v2"];
-const DEFAULT_MUSCLES = ["import-v2"];
+const IMPORT_ROOT = path.join(process.cwd(), "public", "import", "imported");
+const IMPORT_DATA_FILE = path.join(IMPORT_ROOT, "data", "exercisesFromPdf.json");
+const IMPORT_EXERCISES_DIR = path.join(IMPORT_ROOT, "exercises");
+const DEFAULT_TAGS = ["imported"];
+const DEFAULT_MUSCLES = ["imported"];
 const DEFAULT_THEMES: ExerciseFrontmatter["themeCompatibility"] = [1, 2, 3];
 
 function logDevWarning(message: string, error?: unknown) {
   if (process.env.NODE_ENV !== "development") {
     return;
   }
-  console.warn(`[v2-import] ${message}`, error ?? "");
+  console.warn(`[imported-exercises] ${message}`, error ?? "");
 }
 
 function normalizeText(value?: string) {
@@ -202,7 +202,7 @@ async function resolveExistingAsset(rawAsset?: string) {
   return null;
 }
 
-async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | null> {
+async function buildEntry(raw: ImportedExerciseRawEntry): Promise<ImportedExercise | null> {
   const code = normalizeText(raw.code);
   if (!code) {
     return null;
@@ -261,7 +261,7 @@ async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | nul
     muscles,
     equipment,
     media: imageSrc,
-    source: "v2",
+    source: "imported",
     imageSrc,
     thumbSrc,
     thumb169Src,
@@ -283,22 +283,22 @@ async function buildEntry(raw: V2ImportRawEntry): Promise<V2ImportExercise | nul
 
 async function readJsonEntries() {
   try {
-    const raw = await fs.readFile(V2_DATA_FILE, "utf8");
+    const raw = await fs.readFile(IMPORT_DATA_FILE, "utf8");
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) {
-      logDevWarning("Unexpected JSON shape for v2 import index.");
+      logDevWarning("Unexpected JSON shape for imported exercises index.");
       return [];
     }
     const items = await Promise.all(
-      parsed.map((entry) => buildEntry(entry as V2ImportRawEntry)),
+      parsed.map((entry) => buildEntry(entry as ImportedExerciseRawEntry)),
     );
-    return items.filter((item): item is V2ImportExercise => Boolean(item));
+    return items.filter((item): item is ImportedExercise => Boolean(item));
   } catch (error) {
     const nodeError = error as NodeJS.ErrnoException;
     if (nodeError?.code === "ENOENT") {
       return [];
     }
-    logDevWarning("Failed to read v2 import JSON.", error);
+    logDevWarning("Failed to read imported exercises JSON.", error);
     return [];
   }
 }
@@ -306,13 +306,13 @@ async function readJsonEntries() {
 async function readFilesystemEntries() {
   let seriesDirs: Dirent[] = [];
   try {
-    seriesDirs = await fs.readdir(V2_EXERCISES_DIR, { withFileTypes: true });
+    seriesDirs = await fs.readdir(IMPORT_EXERCISES_DIR, { withFileTypes: true });
   } catch (error) {
-    logDevWarning("Failed to read v2 import exercises directory.", error);
+    logDevWarning("Failed to read imported exercises exercises directory.", error);
     return [];
   }
 
-  const items: V2ImportExercise[] = [];
+  const items: ImportedExercise[] = [];
   for (const series of seriesDirs) {
     if (!series.isDirectory()) {
       continue;
@@ -320,11 +320,11 @@ async function readFilesystemEntries() {
     const seriesName = series.name;
     let entries: Dirent[] = [];
     try {
-      entries = await fs.readdir(path.join(V2_EXERCISES_DIR, seriesName), {
+      entries = await fs.readdir(path.join(IMPORT_EXERCISES_DIR, seriesName), {
         withFileTypes: true,
       });
     } catch (error) {
-      logDevWarning(`Failed to read v2 import series ${seriesName}.`, error);
+      logDevWarning(`Failed to read imported exercises series ${seriesName}.`, error);
       continue;
     }
     for (const entry of entries) {
@@ -342,7 +342,7 @@ async function readFilesystemEntries() {
   return items;
 }
 
-function uniqueBySlug(items: V2ImportExercise[]) {
+function uniqueBySlug(items: ImportedExercise[]) {
   const seen = new Set<string>();
   return items.filter((item) => {
     if (seen.has(item.slug)) {
@@ -353,7 +353,7 @@ function uniqueBySlug(items: V2ImportExercise[]) {
   });
 }
 
-export const getV2ImportIndex = cache(async () => {
+export const getImportedExercisesIndex = cache(async () => {
   const jsonItems = await readJsonEntries();
   const items = jsonItems.length > 0 ? jsonItems : await readFilesystemEntries();
   const unique = uniqueBySlug(items);

@@ -36,7 +36,7 @@ npm run pdf:extract:parametres  # Extract images from Paramètres PDF to webp
 
 ### Exercise Content — Three Sources with Merge Priority
 
-Exercises come from three sources, merged with strict priority: **MDX > Live (Supabase) > v2 imports**
+Exercises come from three sources, merged with strict priority: **MDX > Live (Supabase) > Imported exercises**
 
 1. **MDX files** (`content/exercices/*.mdx`)
    - Gray-matter frontmatter + MDX content
@@ -48,12 +48,12 @@ Exercises come from three sources, merged with strict priority: **MDX > Live (Su
    - Real-time sync with `useExercisesLiveSync` hook (Supabase realtime + 20s polling fallback)
    - Fetched via `fetchLiveExercises(locale)` from `src/lib/live/queries.ts`
 
-3. **v2 imports** (`public/import/v2/`)
+3. **Imported exercises** (`public/import/v2/`)
    - Legacy PDF-imported exercises
-   - Indexed via `getV2ImportIndex()` from `src/lib/exercices/getV2ImportIndex.ts`
+   - Indexed via `getImportedExercisesIndex()` from `src/lib/exercices/getImportedExercisesIndex.ts`
    - Media files in `public/images/exos/` (unified location)
 
-**Merge logic**: `getExercisesIndex(locale)` in `src/lib/exercices/getExercisesIndex.ts` combines all three sources. Deduplication by slug ensures MDX exercises override live exercises, which override v2 imports.
+**Merge logic**: `getExercisesIndex(locale)` in `src/lib/exercices/getExercisesIndex.ts` combines all three sources. Deduplication by slug ensures MDX exercises override live exercises, which override imported exercises.
 
 **Static generation**: `generateStaticParams()` in `src/app/exercices/[slug]/page.tsx` uses `getExercisesIndex("fr")` to pre-generate all exercise pages at build time.
 
@@ -67,7 +67,7 @@ All exercise media unified under `/images/exos/`:
   - `thumb916-{slug}.webp` (9:16)
 - Video support: `.webm` files (e.g., `S1-002.webm`)
 
-Thumbnail resolution uses filesystem checks at build time (see `getV2ImportIndex.ts` lines 218-235).
+Thumbnail resolution uses filesystem checks at build time (see `getImportedExercisesIndex.ts` lines 218-235).
 
 ### External Store Pattern (Favorites, Teacher Mode, View Mode)
 
@@ -162,7 +162,7 @@ Execute all commands from repo root.
 ## Key Files
 
 - **Exercise index**: `src/lib/exercices/getExercisesIndex.ts` (merges 3 sources)
-- **v2 imports**: `src/lib/exercices/getV2ImportIndex.ts` (legacy PDF imports)
+- **Imported exercises**: `src/lib/exercices/getImportedExercisesIndex.ts` (legacy PDF imports)
 - **Filters**: `src/lib/exercices/filters.ts` (pure functions)
 - **Live sync hook**: `src/hooks/useExercisesLiveSync.ts` (Supabase realtime + polling)
 - **Exercise detail page**: `src/app/exercices/[slug]/page.tsx` (uses `generateStaticParams`)

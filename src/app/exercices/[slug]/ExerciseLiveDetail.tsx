@@ -31,7 +31,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 type ExerciseLiveDetailProps = {
   slug: string;
   locale: Lang;
-  source: "mdx" | "live";
+  source: "mdx" | "live" | "imported";
   baseFrontmatter: ExerciseFrontmatter;
   baseContent: string;
   initialPatch: ExerciseOverridePatch | null;
