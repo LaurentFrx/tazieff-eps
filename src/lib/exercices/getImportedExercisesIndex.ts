@@ -52,7 +52,7 @@ export type ImportedExercise = ExerciseFrontmatter & {
   difficulty?: string;
 };
 
-const IMPORT_ROOT = path.join(process.cwd(), "public", "import", "imported");
+const IMPORT_ROOT = path.join(process.cwd(), "public", "import", "v2");
 const IMPORT_DATA_FILE = path.join(IMPORT_ROOT, "data", "exercisesFromPdf.json");
 const IMPORT_EXERCISES_DIR = path.join(IMPORT_ROOT, "exercises");
 const DEFAULT_TAGS = ["imported"];
