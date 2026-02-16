@@ -180,6 +180,7 @@ Execute all commands from repo root.
 ## Deployment
 
 - **Platform**: Vercel
+- **Production URL**: https://tazieff-eps.vercel.app
 - **Static generation**: All exercise routes pre-generated via `generateStaticParams()`
 - **Revalidation**: `revalidatePath` + `revalidateTag` for on-demand ISR
 - **Service Worker**: Serwist for PWA (disabled in dev)
