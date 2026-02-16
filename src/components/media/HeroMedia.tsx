@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Image, { type StaticImageData } from "next/image";
 
 type HeroMediaProps =
@@ -21,12 +24,27 @@ type HeroMediaProps =
       type: "video";
       src: string;
       alt: string;
+      imageFallback?: string | StaticImageData;
     };
 
 export function HeroMedia(props: HeroMediaProps) {
   const { alt } = props;
+  const [videoError, setVideoError] = useState(false);
 
   if (props.type === "video") {
+    // If video failed to load and we have a fallback, show image instead
+    if (videoError && props.imageFallback) {
+      return (
+        <div className="rounded-3xl overflow-hidden bg-white/5 ring-1 ring-white/10 shadow-xl">
+          <Image
+            src={props.imageFallback}
+            alt={alt}
+            className="w-full h-auto"
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="rounded-3xl overflow-hidden bg-white/5 ring-1 ring-white/10 shadow-xl">
         <video
@@ -35,6 +53,7 @@ export function HeroMedia(props: HeroMediaProps) {
           muted
           loop
           playsInline
+          onError={() => setVideoError(true)}
           className="w-full h-auto"
           aria-label={alt}
         />

@@ -543,7 +543,12 @@ function buildOverrideDoc(
 }
 
 type HeroRender =
-  | { type: "video"; src: string; alt: string }
+  | {
+      type: "video";
+      src: string;
+      alt: string;
+      imageFallback?: string | StaticImageData;
+    }
   | { type?: "image"; src: string; alt: string; width: number; height: number }
   | { type?: "image"; src: StaticImageData; alt: string };
 
@@ -677,18 +682,19 @@ export function ExerciseLiveDetail({
   const displayTitle =
     merged.frontmatter.title?.trim() || "Brouillon sans titre";
 
-  // Video hero resolution (priority over image)
+  // Dynamic video hero resolution (try .webm for any slug)
   const exerciseSlug = merged.frontmatter.slug;
-  const videoSlugs: Record<string, string> = {
-    "s1-002": "/images/exos/S1-002.webm",
-  };
-  const videoSrc = exerciseSlug ? videoSlugs[exerciseSlug.toLowerCase()] : undefined;
+  const videoSrc = exerciseSlug
+    ? `/images/exos/${exerciseSlug}.webm`
+    : undefined;
 
   const baseHeroImage = merged.frontmatter.media
     ? {
         "/images/exos/s1-001.webp": s1001,
       }[merged.frontmatter.media]
     : undefined;
+
+  const imageFallback = baseHeroImage ?? merged.frontmatter.media;
 
   const overrideHero = overrideDocView?.heroImage;
   const overrideHeroUrl = overrideHero?.url?.trim() ?? "";
@@ -704,7 +710,12 @@ export function ExerciseLiveDetail({
           }
         : null
       : videoSrc
-        ? { type: "video", src: videoSrc, alt: displayTitle }
+        ? {
+            type: "video",
+            src: videoSrc,
+            alt: displayTitle,
+            imageFallback,
+          }
         : baseHeroImage
           ? { type: "image", src: baseHeroImage, alt: displayTitle }
           : null;
@@ -2358,7 +2369,7 @@ export function ExerciseLiveDetail({
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="w-6 h-6"
+                style={{ width: "1.5rem", height: "1.5rem" }}
                 aria-hidden="true"
               >
                 <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -2484,7 +2495,12 @@ export function ExerciseLiveDetail({
         </div>
         {hero ? (
           hero.type === "video" ? (
-            <HeroMedia type="video" src={hero.src} alt={hero.alt} />
+            <HeroMedia
+              type="video"
+              src={hero.src}
+              alt={hero.alt}
+              imageFallback={hero.imageFallback}
+            />
           ) : isHeroUrl(hero) ? (
             <HeroMedia
               type="image"
