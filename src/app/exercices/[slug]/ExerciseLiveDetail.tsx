@@ -684,8 +684,12 @@ export function ExerciseLiveDetail({
 
   // Dynamic video hero resolution (try .webm for any slug)
   const exerciseSlug = merged.frontmatter.slug;
+  // Map known video files with exact casing
+  const knownVideos: Record<string, string> = {
+    "s1-002": "/images/exos/S1-002.webm",
+  };
   const videoSrc = exerciseSlug
-    ? `/images/exos/${exerciseSlug}.webm`
+    ? knownVideos[exerciseSlug.toLowerCase()] || `/images/exos/${exerciseSlug}.webm`
     : undefined;
 
   const baseHeroImage = merged.frontmatter.media
@@ -2481,7 +2485,7 @@ export function ExerciseLiveDetail({
               aria-label={settingsLabel}
               title={settingsLabel}
             >
-              <span aria-hidden="true">⚙️</span>
+              <span aria-hidden="true" style={{ fontSize: "1.25rem", letterSpacing: "0.1em" }}>...</span>
             </Link>
           </div>
         </header>
