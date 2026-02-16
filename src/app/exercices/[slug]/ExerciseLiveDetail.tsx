@@ -684,12 +684,8 @@ export function ExerciseLiveDetail({
 
   // Dynamic video hero resolution (try .webm for any slug)
   const exerciseSlug = merged.frontmatter.slug;
-  // Map known video files with exact casing
-  const knownVideos: Record<string, string> = {
-    "s1-002": "/images/exos/S1-002.webm",
-  };
   const videoSrc = exerciseSlug
-    ? knownVideos[exerciseSlug.toLowerCase()] || `/images/exos/${exerciseSlug}.webm`
+    ? `/images/exos/${exerciseSlug.toLowerCase()}.webm`
     : undefined;
 
   const baseHeroImage = merged.frontmatter.media
