@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { getExercise } from "@/lib/content/fs";
 import { getV2ImportIndex } from "@/lib/exercices/getV2ImportIndex";
+import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
 import { applyExercisePatch } from "@/lib/live/patch";
 import { fetchExerciseOverride, fetchLiveExercise } from "@/lib/live/queries";
 import type { Lang } from "@/lib/i18n/messages";
@@ -30,6 +31,13 @@ async function revalidateExercises(slug: string) {
 async function getV2Exercise(slug: string) {
   const v2Items = await getV2ImportIndex();
   return v2Items.find((item) => item.slug === slug) ?? null;
+}
+
+export async function generateStaticParams() {
+  const exercises = await getExercisesIndex("fr");
+  return exercises.map((exercise) => ({
+    slug: exercise.slug,
+  }));
 }
 
 export async function generateMetadata({
