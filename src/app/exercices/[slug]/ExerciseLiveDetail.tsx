@@ -2505,7 +2505,7 @@ export function ExerciseLiveDetail({
 
               {/* Menu contextuel */}
               {menuOpen && (
-                <div className="absolute top-12 right-0 min-w-[200px] rounded-2xl border border-white/10 bg-black/90 backdrop-blur-md p-2 shadow-xl z-[60]">
+                <div className="absolute top-12 right-0 min-w-48 rounded-xl border border-white/10 bg-gray-900/95 backdrop-blur-md p-2 shadow-xl z-[60]">
                   <button
                     type="button"
                     onClick={() => {
@@ -2518,18 +2518,24 @@ export function ExerciseLiveDetail({
                       ? "★ Retirer des favoris"
                       : "☆ Ajouter aux favoris"}
                   </button>
-                  {teacherUnlocked && (
-                    <button
-                      type="button"
-                      onClick={() => {
+
+                  {/* Séparateur */}
+                  <div className="h-px bg-white/10 my-1" />
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (teacherUnlocked) {
                         openOverrideEditor();
-                        setMenuOpen(false);
-                      }}
-                      className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors"
-                    >
-                      ⚙️ Modifier l'exercice
-                    </button>
-                  )}
+                      } else {
+                        openPinModal();
+                      }
+                      setMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors"
+                  >
+                    👨‍🏫 Mode enseignant
+                  </button>
                 </div>
               )}
             </div>
