@@ -48,23 +48,19 @@ export function HeroMedia(props: HeroMediaProps) {
     return (
       <div className="rounded-3xl overflow-hidden bg-white/5 ring-1 ring-white/10 shadow-xl">
         <video
-          src={props.src}
           autoPlay
           muted
           loop
           playsInline
           controls={false}
           preload="auto"
-          onError={(e) => {
-            console.error("[HeroMedia] Video load error:", props.src, e);
-            setVideoError(true);
-          }}
-          onLoadedData={() => {
-            console.log("[HeroMedia] Video loaded successfully:", props.src);
-          }}
+          onError={() => setVideoError(true)}
           className="w-full h-auto"
           aria-label={alt}
-        />
+        >
+          <source src={props.src.replace('.webm', '.mp4')} type="video/mp4" />
+          <source src={props.src} type="video/webm" />
+        </video>
       </div>
     );
   }
