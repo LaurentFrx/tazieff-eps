@@ -10,6 +10,7 @@ type HeroMediaProps =
       alt: string;
       priority?: boolean;
       sizes?: string;
+      rounded?: boolean;
     }
   | {
       type?: "image";
@@ -19,23 +20,30 @@ type HeroMediaProps =
       sizes?: string;
       width: number;
       height: number;
+      rounded?: boolean;
     }
   | {
       type: "video";
       src: string;
       alt: string;
       imageFallback?: string | StaticImageData;
+      rounded?: boolean;
     };
 
 export function HeroMedia(props: HeroMediaProps) {
   const { alt } = props;
+  const rounded = props.rounded ?? true;
   const [videoError, setVideoError] = useState(false);
+
+  const wrapperClass = rounded
+    ? "rounded-3xl overflow-hidden bg-white/5 ring-1 ring-white/10 shadow-xl"
+    : "w-full";
 
   if (props.type === "video") {
     // If video failed to load and we have a fallback, show image instead
     if (videoError && props.imageFallback) {
       return (
-        <div className="rounded-3xl overflow-hidden bg-white/5 ring-1 ring-white/10 shadow-xl">
+        <div className={wrapperClass}>
           <Image
             src={props.imageFallback}
             alt={alt}
@@ -46,7 +54,7 @@ export function HeroMedia(props: HeroMediaProps) {
     }
 
     return (
-      <div className="rounded-3xl overflow-hidden bg-white/5 ring-1 ring-white/10 shadow-xl">
+      <div className={wrapperClass}>
         <video
           autoPlay
           muted
@@ -90,7 +98,7 @@ export function HeroMedia(props: HeroMediaProps) {
       : undefined;
 
   return (
-    <div className="rounded-3xl overflow-hidden bg-white/5 ring-1 ring-white/10 shadow-xl">
+    <div className={wrapperClass}>
       <Image
         src={src}
         alt={alt}
