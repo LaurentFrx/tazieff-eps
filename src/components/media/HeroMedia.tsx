@@ -103,14 +103,14 @@ export function HeroMedia(props: HeroMediaProps) {
         <button
           type="button"
           onClick={handlePlayFullscreen}
-          className="absolute bottom-4 right-4 z-20 flex items-center justify-center w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm ring-1 ring-white/20 hover:bg-black/50 transition-colors"
+          className="absolute bottom-4 right-4 z-20 flex items-center justify-center w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm ring-1 ring-white/20 text-white hover:bg-black/40 transition-colors"
           aria-label="Lire en plein écran"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="currentColor"
-            className="w-6 h-6 text-white"
+            className="w-5 h-5"
             style={{ marginLeft: "2px" }}
           >
             <path d="M8 5v14l11-7z" />

@@ -2357,7 +2357,7 @@ export function ExerciseLiveDetail({
       `}</style>
       {/* Container hero avec boutons flottants et titre overlay */}
       {hero ? (
-        <div className="relative">
+        <div className="relative rounded-2xl overflow-hidden">
           {/* Boutons flottants en haut */}
           <div className="absolute top-4 left-4 right-4 flex justify-between z-50">
             {/* Bouton retour */}
