@@ -10,6 +10,11 @@ import { useSearchParams } from "next/navigation";
 import DifficultyPill from "@/components/DifficultyPill";
 import { FavoriteToggle } from "@/components/FavoriteToggle";
 import { HeroMedia } from "@/components/media/HeroMedia";
+import {
+  getFavoritesSnapshot,
+  subscribeFavorites,
+  toggleFavorite,
+} from "@/lib/favoritesStore";
 import s1001 from "../../../../public/images/exos/s1-001.webp";
 import logo from "../../../../public/media/branding/logo-eps.webp";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
@@ -579,6 +584,7 @@ export function ExerciseLiveDetail({
   const [overrideReady, setOverrideReady] = useState(false);
   const [liveReady, setLiveReady] = useState(false);
   const [pinModalOpen, setPinModalOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [teacherUnlocked, setTeacherUnlocked] = useState(
     () => getTeacherModeSnapshot().unlocked,
   );
@@ -671,6 +677,23 @@ export function ExerciseLiveDetail({
   useEffect(() => {
     setTeacherModeSnapshot({ unlocked: teacherUnlocked, pin: teacherPin });
   }, [teacherPin, teacherUnlocked]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const handleClickOutside = () => setMenuOpen(false);
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [menuOpen]);
 
   const merged = useMemo(
     () => applyExercisePatch(base, patch),
@@ -2382,99 +2405,134 @@ export function ExerciseLiveDetail({
             </Link>
 
             {/* Bouton menu (long press pour mode prof) */}
-            <button
-              type="button"
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm ring-1 ring-white/20 text-white font-bold tracking-widest hover:bg-black/40 transition-colors"
-              aria-label="Menu"
-              onPointerDown={(event) => {
-                if (event.ctrlKey || event.shiftKey) {
-                  event.preventDefault();
+            <div className="relative">
+              <button
+                type="button"
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm ring-1 ring-white/20 text-white font-bold tracking-widest hover:bg-black/40 transition-colors"
+                aria-label="Menu"
+                onPointerDown={(event) => {
+                  if (event.ctrlKey || event.shiftKey) {
+                    event.preventDefault();
+                    cancelLongPress();
+                    openPinModal();
+                    return;
+                  }
+                  if (event.pointerType === "touch") {
+                    touchPointerActiveRef.current = true;
+                  } else {
+                    event.preventDefault();
+                  }
+                  startLongPress(event.clientX, event.clientY);
+                }}
+                onPointerMove={(event) => {
+                  cancelLongPressOnMove(event.clientX, event.clientY);
+                }}
+                onPointerUp={() => {
                   cancelLongPress();
-                  openPinModal();
-                  return;
-                }
-                if (event.pointerType === "touch") {
-                  touchPointerActiveRef.current = true;
-                } else {
-                  event.preventDefault();
-                }
-                startLongPress(event.clientX, event.clientY);
-              }}
-              onPointerMove={(event) => {
-                cancelLongPressOnMove(event.clientX, event.clientY);
-              }}
-              onPointerUp={() => {
-                cancelLongPress();
-                touchPointerActiveRef.current = false;
-              }}
-              onPointerLeave={() => {
-                cancelLongPress();
-                touchPointerActiveRef.current = false;
-              }}
-              onPointerCancel={() => {
-                cancelLongPress();
-                touchPointerActiveRef.current = false;
-              }}
-              onMouseDown={(event) => {
-                if (event.ctrlKey || event.shiftKey) {
-                  event.preventDefault();
+                  touchPointerActiveRef.current = false;
+                }}
+                onPointerLeave={() => {
                   cancelLongPress();
-                  openPinModal();
-                  return;
-                }
-                event.preventDefault();
-              }}
-              onTouchStart={(event) => {
-                if (touchPointerActiveRef.current) {
-                  return;
-                }
-                const touch = event.touches[0];
-                if (!touch) {
-                  return;
-                }
-                startLongPress(touch.clientX, touch.clientY);
-              }}
-              onTouchMove={(event) => {
-                if (touchPointerActiveRef.current) {
-                  return;
-                }
-                const touch = event.touches[0];
-                if (!touch) {
-                  return;
-                }
-                cancelLongPressOnMove(touch.clientX, touch.clientY);
-              }}
-              onTouchEnd={() => {
-                cancelLongPress();
-                touchPointerActiveRef.current = false;
-              }}
-              onTouchCancel={() => {
-                cancelLongPress();
-                touchPointerActiveRef.current = false;
-              }}
-              onContextMenu={(event) => {
-                event.preventDefault();
-              }}
-              onClick={(event) => {
-                if (event.ctrlKey || event.shiftKey) {
-                  event.preventDefault();
+                  touchPointerActiveRef.current = false;
+                }}
+                onPointerCancel={() => {
                   cancelLongPress();
-                  openPinModal();
-                }
-              }}
-              onKeyDown={(event) => {
-                if (teacherUnlocked) {
-                  return;
-                }
-                if (event.key === "Enter" || event.key === " ") {
+                  touchPointerActiveRef.current = false;
+                }}
+                onMouseDown={(event) => {
+                  if (event.ctrlKey || event.shiftKey) {
+                    event.preventDefault();
+                    cancelLongPress();
+                    openPinModal();
+                    return;
+                  }
                   event.preventDefault();
-                  openPinModal();
-                }
-              }}
-              style={{ WebkitUserSelect: "none", WebkitTouchCallout: "none" }}
-            >
-              ···
-            </button>
+                }}
+                onTouchStart={(event) => {
+                  if (touchPointerActiveRef.current) {
+                    return;
+                  }
+                  const touch = event.touches[0];
+                  if (!touch) {
+                    return;
+                  }
+                  startLongPress(touch.clientX, touch.clientY);
+                }}
+                onTouchMove={(event) => {
+                  if (touchPointerActiveRef.current) {
+                    return;
+                  }
+                  const touch = event.touches[0];
+                  if (!touch) {
+                    return;
+                  }
+                  cancelLongPressOnMove(touch.clientX, touch.clientY);
+                }}
+                onTouchEnd={() => {
+                  cancelLongPress();
+                  touchPointerActiveRef.current = false;
+                }}
+                onTouchCancel={() => {
+                  cancelLongPress();
+                  touchPointerActiveRef.current = false;
+                }}
+                onContextMenu={(event) => {
+                  event.preventDefault();
+                }}
+                onClick={(event) => {
+                  if (event.ctrlKey || event.shiftKey) {
+                    event.preventDefault();
+                    cancelLongPress();
+                    openPinModal();
+                  } else {
+                    event.stopPropagation();
+                    setMenuOpen(!menuOpen);
+                  }
+                }}
+                onKeyDown={(event) => {
+                  if (teacherUnlocked) {
+                    return;
+                  }
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setMenuOpen(!menuOpen);
+                  }
+                }}
+                style={{ WebkitUserSelect: "none", WebkitTouchCallout: "none" }}
+              >
+                ···
+              </button>
+
+              {/* Menu contextuel */}
+              {menuOpen && (
+                <div className="absolute top-12 right-0 min-w-[200px] rounded-2xl border border-white/10 bg-black/90 backdrop-blur-md p-2 shadow-xl z-[60]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      toggleFavorite(merged.frontmatter.slug);
+                      setMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors"
+                  >
+                    {getFavoritesSnapshot().includes(merged.frontmatter.slug)
+                      ? "★ Retirer des favoris"
+                      : "☆ Ajouter aux favoris"}
+                  </button>
+                  {teacherUnlocked && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        openOverrideEditor();
+                        setMenuOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors"
+                    >
+                      ⚙️ Modifier l'exercice
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Hero media pleine largeur */}
