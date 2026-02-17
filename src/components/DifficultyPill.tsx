@@ -1,11 +1,14 @@
+"use client";
+
 import type { Difficulty } from "@/lib/content/schema";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 type DifficultyLevel = Difficulty | string;
 
-const LABELS: Record<Difficulty, string> = {
-  debutant: "Débutant",
-  intermediaire: "Intermédiaire",
-  avance: "Avancé",
+const LABEL_KEYS: Record<Difficulty, string> = {
+  debutant: "difficulty.debutant",
+  intermediaire: "difficulty.intermediaire",
+  avance: "difficulty.avance",
 };
 
 const VARIANTS: Record<Difficulty, string> = {
@@ -41,11 +44,12 @@ type DifficultyPillProps = {
 };
 
 export default function DifficultyPill({ level }: DifficultyPillProps) {
+  const { t } = useI18n();
   const normalized = normalizeLevel(level);
 
   return (
     <span className={`pill pill--difficulty ${VARIANTS[normalized]}`}>
-      {LABELS[normalized]}
+      {t(LABEL_KEYS[normalized])}
     </span>
   );
 }

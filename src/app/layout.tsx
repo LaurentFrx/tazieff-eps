@@ -41,7 +41,8 @@ const LANG_COOKIE = "eps_lang";
 const THEME_COOKIE = "eps_theme";
 
 function getInitialLang(value?: string): Lang {
-  return value === "en" ? "en" : "fr";
+  if (value === "en" || value === "es") return value;
+  return "fr";
 }
 
 function getInitialTheme(value?: string): ThemePreference {

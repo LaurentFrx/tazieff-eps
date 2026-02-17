@@ -7,7 +7,7 @@ import logo from "../../public/media/branding/logo-eps.webp";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
 export function AppHeader() {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const settingsLabel = t("settings.open");
   const pathname = usePathname();
   const router = useRouter();
@@ -26,21 +26,21 @@ export function AppHeader() {
 
     if (pathname === "/exercices") {
       return {
-        title: "Bibliothèque d'exercices",
-        subtitle: "EXERCICES & ETIREMENTS",
+        title: t("header.exercices"),
+        subtitle: t("header.exercicesSubtitle"),
       };
     }
 
     if (pathname === "/seances") {
-      return { title: "Plans de séance", subtitle: "Séances" };
+      return { title: t("header.seances"), subtitle: t("header.seances") };
     }
 
     if (pathname === "/apprendre") {
-      return { title: "Apprendre", subtitle: "Apprendre" };
+      return { title: t("header.apprendre"), subtitle: t("header.apprendre") };
     }
 
     if (pathname === "/bac") {
-      return { title: "Musculation au BAC", subtitle: "Bac" };
+      return { title: t("header.bac"), subtitle: t("header.bac") };
     }
 
     return null;
@@ -53,7 +53,7 @@ export function AppHeader() {
   const brandSubtitleClass = `brand-subtitle${
     headerConfig ? " brand-subtitle--page" : ""
   }`;
-  const backLabel = lang === "en" ? "Back" : "Retour";
+  const backLabel = t("header.back");
 
   if (pathname === "/") {
     return null;
@@ -62,7 +62,7 @@ export function AppHeader() {
   return (
     <header className="app-header">
       <div className="brand">
-        <Link href="/" aria-label="Accueil">
+        <Link href="/" aria-label={t("header.home")}>
           <Image src={logo} alt="EPS" className="h-20 w-auto" />
         </Link>
         <div className="brand-text">

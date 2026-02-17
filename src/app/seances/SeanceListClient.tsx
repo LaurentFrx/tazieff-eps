@@ -5,26 +5,28 @@ import { useMemo, useState } from "react";
 import { Chips } from "@/components/Chips";
 import { SeanceCard } from "@/components/SeanceCard";
 import type { Difficulty, SeanceFrontmatter } from "@/lib/content/schema";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 type SeanceListClientProps = {
   seances: SeanceFrontmatter[];
 };
 
 const durationRanges = [
-  { value: "all", label: "Toutes durées" },
-  { value: "short", label: "≤ 30 min" },
-  { value: "medium", label: "31-45 min" },
-  { value: "long", label: "46-60 min" },
-  { value: "extra", label: "60+ min" },
+  { value: "all", labelKey: "filters.allDurations" },
+  { value: "short", labelKey: "seances.duration.short" },
+  { value: "medium", labelKey: "seances.duration.medium" },
+  { value: "long", labelKey: "seances.duration.long" },
+  { value: "extra", labelKey: "seances.duration.extra" },
 ] as const;
 
-const levelLabels: Record<Difficulty, string> = {
-  debutant: "Débutant",
-  intermediaire: "Intermédiaire",
-  avance: "Avancé",
+const levelKeys: Record<Difficulty, string> = {
+  debutant: "difficulty.debutant",
+  intermediaire: "difficulty.intermediaire",
+  avance: "difficulty.avance",
 };
 
 export function SeanceListClient({ seances }: SeanceListClientProps) {
+  const { t } = useI18n();
   const [durationFilter, setDurationFilter] = useState<(typeof durationRanges)[number]["value"]>(
     "all",
   );
@@ -85,17 +87,17 @@ export function SeanceListClient({ seances }: SeanceListClientProps) {
               className={`chip${durationFilter === range.value ? " is-active" : ""}`}
               onClick={() => setDurationFilter(range.value)}
             >
-              {range.label}
+              {t(range.labelKey)}
             </button>
           ))}
         </div>
         {levels.length > 0 ? (
           <Chips
-            label="Niveau"
-            items={levels.map((level) => levelLabels[level])}
-            activeItems={selectedLevels.map((level) => levelLabels[level])}
+            label={t("filters.level")}
+            items={levels.map((level) => t(levelKeys[level]))}
+            activeItems={selectedLevels.map((level) => t(levelKeys[level]))}
             onToggle={(label) => {
-              const entry = Object.entries(levelLabels).find(([, value]) => value === label);
+              const entry = Object.entries(levelKeys).find(([key]) => t(levelKeys[key as Difficulty]) === label);
               if (entry) {
                 toggleLevel(entry[0] as Difficulty);
               }
@@ -106,15 +108,14 @@ export function SeanceListClient({ seances }: SeanceListClientProps) {
       </div>
 
       <p className="text-sm text-[color:var(--muted)]">
-        {filtered.length} séance{filtered.length > 1 ? "s" : ""} disponible
-        {filtered.length > 1 ? "s" : ""}
+        {filtered.length} séance{filtered.length > 1 ? "s" : ""}
       </p>
 
       <div className="card-grid">
         {filtered.length === 0 ? (
           <div className="card">
-            <h2>Aucune séance ne correspond</h2>
-            <p>Essayez une autre durée ou un niveau différent.</p>
+            <h2>{t("seances.emptyTitle")}</h2>
+            <p>{t("seances.emptyHint")}</p>
           </div>
         ) : (
           filtered.map((seance) => (

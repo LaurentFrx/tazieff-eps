@@ -1625,7 +1625,7 @@ export function ExerciseLiveDetail({
   const handleUnlock = (event?: React.FormEvent) => {
     event?.preventDefault();
     if (!teacherPin.trim()) {
-      setTeacherError("PIN requis.");
+      setTeacherError(t("teacherMode.pinRequired"));
       return;
     }
     setTeacherUnlocked(true);
@@ -1642,7 +1642,7 @@ export function ExerciseLiveDetail({
 
   const handleSaveOverride = async () => {
     if (!teacherPin) {
-      showOverrideToast("PIN requis.", "error");
+      showOverrideToast(t("teacherMode.pinRequired"), "error");
       return;
     }
     if (!overrideDoc) {
@@ -1651,7 +1651,7 @@ export function ExerciseLiveDetail({
     }
     const saveStatus = saveMeta.status;
     const statusLabel =
-      saveStatus === "draft" ? "Brouillon enregistré." : "Exercice enregistré.";
+      saveStatus === "draft" ? t("exerciseEditor.draftSaved") : t("exerciseEditor.exerciseSaved");
     const heroImage = overrideDoc.doc.heroImage
       ? {
           url: overrideDoc.doc.heroImage.url.trim(),
@@ -1725,19 +1725,19 @@ export function ExerciseLiveDetail({
     } catch {
       setSubmitStatus(null);
       setIsSavingOverride(false);
-      showOverrideToast("Échec de l'enregistrement.", "error");
+      showOverrideToast(t("exerciseEditor.saveFailed"), "error");
       return;
     }
     if (!response.ok) {
       if (response.status === 401) {
-        handleAuthError("PIN invalide.");
+        handleAuthError(t("teacherMode.pinInvalid"));
         setSubmitStatus(null);
         setIsSavingOverride(false);
         return;
       }
       setSubmitStatus(null);
       setIsSavingOverride(false);
-      showOverrideToast("Échec de l'enregistrement.", "error");
+      showOverrideToast(t("exerciseEditor.saveFailed"), "error");
       return;
     }
 
@@ -1765,11 +1765,11 @@ export function ExerciseLiveDetail({
       });
       if (!liveResponse.ok) {
         if (liveResponse.status === 401) {
-          handleAuthError("PIN invalide.");
+          handleAuthError(t("teacherMode.pinInvalid"));
         }
         setSubmitStatus(null);
         setIsSavingOverride(false);
-        showOverrideToast("Échec de la mise à jour.", "error");
+        showOverrideToast(t("exerciseEditor.updateFailed"), "error");
         return;
       }
     }
@@ -1786,7 +1786,7 @@ export function ExerciseLiveDetail({
 
   const handleSaveLive = async () => {
     if (!teacherPin) {
-      handleAuthError("PIN requis.");
+      handleAuthError(t("teacherMode.pinRequired"));
       return;
     }
     if (!liveDraft) {
@@ -1833,15 +1833,15 @@ export function ExerciseLiveDetail({
     });
     if (!response.ok) {
       if (response.status === 401) {
-        handleAuthError("PIN invalide.");
+        handleAuthError(t("teacherMode.pinInvalid"));
         setSubmitStatus(null);
         return;
       }
-      setSubmitStatus("Échec de la création.");
+      setSubmitStatus(t("exerciseEditor.createFailed"));
       return;
     }
     setSubmitStatus(
-      status === "draft" ? "Brouillon enregistré." : "Exercice enregistré.",
+      status === "draft" ? t("exerciseEditor.draftSaved") : t("exerciseEditor.exerciseSaved"),
     );
     setLiveExists(true);
     setLiveOpen(false);
@@ -1850,7 +1850,7 @@ export function ExerciseLiveDetail({
 
   const handleDeleteLive = async () => {
     if (!teacherPin) {
-      handleAuthError("PIN requis.");
+      handleAuthError(t("teacherMode.pinRequired"));
       return;
     }
     setIsDeletingLive(true);
@@ -1866,7 +1866,7 @@ export function ExerciseLiveDetail({
       );
     } catch {
       setIsDeletingLive(false);
-      showOverrideToast("Échec de la suppression.", "error");
+      showOverrideToast(t("exerciseEditor.deleteFailed"), "error");
       return;
     }
 
@@ -1883,16 +1883,16 @@ export function ExerciseLiveDetail({
 
     if (!response.ok || !payload?.ok) {
       if (response.status === 401) {
-        handleAuthError("PIN invalide.");
+        handleAuthError(t("teacherMode.pinInvalid"));
       }
-      showOverrideToast(payload?.message ?? "Échec de la suppression.", "error");
+      showOverrideToast(payload?.message ?? t("exerciseEditor.deleteFailed"), "error");
       setIsDeletingLive(false);
       return;
     }
 
     setLiveExists(false);
     setDeleteLiveOpen(false);
-    showOverrideToast("Version supprimée", "success");
+    showOverrideToast(t("exerciseEditor.versionDeleted"), "success");
     setIsDeletingLive(false);
     triggerRevalidate(slug);
   };
@@ -1920,7 +1920,7 @@ export function ExerciseLiveDetail({
 
   const handlePhotoUploadRequest = (sectionId: string, blockIndex?: number) => {
     if (!teacherPin) {
-      handleAuthError("PIN requis.");
+      handleAuthError(t("teacherMode.pinRequired"));
       return;
     }
     setActiveSectionId(sectionId);
@@ -1937,7 +1937,7 @@ export function ExerciseLiveDetail({
       return;
     }
     if (!teacherPin) {
-      handleAuthError("PIN requis.");
+      handleAuthError(t("teacherMode.pinRequired"));
       return;
     }
     setMediaStatus("Upload en cours...");
@@ -1974,7 +1974,7 @@ export function ExerciseLiveDetail({
       }
 
       if (uploadFile.size > MAX_UPLOAD_BYTES) {
-        setMediaStatus("Image trop lourde après compression (max 2 Mo).");
+        setMediaStatus(t("exerciseEditor.imageTooLarge"));
         return;
       }
 
@@ -1999,7 +1999,7 @@ export function ExerciseLiveDetail({
         }
         const message = serverMessage?.trim()
           ? serverMessage.trim()
-          : "Échec de l'upload.";
+          : t("exerciseEditor.uploadFailed");
         if (response.status === 401) {
           handleAuthError(message);
         }
@@ -2014,7 +2014,7 @@ export function ExerciseLiveDetail({
         path?: string;
       };
       if (!data.mediaId) {
-        setMediaStatus("Réponse invalide.");
+        setMediaStatus(t("exerciseEditor.invalidResponse"));
         return;
       }
       if (data.url) {
@@ -2045,9 +2045,9 @@ export function ExerciseLiveDetail({
         highlightBlock(highlightKey);
       }
       showBlockToast(uploadTarget.sectionId);
-      setMediaStatus("Photo ajoutée.");
+      setMediaStatus(t("exerciseEditor.photoAdded"));
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Échec de l'upload.";
+      const message = error instanceof Error ? error.message : t("exerciseEditor.uploadFailed");
       setMediaStatus(message);
     } finally {
       setUploadTarget(null);
@@ -2390,7 +2390,7 @@ export function ExerciseLiveDetail({
             {/* Bouton retour */}
             <Link
               href="/exercices"
-              aria-label="Retour aux exercices"
+              aria-label={t("exerciseDetail.backLabel")}
               className="flex items-center justify-center w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm ring-1 ring-white/20 text-white hover:bg-black/40 transition-colors"
             >
               <svg
@@ -2413,7 +2413,7 @@ export function ExerciseLiveDetail({
               <button
                 type="button"
                 className="flex items-center justify-center w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm ring-1 ring-white/20 text-white font-bold tracking-widest hover:bg-black/40 transition-colors"
-                aria-label="Menu"
+                aria-label={t("exerciseDetail.menuLabel")}
                 onPointerDown={(event) => {
                   if (event.ctrlKey || event.shiftKey) {
                     event.preventDefault();
@@ -2519,8 +2519,8 @@ export function ExerciseLiveDetail({
                     className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors"
                   >
                     {getFavoritesSnapshot().includes(merged.frontmatter.slug)
-                      ? "★ Retirer des favoris"
-                      : "☆ Ajouter aux favoris"}
+                      ? t("favorites.remove")
+                      : t("favorites.add")}
                   </button>
 
                   {/* Séparateur */}
@@ -2538,7 +2538,7 @@ export function ExerciseLiveDetail({
                     }}
                     className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors"
                   >
-                    👨‍🏫 Mode enseignant
+                    {t("exerciseDetail.teacherMode")}
                   </button>
                 </div>
               )}
@@ -2589,7 +2589,7 @@ export function ExerciseLiveDetail({
         </div>
         <div className="meta-row">
           <span className="meta-text">
-            Thèmes compatibles: {merged.frontmatter.themeCompatibility.join(", ")}
+            {t("exerciseDetail.compatibleThemes")}: {merged.frontmatter.themeCompatibility.join(", ")}
           </span>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -2604,23 +2604,23 @@ export function ExerciseLiveDetail({
         </div>
         {merged.frontmatter.equipment && merged.frontmatter.equipment.length > 0 ? (
           <div className="text-sm text-[color:var(--muted)]">
-            Matériel: {merged.frontmatter.equipment.join(", ")}
+            {t("exerciseDetail.equipment")}: {merged.frontmatter.equipment.join(", ")}
           </div>
         ) : (
-          <div className="text-sm text-[color:var(--muted)]">Sans matériel spécifique.</div>
+          <div className="text-sm text-[color:var(--muted)]">{t("exerciseDetail.noEquipment")}</div>
         )}
       </div>
 
       {teacherUnlocked ? (
         <div className="teacher-panel">
-          <p className="eyebrow">Mode prof</p>
+          <p className="eyebrow">{t("exerciseEditor.teacherPanel")}</p>
           <div className="modal-actions">
             <button
               type="button"
               className="primary-button primary-button--wide"
               onClick={openOverrideEditor}
             >
-              Modifier l’exercice
+              {t("exerciseDetail.editExercise")}
             </button>
           </div>
           {submitStatus ? (
@@ -2746,7 +2746,7 @@ export function ExerciseLiveDetail({
       {pinModalOpen ? (
         <div className="modal-overlay" role="dialog" aria-modal="true">
           <div className="modal-card">
-            <h2>PIN professeur</h2>
+            <h2>{t("teacherMode.pinHeading")}</h2>
             <form onSubmit={handleUnlock} className="stack-md">
               <input
                 className="field-input"
@@ -2762,14 +2762,14 @@ export function ExerciseLiveDetail({
               ) : null}
               <div className="modal-actions">
                 <button type="submit" className="primary-button primary-button--wide">
-                  Déverrouiller
+                  {t("teacherMode.unlock")}
                 </button>
                 <button
                   type="button"
                   className="chip"
                   onClick={() => setPinModalOpen(false)}
                 >
-                  Annuler
+                  {t("teacherMode.cancel")}
                 </button>
               </div>
             </form>
@@ -2798,7 +2798,7 @@ export function ExerciseLiveDetail({
                     className="chip"
                     onClick={handleCloseOverride}
                   >
-                    ✕ Fermer
+                    ✕ {t("exerciseEditor.close")}
                   </button>
                 </div>
               </div>
@@ -2812,7 +2812,7 @@ export function ExerciseLiveDetail({
                         className="inline-flex h-2 w-2 rounded-full bg-amber-200"
                         aria-hidden="true"
                       />
-                      Modifications non enregistrées
+                      {t("exerciseEditor.changesPending")}
                     </div>
                     <span className="text-xs text-amber-100/80">
                       Pense à Enregistrer
@@ -2843,7 +2843,7 @@ export function ExerciseLiveDetail({
                           className="primary-button primary-button--wide bg-red-500 text-white hover:bg-red-600"
                           onClick={() => setDeleteLiveOpen(true)}
                         >
-                          Supprimer la version enregistrée…
+                          {t("exerciseEditor.deleteSaved")}…
                         </button>
                       </div>
                     </div>
@@ -2893,7 +2893,7 @@ export function ExerciseLiveDetail({
                           className="chip chip-ghost w-fit"
                           onClick={() => setLevelAddOpen(true)}
                         >
-                          Ajouter un niveau…
+                          {t("exerciseEditor.addLevel")}
                         </button>
                       )}
                     </div>
@@ -3242,13 +3242,13 @@ export function ExerciseLiveDetail({
                       <div className="stack-sm">
                   <input
                     className="field-input"
-                    placeholder="URL de l'image"
+                    placeholder={t("exerciseEditor.imageUrlPlaceholder")}
                     value={overrideDoc.doc.heroImage?.url ?? ""}
                     onChange={(event) => handleHeroUrlChange(event.target.value)}
                   />
                   <input
                     className="field-input"
-                    placeholder="Texte alternatif (optionnel)"
+                    placeholder={t("exerciseEditor.altTextPlaceholder")}
                     value={overrideDoc.doc.heroImage?.alt ?? ""}
                     onChange={(event) => handleHeroAltChange(event.target.value)}
                   />
@@ -3265,7 +3265,7 @@ export function ExerciseLiveDetail({
                       className="chip"
                       onClick={handleHeroRemove}
                     >
-                      Supprimer l&apos;image
+                      {t("exerciseEditor.deleteImage")}
                     </button>
                   </div>
                   {heroPreviewUrl ? (
@@ -3300,7 +3300,7 @@ export function ExerciseLiveDetail({
                             className="chip"
                             onClick={handleAddSection}
                           >
-                            Ajouter une section
+                            {t("exerciseEditor.addSection")}
                           </button>
                         </div>
                   {overrideDoc.doc.sections.map((section, sectionIndex) => (
@@ -3317,7 +3317,7 @@ export function ExerciseLiveDetail({
                           }}
                           className="field-input flex-1"
                           value={section.title}
-                          placeholder="Titre de section"
+                          placeholder={t("exerciseEditor.sectionTitlePlaceholder")}
                           onChange={(event) =>
                             updateSection(section.id, (current) => ({
                               ...current,
@@ -3354,7 +3354,7 @@ export function ExerciseLiveDetail({
                               </button>
                               <div className="mt-2 border-t border-white/10 pt-2">
                                 <span className="block px-2 pb-1 text-[10px] uppercase tracking-[0.18em] text-[color:var(--muted)]">
-                                  Ajouter un bloc
+                                  {t("exerciseEditor.addBlock")}
                                 </span>
                                 <button
                                   type="button"
@@ -3422,7 +3422,7 @@ export function ExerciseLiveDetail({
                                   setSectionMenuOpenId(null);
                                 }}
                               >
-                                Supprimer section
+                                {t("exerciseEditor.deleteSection")}
                               </button>
                             </div>
                           ) : null}
@@ -3621,7 +3621,7 @@ export function ExerciseLiveDetail({
                                       }))
                                     }
                                   >
-                                    Ajouter une puce
+                                    {t("exerciseEditor.addBullet")}
                                   </button>
                                 </div>
                               ) : null}
@@ -3662,7 +3662,7 @@ export function ExerciseLiveDetail({
                                                 handlePhotoUploadRequest(section.id, blockIndex)
                                               }
                                             >
-                                              Ajouter une photo
+                                              {t("exerciseEditor.addPhoto")}
                                             </button>
                                           )}
                                         </div>
@@ -3865,7 +3865,7 @@ export function ExerciseLiveDetail({
                         {section.title || "Section sans titre"}
                       </option>
                     ))}
-                    <option value="__add_section__">Ajouter une section</option>
+                    <option value="__add_section__">{t("exerciseEditor.addSection")}</option>
                   </select>
                 </div>
                 <div className="relative">
@@ -3876,7 +3876,7 @@ export function ExerciseLiveDetail({
                     onClick={() => setAddBlockMenuOpen((open) => !open)}
                     disabled={!overrideDoc || overrideDoc.doc.sections.length === 0}
                   >
-                    Ajouter un bloc…
+                    {t("exerciseEditor.addBlock")}…
                   </button>
                   {addBlockMenuOpen ? (
                     <div
@@ -3931,7 +3931,7 @@ export function ExerciseLiveDetail({
                         aria-hidden="true"
                       />
                     ) : null}
-                    Enregistrer
+                    {t("exerciseEditor.save")}
                   </span>
                 </button>
                 <button
@@ -3939,7 +3939,7 @@ export function ExerciseLiveDetail({
                   className="chip border border-white/20 bg-white/5 hover:bg-white/10"
                   onClick={handleCloseOverride}
                 >
-                  Fermer
+                  {t("exerciseEditor.close")}
                 </button>
                 <button
                   type="button"
@@ -4007,21 +4007,21 @@ export function ExerciseLiveDetail({
           {confirmCloseOpen ? (
             <div className="modal-overlay" role="dialog" aria-modal="true">
               <div className="modal-card">
-                <h2>Modifications non enregistrées</h2>
+                <h2>{t("exerciseEditor.changesPending")}</h2>
                 <div className="modal-actions">
                   <button
                     type="button"
                     className="primary-button primary-button--wide"
                     onClick={() => setConfirmCloseOpen(false)}
                   >
-                    Revenir
+                    {t("header.back")}
                   </button>
                   <button
                     type="button"
                     className="chip"
                     onClick={handleCloseWithoutSave}
                   >
-                    Fermer sans enregistrer
+                    {t("exerciseEditor.closeWithout")}
                   </button>
                 </div>
               </div>
@@ -4030,7 +4030,7 @@ export function ExerciseLiveDetail({
           {deleteLiveOpen ? (
             <div className="modal-overlay" role="dialog" aria-modal="true">
               <div className="modal-card">
-                <h2>Supprimer la version enregistrée</h2>
+                <h2>{t("exerciseEditor.deleteSaved")}</h2>
                 <p className="text-sm text-[color:var(--muted)]">
                   Cette action est irréversible. La fiche catalogue (MDX) n’est pas affectée.
                 </p>
@@ -4041,13 +4041,13 @@ export function ExerciseLiveDetail({
                     Locale:{" "}
                     <span className="font-semibold text-[color:var(--ink)]">{locale}</span>
                   </p>
-                  <label className="field-label">PIN professeur</label>
+                  <label className="field-label">{t("teacherMode.pinHeading")}</label>
                   <input
                     className="field-input"
                     type="password"
                     value={teacherPin}
                     onChange={(event) => setTeacherPin(event.target.value)}
-                    placeholder="PIN requis"
+                    placeholder={t("teacherMode.pinRequired")}
                   />
                 </div>
                 <div className="modal-actions">
@@ -4057,7 +4057,7 @@ export function ExerciseLiveDetail({
                     onClick={() => setDeleteLiveOpen(false)}
                     disabled={isDeletingLive}
                   >
-                    Annuler
+                    {t("teacherMode.cancel")}
                   </button>
                   <button
                     type="button"
@@ -4065,7 +4065,7 @@ export function ExerciseLiveDetail({
                     onClick={handleDeleteLive}
                     disabled={isDeletingLive || !teacherPin}
                   >
-                    {isDeletingLive ? "Suppression..." : "Supprimer la version enregistrée"}
+                    {isDeletingLive ? t("exerciseEditor.deleting") : t("exerciseEditor.deleteSaved")}
                   </button>
                 </div>
               </div>
@@ -4083,7 +4083,7 @@ export function ExerciseLiveDetail({
               <input
                 className="field-input"
                 value={liveDraft.slug}
-                placeholder="ex: sprint-30m"
+                placeholder={t("exerciseEditor.slugPlaceholder")}
                 onChange={(event) =>
                   setLiveDraft({ ...liveDraft, slug: event.target.value })
                 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ExerciseCard } from "@/components/ExerciseCard";
 import type { ExerciseListItem } from "@/lib/exercices/filters";
 import { toggleFavorite } from "@/lib/favoritesStore";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 // ---------------------------------------------------------------------------
 // ViewMode type
@@ -30,7 +31,8 @@ function FavoriteIconButton({
     variant === "overlay"
       ? "border-transparent bg-black/35 text-white/70 backdrop-blur ring-1 ring-white/10"
       : "border-transparent bg-black/40 text-white/70 backdrop-blur ring-1 ring-white/15";
-  const label = active ? "Retirer des favoris" : "Ajouter aux favoris";
+  const { t } = useI18n();
+  const label = active ? t("favorites.remove") : t("favorites.add");
 
   return (
     <button
@@ -76,6 +78,7 @@ export function ExerciseGrid({
   viewMode,
   onViewModeChange,
 }: ExerciseGridProps) {
+  const { t } = useI18n();
   const isGridView = viewMode === "grid";
 
   return (
@@ -95,8 +98,8 @@ export function ExerciseGrid({
                 : "border-transparent text-[color:var(--muted)] opacity-60 hover:opacity-100"
             }`}
             aria-pressed={isGridView}
-            aria-label="Vue grille"
-            title="Vue grille"
+            aria-label={t("exerciseGrid.gridView")}
+            title={t("exerciseGrid.gridView")}
             onClick={() => onViewModeChange("grid")}
           >
             <svg aria-hidden="true" viewBox="0 0 20 20" className="h-5 w-5" fill="currentColor">
@@ -114,8 +117,8 @@ export function ExerciseGrid({
                 : "border-transparent text-[color:var(--muted)] opacity-60 hover:opacity-100"
             }`}
             aria-pressed={!isGridView}
-            aria-label="Vue liste"
-            title="Vue liste"
+            aria-label={t("exerciseGrid.listView")}
+            title={t("exerciseGrid.listView")}
             onClick={() => onViewModeChange("list")}
           >
             <svg aria-hidden="true" viewBox="0 0 20 20" className="h-5 w-5" fill="currentColor">
@@ -137,8 +140,8 @@ export function ExerciseGrid({
       >
         {exercises.length === 0 ? (
           <div className="card">
-            <h2>Aucun exercice ne correspond</h2>
-            <p>Ajustez vos filtres ou vos mots-clés.</p>
+            <h2>{t("exerciseGrid.emptyTitle")}</h2>
+            <p>{t("exerciseGrid.emptyHint")}</p>
           </div>
         ) : isGridView ? (
           exercises.map((exercise) => (
@@ -147,7 +150,7 @@ export function ExerciseGrid({
                 <ExerciseCard
                   exercise={{
                     ...exercise,
-                    title: exercise.title?.trim() || "Brouillon sans titre",
+                    title: exercise.title?.trim() || t("exerciseGrid.untitledDraft"),
                   }}
                   isLive={exercise.isLive}
                   favoriteAction={
@@ -172,7 +175,7 @@ export function ExerciseGrid({
                 <ExerciseCard
                   exercise={{
                     ...exercise,
-                    title: exercise.title?.trim() || "Brouillon sans titre",
+                    title: exercise.title?.trim() || t("exerciseGrid.untitledDraft"),
                   }}
                   isLive={exercise.isLive}
                   variant="list"

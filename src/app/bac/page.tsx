@@ -1,4 +1,5 @@
 import { getPageMdx, renderPageMdx } from "@/lib/content/reader";
+import { getServerLang, getServerT } from "@/lib/i18n/server";
 
 type BacCard = {
   title: string;
@@ -75,24 +76,27 @@ function splitBacSections(source: string): BacSections {
   return { headings, sections };
 }
 
-async function buildCards(items: BacCard[]) {
+async function buildCards(items: BacCard[], incompleteLabel: string) {
   return Promise.all(
     items.map(async (item, index) => ({
       id: `${index}-${item.title}`,
-      title: item.title || "À compléter",
-      content: await renderPageMdx(item.body.trim() ? item.body : "- À compléter"),
+      title: item.title || incompleteLabel,
+      content: await renderPageMdx(item.body.trim() ? item.body : `- ${incompleteLabel}`),
     })),
   );
 }
 
 export default async function BacPage() {
+  const lang = await getServerLang();
+  const t = getServerT(lang);
   const { source } = await getPageMdx("bac");
   const { headings, sections } = splitBacSections(source);
-  const fallbackHeadings = ["Compétences", "Projets", "Évaluation"];
+  const fallbackHeadings = [t("bac.skills"), t("bac.projects"), t("bac.evaluation")];
   const resolvedHeadings = sections.map(
-    (_, index) => headings[index] ?? fallbackHeadings[index] ?? `Section ${index + 1}`,
+    (_, index) => headings[index] ?? fallbackHeadings[index] ?? `${t("bac.sectionFallback")} ${index + 1}`,
   );
-  const sectionCards = await Promise.all(sections.map((items) => buildCards(items)));
+  const incompleteLabel = t("bac.incomplete");
+  const sectionCards = await Promise.all(sections.map((items) => buildCards(items, incompleteLabel)));
   const slugCounts = new Map<string, number>();
 
   return (
@@ -109,7 +113,7 @@ export default async function BacPage() {
               {heading ? <h2 id={headingId}>{heading}</h2> : null}
               <div className="card-grid">
                 {cards.map((card) => {
-                  const title = card.title || "À compléter";
+                  const title = card.title || incompleteLabel;
                   const cardId = card.title
                     ? slugifyHeading(card.title, slugCounts)
                     : undefined;

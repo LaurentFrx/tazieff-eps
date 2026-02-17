@@ -1,24 +1,22 @@
 import Link from "next/link";
+import { getServerLang, getServerT } from "@/lib/i18n/server";
 
-export default function OfflinePage() {
+export default async function OfflinePage() {
+  const lang = await getServerLang();
+  const t = getServerT(lang);
+
   return (
     <section className="page">
       <header className="page-header">
-        <p className="eyebrow">Hors ligne</p>
-        <h1>Connexion indisponible</h1>
-        <p className="lede">
-          Certaines fiches sont disponibles hors ligne. Vérifiez votre réseau pour
-          continuer.
-        </p>
+        <p className="eyebrow">{t("offline.eyebrow")}</p>
+        <h1>{t("offline.title")}</h1>
+        <p className="lede">{t("offline.lede")}</p>
       </header>
       <div className="card">
-        <h2>Astuce</h2>
-        <p>
-          Ouvrez une séance déjà téléchargée ou revenez à l’accueil dès que la
-          connexion est rétablie.
-        </p>
+        <h2>{t("offline.tip")}</h2>
+        <p>{t("offline.tipBody")}</p>
         <Link className="primary-button" href="/">
-          Retour à l’accueil
+          {t("offline.backHome")}
         </Link>
       </div>
     </section>

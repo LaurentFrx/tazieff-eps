@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Lang } from "@/lib/i18n/I18nProvider";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -70,6 +71,7 @@ export function TeacherToolbar({
   existingSlugs,
   locale,
 }: TeacherToolbarProps) {
+  const { t } = useI18n();
   const router = useRouter();
   const [createStatus, setCreateStatus] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -81,12 +83,12 @@ export function TeacherToolbar({
   const handleCreateExercise = async () => {
     setCreateStatus(null);
     if (!teacherPin) {
-      setCreateStatus("PIN requis.");
+      setCreateStatus(t("teacherMode.pinRequired"));
       return;
     }
 
     setIsCreating(true);
-    setCreateStatus("Création en cours...");
+    setCreateStatus(t("exerciseEditor.creating"));
 
     const slug = getUniqueExerciseSlug(existingSlugs);
 
@@ -101,7 +103,7 @@ export function TeacherToolbar({
           locale,
           dataJson: {
             frontmatter: {
-              title: "Nouvel exercice",
+              title: t("exerciseEditor.untitled"),
               slug,
               tags: [],
               themeCompatibility: [1],
@@ -114,13 +116,13 @@ export function TeacherToolbar({
       });
     } catch {
       setIsCreating(false);
-      setCreateStatus("Échec de la création.");
+      setCreateStatus(t("exerciseEditor.createFailed"));
       return;
     }
 
     if (!response.ok) {
       setIsCreating(false);
-      setCreateStatus(response.status === 401 ? "PIN invalide." : "Échec de la création.");
+      setCreateStatus(response.status === 401 ? t("teacherMode.pinInvalid") : t("exerciseEditor.createFailed"));
       return;
     }
 
@@ -140,7 +142,7 @@ export function TeacherToolbar({
         onClick={handleCreateExercise}
         disabled={isCreating}
       >
-        {isCreating ? "Création..." : "+ Nouvel exercice"}
+        {isCreating ? t("exerciseEditor.creating") : t("exerciseEditor.newExercise")}
       </button>
     </div>
   );

@@ -3,6 +3,7 @@
 import { useId } from "react";
 import type { Difficulty } from "@/lib/content/schema";
 import { NO_EQUIPMENT_ID } from "@/lib/exercices/filters";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -17,13 +18,11 @@ const CHIP_VARIANTS = [
   "bg-rose-500/10 border-rose-400/30 text-rose-100",
 ] as const;
 
-const LEVEL_LABELS: Record<Difficulty, string> = {
-  debutant: "Débutant",
-  intermediaire: "Intermédiaire",
-  avance: "Avancé",
+const LEVEL_KEYS: Record<Difficulty, string> = {
+  debutant: "difficulty.debutant",
+  intermediaire: "difficulty.intermediaire",
+  avance: "difficulty.avance",
 };
-
-const NO_EQUIPMENT_LABEL = "Sans matériel";
 
 // ---------------------------------------------------------------------------
 // Generic menu helpers
@@ -44,9 +43,10 @@ function renderSelectedChips<T extends MultiSelectValue>(
   selected: readonly T[],
   options: readonly T[],
   formatLabel?: (value: T) => string,
+  allLabel = "Tous",
 ) {
   if (selected.length === 0) {
-    return <span className="text-xs text-[color:var(--muted)]">Tous</span>;
+    return <span className="text-xs text-[color:var(--muted)]">{allLabel}</span>;
   }
 
   const selectedSet = new Set(selected);
@@ -75,6 +75,8 @@ type MultiSelectMenuProps<T extends MultiSelectValue> = {
   onToggleOption: (value: T) => void;
   onClear: () => void;
   formatLabel?: (value: T) => string;
+  allLabel?: string;
+  clearLabel?: string;
   open: boolean;
   onToggle: () => void;
 };
@@ -86,6 +88,8 @@ function MultiSelectMenu<T extends MultiSelectValue>({
   onToggleOption,
   onClear,
   formatLabel,
+  allLabel,
+  clearLabel,
   open,
   onToggle,
 }: MultiSelectMenuProps<T>) {
@@ -106,7 +110,7 @@ function MultiSelectMenu<T extends MultiSelectValue>({
         <span className="flex min-w-0 flex-1 flex-col items-start gap-2">
           <span className="text-sm font-medium">{label}</span>
           <span className="flex w-full flex-wrap items-center gap-2">
-            {renderSelectedChips(selected, options, formatLabel)}
+            {renderSelectedChips(selected, options, formatLabel, allLabel)}
           </span>
         </span>
         <span aria-hidden="true">▾</span>
@@ -119,7 +123,7 @@ function MultiSelectMenu<T extends MultiSelectValue>({
             </span>
             {selected.length > 0 ? (
               <button type="button" className="chip chip-clear" onClick={onClear}>
-                Tout effacer
+                {clearLabel ?? "Tout effacer"}
               </button>
             ) : null}
           </div>
@@ -283,6 +287,7 @@ export function ExerciseFilters({
   onToggleFilter,
   onReset,
 }: ExerciseFiltersProps) {
+  const { t } = useI18n();
   const themeOptions = [1, 2, 3] as const;
 
   return (
@@ -292,7 +297,7 @@ export function ExerciseFilters({
           <input
             className="field-input"
             type="search"
-            placeholder="Rechercher un exercice"
+            placeholder={t("filters.search")}
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
           />
@@ -303,58 +308,66 @@ export function ExerciseFilters({
             className="chip chip-clear px-3 py-2"
             onClick={onReset}
           >
-            Réinitialiser
+            {t("filters.reset")}
           </button>
         </div>
       </div>
       <div className="grid gap-2 md:grid-cols-4">
         <MultiSelectMenu
-          label="Niveau"
+          label={t("filters.level")}
           options={levelOptions}
           selected={selectedLevels}
           onToggleOption={onToggleLevel}
           onClear={onClearLevels}
-          formatLabel={(value) => LEVEL_LABELS[value]}
+          formatLabel={(value) => t(LEVEL_KEYS[value])}
+          allLabel={t("filters.all")}
+          clearLabel={t("filters.clearAll")}
           open={openFilter === "level"}
           onToggle={() => onToggleFilter("level")}
         />
         <MultiSelectMenu
-          label="Matériel"
+          label={t("filters.equipment")}
           options={equipmentOptions}
           selected={selectedEquipment}
           onToggleOption={onToggleEquipment}
           onClear={onClearEquipment}
           formatLabel={(value) =>
-            value === NO_EQUIPMENT_ID ? NO_EQUIPMENT_LABEL : value
+            value === NO_EQUIPMENT_ID ? t("filters.noEquipment") : value
           }
+          allLabel={t("filters.all")}
+          clearLabel={t("filters.clearAll")}
           open={openFilter === "equipment"}
           onToggle={() => onToggleFilter("equipment")}
         />
         <MultiSelectMenu
-          label="Tags"
+          label={t("filters.tags")}
           options={tagOptions}
           selected={selectedTags}
           onToggleOption={onToggleTag}
           onClear={onClearTags}
+          allLabel={t("filters.all")}
+          clearLabel={t("filters.clearAll")}
           open={openFilter === "tags"}
           onToggle={() => onToggleFilter("tags")}
         />
         <MultiSelectMenu
-          label="Thèmes"
+          label={t("filters.themes")}
           options={themeOptions}
           selected={selectedThemes}
           onToggleOption={onToggleTheme}
           onClear={onClearThemes}
-          formatLabel={(value) => `Thème ${value}`}
+          formatLabel={(value) => `${t("filters.themePrefix")} ${value}`}
+          allLabel={t("filters.all")}
+          clearLabel={t("filters.clearAll")}
           open={openFilter === "themes"}
           onToggle={() => onToggleFilter("themes")}
         />
         <SingleSelectMenu
-          label="Favoris"
+          label={t("filters.favorites")}
           options={[false, true]}
           selected={onlyFavorites}
           onSelect={(value) => onFavoritesChange(value)}
-          formatLabel={(value) => (value ? "Favoris uniquement" : "Tous")}
+          formatLabel={(value) => (value ? t("filters.favoritesOnly") : t("filters.all"))}
           open={openFilter === "favorites"}
           onToggle={() => onToggleFilter("favorites")}
         />

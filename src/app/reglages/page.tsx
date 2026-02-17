@@ -9,6 +9,7 @@ import { getTheme, onThemeChange, setTheme as setFieldTheme, type ThemePreferenc
 const languageOptions = [
   { value: "fr", labelKey: "settings.language.fr" },
   { value: "en", labelKey: "settings.language.en" },
+  { value: "es", labelKey: "settings.language.es" },
 ] as const;
 
 type LanguageValue = (typeof languageOptions)[number]["value"];
@@ -36,6 +37,21 @@ const FlagIcon = ({ locale }: { locale: LanguageValue }) => {
         <rect width="10" height="20" fill="#0055A4" />
         <rect x="10" width="10" height="20" fill="#FFFFFF" />
         <rect x="20" width="10" height="20" fill="#EF4135" />
+      </svg>
+    );
+  }
+
+  if (locale === "es") {
+    return (
+      <svg
+        viewBox="0 0 30 20"
+        className="h-4 w-6 rounded-sm ring-1 ring-black/10"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <rect width="30" height="5" fill="#AA151B" />
+        <rect y="5" width="30" height="10" fill="#F1BF00" />
+        <rect y="15" width="30" height="5" fill="#AA151B" />
       </svg>
     );
   }
@@ -144,7 +160,7 @@ export default function ReglagesPage() {
   const handleUnlock = (event?: React.FormEvent) => {
     event?.preventDefault();
     if (!pinValue.trim()) {
-      setPinError("PIN requis.");
+      setPinError(t("teacherMode.pinRequired"));
       return;
     }
     const next = { unlocked: true, pin: pinValue.trim() };
@@ -182,7 +198,7 @@ export default function ReglagesPage() {
             <h2 className="settings-heading">{t("settings.language.label")}</h2>
             <p className="settings-help">{t("pages.settings.languageHelp")}</p>
           </div>
-          <div className="segmented two-columns">
+          <div className="segmented">
             {languageOptions.map((option) => (
               <label
                 key={option.value}
@@ -264,8 +280,8 @@ export default function ReglagesPage() {
         <div className="settings-card">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h2 className="settings-heading">Mode prof</h2>
-              <p className="settings-help">Accès aux outils d’édition (PIN requis).</p>
+              <h2 className="settings-heading">{t("teacherMode.heading")}</h2>
+              <p className="settings-help">{t("teacherMode.help")}</p>
             </div>
             <span
               className={`rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${
@@ -274,13 +290,13 @@ export default function ReglagesPage() {
                   : "border-white/10 bg-white/5 text-[color:var(--muted)]"
               }`}
             >
-              {teacherMode.unlocked ? "Déverrouillé" : "Verrouillé"}
+              {teacherMode.unlocked ? t("teacherMode.unlocked") : t("teacherMode.locked")}
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {teacherMode.unlocked ? (
               <button type="button" className="chip" onClick={handleDisable}>
-                Désactiver
+                {t("teacherMode.deactivate")}
               </button>
             ) : (
               <button
@@ -288,7 +304,7 @@ export default function ReglagesPage() {
                 className="primary-button primary-button--wide"
                 onClick={openPinModal}
               >
-                Activer (PIN)
+                {t("teacherMode.activate")}
               </button>
             )}
           </div>
@@ -315,28 +331,28 @@ export default function ReglagesPage() {
       {pinModalOpen ? (
         <div className="modal-overlay" role="dialog" aria-modal="true">
           <div className="modal-card">
-            <h2>PIN professeur</h2>
+            <h2>{t("teacherMode.pinHeading")}</h2>
             <form className="stack-md" onSubmit={handleUnlock}>
               <input
                 className="field-input"
                 type="password"
                 value={pinValue}
                 onChange={(event) => setPinValue(event.target.value)}
-                placeholder="PIN requis"
+                placeholder={t("teacherMode.pinRequired")}
               />
               {pinError ? (
                 <p className="text-xs text-[color:var(--muted)]">{pinError}</p>
               ) : null}
               <div className="modal-actions">
                 <button type="submit" className="primary-button primary-button--wide">
-                  Déverrouiller
+                  {t("teacherMode.unlock")}
                 </button>
                 <button
                   type="button"
                   className="chip"
                   onClick={() => setPinModalOpen(false)}
                 >
-                  Annuler
+                  {t("teacherMode.cancel")}
                 </button>
               </div>
             </form>
