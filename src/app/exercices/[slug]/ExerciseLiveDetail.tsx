@@ -8,7 +8,6 @@ import NextImage, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import DifficultyPill from "@/components/DifficultyPill";
-import { FavoriteToggle } from "@/components/FavoriteToggle";
 import { HeroMedia } from "@/components/media/HeroMedia";
 import {
   getFavoritesSnapshot,
@@ -746,7 +745,12 @@ export function ExerciseLiveDetail({
   const tagPills: Array<{ label: string; kind?: string }> =
     overrideDocView?.pills ??
     (merged.frontmatter.tags ?? [])
-      .filter((label) => label.toLowerCase() !== "imported")
+      .filter((label) => {
+        const normalized = label.toLowerCase();
+        return normalized !== "imported" &&
+               !normalized.includes("contenu") &&
+               !normalized.includes("completer");
+      })
       .map((label) => ({ label }));
   const overrideSnapshot = useMemo(
     () => (overrideDoc ? JSON.stringify(overrideDoc) : ""),
@@ -2584,7 +2588,6 @@ export function ExerciseLiveDetail({
           ))}
         </div>
         <div className="meta-row">
-          <FavoriteToggle slug={merged.frontmatter.slug} />
           <span className="meta-text">
             Thèmes compatibles: {merged.frontmatter.themeCompatibility.join(", ")}
           </span>
