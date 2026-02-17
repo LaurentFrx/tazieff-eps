@@ -722,7 +722,9 @@ export function ExerciseLiveDetail({
 
   const tagPills: Array<{ label: string; kind?: string }> =
     overrideDocView?.pills ??
-    (merged.frontmatter.tags ?? []).map((label) => ({ label }));
+    (merged.frontmatter.tags ?? [])
+      .filter((label) => label.toLowerCase() !== "imported")
+      .map((label) => ({ label }));
   const overrideSnapshot = useMemo(
     () => (overrideDoc ? JSON.stringify(overrideDoc) : ""),
     [overrideDoc],
@@ -2353,139 +2355,142 @@ export function ExerciseLiveDetail({
           display: none;
         }
       `}</style>
+      {/* Header compact style iOS */}
+      <header className="sticky top-0 z-50 h-14 flex items-center justify-between px-4 bg-black/60 backdrop-blur-md">
+        {/* Bouton retour gauche */}
+        <Link
+          href="/exercices"
+          aria-label="Retour aux exercices"
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-5 h-5"
+            aria-hidden="true"
+          >
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+        </Link>
+
+        {/* Centre: Logo + Titre */}
+        <div className="flex items-center gap-2 flex-1 min-w-0 mx-4">
+          <Link href="/" aria-label="Accueil">
+            <NextImage src={logo} alt="EPS" className="h-8 w-auto" />
+          </Link>
+          <div
+            role="button"
+            tabIndex={0}
+            onPointerDown={(event) => {
+              if (event.ctrlKey || event.shiftKey) {
+                event.preventDefault();
+                cancelLongPress();
+                openPinModal();
+                return;
+              }
+              if (event.pointerType === "touch") {
+                touchPointerActiveRef.current = true;
+              } else {
+                event.preventDefault();
+              }
+              startLongPress(event.clientX, event.clientY);
+            }}
+            onPointerMove={(event) => {
+              cancelLongPressOnMove(event.clientX, event.clientY);
+            }}
+            onPointerUp={() => {
+              cancelLongPress();
+              touchPointerActiveRef.current = false;
+            }}
+            onPointerLeave={() => {
+              cancelLongPress();
+              touchPointerActiveRef.current = false;
+            }}
+            onPointerCancel={() => {
+              cancelLongPress();
+              touchPointerActiveRef.current = false;
+            }}
+            onMouseDown={(event) => {
+              if (event.ctrlKey || event.shiftKey) {
+                event.preventDefault();
+                cancelLongPress();
+                openPinModal();
+                return;
+              }
+              event.preventDefault();
+            }}
+            onTouchStart={(event) => {
+              if (touchPointerActiveRef.current) {
+                return;
+              }
+              const touch = event.touches[0];
+              if (!touch) {
+                return;
+              }
+              startLongPress(touch.clientX, touch.clientY);
+            }}
+            onTouchMove={(event) => {
+              if (touchPointerActiveRef.current) {
+                return;
+              }
+              const touch = event.touches[0];
+              if (!touch) {
+                return;
+              }
+              cancelLongPressOnMove(touch.clientX, touch.clientY);
+            }}
+            onTouchEnd={() => {
+              cancelLongPress();
+              touchPointerActiveRef.current = false;
+            }}
+            onTouchCancel={() => {
+              cancelLongPress();
+              touchPointerActiveRef.current = false;
+            }}
+            onContextMenu={(event) => {
+              event.preventDefault();
+            }}
+            onClick={(event) => {
+              if (event.ctrlKey || event.shiftKey) {
+                event.preventDefault();
+                cancelLongPress();
+                openPinModal();
+              }
+            }}
+            onKeyDown={(event) => {
+              if (teacherUnlocked) {
+                return;
+              }
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                openPinModal();
+              }
+            }}
+            className="text-sm font-semibold truncate cursor-pointer"
+            style={{ WebkitUserSelect: "none", WebkitTouchCallout: "none" }}
+          >
+            {displayTitle}
+          </div>
+        </div>
+
+        {/* Bouton menu droite */}
+        <Link
+          href="/reglages"
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+          aria-label={settingsLabel}
+          title={settingsLabel}
+        >
+          <span aria-hidden="true" className="text-lg tracking-wide">...</span>
+        </Link>
+      </header>
+
+      {/* Contenu sous le header */}
       <div className="page-header">
-        <header className="app-header">
-          <div className="brand">
-            <Link
-              href="/exercices"
-              aria-label="Retour aux exercices"
-              className="icon-button"
-              style={{ marginRight: "0.5rem" }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{ width: "1.5rem", height: "1.5rem" }}
-                aria-hidden="true"
-              >
-                <path d="M19 12H5M12 19l-7-7 7-7" />
-              </svg>
-            </Link>
-            <Link href="/" aria-label="Accueil">
-              <NextImage src={logo} alt="EPS" className="h-20 w-auto" />
-            </Link>
-            <div
-              role="button"
-              tabIndex={0}
-              onPointerDown={(event) => {
-                if (event.ctrlKey || event.shiftKey) {
-                  event.preventDefault();
-                  cancelLongPress();
-                  openPinModal();
-                  return;
-                }
-                if (event.pointerType === "touch") {
-                  touchPointerActiveRef.current = true;
-                } else {
-                  event.preventDefault();
-                }
-                startLongPress(event.clientX, event.clientY);
-              }}
-              onPointerMove={(event) => {
-                cancelLongPressOnMove(event.clientX, event.clientY);
-              }}
-              onPointerUp={() => {
-                cancelLongPress();
-                touchPointerActiveRef.current = false;
-              }}
-              onPointerLeave={() => {
-                cancelLongPress();
-                touchPointerActiveRef.current = false;
-              }}
-              onPointerCancel={() => {
-                cancelLongPress();
-                touchPointerActiveRef.current = false;
-              }}
-              onMouseDown={(event) => {
-                if (event.ctrlKey || event.shiftKey) {
-                  event.preventDefault();
-                  cancelLongPress();
-                  openPinModal();
-                  return;
-                }
-                event.preventDefault();
-              }}
-              onTouchStart={(event) => {
-                if (touchPointerActiveRef.current) {
-                  return;
-                }
-                const touch = event.touches[0];
-                if (!touch) {
-                  return;
-                }
-                startLongPress(touch.clientX, touch.clientY);
-              }}
-              onTouchMove={(event) => {
-                if (touchPointerActiveRef.current) {
-                  return;
-                }
-                const touch = event.touches[0];
-                if (!touch) {
-                  return;
-                }
-                cancelLongPressOnMove(touch.clientX, touch.clientY);
-              }}
-              onTouchEnd={() => {
-                cancelLongPress();
-                touchPointerActiveRef.current = false;
-              }}
-              onTouchCancel={() => {
-                cancelLongPress();
-                touchPointerActiveRef.current = false;
-              }}
-              onContextMenu={(event) => {
-                event.preventDefault();
-              }}
-              onClick={(event) => {
-                if (event.ctrlKey || event.shiftKey) {
-                  event.preventDefault();
-                  cancelLongPress();
-                  openPinModal();
-                }
-              }}
-              onKeyDown={(event) => {
-                if (teacherUnlocked) {
-                  return;
-                }
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  openPinModal();
-                }
-              }}
-              className="brand-text"
-              style={{ WebkitUserSelect: "none", WebkitTouchCallout: "none" }}
-            >
-              <span className="brand-title brand-title--page">
-                {displayTitle}
-              </span>
-            </div>
-          </div>
-          <div className="header-actions">
-            <Link
-              href="/reglages"
-              className="icon-button"
-              aria-label={settingsLabel}
-              title={settingsLabel}
-            >
-              <span aria-hidden="true" style={{ fontSize: "1.25rem", letterSpacing: "0.1em" }}>...</span>
-            </Link>
-          </div>
-        </header>
         <div className="flex flex-wrap items-center gap-2">
           <DifficultyPill level={difficulty} />
           {merged.frontmatter.muscles.map((muscle) => (
