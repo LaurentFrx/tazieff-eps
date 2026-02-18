@@ -10,6 +10,7 @@ import {
   type ExerciseFrontmatter,
   type SeanceFrontmatter,
 } from "@/lib/content/schema";
+import type { Lang } from "@/lib/i18n/messages";
 
 type ContentType = "exercices" | "seances";
 
@@ -86,7 +87,7 @@ function parseFrontmatter<T>(
   return result.data;
 }
 
-async function listMdxFiles(dir: string) {
+async function listMdxFiles(dir: string, lang?: Lang) {
   let entries: Dirent[] = [];
   try {
     entries = await fs.readdir(dir, { withFileTypes: true });
@@ -94,8 +95,9 @@ async function listMdxFiles(dir: string) {
     return [];
   }
 
+  const suffix = lang ? `.${lang}.mdx` : ".mdx";
   return entries
-    .filter((entry) => entry.isFile() && entry.name.endsWith(".mdx"))
+    .filter((entry) => entry.isFile() && entry.name.endsWith(suffix))
     .map((entry) => entry.name);
 }
 
@@ -117,24 +119,38 @@ async function readBySlug<T>(
   type: ContentType,
   slug: string,
   schema: ZodSchema<T>,
+  lang: Lang = "fr",
 ): Promise<MdxResult<T> | null> {
   const dir = getContentDir(type);
-  const filePath = path.join(dir, `${slug}.mdx`);
+  const localizedPath = path.join(dir, `${slug}.${lang}.mdx`);
 
   try {
-    return await readMdxFile(filePath, schema);
+    return await readMdxFile(localizedPath, schema);
   } catch (error) {
     const nodeError = error as NodeJS.ErrnoException;
     if (nodeError.code === "ENOENT") {
+      // Fallback to French if localized file doesn't exist
+      if (lang !== "fr") {
+        const fallbackPath = path.join(dir, `${slug}.fr.mdx`);
+        try {
+          return await readMdxFile(fallbackPath, schema);
+        } catch (fallbackError) {
+          const fallbackNodeError = fallbackError as NodeJS.ErrnoException;
+          if (fallbackNodeError.code === "ENOENT") {
+            return null;
+          }
+          throw fallbackError;
+        }
+      }
       return null;
     }
     throw error;
   }
 }
 
-export async function getAllExercises(): Promise<ExerciseFrontmatter[]> {
+export async function getAllExercises(lang: Lang = "fr"): Promise<ExerciseFrontmatter[]> {
   const dir = getContentDir("exercices");
-  const files = await listMdxFiles(dir);
+  const files = await listMdxFiles(dir, lang);
   const items = await Promise.all(
     files.map(async (file) => {
       const fullPath = path.join(dir, file);
@@ -143,19 +159,20 @@ export async function getAllExercises(): Promise<ExerciseFrontmatter[]> {
     }),
   );
 
-  return items.sort((a, b) => a.title.localeCompare(b.title, "fr"));
+  return items.sort((a, b) => a.title.localeCompare(b.title, lang));
 }
 
 export async function getExercise(
   slug: string,
+  lang: Lang = "fr",
 ): Promise<MdxResult<ExerciseFrontmatter> | null> {
-  const direct = await readBySlug("exercices", slug, ExerciseFrontmatterSchema);
+  const direct = await readBySlug("exercices", slug, ExerciseFrontmatterSchema, lang);
   if (direct) {
     return direct;
   }
 
   const dir = getContentDir("exercices");
-  const files = await listMdxFiles(dir);
+  const files = await listMdxFiles(dir, lang);
   for (const file of files) {
     const fullPath = path.join(dir, file);
     const result = await readMdxFile(fullPath, ExerciseFrontmatterSchema);
@@ -167,9 +184,9 @@ export async function getExercise(
   return null;
 }
 
-export async function getAllSeances(): Promise<SeanceFrontmatter[]> {
+export async function getAllSeances(lang: Lang = "fr"): Promise<SeanceFrontmatter[]> {
   const dir = getContentDir("seances");
-  const files = await listMdxFiles(dir);
+  const files = await listMdxFiles(dir, lang);
   const items = await Promise.all(
     files.map(async (file) => {
       const fullPath = path.join(dir, file);
@@ -178,14 +195,15 @@ export async function getAllSeances(): Promise<SeanceFrontmatter[]> {
     }),
   );
 
-  return items.sort((a, b) => a.title.localeCompare(b.title, "fr"));
+  return items.sort((a, b) => a.title.localeCompare(b.title, lang));
 }
 
 export async function getSeance(
   slug: string,
+  lang: Lang = "fr",
 ): Promise<MdxResult<SeanceFrontmatter> | null> {
-  return readBySlug("seances", slug, SeanceFrontmatterSchema);
+  return readBySlug("seances", slug, SeanceFrontmatterSchema, lang);
 }
 
-export const exercisesIndex = cache(async () => getAllExercises());
-export const seancesIndex = cache(async () => getAllSeances());
+export const exercisesIndex = cache(async (lang: Lang = "fr") => getAllExercises(lang));
+export const seancesIndex = cache(async (lang: Lang = "fr") => getAllSeances(lang));

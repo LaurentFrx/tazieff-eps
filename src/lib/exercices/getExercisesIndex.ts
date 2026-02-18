@@ -5,6 +5,7 @@ import { getImportedExercisesIndex } from "@/lib/exercices/getImportedExercisesI
 import { fetchLiveExercises } from "@/lib/live/queries";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
 import type { LiveExerciseListItem, LiveExerciseRow } from "@/lib/live/types";
+import type { Lang } from "@/lib/i18n/messages";
 
 function mergeExercisesIndex(
   exercises: ExerciseFrontmatter[],
@@ -32,9 +33,9 @@ function mergeExercisesIndex(
   );
 }
 
-async function buildExercisesIndex(locale: string): Promise<LiveExerciseListItem[]> {
+async function buildExercisesIndex(locale: Lang): Promise<LiveExerciseListItem[]> {
   const [exercises, liveRows, importedExercises] = await Promise.all([
-    getAllExercises(),
+    getAllExercises(locale),
     fetchLiveExercises(locale),
     getImportedExercisesIndex(),
   ]);
@@ -43,12 +44,12 @@ async function buildExercisesIndex(locale: string): Promise<LiveExerciseListItem
 }
 
 const getExercisesIndexCached = unstable_cache(
-  async (locale: string) => buildExercisesIndex(locale),
+  async (locale: Lang) => buildExercisesIndex(locale),
   ["exercises-index"],
   { tags: ["exercises"] },
 );
 
-export async function getExercisesIndex(locale: string) {
+export async function getExercisesIndex(locale: Lang) {
   if (process.env.NODE_ENV === "development") {
     return buildExercisesIndex(locale);
   }

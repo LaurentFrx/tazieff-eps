@@ -7,7 +7,8 @@ import { fetchLiveExercises } from "@/lib/live/queries";
 const LANG_COOKIE = "eps_lang";
 
 function getInitialLang(value?: string): Lang {
-  return value === "en" ? "en" : "fr";
+  if (value === "en" || value === "es") return value;
+  return "fr";
 }
 
 export default async function ExercicesPage() {

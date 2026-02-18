@@ -17,7 +17,8 @@ type ExercicePageProps = {
 const LANG_COOKIE = "eps_lang";
 
 function getInitialLang(value?: string): Lang {
-  return value === "en" ? "en" : "fr";
+  if (value === "en" || value === "es") return value;
+  return "fr";
 }
 
 async function revalidateExercises(slug: string) {
@@ -85,7 +86,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const cookieStore = await cookies();
   const locale = getInitialLang(cookieStore.get(LANG_COOKIE)?.value);
-  const result = await getExercise(slug);
+  const result = await getExercise(slug, locale);
   const liveExercise = result ? null : await fetchLiveExercise(slug, locale);
   const importedExercise = result || liveExercise ? null : await getImportedExercise(slug);
 
@@ -110,7 +111,7 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
   const { slug } = await params;
   const cookieStore = await cookies();
   const locale = getInitialLang(cookieStore.get(LANG_COOKIE)?.value);
-  const result = await getExercise(slug);
+  const result = await getExercise(slug, locale);
   const liveExercise = result ? null : await fetchLiveExercise(slug, locale);
   const importedExercise = result || liveExercise ? null : await getImportedExercise(slug);
 

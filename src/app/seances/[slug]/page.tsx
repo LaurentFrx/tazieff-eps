@@ -1,20 +1,31 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 import DifficultyPill from "@/components/DifficultyPill";
 import { exercisesIndex, getSeance } from "@/lib/content/fs";
 import { renderMdx } from "@/lib/mdx/render";
 import { SeanceDownloadButton } from "@/app/seances/[slug]/SeanceDownloadButton";
+import type { Lang } from "@/lib/i18n/messages";
 
 type SeancePageProps = {
   params: Promise<{ slug: string }>;
 };
 
+const LANG_COOKIE = "eps_lang";
+
+function getInitialLang(value?: string): Lang {
+  if (value === "en" || value === "es") return value;
+  return "fr";
+}
+
 export async function generateMetadata({
   params,
 }: SeancePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const result = await getSeance(slug);
+  const cookieStore = await cookies();
+  const locale = getInitialLang(cookieStore.get(LANG_COOKIE)?.value);
+  const result = await getSeance(slug, locale);
 
   if (!result) {
     return { title: "Séance introuvable" };
@@ -25,7 +36,9 @@ export async function generateMetadata({
 
 export default async function SeancePage({ params }: SeancePageProps) {
   const { slug } = await params;
-  const result = await getSeance(slug);
+  const cookieStore = await cookies();
+  const locale = getInitialLang(cookieStore.get(LANG_COOKIE)?.value);
+  const result = await getSeance(slug, locale);
 
   if (!result) {
     notFound();
@@ -33,7 +46,7 @@ export default async function SeancePage({ params }: SeancePageProps) {
 
   const { frontmatter, content } = result;
   const mdxContent = await renderMdx(content);
-  const exercises = await exercisesIndex();
+  const exercises = await exercisesIndex(locale);
   const exerciseMap = new Map(exercises.map((exercise) => [exercise.slug, exercise]));
   const exerciseSlugs = frontmatter.blocks.map((block) => block.exoSlug);
 
