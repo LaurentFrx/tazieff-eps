@@ -19,6 +19,7 @@ import logo from "../../../../public/media/branding/logo-eps.webp";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Lang } from "@/lib/i18n/messages";
+import { translateTerms } from "@/lib/i18n/terms/translate";
 import { mdxComponents } from "@/lib/mdx/components";
 import { applyExercisePatch, splitMarkdownSections } from "@/lib/live/patch";
 import type {
@@ -571,7 +572,7 @@ export function ExerciseLiveDetail({
   initialPatch,
   onRevalidate,
 }: ExerciseLiveDetailProps) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const settingsLabel = t("settings.open");
   const searchParams = useSearchParams();
   const supabase = getSupabaseBrowserClient();
@@ -2581,8 +2582,8 @@ export function ExerciseLiveDetail({
       <div className="page-header">
         <div className="flex flex-wrap items-center gap-2">
           <DifficultyPill level={difficulty} />
-          {merged.frontmatter.muscles.map((muscle) => (
-            <span key={muscle} className="pill">
+          {translateTerms(merged.frontmatter.muscles, "muscles", lang).map((muscle, i) => (
+            <span key={merged.frontmatter.muscles[i]} className="pill">
               {muscle}
             </span>
           ))}
@@ -2598,13 +2599,13 @@ export function ExerciseLiveDetail({
               key={`${pill.label}-${index}`}
               className={pill.kind ? `pill pill-${pill.kind}` : "pill"}
             >
-              {pill.label}
+              {translateTerms([pill.label], "tags", lang)[0]}
             </span>
           ))}
         </div>
         {merged.frontmatter.equipment && merged.frontmatter.equipment.length > 0 ? (
           <div className="text-sm text-[color:var(--muted)]">
-            {t("exerciseDetail.equipment")}: {merged.frontmatter.equipment.join(", ")}
+            {t("exerciseDetail.equipment")}: {translateTerms(merged.frontmatter.equipment, "equipment", lang).join(", ")}
           </div>
         ) : (
           <div className="text-sm text-[color:var(--muted)]">{t("exerciseDetail.noEquipment")}</div>
