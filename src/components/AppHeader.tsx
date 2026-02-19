@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { SlidersHorizontal } from "lucide-react";
 import logo from "../../public/media/branding/logo-eps.webp";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
@@ -96,7 +97,7 @@ export function AppHeader() {
             aria-label={settingsLabel}
             title={settingsLabel}
           >
-            <span aria-hidden="true">⚙️</span>
+            <SlidersHorizontal aria-hidden="true" className="h-5 w-5" />
           </Link>
         )}
       </div>

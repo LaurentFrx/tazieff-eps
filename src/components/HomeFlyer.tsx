@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { SlidersHorizontal } from "lucide-react";
 import flyer from "../../public/media/branding/flyer-eps.webp";
 
 export function HomeFlyer() {
@@ -10,7 +11,7 @@ export function HomeFlyer() {
         aria-label="Paramètres"
         className="icon-button absolute right-4 top-3 h-7 w-7 text-base leading-none"
       >
-        <span aria-hidden="true">⚙️</span>
+        <SlidersHorizontal aria-hidden="true" className="h-4 w-4" />
       </Link>
       <Image
         src={flyer}
