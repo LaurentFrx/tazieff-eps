@@ -87,6 +87,15 @@ export const messages = {
       emptyTitle: "Aucune séance ne correspond",
       emptyHint: "Essayez une autre durée ou un niveau différent.",
     },
+    seanceDetail: {
+      notFound: "Séance introuvable",
+      eyebrow: "Séances",
+      terrainMode: "Mode terrain",
+      rundown: "Déroulé",
+      unnamedExercise: "Exercice à renseigner",
+      sets: "séries",
+      rest: "repos",
+    },
     offline: {
       eyebrow: "Hors ligne",
       title: "Connexion indisponible",
@@ -381,6 +390,15 @@ export const messages = {
       emptyTitle: "No matching sessions",
       emptyHint: "Try a different duration or level.",
     },
+    seanceDetail: {
+      notFound: "Session not found",
+      eyebrow: "Sessions",
+      terrainMode: "Field mode",
+      rundown: "Rundown",
+      unnamedExercise: "Exercise to be specified",
+      sets: "sets",
+      rest: "rest",
+    },
     offline: {
       eyebrow: "Offline",
       title: "Connection unavailable",
@@ -674,6 +692,15 @@ export const messages = {
       },
       emptyTitle: "Ninguna sesión coincide",
       emptyHint: "Prueba otra duración o nivel diferente.",
+    },
+    seanceDetail: {
+      notFound: "Sesión no encontrada",
+      eyebrow: "Sesiones",
+      terrainMode: "Modo terreno",
+      rundown: "Desarrollo",
+      unnamedExercise: "Ejercicio a especificar",
+      sets: "series",
+      rest: "descanso",
     },
     offline: {
       eyebrow: "Sin conexión",
