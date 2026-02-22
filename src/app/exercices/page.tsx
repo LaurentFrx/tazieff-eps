@@ -1,19 +1,10 @@
-import { cookies } from "next/headers";
 import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
 import { ExerciseListClient } from "@/app/exercices/ExerciseListClient";
-import type { Lang } from "@/lib/i18n/messages";
 import { fetchLiveExercises } from "@/lib/live/queries";
-
-const LANG_COOKIE = "eps_lang";
-
-function getInitialLang(value?: string): Lang {
-  if (value === "en" || value === "es") return value;
-  return "fr";
-}
+import { getServerLang } from "@/lib/i18n/server";
 
 export default async function ExercicesPage() {
-  const cookieStore = await cookies();
-  const locale = getInitialLang(cookieStore.get(LANG_COOKIE)?.value);
+  const locale = await getServerLang();
   const exercises = await getExercisesIndex(locale);
   const liveExercises = await fetchLiveExercises(locale);
 

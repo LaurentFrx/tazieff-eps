@@ -1,25 +1,17 @@
 import type { Metadata } from "next";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { getExercise } from "@/lib/content/fs";
 import { getImportedExercisesIndex } from "@/lib/exercices/getImportedExercisesIndex";
 import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
 import { applyExercisePatch } from "@/lib/live/patch";
 import { fetchExerciseOverride, fetchLiveExercise } from "@/lib/live/queries";
-import type { Lang } from "@/lib/i18n/messages";
 import { ExerciseLiveDetail } from "@/app/exercices/[slug]/ExerciseLiveDetail";
+import { getServerLang } from "@/lib/i18n/server";
 
 type ExercicePageProps = {
   params: Promise<{ slug: string }>;
 };
-
-const LANG_COOKIE = "eps_lang";
-
-function getInitialLang(value?: string): Lang {
-  if (value === "en" || value === "es") return value;
-  return "fr";
-}
 
 async function revalidateExercises(slug: string) {
   "use server";
@@ -84,8 +76,7 @@ export async function generateMetadata({
   params,
 }: ExercicePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const cookieStore = await cookies();
-  const locale = getInitialLang(cookieStore.get(LANG_COOKIE)?.value);
+  const locale = await getServerLang();
   const result = await getExercise(slug, locale);
   const liveExercise = result ? null : await fetchLiveExercise(slug, locale);
   const importedExercise = result || liveExercise ? null : await getImportedExercise(slug);
@@ -109,8 +100,7 @@ export async function generateMetadata({
 
 export default async function ExercicePage({ params }: ExercicePageProps) {
   const { slug } = await params;
-  const cookieStore = await cookies();
-  const locale = getInitialLang(cookieStore.get(LANG_COOKIE)?.value);
+  const locale = await getServerLang();
   const result = await getExercise(slug, locale);
   const liveExercise = result ? null : await fetchLiveExercise(slug, locale);
   const importedExercise = result || liveExercise ? null : await getImportedExercise(slug);

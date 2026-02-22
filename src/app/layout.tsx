@@ -5,7 +5,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { InstallPwaBanner } from "@/components/InstallPwaBanner";
 import { TabNav } from "@/components/TabNav";
 import { AppProviders } from "@/components/providers/AppProviders";
-import type { Lang } from "@/lib/i18n/messages";
+import { getServerLang } from "@/lib/i18n/server";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -37,13 +37,7 @@ export const metadata: Metadata = {
 
 type ThemePreference = "system" | "light" | "dark";
 
-const LANG_COOKIE = "eps_lang";
 const THEME_COOKIE = "eps_theme";
-
-function getInitialLang(value?: string): Lang {
-  if (value === "en" || value === "es") return value;
-  return "fr";
-}
 
 function getInitialTheme(value?: string): ThemePreference {
   if (value === "light" || value === "dark" || value === "system") {
@@ -59,7 +53,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const cookieStore = await cookies();
-  const initialLang = getInitialLang(cookieStore.get(LANG_COOKIE)?.value);
+  const initialLang = await getServerLang();
   const initialTheme = getInitialTheme(cookieStore.get(THEME_COOKIE)?.value);
   const htmlClassName = initialTheme === "dark" ? "dark" : undefined;
   const dataTheme = initialTheme !== "system" ? initialTheme : undefined;
