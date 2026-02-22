@@ -76,6 +76,8 @@ export const messages = {
       emptyTitle: "Aucun exercice ne correspond",
       emptyHint: "Ajustez vos filtres ou vos mots-clés.",
       untitledDraft: "Brouillon sans titre",
+      countSingular: "exercice trouvé",
+      countPlural: "exercices trouvés",
     },
     seances: {
       duration: {
@@ -382,6 +384,8 @@ export const messages = {
       emptyTitle: "No matching exercises",
       emptyHint: "Adjust your filters or keywords.",
       untitledDraft: "Untitled draft",
+      countSingular: "exercise found",
+      countPlural: "exercises found",
     },
     seances: {
       duration: {
@@ -688,6 +692,8 @@ export const messages = {
       emptyTitle: "Ningún ejercicio coincide",
       emptyHint: "Ajusta tus filtros o palabras clave.",
       untitledDraft: "Borrador sin título",
+      countSingular: "ejercicio encontrado",
+      countPlural: "ejercicios encontrados",
     },
     seances: {
       duration: {

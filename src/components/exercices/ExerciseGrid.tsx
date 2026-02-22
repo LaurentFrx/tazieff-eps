@@ -86,8 +86,8 @@ export function ExerciseGrid({
       {/* Toolbar: count + view toggle */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-[color:var(--muted)]">
-          {exercises.length} exercice{exercises.length > 1 ? "s" : ""} trouvé
-          {exercises.length > 1 ? "s" : ""}
+          {exercises.length}{" "}
+          {t(exercises.length === 1 ? "exerciseGrid.countSingular" : "exerciseGrid.countPlural")}
         </p>
         <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[color:var(--card)] p-1">
           <button
