@@ -1,8 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { HomeFlyer } from "@/components/HomeFlyer";
+import { getServerLang, getServerT } from "@/lib/i18n/server";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const lang = await getServerLang();
+  const t = getServerT(lang);
+
   const pillBase =
     "w-full rounded-2xl px-5 py-4 text-left font-semibold tracking-wide " +
     "border border-white/15 shadow-[0_12px_30px_rgba(0,0,0,0.35)] " +
@@ -31,14 +35,14 @@ export default function HomePage() {
       <HomeFlyer />
       <header className="stack-md text-center">
         <h1 className="text-4xl font-semibold text-[color:var(--ink)]">
-          LA MUSCULATION
+          {t("pages.home.title")}
         </h1>
       </header>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <section className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[var(--shadow)] backdrop-blur-xl">
           <h2 className="text-base font-semibold text-[color:var(--ink)]">
-            Les 3 thèmes au choix:
+            {t("pages.home.themesHeading")}
           </h2>
           <div className="flex flex-col gap-3">
             <Link
@@ -47,7 +51,7 @@ export default function HomePage() {
             >
               <Image
                 src="/images/menus/bouton-endurance-de-force.webp"
-                alt="Endurance de force"
+                alt={t("pages.home.theme1Alt")}
                 width={1536}
                 height={384}
                 sizes="(max-width: 768px) 100vw, 720px"
@@ -61,7 +65,7 @@ export default function HomePage() {
             >
               <Image
                 src="/images/menus/bouton-gain-de-volume.webp"
-                alt="Gain de volume"
+                alt={t("pages.home.theme2Alt")}
                 width={1536}
                 height={384}
                 sizes="(max-width: 768px) 100vw, 720px"
@@ -74,7 +78,7 @@ export default function HomePage() {
             >
               <Image
                 src="/images/menus/bouton-power-gain.webp"
-                alt="Gain de puissance"
+                alt={t("pages.home.theme3Alt")}
                 width={1536}
                 height={384}
                 sizes="(max-width: 768px) 100vw, 720px"
@@ -85,52 +89,52 @@ export default function HomePage() {
 
           <div className="mt-2 flex flex-col gap-3">
             <h3 className="text-sm font-semibold text-[color:var(--ink)]">
-              Les projets spécifiques:
+              {t("pages.home.projectsHeading")}
             </h3>
             <Link
               href="/bac#projets"
               className={`${pillBase} ${pillGreen}`}
             >
-              DÉTENTE VERTICALE
+              {t("pages.home.project1")}
             </Link>
             <Link
               href="/bac#projets"
               className={`${pillBase} ${pillGreen}`}
             >
-              VITESSE et AGILITÉ en SPORTS COLLECTIFS
+              {t("pages.home.project2")}
             </Link>
           </div>
         </section>
 
         <section className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[var(--shadow)] backdrop-blur-xl">
           <h2 className="text-base font-semibold text-[color:var(--ink)]">
-            Connaissances pour s’entraîner
+            {t("pages.home.knowledgeHeading")}
           </h2>
           <div className="flex flex-col gap-3">
             <Link
               href="/apprendre/connaissances#les-muscles-et-leur-fonctionnement"
               className={`${pillBase} ${pillGray}`}
             >
-              LES MUSCLES ET LEUR FONCTIONNEMENT
+              {t("pages.home.knowledge1")}
             </Link>
             <Link
               href="/apprendre/techniques#methodes-dentrainement"
               className={`${pillBase} ${pillGray}`}
             >
-              MÉTHODES D’ENTRAÎNEMENT
+              {t("pages.home.knowledge2")}
             </Link>
             <Link
               href="/apprendre/techniques#rm-rir-rpe"
               className={`${pillBase} ${pillGray}`}
             >
-              RM/RIR/RPE
+              {t("pages.home.knowledge3")}
             </Link>
           </div>
           <Link
             href="/apprendre/techniques#principes-securitaires"
             className={`${pillBase} ${pillGold}`}
           >
-            PRINCIPES SÉCURITAIRES
+            {t("pages.home.safetyPrinciples")}
           </Link>
         </section>
 
@@ -139,30 +143,30 @@ export default function HomePage() {
             href="/bac#competences"
             className={`${pillBase} ${pillRose}`}
           >
-            Compétences attendues au lycée (démarche spiralaire).
+            {t("pages.home.skills")}
           </Link>
 
           <h2 className="text-base font-semibold uppercase tracking-[0.2em] text-[color:var(--muted)]">
-            Evaluation
+            {t("pages.home.evaluation")}
           </h2>
           <div className="flex flex-col gap-3">
             <Link
               href="/bac#evaluation-2nde"
               className={`${pillBase} ${pillGold}`}
             >
-              Evaluation en 2nde
+              {t("pages.home.eval2nde")}
             </Link>
             <Link
               href="/bac#evaluation-1ere"
               className={`${pillBase} ${pillGold}`}
             >
-              Evaluation en 1ère
+              {t("pages.home.eval1ere")}
             </Link>
             <Link
               href="/bac#evaluation-terminale"
               className={`${pillBase} ${pillGold}`}
             >
-              Evaluation en Terminale
+              {t("pages.home.evalTerminale")}
             </Link>
           </div>
         </section>
