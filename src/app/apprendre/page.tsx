@@ -1,24 +1,28 @@
 import Link from "next/link";
+import { getServerLang, getServerT } from "@/lib/i18n/server";
 
-const cards = [
-  {
-    href: "/apprendre/parametres",
-    title: "Paramètres",
-    description: "Par thème",
-  },
-  {
-    href: "/apprendre/techniques",
-    title: "Techniques d'entraînement",
-    description: "À compléter",
-  },
-  {
-    href: "/apprendre/connaissances",
-    title: "Connaissances",
-    description: "À compléter",
-  },
-];
+export default async function ApprendrePage() {
+  const lang = await getServerLang();
+  const t = getServerT(lang);
 
-export default function ApprendrePage() {
+  const cards = [
+    {
+      href: "/apprendre/parametres",
+      title: t("pages.apprendre.cards.parametres.title"),
+      description: t("pages.apprendre.cards.parametres.description"),
+    },
+    {
+      href: "/apprendre/techniques",
+      title: t("pages.apprendre.cards.techniques.title"),
+      description: t("pages.apprendre.cards.techniques.description"),
+    },
+    {
+      href: "/apprendre/connaissances",
+      title: t("pages.apprendre.cards.connaissances.title"),
+      description: t("pages.apprendre.cards.connaissances.description"),
+    },
+  ];
+
   return (
     <section className="page">
       <div className="card-grid">

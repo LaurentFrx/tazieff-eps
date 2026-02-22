@@ -244,20 +244,17 @@ export const messages = {
         title: "Apprendre l'essentiel",
         lede: "Des leçons courtes, faciles à relire avant l'entraînement.",
         cards: {
-          basics: {
-            tag: "Bases",
-            title: "Bases",
-            body: "Posture, tempo, récupération expliqués simplement.",
+          parametres: {
+            title: "Paramètres",
+            description: "Par thème",
           },
-          guides: {
-            tag: "Guides",
-            title: "Guides",
-            body: "Approfondissements adaptés à chaque objectif.",
+          techniques: {
+            title: "Techniques d'entraînement",
+            description: "À compléter",
           },
-          glossary: {
-            tag: "Lexique",
-            title: "Lexique",
-            body: "Définitions rapides pour rester clair.",
+          connaissances: {
+            title: "Connaissances",
+            description: "À compléter",
           },
         },
       },
@@ -541,20 +538,17 @@ export const messages = {
         title: "Learn the essentials",
         lede: "Short lessons you can scan before training.",
         cards: {
-          basics: {
-            tag: "Basics",
-            title: "Basics",
-            body: "Form, tempo, and recovery explained simply.",
+          parametres: {
+            title: "Parameters",
+            description: "By theme",
           },
-          guides: {
-            tag: "Guides",
-            title: "Guides",
-            body: "Deeper dives tuned to each goal.",
+          techniques: {
+            title: "Training techniques",
+            description: "To be completed",
           },
-          glossary: {
-            tag: "Glossary",
-            title: "Glossary",
-            body: "Quick definitions to stay consistent.",
+          connaissances: {
+            title: "Knowledge",
+            description: "To be completed",
           },
         },
       },
@@ -838,20 +832,17 @@ export const messages = {
         title: "Aprender lo esencial",
         lede: "Lecciones cortas, fáciles de releer antes del entrenamiento.",
         cards: {
-          basics: {
-            tag: "Bases",
-            title: "Bases",
-            body: "Postura, tempo y recuperación explicados de forma sencilla.",
+          parametres: {
+            title: "Parámetros",
+            description: "Por tema",
           },
-          guides: {
-            tag: "Guías",
-            title: "Guías",
-            body: "Profundización adaptada a cada objetivo.",
+          techniques: {
+            title: "Técnicas de entrenamiento",
+            description: "Por completar",
           },
-          glossary: {
-            tag: "Glosario",
-            title: "Glosario",
-            body: "Definiciones rápidas para mantenerse claro.",
+          connaissances: {
+            title: "Conocimientos",
+            description: "Por completar",
           },
         },
       },
