@@ -397,10 +397,11 @@ function PhotoPreview({
   const showSkeleton = !showError && (isResolving || isLoading);
   const frameClassName =
     "h-[220px] sm:h-[240px] w-full rounded-2xl ring-1 ring-white/10";
+  const { t: tPreview } = useI18n();
   const resolvedErrorDetail = showError
     ? loadError
-      ? "Erreur: URL non résolue"
-      : errorDetail || "Erreur: URL non résolue"
+      ? tPreview("exerciseEditor.urlError")
+      : errorDetail || tPreview("exerciseEditor.urlError")
     : null;
 
   const handleRetryClick = () => {
@@ -415,14 +416,14 @@ function PhotoPreview({
         <div
           className={`flex ${frameClassName} flex-col items-center justify-center gap-2 border border-white/10 bg-white/5 px-4 text-center`}
         >
-          <p className="text-sm text-[color:var(--muted)]">Aperçu indisponible</p>
+          <p className="text-sm text-[color:var(--muted)]">{tPreview("exerciseEditor.previewUnavailable")}</p>
           {resolvedErrorDetail ? (
             <p className="text-xs text-[color:var(--muted)]">
               {resolvedErrorDetail}
             </p>
           ) : null}
           <button type="button" className="chip" onClick={handleRetryClick}>
-            Réessayer
+            {tPreview("exerciseEditor.retry")}
           </button>
         </div>
       ) : (
@@ -703,7 +704,7 @@ export function ExerciseLiveDetail({
 
   const difficulty = merged.frontmatter.level ?? "intermediaire";
   const displayTitle =
-    merged.frontmatter.title?.trim() || "Brouillon sans titre";
+    merged.frontmatter.title?.trim() || t("exerciseGrid.untitledDraft");
 
   // Dynamic video hero resolution (try .webm for any slug)
   const exerciseSlug = merged.frontmatter.slug;
@@ -1272,9 +1273,9 @@ export function ExerciseLiveDetail({
           error && typeof error === "object" && "status" in error
             ? Number((error as { status?: number }).status)
             : undefined;
-        const reason = formatResolveError(
-          Number.isFinite(status) ? status : undefined,
-        );
+        const reason = Number.isFinite(status)
+          ? formatResolveError(status)
+          : t("exerciseEditor.urlError");
         setMediaResolveState((prev) => ({ ...prev, [mediaId]: "error" }));
         setMediaResolveError((prev) =>
           prev[mediaId] === reason ? prev : { ...prev, [mediaId]: reason },
@@ -1312,7 +1313,7 @@ export function ExerciseLiveDetail({
         return;
       }
 
-      const reason = formatResolveError(null);
+      const reason = t("exerciseEditor.urlError");
       setMediaResolveState((prev) => ({ ...prev, [mediaId]: "error" }));
       setMediaResolveError((prev) =>
         prev[mediaId] === reason ? prev : { ...prev, [mediaId]: reason },
@@ -1382,7 +1383,7 @@ export function ExerciseLiveDetail({
         (item) => item.id === sectionId,
       );
       const label = section?.title?.trim();
-      return label && label.length > 0 ? label : "Section sans titre";
+      return label && label.length > 0 ? label : t("exerciseEditor.untitledSection");
     },
     [overrideDoc],
   );
@@ -1395,7 +1396,7 @@ export function ExerciseLiveDetail({
       if (blockToastHideTimerRef.current) {
         clearTimeout(blockToastHideTimerRef.current);
       }
-      const message = `✅ Bloc ajouté dans « ${resolveSectionTitle(sectionId)} »`;
+      const message = `${t("exerciseEditor.blockAddedIn")} « ${resolveSectionTitle(sectionId)} »`;
       setBlockToast({ id: Date.now(), message });
       setBlockToastVisible(false);
       requestAnimationFrame(() => {
@@ -1647,7 +1648,7 @@ export function ExerciseLiveDetail({
       return;
     }
     if (!overrideDoc) {
-      setSubmitStatus("Aucune modification.");
+      setSubmitStatus(t("exerciseEditor.noChanges"));
       return;
     }
     const saveStatus = saveMeta.status;
@@ -1709,7 +1710,7 @@ export function ExerciseLiveDetail({
         sections,
       },
     };
-    setSubmitStatus("Envoi en cours...");
+    setSubmitStatus(t("exerciseEditor.submitting"));
     setIsSavingOverride(true);
     let response: Response;
     try {
@@ -1795,7 +1796,7 @@ export function ExerciseLiveDetail({
     }
     const slugValue = liveDraft.slug.trim();
     if (!slugValue) {
-      setSubmitStatus("Slug requis.");
+      setSubmitStatus(t("exerciseEditor.slugRequired"));
       return;
     }
     const title = liveDraft.title.trim();
@@ -1941,10 +1942,10 @@ export function ExerciseLiveDetail({
       handleAuthError(t("teacherMode.pinRequired"));
       return;
     }
-    setMediaStatus("Upload en cours...");
+    setMediaStatus(t("exerciseEditor.uploading"));
     try {
       if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
-        setMediaStatus("Format invalide. Utilisez JPEG, PNG ou WEBP.");
+        setMediaStatus(t("exerciseEditor.invalidFormat"));
         return;
       }
 
@@ -2048,7 +2049,12 @@ export function ExerciseLiveDetail({
       showBlockToast(uploadTarget.sectionId);
       setMediaStatus(t("exerciseEditor.photoAdded"));
     } catch (error) {
-      const message = error instanceof Error ? error.message : t("exerciseEditor.uploadFailed");
+      const raw = error instanceof Error ? error.message : "";
+      const message =
+        raw === "Compression échouée." ? t("exerciseEditor.compressionFailed") :
+        raw === "Canvas indisponible." ? t("exerciseEditor.canvasUnavailable") :
+        raw === "Impossible de charger l'image." ? t("exerciseEditor.imageLoadFailed") :
+        raw || t("exerciseEditor.uploadFailed");
       setMediaStatus(message);
     } finally {
       setUploadTarget(null);
@@ -2101,7 +2107,7 @@ export function ExerciseLiveDetail({
           ...doc.doc.sections,
           {
             id: newSectionId,
-            title: "Nouvelle section",
+            title: t("exerciseEditor.newSection"),
             blocks: [createMarkdownBlock("")],
           },
         ],
@@ -2183,7 +2189,7 @@ export function ExerciseLiveDetail({
   const handleAddFromMenu = (kind: "markdown" | "bullets" | "media" | "photo") => {
     const targetSectionId = resolveTargetSectionId();
     if (!targetSectionId) {
-      setMediaStatus("Ajoutez d'abord une section.");
+      setMediaStatus(t("exerciseEditor.addNoSection"));
       return;
     }
     setActiveSectionId(targetSectionId);
@@ -2693,7 +2699,7 @@ export function ExerciseLiveDetail({
                         }
                         return (
                           <p className="text-xs text-[color:var(--muted)]">
-                            Image en attente.
+                            {t("exerciseEditor.imagePending")}
                           </p>
                         );
                       })() : null}
@@ -2706,7 +2712,7 @@ export function ExerciseLiveDetail({
                           />
                         ) : (
                           <p className="text-xs text-[color:var(--muted)]">
-                            URL manquante.
+                            {t("exerciseEditor.urlMissing")}
                           </p>
                         )
                       ) : null}
@@ -2722,7 +2728,7 @@ export function ExerciseLiveDetail({
                           </a>
                         ) : (
                           <p className="text-xs text-[color:var(--muted)]">
-                            URL manquante.
+                            {t("exerciseEditor.urlMissing")}
                           </p>
                         )
                       ) : null}
@@ -2785,12 +2791,12 @@ export function ExerciseLiveDetail({
             <div className="flex flex-col gap-2 border-b border-white/10 pb-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex flex-col gap-1">
-                  <h2>Corriger la fiche</h2>
+                  <h2>{t("exerciseEditor.fixSheet")}</h2>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   {overrideToast ? (
                     <span className="text-xs text-[color:var(--muted)]">
-                      {overrideToast.tone === "success" ? "OK: " : "Erreur: "}
+                      {overrideToast.tone === "success" ? "OK: " : `${t("exerciseEditor.errorPrefix")} `}
                       {overrideToast.message}
                     </span>
                   ) : null}
@@ -2816,7 +2822,7 @@ export function ExerciseLiveDetail({
                       {t("exerciseEditor.changesPending")}
                     </div>
                     <span className="text-xs text-amber-100/80">
-                      Pense à Enregistrer
+                      {t("exerciseEditor.rememberToSave")}
                     </span>
                   </div>
                 </div>
@@ -2829,9 +2835,9 @@ export function ExerciseLiveDetail({
                         <div className="flex flex-col gap-2">
                           <div className="flex items-center gap-2">
                             <span aria-hidden="true">⚠️</span>
-                            <h3 className="text-base font-semibold">Version enregistrée</h3>
+                            <h3 className="text-base font-semibold">{t("exerciseEditor.savedVersion")}</h3>
                             <span className="rounded-full border border-red-400/60 bg-red-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-red-100">
-                              Version active
+                              {t("exerciseEditor.activeVersion")}
                             </span>
                           </div>
                           <p className="text-sm text-[color:var(--muted)]">
@@ -2852,20 +2858,20 @@ export function ExerciseLiveDetail({
                   <div className="rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-4 shadow-lg">
                     <div className="stack-md">
                       <div className="flex flex-col gap-1">
-                        <h3 className="text-base font-semibold">Catégories</h3>
+                        <h3 className="text-base font-semibold">{t("exerciseEditor.categories")}</h3>
                         <p className="text-sm text-[color:var(--muted)]">
-                          Niveau, type, groupes musculaires et thèmes Bac.
+                          {t("exerciseEditor.categoriesDesc")}
                         </p>
                       </div>
                       <div className="stack-md">
                     <div className="stack-sm">
-                      <label className="field-label">Niveau</label>
+                      <label className="field-label">{t("exerciseEditor.levelLabel")}</label>
                       <select
                         className="field-input"
                         value={pillState.selections.level}
                         onChange={(event) => setLevelSelection(event.target.value)}
                       >
-                        <option value="">Choisir un niveau…</option>
+                        <option value="">{t("exerciseEditor.levelPlaceholder")}</option>
                         {pillState.options.level.map((option) => (
                           <option key={`level-${option}`} value={option}>
                             {option}
@@ -2876,7 +2882,7 @@ export function ExerciseLiveDetail({
                         <div className="flex flex-wrap items-center gap-2">
                           <input
                             className="field-input"
-                            placeholder="Nouveau niveau…"
+                            placeholder={t("exerciseEditor.newLevelPlaceholder")}
                             value={levelAddValue}
                             onChange={(event) => setLevelAddValue(event.target.value)}
                           />
@@ -2885,7 +2891,7 @@ export function ExerciseLiveDetail({
                             className="chip"
                             onClick={addCustomLevel}
                           >
-                            Ajouter
+                            {t("exerciseEditor.add")}
                           </button>
                         </div>
                       ) : (
@@ -2900,7 +2906,7 @@ export function ExerciseLiveDetail({
                     </div>
 
                     <div className="stack-sm">
-                      <label className="field-label">Type</label>
+                      <label className="field-label">{t("exerciseEditor.typeLabel")}</label>
                       <div className="relative">
                         <button
                           type="button"
@@ -2912,10 +2918,8 @@ export function ExerciseLiveDetail({
                         >
                           <span>
                             {pillState.selections.type.length > 0
-                              ? `${pillState.selections.type.length} sélectionné${
-                                  pillState.selections.type.length > 1 ? "s" : ""
-                                }`
-                              : "Sélectionner…"}
+                              ? `${pillState.selections.type.length} ${t(pillState.selections.type.length === 1 ? "exerciseEditor.selectedSingular" : "exerciseEditor.selectedPlural")}`
+                              : t("exerciseEditor.selectPlaceholder")}
                           </span>
                           <span aria-hidden="true">▾</span>
                         </button>
@@ -2936,7 +2940,7 @@ export function ExerciseLiveDetail({
                                 <div className="sticky top-0 z-10 bg-[color:var(--bg-2)] pb-2">
                                   <input
                                     className="field-input"
-                                    placeholder="Rechercher…"
+                                    placeholder={t("exerciseEditor.searchPlaceholder")}
                                     value={pillSearch.type}
                                     onChange={(event) =>
                                       setPillSearch((prev) => ({
@@ -2975,7 +2979,7 @@ export function ExerciseLiveDetail({
                                       className="chip w-full justify-start"
                                       onClick={() => addCustomOption("type")}
                                     >
-                                      {`Ajouter '${normalizeLabel(pillSearch.type)}'`}
+                                      {`${t("exerciseEditor.add")} '${normalizeLabel(pillSearch.type)}'`}
                                     </button>
                                   ) : null}
                                 </div>
@@ -3003,14 +3007,14 @@ export function ExerciseLiveDetail({
                           ))
                         ) : (
                           <span className="text-xs text-[color:var(--muted)]">
-                            Aucun type sélectionné.
+                            {t("exerciseEditor.noTypeSelected")}
                           </span>
                         )}
                       </div>
                     </div>
 
                     <div className="stack-sm">
-                      <label className="field-label">Groupes musculaires</label>
+                      <label className="field-label">{t("exerciseEditor.musclesLabel")}</label>
                       <div className="relative">
                         <button
                           type="button"
@@ -3022,10 +3026,8 @@ export function ExerciseLiveDetail({
                         >
                           <span>
                             {pillState.selections.muscles.length > 0
-                              ? `${pillState.selections.muscles.length} sélectionné${
-                                  pillState.selections.muscles.length > 1 ? "s" : ""
-                                }`
-                              : "Sélectionner…"}
+                              ? `${pillState.selections.muscles.length} ${t(pillState.selections.muscles.length === 1 ? "exerciseEditor.selectedSingular" : "exerciseEditor.selectedPlural")}`
+                              : t("exerciseEditor.selectPlaceholder")}
                           </span>
                           <span aria-hidden="true">▾</span>
                         </button>
@@ -3046,7 +3048,7 @@ export function ExerciseLiveDetail({
                                 <div className="sticky top-0 z-10 bg-[color:var(--bg-2)] pb-2">
                                   <input
                                     className="field-input"
-                                    placeholder="Rechercher…"
+                                    placeholder={t("exerciseEditor.searchPlaceholder")}
                                     value={pillSearch.muscles}
                                     onChange={(event) =>
                                       setPillSearch((prev) => ({
@@ -3085,7 +3087,7 @@ export function ExerciseLiveDetail({
                                       className="chip w-full justify-start"
                                       onClick={() => addCustomOption("muscles")}
                                     >
-                                      {`Ajouter '${normalizeLabel(pillSearch.muscles)}'`}
+                                      {`${t("exerciseEditor.add")} '${normalizeLabel(pillSearch.muscles)}'`}
                                     </button>
                                   ) : null}
                                 </div>
@@ -3113,14 +3115,14 @@ export function ExerciseLiveDetail({
                           ))
                         ) : (
                           <span className="text-xs text-[color:var(--muted)]">
-                            Aucun groupe sélectionné.
+                            {t("exerciseEditor.noMuscleSelected")}
                           </span>
                         )}
                       </div>
                     </div>
 
                     <div className="stack-sm">
-                      <label className="field-label">Thèmes Bac</label>
+                      <label className="field-label">{t("exerciseEditor.themesLabel")}</label>
                       <div className="relative">
                         <button
                           type="button"
@@ -3132,10 +3134,8 @@ export function ExerciseLiveDetail({
                         >
                           <span>
                             {pillState.selections.themes.length > 0
-                              ? `${pillState.selections.themes.length} sélectionné${
-                                  pillState.selections.themes.length > 1 ? "s" : ""
-                                }`
-                              : "Sélectionner…"}
+                              ? `${pillState.selections.themes.length} ${t(pillState.selections.themes.length === 1 ? "exerciseEditor.selectedSingular" : "exerciseEditor.selectedPlural")}`
+                              : t("exerciseEditor.selectPlaceholder")}
                           </span>
                           <span aria-hidden="true">▾</span>
                         </button>
@@ -3156,7 +3156,7 @@ export function ExerciseLiveDetail({
                                 <div className="sticky top-0 z-10 bg-[color:var(--bg-2)] pb-2">
                                   <input
                                     className="field-input"
-                                    placeholder="Rechercher…"
+                                    placeholder={t("exerciseEditor.searchPlaceholder")}
                                     value={pillSearch.themes}
                                     onChange={(event) =>
                                       setPillSearch((prev) => ({
@@ -3195,7 +3195,7 @@ export function ExerciseLiveDetail({
                                       className="chip w-full justify-start"
                                       onClick={() => addCustomOption("themes")}
                                     >
-                                      {`Ajouter '${normalizeLabel(pillSearch.themes)}'`}
+                                      {`${t("exerciseEditor.add")} '${normalizeLabel(pillSearch.themes)}'`}
                                     </button>
                                   ) : null}
                                 </div>
@@ -3223,7 +3223,7 @@ export function ExerciseLiveDetail({
                           ))
                         ) : (
                           <span className="text-xs text-[color:var(--muted)]">
-                            Aucun thème sélectionné.
+                            {t("exerciseEditor.noThemeSelected")}
                           </span>
                         )}
                       </div>
@@ -3235,9 +3235,9 @@ export function ExerciseLiveDetail({
                   <div className="rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-4 shadow-lg">
                     <div className="stack-md">
                       <div className="flex flex-col gap-1">
-                        <h3 className="text-base font-semibold">Image principale</h3>
+                        <h3 className="text-base font-semibold">{t("exerciseEditor.mainImageLabel")}</h3>
                         <p className="text-sm text-[color:var(--muted)]">
-                          Image affichée en haut de la fiche.
+                          {t("exerciseEditor.mainImageDesc")}
                         </p>
                       </div>
                       <div className="stack-sm">
@@ -3259,7 +3259,7 @@ export function ExerciseLiveDetail({
                       className="chip"
                       onClick={handleHeroPreview}
                     >
-                      Aperçu
+                      {t("exerciseEditor.preview")}
                     </button>
                     <button
                       type="button"
@@ -3274,7 +3274,7 @@ export function ExerciseLiveDetail({
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={heroPreviewUrl}
-                        alt="Aperçu"
+                        alt={t("exerciseEditor.preview")}
                         className="w-full h-auto rounded-2xl ring-1 ring-white/10"
                       />
                     </>
@@ -3439,14 +3439,14 @@ export function ExerciseLiveDetail({
                           const blockKey = `${section.id}-${blockIndex}`;
                           const blockLabel =
                             block.type === "markdown"
-                              ? "Texte"
+                              ? t("exerciseEditor.textBlock")
                               : block.type === "bullets"
-                                ? "Liste à puces"
+                                ? t("exerciseEditor.bulletsList")
                                 : block.mediaType === "image"
-                                  ? "Photo"
+                                  ? t("exerciseEditor.photoBlock")
                                   : block.mediaType === "video"
-                                    ? "Vidéo"
-                                    : "Lien";
+                                    ? t("exerciseEditor.video")
+                                    : t("exerciseEditor.linkType");
                           const hasPhoto =
                             block.type === "media" &&
                             block.mediaType === "image" &&
@@ -3721,7 +3721,7 @@ export function ExerciseLiveDetail({
                                           })()
                                         : null}
                                       <label className="field-label">
-                                        Légende
+                                        {t("exerciseEditor.caption")}
                                       </label>
                                       <input
                                         ref={(node) => {
@@ -3743,7 +3743,7 @@ export function ExerciseLiveDetail({
                                     </>
                                   ) : (
                                     <>
-                                      <label className="field-label">Type</label>
+                                      <label className="field-label">{t("exerciseEditor.typeLabel")}</label>
                                       <select
                                         className="field-input"
                                         value={block.mediaType}
@@ -3763,8 +3763,8 @@ export function ExerciseLiveDetail({
                                           }))
                                         }
                                       >
-                                        <option value="video">Vidéo</option>
-                                        <option value="link">Lien</option>
+                                        <option value="video">{t("exerciseEditor.video")}</option>
+                                        <option value="link">{t("exerciseEditor.linkType")}</option>
                                       </select>
                                       <label className="field-label">URL</label>
                                       <input
@@ -3787,7 +3787,7 @@ export function ExerciseLiveDetail({
                                         }
                                       />
                                       <label className="field-label">
-                                        Légende (optionnel)
+                                        {t("exerciseEditor.captionOptional")}
                                       </label>
                                       <input
                                         className="field-input"
@@ -3828,7 +3828,7 @@ export function ExerciseLiveDetail({
                 />
               </div>
             ) : (
-              <p className="text-xs text-[color:var(--muted)]">Chargement...</p>
+              <p className="text-xs text-[color:var(--muted)]">{t("exerciseEditor.loading")}</p>
             )}
           </div>
           <div className="sticky bottom-0 mt-4 border-t border-white/10 bg-[color:var(--surface)] pt-3">
@@ -3836,16 +3836,16 @@ export function ExerciseLiveDetail({
               <div className="flex flex-wrap items-center gap-3">
                 <div className="flex flex-col gap-1">
                   <span className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-[color:var(--muted)]">
-                    <span>Section active</span>
+                    <span>{t("exerciseEditor.activeSectionLabel")}</span>
                     <span className="rounded-full border border-emerald-400/40 bg-emerald-400/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-200">
-                      Active
+                      {t("exerciseEditor.activeLabel")}
                     </span>
                   </span>
                   <span className="inline-flex w-fit items-center rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-1 text-xs text-emerald-100">
-                    Ajout dans :{" "}
+                    {t("exerciseEditor.addingIn")}{" "}
                     {activeSection
-                      ? activeSection.title || "Section sans titre"
-                      : "Aucune section"}
+                      ? activeSection.title || t("exerciseEditor.untitledSection")
+                      : t("exerciseEditor.noSection")}
                   </span>
                   <select
                     className="field-input"
@@ -3860,10 +3860,10 @@ export function ExerciseLiveDetail({
                     }}
                     disabled={!overrideDoc}
                   >
-                    <option value="">Sélectionner une section…</option>
+                    <option value="">{t("exerciseEditor.selectSection")}</option>
                     {overrideDoc?.doc.sections.map((section) => (
                       <option key={section.id} value={section.id}>
-                        {section.title || "Section sans titre"}
+                        {section.title || t("exerciseEditor.untitledSection")}
                       </option>
                     ))}
                     <option value="__add_section__">{t("exerciseEditor.addSection")}</option>
@@ -3892,7 +3892,7 @@ export function ExerciseLiveDetail({
                           setAddBlockMenuOpen(false);
                         }}
                       >
-                        Texte
+                        {t("exerciseEditor.textBlock")}
                       </button>
                       <button
                         type="button"
@@ -3902,7 +3902,7 @@ export function ExerciseLiveDetail({
                           setAddBlockMenuOpen(false);
                         }}
                       >
-                        Liste à puces
+                        {t("exerciseEditor.bulletsList")}
                       </button>
                       <button
                         type="button"
@@ -3912,7 +3912,7 @@ export function ExerciseLiveDetail({
                           setAddBlockMenuOpen(false);
                         }}
                       >
-                        Photo
+                        {t("exerciseEditor.photoBlock")}
                       </button>
                     </div>
                   ) : null}
@@ -3952,20 +3952,20 @@ export function ExerciseLiveDetail({
                   onClick={handleDiscardOverride}
                   disabled={!isDirty}
                 >
-                  {isDirty ? "⟲ Annuler modifications" : "Annuler modifications"}
+                  {isDirty ? `⟲ ${t("exerciseEditor.discardChanges")}` : t("exerciseEditor.discardChanges")}
                 </button>
               </div>
               {!isDirty && !isSavingOverride ? (
                 <p className="text-xs text-[color:var(--muted)]">
-                  Modifie au moins un élément pour enregistrer.
+                  {t("exerciseEditor.noChangesYet")}
                 </p>
               ) : null}
               {isDirty && saveMeta.status === "draft" ? (
                 <p className="text-xs text-[color:var(--muted)]">
                   {saveMeta.missing.length > 0
-                    ? `Champs requis manquants : ${saveMeta.missing.join(", ")}. `
+                    ? `${t("exerciseEditor.missingFields")} ${saveMeta.missing.map((f) => ({"titre": t("exerciseEditor.titleLabel"), "tags": "Tags", "muscles": t("exerciseEditor.musclesLabel"), "thèmes": t("exerciseEditor.themesLabel")} as Record<string, string>)[f] ?? f).join(", ")}. `
                     : ""}
-                  Enregistrement en brouillon.
+                  {t("exerciseEditor.draftNote")}
                 </p>
               ) : null}
             </div>
@@ -3995,7 +3995,7 @@ export function ExerciseLiveDetail({
                 <button
                   type="button"
                   className="text-emerald-100/70 hover:text-emerald-50"
-                  aria-label="Fermer"
+                  aria-label={t("exerciseEditor.close")}
                   onClick={dismissBlockToast}
                 >
                   ×
@@ -4078,7 +4078,7 @@ export function ExerciseLiveDetail({
       {liveOpen && liveDraft ? (
         <div className="modal-overlay" role="dialog" aria-modal="true">
           <div className="modal-card">
-            <h2>Créer un exercice</h2>
+            <h2>{t("exerciseEditor.createExercise")}</h2>
             <div className="stack-md">
               <label className="field-label">Slug</label>
               <input
@@ -4089,7 +4089,7 @@ export function ExerciseLiveDetail({
                   setLiveDraft({ ...liveDraft, slug: event.target.value })
                 }
               />
-              <label className="field-label">Titre</label>
+              <label className="field-label">{t("exerciseEditor.titleLabel")}</label>
               <input
                 className="field-input"
                 value={liveDraft.title}
@@ -4097,7 +4097,7 @@ export function ExerciseLiveDetail({
                   setLiveDraft({ ...liveDraft, title: event.target.value })
                 }
               />
-              <label className="field-label">Tags (séparés par des virgules)</label>
+              <label className="field-label">{t("exerciseEditor.tagsLabel")}</label>
               <input
                 className="field-input"
                 value={liveDraft.tags}
@@ -4113,7 +4113,7 @@ export function ExerciseLiveDetail({
                   setLiveDraft({ ...liveDraft, muscles: event.target.value })
                 }
               />
-              <label className="field-label">Thèmes compatibles (1, 2, 3)</label>
+              <label className="field-label">{t("exerciseEditor.themeCompatLabel")}</label>
               <input
                 className="field-input"
                 value={liveDraft.themeCompatibility}
@@ -4121,7 +4121,7 @@ export function ExerciseLiveDetail({
                   setLiveDraft({ ...liveDraft, themeCompatibility: event.target.value })
                 }
               />
-              <label className="field-label">Niveau</label>
+              <label className="field-label">{t("exerciseEditor.levelLabel")}</label>
               <input
                 className="field-input"
                 value={liveDraft.level}
@@ -4130,7 +4130,7 @@ export function ExerciseLiveDetail({
                   setLiveDraft({ ...liveDraft, level: event.target.value })
                 }
               />
-              <label className="field-label">Matériel</label>
+              <label className="field-label">{t("exerciseEditor.equipmentLabel")}</label>
               <input
                 className="field-input"
                 value={liveDraft.equipment}
@@ -4138,7 +4138,7 @@ export function ExerciseLiveDetail({
                   setLiveDraft({ ...liveDraft, equipment: event.target.value })
                 }
               />
-              <label className="field-label">Média (optionnel)</label>
+              <label className="field-label">{t("exerciseEditor.mediaLabel")}</label>
               <input
                 className="field-input"
                 value={liveDraft.media}
@@ -4146,7 +4146,7 @@ export function ExerciseLiveDetail({
                   setLiveDraft({ ...liveDraft, media: event.target.value })
                 }
               />
-              <label className="field-label">Contenu</label>
+              <label className="field-label">{t("exerciseEditor.contentLabel")}</label>
               <textarea
                 className="field-textarea"
                 autoFocus
@@ -4165,14 +4165,14 @@ export function ExerciseLiveDetail({
                 className="primary-button primary-button--wide"
                 onClick={handleSaveLive}
               >
-                Créer
+                {t("exerciseEditor.create")}
               </button>
               <button
                 type="button"
                 className="chip"
                 onClick={() => setLiveOpen(false)}
               >
-                Fermer
+                {t("exerciseEditor.close")}
               </button>
             </div>
           </div>
