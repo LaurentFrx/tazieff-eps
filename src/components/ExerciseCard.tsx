@@ -4,6 +4,7 @@ import Image, { type StaticImageData } from "next/image";
 import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import logo from "../../public/media/branding/logo-eps.webp";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 export type ExerciseCardProps = {
   exercise: ExerciseFrontmatter & {
@@ -173,7 +174,8 @@ export function ExerciseCard({
   variant = "grid",
   favoriteAction,
 }: ExerciseCardProps) {
-  const title = exercise.title?.trim() || "Brouillon sans titre";
+  const { t } = useI18n();
+  const title = exercise.title?.trim() || t("exerciseGrid.untitledDraft");
   const isList = variant === "list";
   const gridMedia = exercise.thumbSrc ?? exercise.media ?? exercise.thumb169Src;
   const listMedia =

@@ -87,6 +87,9 @@ export const messages = {
       emptyTitle: "Aucune séance ne correspond",
       emptyHint: "Essayez une autre durée ou un niveau différent.",
     },
+    seanceCard: {
+      blocks: "blocs",
+    },
     seanceDetail: {
       notFound: "Séance introuvable",
       eyebrow: "Séances",
@@ -390,6 +393,9 @@ export const messages = {
       emptyTitle: "No matching sessions",
       emptyHint: "Try a different duration or level.",
     },
+    seanceCard: {
+      blocks: "blocks",
+    },
     seanceDetail: {
       notFound: "Session not found",
       eyebrow: "Sessions",
@@ -692,6 +698,9 @@ export const messages = {
       },
       emptyTitle: "Ninguna sesión coincide",
       emptyHint: "Prueba otra duración o nivel diferente.",
+    },
+    seanceCard: {
+      blocks: "bloques",
     },
     seanceDetail: {
       notFound: "Sesión no encontrada",
