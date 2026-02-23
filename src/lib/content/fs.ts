@@ -6,9 +6,11 @@ import matter from "gray-matter";
 import type { ZodIssue, ZodSchema } from "zod";
 import {
   ExerciseFrontmatterSchema,
+  LearnFrontmatterSchema,
   MethodeFrontmatterSchema,
   SeanceFrontmatterSchema,
   type ExerciseFrontmatter,
+  type LearnFrontmatter,
   type MethodeFrontmatter,
   type SeanceFrontmatter,
 } from "@/lib/content/schema";
@@ -260,3 +262,50 @@ export async function getMethode(slug: string): Promise<MethodeMdxResult | null>
 }
 
 export const methodesIndex = cache(getAllMethodes);
+
+// ─── Learn pages (content/learn/{slug}.{lang}.mdx) ───────────────────────────
+
+const LEARN_DIR = path.join(CONTENT_ROOT, "learn");
+
+export async function getAllLearnPages(lang: Lang = "fr"): Promise<LearnFrontmatter[]> {
+  const files = await listMdxFiles(LEARN_DIR, lang);
+  const items = await Promise.all(
+    files.map(async (file) => {
+      const fullPath = path.join(LEARN_DIR, file);
+      const { frontmatter } = await readMdxFile(fullPath, LearnFrontmatterSchema);
+      return frontmatter;
+    }),
+  );
+  return items.sort((a, b) => a.ordre - b.ordre);
+}
+
+type LearnMdxResult = {
+  frontmatter: LearnFrontmatter;
+  content: string;
+};
+
+export async function getLearnPage(
+  slug: string,
+  lang: Lang = "fr",
+): Promise<LearnMdxResult | null> {
+  const localizedPath = path.join(LEARN_DIR, `${slug}.${lang}.mdx`);
+  try {
+    return await readMdxFile(localizedPath, LearnFrontmatterSchema);
+  } catch (error) {
+    const nodeError = error as NodeJS.ErrnoException;
+    if (nodeError.code === "ENOENT") {
+      if (lang !== "fr") {
+        const fallbackPath = path.join(LEARN_DIR, `${slug}.fr.mdx`);
+        try {
+          return await readMdxFile(fallbackPath, LearnFrontmatterSchema);
+        } catch {
+          return null;
+        }
+      }
+      return null;
+    }
+    throw error;
+  }
+}
+
+export const learnIndex = cache((lang: Lang = "fr") => getAllLearnPages(lang));

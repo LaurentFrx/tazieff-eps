@@ -114,6 +114,14 @@ export const messages = {
       eyebrow: "Apprendre",
       toc: "Sommaire",
       incomplete: "À compléter",
+      notFound: "Contenu introuvable",
+      backLabel: "Retour à Apprendre",
+      anatomieHeading: "Anatomie",
+      niveaux: {
+        seconde: "2nde",
+        premiere: "1ère",
+        terminale: "Terminale",
+      },
     },
     bac: {
       incomplete: "À compléter",
@@ -522,6 +530,14 @@ export const messages = {
       eyebrow: "Learn",
       toc: "Contents",
       incomplete: "To be completed",
+      notFound: "Content not found",
+      backLabel: "Back to Learn",
+      anatomieHeading: "Anatomy",
+      niveaux: {
+        seconde: "Year 10",
+        premiere: "Year 11",
+        terminale: "Year 12",
+      },
     },
     bac: {
       incomplete: "To be completed",
@@ -930,6 +946,14 @@ export const messages = {
       eyebrow: "Aprender",
       toc: "Contenidos",
       incomplete: "Por completar",
+      notFound: "Contenido no encontrado",
+      backLabel: "Volver a Aprender",
+      anatomieHeading: "Anatomía",
+      niveaux: {
+        seconde: "2.º",
+        premiere: "1.º",
+        terminale: "Terminale",
+      },
     },
     bac: {
       incomplete: "Por completar",

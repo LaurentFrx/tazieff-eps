@@ -77,3 +77,17 @@ export const MethodeFrontmatterSchema = z.object({
   timer: z.boolean().optional(),
 });
 export type MethodeFrontmatter = z.infer<typeof MethodeFrontmatterSchema>;
+
+export const NiveauLearnSchema = z.enum(["seconde", "premiere", "terminale"]);
+export type NiveauLearn = z.infer<typeof NiveauLearnSchema>;
+
+export const LearnFrontmatterSchema = z.object({
+  slug: z.string().min(1),
+  titre: z.string().min(1),
+  section: z.literal("apprendre"),
+  ordre: z.number().int().min(1),
+  niveau_minimum: NiveauLearnSchema,
+  description: z.string().min(1),
+  mots_cles: z.array(z.string()),
+});
+export type LearnFrontmatter = z.infer<typeof LearnFrontmatterSchema>;
