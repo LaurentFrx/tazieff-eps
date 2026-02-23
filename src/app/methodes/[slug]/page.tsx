@@ -25,8 +25,10 @@ export async function generateMetadata({
   params,
 }: MethodePageProps): Promise<Metadata> {
   const { slug } = await params;
+  const lang = await getServerLang();
+  const t = getServerT(lang);
   const result = await getMethode(slug);
-  if (!result) return { title: "Méthode introuvable" };
+  if (!result) return { title: t("methodes.notFound") };
   return { title: result.frontmatter.titre };
 }
 
