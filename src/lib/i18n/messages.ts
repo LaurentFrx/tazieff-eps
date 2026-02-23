@@ -129,6 +129,15 @@ export const messages = {
       projects: "Projets",
       evaluation: "Évaluation",
       sectionFallback: "Section",
+      eyebrow: "BAC",
+      notFound: "Page introuvable",
+      backLabel: "Retour au BAC",
+      parcoursHeading: "Parcours & Évaluation",
+      niveaux: {
+        seconde: "2nde",
+        premiere: "1ère",
+        terminale: "Terminale",
+      },
     },
     teacherMode: {
       heading: "Mode prof",
@@ -545,6 +554,15 @@ export const messages = {
       projects: "Projects",
       evaluation: "Evaluation",
       sectionFallback: "Section",
+      eyebrow: "BAC",
+      notFound: "Page not found",
+      backLabel: "Back to BAC",
+      parcoursHeading: "Pathway & Evaluation",
+      niveaux: {
+        seconde: "Year 10",
+        premiere: "Year 11",
+        terminale: "Year 12",
+      },
     },
     teacherMode: {
       heading: "Teacher mode",
@@ -961,6 +979,15 @@ export const messages = {
       projects: "Proyectos",
       evaluation: "Evaluación",
       sectionFallback: "Sección",
+      eyebrow: "BAC",
+      notFound: "Página no encontrada",
+      backLabel: "Volver al BAC",
+      parcoursHeading: "Itinerario y Evaluación",
+      niveaux: {
+        seconde: "2.º",
+        premiere: "1.º",
+        terminale: "Terminale",
+      },
     },
     teacherMode: {
       heading: "Modo profesor",

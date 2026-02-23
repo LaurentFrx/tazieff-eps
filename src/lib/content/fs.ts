@@ -5,10 +5,12 @@ import { cache } from "react";
 import matter from "gray-matter";
 import type { ZodIssue, ZodSchema } from "zod";
 import {
+  BacFrontmatterSchema,
   ExerciseFrontmatterSchema,
   LearnFrontmatterSchema,
   MethodeFrontmatterSchema,
   SeanceFrontmatterSchema,
+  type BacFrontmatter,
   type ExerciseFrontmatter,
   type LearnFrontmatter,
   type MethodeFrontmatter,
@@ -309,3 +311,50 @@ export async function getLearnPage(
 }
 
 export const learnIndex = cache((lang: Lang = "fr") => getAllLearnPages(lang));
+
+// ─── BAC pages (content/bac/{slug}.{lang}.mdx) ───────────────────────────────
+
+const BAC_DIR = path.join(CONTENT_ROOT, "bac");
+
+export async function getAllBacPages(lang: Lang = "fr"): Promise<BacFrontmatter[]> {
+  const files = await listMdxFiles(BAC_DIR, lang);
+  const items = await Promise.all(
+    files.map(async (file) => {
+      const fullPath = path.join(BAC_DIR, file);
+      const { frontmatter } = await readMdxFile(fullPath, BacFrontmatterSchema);
+      return frontmatter;
+    }),
+  );
+  return items.sort((a, b) => a.ordre - b.ordre);
+}
+
+type BacMdxResult = {
+  frontmatter: BacFrontmatter;
+  content: string;
+};
+
+export async function getBacPage(
+  slug: string,
+  lang: Lang = "fr",
+): Promise<BacMdxResult | null> {
+  const localizedPath = path.join(BAC_DIR, `${slug}.${lang}.mdx`);
+  try {
+    return await readMdxFile(localizedPath, BacFrontmatterSchema);
+  } catch (error) {
+    const nodeError = error as NodeJS.ErrnoException;
+    if (nodeError.code === "ENOENT") {
+      if (lang !== "fr") {
+        const fallbackPath = path.join(BAC_DIR, `${slug}.fr.mdx`);
+        try {
+          return await readMdxFile(fallbackPath, BacFrontmatterSchema);
+        } catch {
+          return null;
+        }
+      }
+      return null;
+    }
+    throw error;
+  }
+}
+
+export const bacIndex = cache((lang: Lang = "fr") => getAllBacPages(lang));

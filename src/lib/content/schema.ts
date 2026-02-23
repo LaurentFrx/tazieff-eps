@@ -91,3 +91,14 @@ export const LearnFrontmatterSchema = z.object({
   mots_cles: z.array(z.string()),
 });
 export type LearnFrontmatter = z.infer<typeof LearnFrontmatterSchema>;
+
+export const BacFrontmatterSchema = z.object({
+  slug: z.string().min(1),
+  titre: z.string().min(1),
+  section: z.literal("bac"),
+  ordre: z.number().int().min(1),
+  niveau_minimum: NiveauLearnSchema,
+  description: z.string().min(1),
+  mots_cles: z.array(z.string()),
+});
+export type BacFrontmatter = z.infer<typeof BacFrontmatterSchema>;
