@@ -13,6 +13,11 @@ const tabs = [
     metaKey: "nav.seances.meta",
   },
   {
+    href: "/methodes",
+    labelKey: "nav.methodes.label",
+    metaKey: "nav.methodes.meta",
+  },
+  {
     href: "/apprendre",
     labelKey: "nav.apprendre.label",
     metaKey: "nav.apprendre.meta",

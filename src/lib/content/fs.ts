@@ -6,8 +6,10 @@ import matter from "gray-matter";
 import type { ZodIssue, ZodSchema } from "zod";
 import {
   ExerciseFrontmatterSchema,
+  MethodeFrontmatterSchema,
   SeanceFrontmatterSchema,
   type ExerciseFrontmatter,
+  type MethodeFrontmatter,
   type SeanceFrontmatter,
 } from "@/lib/content/schema";
 import type { Lang } from "@/lib/i18n/messages";
@@ -207,3 +209,54 @@ export async function getSeance(
 
 export const exercisesIndex = cache(async (lang: Lang = "fr") => getAllExercises(lang));
 export const seancesIndex = cache(async (lang: Lang = "fr") => getAllSeances(lang));
+
+const METHODS_DIR = path.join(CONTENT_ROOT, "methods");
+
+async function listMethodeMdxFiles() {
+  let entries: Dirent[] = [];
+  try {
+    entries = await fs.readdir(METHODS_DIR, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  return entries
+    .filter(
+      (entry) =>
+        entry.isFile() &&
+        entry.name.endsWith(".mdx") &&
+        entry.name !== "INDEX.md",
+    )
+    .map((entry) => entry.name);
+}
+
+export async function getAllMethodes(): Promise<MethodeFrontmatter[]> {
+  const files = await listMethodeMdxFiles();
+  const items = await Promise.all(
+    files.map(async (file) => {
+      const fullPath = path.join(METHODS_DIR, file);
+      const { frontmatter } = await readMdxFile(fullPath, MethodeFrontmatterSchema);
+      return frontmatter;
+    }),
+  );
+  return items.sort((a, b) => a.titre.localeCompare(b.titre, "fr"));
+}
+
+type MethodeMdxResult = {
+  frontmatter: MethodeFrontmatter;
+  content: string;
+};
+
+export async function getMethode(slug: string): Promise<MethodeMdxResult | null> {
+  const filePath = path.join(METHODS_DIR, `${slug}.mdx`);
+  try {
+    return await readMdxFile(filePath, MethodeFrontmatterSchema);
+  } catch (error) {
+    const nodeError = error as NodeJS.ErrnoException;
+    if (nodeError.code === "ENOENT") {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export const methodesIndex = cache(getAllMethodes);

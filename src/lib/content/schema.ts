@@ -41,3 +41,39 @@ export const SeanceFrontmatterSchema = z.object({
 });
 
 export type SeanceFrontmatter = z.infer<typeof SeanceFrontmatterSchema>;
+
+export const CategorieMethodeSchema = z.enum([
+  "endurance-de-force",
+  "gain-de-volume",
+  "gain-de-puissance",
+]);
+export type CategorieMethode = z.infer<typeof CategorieMethodeSchema>;
+
+export const NiveauMethodeSchema = z.enum(["seconde", "premiere", "terminale"]);
+export type NiveauMethode = z.infer<typeof NiveauMethodeSchema>;
+
+export const MethodeFrontmatterSchema = z.object({
+  slug: z.string().min(1),
+  titre: z.string().min(1),
+  soustitre: z.string().optional(),
+  categorie: CategorieMethodeSchema,
+  niveau_minimum: NiveauMethodeSchema,
+  description: z.string().min(1),
+  scores: z.object({
+    endurance: z.number().int().min(1).max(5),
+    hypertrophie: z.number().int().min(1).max(5),
+    force: z.number().int().min(1).max(5),
+    puissance: z.number().int().min(1).max(5),
+  }),
+  parametres: z.object({
+    series: z.string(),
+    repetitions: z.string(),
+    intensite: z.string(),
+    recuperation: z.string(),
+    duree: z.string().optional(),
+  }),
+  exercices_compatibles: z.array(z.string()),
+  methodes_complementaires: z.array(z.string()),
+  timer: z.boolean().optional(),
+});
+export type MethodeFrontmatter = z.infer<typeof MethodeFrontmatterSchema>;
