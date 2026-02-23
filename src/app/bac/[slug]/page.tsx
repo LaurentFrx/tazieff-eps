@@ -18,8 +18,10 @@ export async function generateMetadata({
   params,
 }: BacSlugPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const result = await getBacPage(slug, "fr");
-  if (!result) return { title: "Page introuvable" };
+  const lang = await getServerLang();
+  const t = getServerT(lang);
+  const result = await getBacPage(slug, lang);
+  if (!result) return { title: t("bac.notFound") };
   return { title: result.frontmatter.titre };
 }
 

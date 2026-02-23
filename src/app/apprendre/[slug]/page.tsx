@@ -18,8 +18,10 @@ export async function generateMetadata({
   params,
 }: LearnPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const result = await getLearnPage(slug, "fr");
-  if (!result) return { title: "Contenu introuvable" };
+  const lang = await getServerLang();
+  const t = getServerT(lang);
+  const result = await getLearnPage(slug, lang);
+  if (!result) return { title: t("apprendre.notFound") };
   return { title: result.frontmatter.titre };
 }
 
