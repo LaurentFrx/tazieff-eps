@@ -214,7 +214,7 @@ export async function getSeance(
 export const exercisesIndex = cache(async (lang: Lang = "fr") => getAllExercises(lang));
 export const seancesIndex = cache(async (lang: Lang = "fr") => getAllSeances(lang));
 
-const METHODS_DIR = path.join(CONTENT_ROOT, "methods");
+const METHODS_DIR = path.join(CONTENT_ROOT, "methodes");
 
 async function listMethodeMdxFiles() {
   let entries: Dirent[] = [];
@@ -227,8 +227,7 @@ async function listMethodeMdxFiles() {
     .filter(
       (entry) =>
         entry.isFile() &&
-        entry.name.endsWith(".mdx") &&
-        entry.name !== "INDEX.md",
+        entry.name.endsWith(".fr.mdx"),
     )
     .map((entry) => entry.name);
 }
@@ -242,7 +241,12 @@ export async function getAllMethodes(): Promise<MethodeFrontmatter[]> {
       return frontmatter;
     }),
   );
-  return items.sort((a, b) => a.titre.localeCompare(b.titre, "fr"));
+  return items.sort((a, b) => {
+    if (a.ordre !== undefined && b.ordre !== undefined) return a.ordre - b.ordre;
+    if (a.ordre !== undefined) return -1;
+    if (b.ordre !== undefined) return 1;
+    return a.titre.localeCompare(b.titre, "fr");
+  });
 }
 
 type MethodeMdxResult = {
@@ -251,7 +255,7 @@ type MethodeMdxResult = {
 };
 
 export async function getMethode(slug: string): Promise<MethodeMdxResult | null> {
-  const filePath = path.join(METHODS_DIR, `${slug}.mdx`);
+  const filePath = path.join(METHODS_DIR, `${slug}.fr.mdx`);
   try {
     return await readMdxFile(filePath, MethodeFrontmatterSchema);
   } catch (error) {

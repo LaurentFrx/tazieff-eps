@@ -57,8 +57,10 @@ export const MethodeFrontmatterSchema = z.object({
   titre: z.string().min(1),
   soustitre: z.string().optional(),
   categorie: CategorieMethodeSchema,
+  ordre: z.number().int().min(1).optional(),
   niveau_minimum: NiveauMethodeSchema,
   description: z.string().min(1),
+  mots_cles: z.array(z.string()).optional(),
   scores: z.object({
     endurance: z.number().int().min(1).max(5),
     hypertrophie: z.number().int().min(1).max(5),
