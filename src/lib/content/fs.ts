@@ -269,6 +269,11 @@ export async function getMethode(slug: string): Promise<MethodeMdxResult | null>
 
 export const methodesIndex = cache(getAllMethodes);
 
+export async function getMethodesForExercice(exerciceSlug: string): Promise<MethodeFrontmatter[]> {
+  const all = await getAllMethodes();
+  return all.filter((m) => m.exercices_compatibles.includes(exerciceSlug));
+}
+
 // ─── Learn pages (content/learn/{slug}.{lang}.mdx) ───────────────────────────
 
 const LEARN_DIR = path.join(CONTENT_ROOT, "learn");

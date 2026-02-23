@@ -9,6 +9,8 @@ import { ScoresBlock } from "@/components/methodes/ScoreBar";
 import { ParametresTable } from "@/components/methodes/ParametresTable";
 import { MethodeTimer } from "@/components/methodes/MethodeTimer";
 import { RelatedMethods } from "@/components/methodes/RelatedMethods";
+import { RelatedExercices } from "@/components/methodes/RelatedExercices";
+import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
 
 type MethodePageProps = {
   params: Promise<{ slug: string }>;
@@ -38,7 +40,10 @@ export default async function MethodePage({ params }: MethodePageProps) {
 
   const { frontmatter: m, content } = result;
   const mdxContent = await renderMdx(content);
-  const allMethodes = await getAllMethodes();
+  const [allMethodes, allExercices] = await Promise.all([
+    getAllMethodes(),
+    getExercisesIndex(lang),
+  ]);
 
   const categoryLabels: Record<string, string> = {
     "endurance-de-force": t("methodes.categories.endurance-de-force"),
@@ -119,6 +124,14 @@ export default async function MethodePage({ params }: MethodePageProps) {
           allMethodes={allMethodes}
           heading={t("methodes.related")}
           categoryLabels={categoryLabels}
+        />
+      ) : null}
+
+      {m.exercices_compatibles.length > 0 ? (
+        <RelatedExercices
+          slugs={m.exercices_compatibles}
+          allExercices={allExercices}
+          heading={t("methodes.exercicesCompatibles")}
         />
       ) : null}
     </section>

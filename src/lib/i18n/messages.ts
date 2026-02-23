@@ -418,6 +418,8 @@ export const messages = {
         minutes: "min",
         setDuration: "Durée",
       },
+      compatiblesHeading: "Méthodes compatibles",
+      exercicesCompatibles: "Exercices compatibles",
     },
     pwaBanner: {
       title: "Installer l'app",
@@ -849,6 +851,8 @@ export const messages = {
         minutes: "min",
         setDuration: "Duration",
       },
+      compatiblesHeading: "Compatible methods",
+      exercicesCompatibles: "Compatible exercises",
     },
   },
   es: {
@@ -1268,6 +1272,8 @@ export const messages = {
         minutes: "min",
         setDuration: "Duración",
       },
+      compatiblesHeading: "Métodos compatibles",
+      exercicesCompatibles: "Ejercicios compatibles",
     },
     pwaBanner: {
       title: "Instalar la app",

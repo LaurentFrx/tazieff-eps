@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { notFound } from "next/navigation";
-import { getExercise } from "@/lib/content/fs";
+import { getExercise, getMethodesForExercice } from "@/lib/content/fs";
 import { getImportedExercisesIndex } from "@/lib/exercices/getImportedExercisesIndex";
 import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
 import { applyExercisePatch } from "@/lib/live/patch";
 import { fetchExerciseOverride, fetchLiveExercise } from "@/lib/live/queries";
 import { ExerciseLiveDetail } from "@/app/exercices/[slug]/ExerciseLiveDetail";
-import { getServerLang } from "@/lib/i18n/server";
+import { getServerLang, getServerT } from "@/lib/i18n/server";
+import { CategoryBadge } from "@/components/methodes/CategoryBadge";
+import { ScoresBlock } from "@/components/methodes/ScoreBar";
 
 type ExercicePageProps = {
   params: Promise<{ slug: string }>;
@@ -101,6 +103,7 @@ export async function generateMetadata({
 export default async function ExercicePage({ params }: ExercicePageProps) {
   const { slug } = await params;
   const locale = await getServerLang();
+  const t = getServerT(locale);
   const result = await getExercise(slug, locale);
   const liveExercise = result ? null : await fetchLiveExercise(slug, locale);
   const importedExercise = result || liveExercise ? null : await getImportedExercise(slug);
@@ -122,8 +125,23 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
       ? liveExercise.data_json.content
       : convertImportedToContent(importedExercise);
 
-  const override = await fetchExerciseOverride(slug, locale);
+  const [override, compatibleMethodes] = await Promise.all([
+    fetchExerciseOverride(slug, locale),
+    getMethodesForExercice(slug),
+  ]);
   const initialPatch = override?.patch_json ?? null;
+
+  const categoryLabels: Record<string, string> = {
+    "endurance-de-force": t("methodes.categories.endurance-de-force"),
+    "gain-de-volume": t("methodes.categories.gain-de-volume"),
+    "gain-de-puissance": t("methodes.categories.gain-de-puissance"),
+  };
+  const scoreLabels = {
+    endurance: t("methodes.scores.endurance"),
+    hypertrophie: t("methodes.scores.hypertrophie"),
+    force: t("methodes.scores.force"),
+    puissance: t("methodes.scores.puissance"),
+  };
 
   return (
     <section className="page">
@@ -137,6 +155,35 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
         initialPatch={initialPatch}
         onRevalidate={revalidateExercises}
       />
+
+      {compatibleMethodes.length > 0 ? (
+        <div className="card">
+          <h2 className="mb-4 text-base font-semibold text-[color:var(--ink)]">
+            {t("methodes.compatiblesHeading")}
+          </h2>
+          <ul className="flex flex-col gap-3">
+            {compatibleMethodes.map((methode) => (
+              <li key={methode.slug}>
+                <a
+                  href={`/methodes/${methode.slug}`}
+                  className="flex flex-col gap-2 rounded-lg border border-[color:var(--border)] p-3 transition-colors hover:border-[color:var(--accent)]"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-semibold text-[color:var(--ink)]">
+                      {methode.titre}
+                    </p>
+                    <CategoryBadge
+                      categorie={methode.categorie}
+                      label={categoryLabels[methode.categorie] ?? methode.categorie}
+                    />
+                  </div>
+                  <ScoresBlock scores={methode.scores} labels={scoreLabels} />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </section>
   );
 }
