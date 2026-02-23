@@ -6,9 +6,11 @@ import { CategoryBadge } from "@/components/methodes/CategoryBadge";
 import { ScoresBlock } from "@/components/methodes/ScoreBar";
 import type { CategorieMethode } from "@/lib/content/schema";
 
-export const metadata: Metadata = {
-  title: "Méthodes d'entraînement",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await getServerLang();
+  const t = getServerT(lang);
+  return { title: t("methodes.title") };
+}
 
 const CATEGORY_ORDER: CategorieMethode[] = [
   "endurance-de-force",
@@ -82,7 +84,7 @@ export default async function MethodesPage() {
                         </span>
                         {methode.timer ? (
                           <span className="rounded-full bg-[color:var(--accent-soft)] px-2 py-0.5 text-xs font-semibold text-[color:var(--accent)]">
-                            ⏱ Chrono
+                            ⏱ {t("methodes.timer.heading")}
                           </span>
                         ) : null}
                       </div>
