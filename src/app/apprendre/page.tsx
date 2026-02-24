@@ -23,6 +23,11 @@ export default async function ApprendrePage() {
       title: t("pages.apprendre.cards.connaissances.title"),
       description: t("pages.apprendre.cards.connaissances.description"),
     },
+    {
+      href: "/apprendre/calculateur-rm",
+      title: t("pages.apprendre.cards.calculateur.title"),
+      description: t("pages.apprendre.cards.calculateur.description"),
+    },
   ];
 
   return (

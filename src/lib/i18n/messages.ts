@@ -122,6 +122,18 @@ export const messages = {
         premiere: "1ère",
         terminale: "Terminale",
       },
+      calculateur: {
+        title: "Calculateur 1RM",
+        chargeLabel: "Charge (kg)",
+        repsLabel: "Répétitions",
+        resultLabel: "1RM estimé",
+        tableHeading: "Charges de travail",
+        percentCol: "% du 1RM",
+        repsCol: "Reps",
+        weightCol: "Charge",
+        formulaNote: "Formule d'Epley : 1RM = charge × (1 + reps / 30)",
+        placeholder: "—",
+      },
     },
     bac: {
       incomplete: "À compléter",
@@ -353,6 +365,10 @@ export const messages = {
             title: "Connaissances",
             description: "À compléter",
           },
+          calculateur: {
+            title: "Calculateur 1RM",
+            description: "Estime ton 1RM et tes charges de travail.",
+          },
         },
       },
       progres: {
@@ -556,6 +572,18 @@ export const messages = {
         seconde: "Year 10",
         premiere: "Year 11",
         terminale: "Year 12",
+      },
+      calculateur: {
+        title: "1RM Calculator",
+        chargeLabel: "Weight (kg)",
+        repsLabel: "Reps",
+        resultLabel: "Estimated 1RM",
+        tableHeading: "Training loads",
+        percentCol: "% of 1RM",
+        repsCol: "Reps",
+        weightCol: "Weight",
+        formulaNote: "Epley formula: 1RM = weight × (1 + reps / 30)",
+        placeholder: "—",
       },
     },
     bac: {
@@ -788,6 +816,10 @@ export const messages = {
             title: "Knowledge",
             description: "To be completed",
           },
+          calculateur: {
+            title: "1RM Calculator",
+            description: "Estimate your 1RM and training loads.",
+          },
         },
       },
       progres: {
@@ -991,6 +1023,18 @@ export const messages = {
         seconde: "2.º",
         premiere: "1.º",
         terminale: "Terminale",
+      },
+      calculateur: {
+        title: "Calculadora 1RM",
+        chargeLabel: "Carga (kg)",
+        repsLabel: "Repeticiones",
+        resultLabel: "1RM estimado",
+        tableHeading: "Cargas de entrenamiento",
+        percentCol: "% del 1RM",
+        repsCol: "Reps",
+        weightCol: "Carga",
+        formulaNote: "Fórmula de Epley: 1RM = carga × (1 + reps / 30)",
+        placeholder: "—",
       },
     },
     bac: {
@@ -1222,6 +1266,10 @@ export const messages = {
           connaissances: {
             title: "Conocimientos",
             description: "Por completar",
+          },
+          calculateur: {
+            title: "Calculadora 1RM",
+            description: "Estima tu 1RM y tus cargas de entrenamiento.",
           },
         },
       },
