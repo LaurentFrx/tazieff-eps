@@ -44,6 +44,10 @@ export function AppHeader() {
       return { title: t("header.bac"), subtitle: t("header.bac") };
     }
 
+    if (pathname === "/ma-seance") {
+      return { title: t("header.maSeance"), subtitle: t("header.maSeanceSubtitle") };
+    }
+
     return null;
   })();
   const brandTitle = headerConfig?.title ?? "Tazieff";

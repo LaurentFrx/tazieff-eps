@@ -27,6 +27,11 @@ const tabs = [
     labelKey: "nav.bac.label",
     metaKey: "nav.bac.meta",
   },
+  {
+    href: "/ma-seance",
+    labelKey: "nav.maSeance.label",
+    metaKey: "nav.maSeance.meta",
+  },
 ];
 
 export function TabNav() {
