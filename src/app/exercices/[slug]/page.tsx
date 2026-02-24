@@ -27,40 +27,52 @@ async function getImportedExercise(slug: string) {
   return importedItems.find((item) => item.slug === slug) ?? null;
 }
 
-function convertImportedToContent(imported: Awaited<ReturnType<typeof getImportedExercise>>): string {
+type SectionLabels = {
+  resume: string;
+  execution: string;
+  respiration: string;
+  conseils: string;
+  erreurs: string;
+  securite: string;
+};
+
+function convertImportedToContent(
+  imported: Awaited<ReturnType<typeof getImportedExercise>>,
+  labels: SectionLabels,
+): string {
   if (!imported) return "";
 
   const sections: string[] = [];
 
   if (imported.summary) {
-    sections.push(`## Résumé\n\n${imported.summary}`);
+    sections.push(`## ${labels.resume}\n\n${imported.summary}`);
   }
 
   if (imported.executionSteps?.length) {
     sections.push(
-      `## Exécution\n\n${imported.executionSteps.map((step) => `- ${step}`).join("\n")}`
+      `## ${labels.execution}\n\n${imported.executionSteps.map((step) => `- ${step}`).join("\n")}`
     );
   }
 
   if (imported.breathing) {
-    sections.push(`## Respiration\n\n${imported.breathing}`);
+    sections.push(`## ${labels.respiration}\n\n${imported.breathing}`);
   }
 
   if (imported.tips?.length) {
     sections.push(
-      `## Conseils\n\n${imported.tips.map((tip) => `- ${tip}`).join("\n")}`
+      `## ${labels.conseils}\n\n${imported.tips.map((tip) => `- ${tip}`).join("\n")}`
     );
   }
 
   if (imported.commonMistakes?.length) {
     sections.push(
-      `## Erreurs fréquentes\n\n${imported.commonMistakes.map((mistake) => `- ${mistake}`).join("\n")}`
+      `## ${labels.erreurs}\n\n${imported.commonMistakes.map((mistake) => `- ${mistake}`).join("\n")}`
     );
   }
 
   if (imported.safety?.length) {
     sections.push(
-      `## Sécurité\n\n${imported.safety.map((item) => `- ${item}`).join("\n")}`
+      `## ${labels.securite}\n\n${imported.safety.map((item) => `- ${item}`).join("\n")}`
     );
   }
 
@@ -119,11 +131,19 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
     : liveExercise
       ? liveExercise.data_json.frontmatter
       : importedExercise!;
+  const sectionLabels = {
+    resume: t("exerciseDetail.sections.resume"),
+    execution: t("exerciseDetail.sections.execution"),
+    respiration: t("exerciseDetail.sections.respiration"),
+    conseils: t("exerciseDetail.sections.conseils"),
+    erreurs: t("exerciseDetail.sections.erreurs"),
+    securite: t("exerciseDetail.sections.securite"),
+  };
   const baseContent = result
     ? result.content
     : liveExercise
       ? liveExercise.data_json.content
-      : convertImportedToContent(importedExercise);
+      : convertImportedToContent(importedExercise, sectionLabels);
 
   const [override, compatibleMethodes] = await Promise.all([
     fetchExerciseOverride(slug, locale),

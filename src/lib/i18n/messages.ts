@@ -160,6 +160,14 @@ export const messages = {
       noEquipment: "Sans matériel spécifique.",
       teacherMode: "👨‍🏫 Mode enseignant",
       editExercise: "Modifier l'exercice",
+      sections: {
+        resume: "Résumé",
+        execution: "Exécution",
+        respiration: "Respiration",
+        conseils: "Conseils",
+        erreurs: "Erreurs fréquentes",
+        securite: "Sécurité",
+      },
     },
     exerciseEditor: {
       save: "Enregistrer",
@@ -587,6 +595,14 @@ export const messages = {
       noEquipment: "No specific equipment.",
       teacherMode: "👨‍🏫 Teacher mode",
       editExercise: "Edit exercise",
+      sections: {
+        resume: "Summary",
+        execution: "Execution",
+        respiration: "Breathing",
+        conseils: "Tips",
+        erreurs: "Common mistakes",
+        securite: "Safety",
+      },
     },
     exerciseEditor: {
       save: "Save",
@@ -1014,6 +1030,14 @@ export const messages = {
       noEquipment: "Sin material específico.",
       teacherMode: "👨‍🏫 Modo profesor",
       editExercise: "Editar ejercicio",
+      sections: {
+        resume: "Resumen",
+        execution: "Ejecución",
+        respiration: "Respiración",
+        conseils: "Consejos",
+        erreurs: "Errores frecuentes",
+        securite: "Seguridad",
+      },
     },
     exerciseEditor: {
       save: "Guardar",
