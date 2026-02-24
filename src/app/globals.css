@@ -852,3 +852,117 @@ p {
     transition: none !important;
   }
 }
+
+/* ── Print ─────────────────────────────── */
+
+.print-only {
+  display: none !important;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 1.5cm;
+  }
+
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body::before {
+    display: none !important;
+  }
+
+  .app-header,
+  .tab-nav,
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .app-shell {
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .page {
+    gap: 14px;
+  }
+
+  .card {
+    background: transparent !important;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    border-radius: 6px !important;
+    padding: 12px !important;
+    break-inside: avoid;
+  }
+
+  .pill {
+    background: transparent !important;
+    border: 1px solid #999 !important;
+    color: #000 !important;
+  }
+
+  /* Force readable text */
+  h1, h2, h3, p, span, dt, dd {
+    color: #000 !important;
+  }
+
+  /* CategoryBadge: keep ring visible, no bg */
+  [class*="ring-"] {
+    background: transparent !important;
+    color: #000 !important;
+  }
+
+  /* Score bars: accent dots → dark gray for print */
+  .bg-\[color\:var\(--accent\)\] {
+    background: #333 !important;
+  }
+
+  .bg-\[color\:var\(--bg-2\)\] {
+    background: #ddd !important;
+  }
+
+  /* Print-specific footer */
+  .print-footer {
+    margin-top: 24px;
+    padding-top: 12px;
+    border-top: 1px solid #ccc;
+    font-size: 10px;
+    color: #666 !important;
+    text-align: center;
+  }
+
+  /* Print header */
+  .print-header {
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .print-header h1 {
+    font-size: 22px !important;
+    margin-bottom: 4px;
+  }
+
+  .print-header p {
+    font-size: 12px;
+    color: #333 !important;
+  }
+
+  a {
+    color: #000 !important;
+  }
+}

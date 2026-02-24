@@ -48,6 +48,10 @@ export function AppHeader() {
       return { title: t("header.maSeance"), subtitle: t("header.maSeanceSubtitle") };
     }
 
+    if (pathname === "/programmes") {
+      return { title: t("programmes.title"), subtitle: t("programmes.eyebrow") };
+    }
+
     return null;
   })();
   const brandTitle = headerConfig?.title ?? "Tazieff";

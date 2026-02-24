@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { CategoryBadge } from "@/components/methodes/CategoryBadge";
 import { ScoresBlock } from "@/components/methodes/ScoreBar";
@@ -66,6 +67,7 @@ export function SessionGenerator({
   parametresLabels,
 }: SessionGeneratorProps) {
   const { t } = useI18n();
+  const searchParams = useSearchParams();
 
   const [step, setStep] = useState<Step>(1);
   const [niveau, setNiveau] = useState<NiveauMethode>("seconde");
@@ -73,20 +75,31 @@ export function SessionGenerator({
   const [selectedMethodes, setSelectedMethodes] = useState<string[]>([]);
   const [selectedExercices, setSelectedExercices] = useState<string[]>([]);
 
-  /* ── localStorage restore ── */
+  /* ── localStorage restore or query param pre-select ── */
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      const saved: SavedSession = JSON.parse(raw);
-      if (saved.objectif && saved.selectedMethodes?.length && saved.selectedExercices?.length === 6) {
-        setNiveau(saved.niveau);
-        setObjectif(saved.objectif);
-        setSelectedMethodes(saved.selectedMethodes);
-        setSelectedExercices(saved.selectedExercices);
-        setStep("result");
+      if (raw) {
+        const saved: SavedSession = JSON.parse(raw);
+        if (saved.objectif && saved.selectedMethodes?.length && saved.selectedExercices?.length === 6) {
+          setNiveau(saved.niveau);
+          setObjectif(saved.objectif);
+          setSelectedMethodes(saved.selectedMethodes);
+          setSelectedExercices(saved.selectedExercices);
+          setStep("result");
+          return;
+        }
       }
     } catch { /* ignore */ }
+
+    // Pre-select objectif from query param (e.g. ?objectif=endurance-de-force)
+    const qObjectif = searchParams.get("objectif");
+    const validObjectifs: CategorieMethode[] = ["endurance-de-force", "gain-de-volume", "gain-de-puissance"];
+    if (qObjectif && validObjectifs.includes(qObjectif as CategorieMethode)) {
+      setObjectif(qObjectif as CategorieMethode);
+      setStep(2);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* ── localStorage save ── */
@@ -175,7 +188,7 @@ export function SessionGenerator({
   /* ── Render ── */
   return (
     <section className="page">
-      <header className="page-header">
+      <header className="page-header no-print">
         <Link href="/" className="eyebrow hover:text-[color:var(--accent)]">
           ← {t("maSeance.eyebrow")}
         </Link>
@@ -184,7 +197,7 @@ export function SessionGenerator({
 
       {/* Stepper */}
       {step !== "result" && (
-        <div className="flex items-center gap-1">
+        <div className="no-print flex items-center gap-1">
           {stepLabels.map(({ num, label }) => (
             <div key={num} className="flex flex-1 flex-col items-center gap-1">
               <div
@@ -262,6 +275,14 @@ export function SessionGenerator({
               <p className="text-sm text-[color:var(--muted)]">{t(descKey)}</p>
             </button>
           ))}
+
+          {/* Programmes hint */}
+          <Link
+            href="/programmes"
+            className="text-center text-xs font-semibold text-[color:var(--accent)] transition-opacity hover:opacity-75"
+          >
+            {t("maSeance.programmesHint")}
+          </Link>
         </div>
       )}
 
@@ -414,6 +435,18 @@ export function SessionGenerator({
       {/* ── RESULT ── */}
       {step === "result" && objectif && (
         <div className="flex flex-col gap-4">
+          {/* Print-only header */}
+          <div className="print-only print-header">
+            <h1>{t("maSeance.result.heading")}</h1>
+            <p>
+              {t("maSeance.result.objectifLabel")} : {categoryLabels[objectif] ?? objectif}
+              {" — "}
+              {t("maSeance.result.niveauLabel")} : {niveauLabels[niveau]}
+              {" — "}
+              {new Date().toLocaleDateString()}
+            </p>
+          </div>
+
           {/* Header */}
           <div className="card flex flex-col gap-2">
             <h2 className="text-lg font-bold text-[color:var(--ink)]">
@@ -484,14 +517,14 @@ export function SessionGenerator({
           }) && (
             <Link
               href="/apprendre/timer"
-              className="card flex items-center justify-center py-3 text-sm font-semibold text-[color:var(--accent)] transition-colors hover:border-[color:var(--accent)]"
+              className="no-print card flex items-center justify-center py-3 text-sm font-semibold text-[color:var(--accent)] transition-colors hover:border-[color:var(--accent)]"
             >
               {t("maSeance.result.timerLink")}
             </Link>
           )}
 
           {/* Actions */}
-          <div className="flex gap-3">
+          <div className="no-print flex gap-3">
             <button
               type="button"
               onClick={() => {
@@ -509,6 +542,11 @@ export function SessionGenerator({
             >
               {t("maSeance.result.print")}
             </button>
+          </div>
+
+          {/* Print-only footer */}
+          <div className="print-only print-footer">
+            Lycée Haroun Tazieff — guide-musculation.vercel.app
           </div>
         </div>
       )}
