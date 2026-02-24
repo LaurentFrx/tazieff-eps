@@ -116,7 +116,17 @@ export default async function MethodePage({ params }: MethodePageProps) {
         <ParametresTable parametres={m.parametres} labels={parametresLabels} />
       </div>
 
-      {m.timer ? <MethodeTimer labels={timerLabels} /> : null}
+      {m.timer ? (
+        <>
+          <MethodeTimer labels={timerLabels} />
+          <Link
+            href="/apprendre/timer"
+            className="card flex items-center justify-center py-3 text-sm font-semibold text-[color:var(--accent)] transition-colors hover:border-[color:var(--accent)]"
+          >
+            {t("methodes.timer.fullTimerLink")}
+          </Link>
+        </>
+      ) : null}
 
       <div className="flex flex-col gap-4">{mdxContent}</div>
 

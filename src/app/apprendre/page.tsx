@@ -28,6 +28,11 @@ export default async function ApprendrePage() {
       title: t("pages.apprendre.cards.calculateur.title"),
       description: t("pages.apprendre.cards.calculateur.description"),
     },
+    {
+      href: "/apprendre/timer",
+      title: t("pages.apprendre.cards.timer.title"),
+      description: t("pages.apprendre.cards.timer.description"),
+    },
   ];
 
   return (
