@@ -1,6 +1,8 @@
 import type { ComponentPropsWithoutRef } from "react";
+import { Checklist } from "@/components/mdx/Checklist";
 
 export const mdxComponents = {
+  Checklist,
   h2: ({ className, ...props }: ComponentPropsWithoutRef<"h2">) => (
     <h2
       className={`text-xl font-semibold text-[color:var(--ink)] ${className ?? ""}`.trim()}

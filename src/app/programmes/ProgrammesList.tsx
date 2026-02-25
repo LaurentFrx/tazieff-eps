@@ -16,7 +16,7 @@ type Programme = {
   paramsKey: string;
   exampleKey: string;
   objectifCategorie: CategorieMethode;
-  methodSlugs: { slug: string; label: string }[];
+  methodSlugs: { slug: string; labelKey: string }[];
 };
 
 const PROGRAMMES: Programme[] = [
@@ -30,8 +30,8 @@ const PROGRAMMES: Programme[] = [
     exampleKey: "programmes.p1.example",
     objectifCategorie: "endurance-de-force",
     methodSlugs: [
-      { slug: "charge-constante", label: "Charge constante" },
-      { slug: "pyramide", label: "Pyramide" },
+      { slug: "charge-constante", labelKey: "programmes.methodNames.chargeConstante" },
+      { slug: "pyramide", labelKey: "programmes.methodNames.pyramide" },
     ],
   },
   {
@@ -44,8 +44,8 @@ const PROGRAMMES: Programme[] = [
     exampleKey: "programmes.p2.example",
     objectifCategorie: "endurance-de-force",
     methodSlugs: [
-      { slug: "circuit-training", label: "Circuit training" },
-      { slug: "amrap", label: "AMRAP" },
+      { slug: "circuit-training", labelKey: "programmes.methodNames.circuitTraining" },
+      { slug: "amrap", labelKey: "programmes.methodNames.amrap" },
     ],
   },
   {
@@ -58,8 +58,8 @@ const PROGRAMMES: Programme[] = [
     exampleKey: "programmes.p3.example",
     objectifCategorie: "gain-de-puissance",
     methodSlugs: [
-      { slug: "triple-tri-set", label: "Triple tri-set" },
-      { slug: "circuit-training", label: "Circuit training" },
+      { slug: "triple-tri-set", labelKey: "programmes.methodNames.triplTriSet" },
+      { slug: "circuit-training", labelKey: "programmes.methodNames.circuitTraining" },
     ],
   },
 ];
@@ -126,13 +126,13 @@ export function ProgrammesList() {
 
                   {/* Method links */}
                   <div className="flex flex-wrap gap-2">
-                    {prog.methodSlugs.map(({ slug, label }) => (
+                    {prog.methodSlugs.map(({ slug, labelKey }) => (
                       <Link
                         key={slug}
                         href={`/methodes/${slug}`}
                         className="rounded-full border border-[color:var(--border)] px-3 py-1 text-xs font-semibold text-[color:var(--accent)] transition-colors hover:border-[color:var(--accent)]"
                       >
-                        {label}
+                        {t(labelKey)}
                       </Link>
                     ))}
                   </div>

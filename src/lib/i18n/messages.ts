@@ -514,6 +514,13 @@ export const messages = {
       useThisProgramme: "Utiliser ce programme →",
       seeAllMethods: "Voir toutes les méthodes →",
       detailLink: "Voir le programme complet →",
+      methodNames: {
+        chargeConstante: "Charge constante",
+        pyramide: "Pyramide",
+        circuitTraining: "Circuit training",
+        amrap: "AMRAP",
+        triplTriSet: "Triple tri-set",
+      },
       p1: {
         title: "Renforcement / Tonification",
         objectif: "Endurance de force + volume modéré",
@@ -538,6 +545,9 @@ export const messages = {
         params: "3-4 séries × max reps × poids corps × 1-2min récup",
         example: "Tractions, dips, pompes, gainage, squat bulgare",
       },
+    },
+    checklist: {
+      reset: "Réinitialiser",
     },
     pwaBanner: {
       title: "Installer l'app",
@@ -964,6 +974,9 @@ export const messages = {
         themeHelp: "Follow the system or force a fixed mode.",
       },
     },
+    checklist: {
+      reset: "Reset",
+    },
     pwaBanner: {
       title: "Install the app",
       body: "Get a full-screen view (without iOS browser UI).",
@@ -1065,6 +1078,13 @@ export const messages = {
       useThisProgramme: "Use this programme →",
       seeAllMethods: "See all methods →",
       detailLink: "See full programme →",
+      methodNames: {
+        chargeConstante: "Charge constante",
+        pyramide: "Pyramide",
+        circuitTraining: "Circuit training",
+        amrap: "AMRAP",
+        triplTriSet: "Triple tri-set",
+      },
       p1: {
         title: "Strength / Toning",
         objectif: "Strength endurance + moderate volume",
@@ -1604,6 +1624,13 @@ export const messages = {
       useThisProgramme: "Usar este programa →",
       seeAllMethods: "Ver todos los métodos →",
       detailLink: "Ver programa completo →",
+      methodNames: {
+        chargeConstante: "Charge constante",
+        pyramide: "Pyramide",
+        circuitTraining: "Circuit training",
+        amrap: "AMRAP",
+        triplTriSet: "Triple tri-set",
+      },
       p1: {
         title: "Refuerzo / Tonificación",
         objectif: "Resistencia de fuerza + volumen moderado",
@@ -1628,6 +1655,9 @@ export const messages = {
         params: "3-4 series × máx reps × peso corporal × 1-2min descanso",
         example: "Dominadas, fondos, flexiones, planchas, sentadilla búlgara",
       },
+    },
+    checklist: {
+      reset: "Restablecer",
     },
     pwaBanner: {
       title: "Instalar la app",

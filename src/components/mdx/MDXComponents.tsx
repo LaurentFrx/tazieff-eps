@@ -1,4 +1,5 @@
 import type { ComponentPropsWithoutRef } from "react";
+import { Checklist } from "@/components/mdx/Checklist";
 import { Figure } from "@/components/mdx/Figure";
 
 type CalloutProps = ComponentPropsWithoutRef<"div"> & {
@@ -61,6 +62,7 @@ export const mdxComponents = {
       />
     );
   },
+  Checklist,
   Figure,
   Callout: ({
     tone = "info",

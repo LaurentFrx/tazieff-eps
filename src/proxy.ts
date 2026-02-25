@@ -12,7 +12,7 @@ function unauthorized() {
   });
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   if (!BASIC_AUTH_ENV) {
     return NextResponse.next();
   }
