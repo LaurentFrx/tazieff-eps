@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Sora } from "next/font/google";
+import { Space_Grotesk, Space_Mono, Sora } from "next/font/google";
 import { cookies } from "next/headers";
 import { AppHeader } from "@/components/AppHeader";
 import { InstallPwaBanner } from "@/components/InstallPwaBanner";
@@ -18,6 +18,12 @@ const sora = Sora({
   subsets: ["latin"],
   variable: "--font-body",
   weight: ["300", "400", "500", "600", "700"],
+});
+
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
@@ -65,7 +71,7 @@ export default async function RootLayout({
       className={htmlClassName}
       suppressHydrationWarning
     >
-      <body className={`${spaceGrotesk.variable} ${sora.variable}`}>
+      <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable}`}>
         <AppProviders initialLang={initialLang} initialTheme={initialTheme}>
           <div className="app-shell">
             <AppHeader />

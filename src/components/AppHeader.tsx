@@ -36,6 +36,10 @@ export function AppHeader() {
       return { title: t("header.seances"), subtitle: t("header.seances") };
     }
 
+    if (pathname === "/apprendre/anatomie") {
+      return { title: t("anatomy.title"), subtitle: t("anatomy.subtitle") };
+    }
+
     if (pathname === "/apprendre") {
       return { title: t("header.apprendre"), subtitle: t("header.apprendre") };
     }

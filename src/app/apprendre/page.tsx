@@ -33,6 +33,11 @@ export default async function ApprendrePage() {
       title: t("pages.apprendre.cards.timer.title"),
       description: t("pages.apprendre.cards.timer.description"),
     },
+    {
+      href: "/apprendre/anatomie",
+      title: t("pages.apprendre.cards.anatomie.title"),
+      description: t("pages.apprendre.cards.anatomie.description"),
+    },
   ];
 
   return (
