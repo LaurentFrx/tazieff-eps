@@ -1,28 +1,30 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import type { ExerciseFrontmatter } from "@/lib/content/schema";
 import type { MethodeFrontmatter } from "@/lib/content/schema";
 import type { LiveExerciseListItem } from "@/lib/live/types";
 import {
   ANATOMY_ZONES,
   getAntagonist,
   getZone,
-  getZonesByFace,
   matchesZone,
-  type AnatomyFace,
 } from "./anatomy-data";
-import { MannequinSvg } from "./MannequinSvg";
 import "./anatomy.css";
+
+const AnatomyCanvas = dynamic(() => import("./AnatomyCanvas"), {
+  ssr: false,
+  loading: () => <div className="anatomy-loading">Initializing 3D…</div>,
+});
 
 type Props = {
   exercises: LiveExerciseListItem[];
   methodes: MethodeFrontmatter[];
 };
 
-/* ─── Canvas particles ────────────────────────────────────────────────── */
+/* ─── Canvas particles (HTML overlay) ─────────────────────────────────── */
 
 function useParticles(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
   useEffect(() => {
@@ -35,8 +37,15 @@ function useParticles(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     if (mql.matches) return;
 
     let animId = 0;
-    const particles: { x: number; y: number; vx: number; vy: number; r: number; a: number }[] = [];
-    const COUNT = 40;
+    const particles: {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      r: number;
+      a: number;
+    }[] = [];
+    const COUNT = 35;
 
     function resize() {
       if (!canvas) return;
@@ -54,7 +63,7 @@ function useParticles(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
         vx: (Math.random() - 0.5) * 0.3,
         vy: (Math.random() - 0.5) * 0.3,
         r: Math.random() * 1.5 + 0.5,
-        a: Math.random() * 0.4 + 0.1,
+        a: Math.random() * 0.35 + 0.05,
       });
     }
 
@@ -86,7 +95,6 @@ function useParticles(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
 
 export default function AnatomyMap({ exercises }: Props) {
   const { t, lang } = useI18n();
-  const [face, setFace] = useState<AnatomyFace>("anterior");
   const [selected, setSelected] = useState<string | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -118,32 +126,13 @@ export default function AnatomyMap({ exercises }: Props) {
     return getAntagonist(selected);
   }, [selected]);
 
-  /* ── Handle zone selection ──────────────────────────────────────────── */
-  const handleSelect = useCallback(
-    (id: string) => {
-      const zone = getZone(id);
-      if (!zone) return;
-
-      // If zone is on the other face, flip first
-      if (zone.face !== face) {
-        setFace(zone.face);
-      }
-      setSelected((prev) => (prev === id ? null : id));
-    },
-    [face],
-  );
-
-  /* ── Flip toggle ────────────────────────────────────────────────────── */
-  const handleFlip = useCallback(() => {
-    setFace((f) => (f === "anterior" ? "posterior" : "anterior"));
-    setSelected(null);
+  /* ── Handle zone selection (toggle) ─────────────────────────────────── */
+  const handleSelect = useCallback((id: string) => {
+    setSelected((prev) => (prev === id ? null : id));
   }, []);
 
   /* ── Panel open state (mobile) ──────────────────────────────────────── */
   const panelOpen = selected !== null;
-
-  /* ── Current face zones ─────────────────────────────────────────────── */
-  const currentZones = getZonesByFace(face);
 
   return (
     <div className="anatomy-page">
@@ -153,75 +142,33 @@ export default function AnatomyMap({ exercises }: Props) {
       <div className="anatomy-scanline" />
 
       <div className="anatomy-layout">
-        {/* ── Mannequin column ──────────────────────────────────────────── */}
-        <div className="anatomy-mannequin">
-          {/* HUD header */}
-          <div className="anatomy-hud">
-            <div className="anatomy-hud-title">
-              {t("anatomy.systemTitle")}
-            </div>
-            <div>
-              {face === "anterior"
-                ? t("anatomy.anterior")
-                : t("anatomy.posterior")}
-              {" // "}
-              {currentZones.length} {t("anatomy.zones_word")}
-            </div>
-          </div>
+        {/* ── 3D Canvas ────────────────────────────────────────────────── */}
+        <div className="anatomy-canvas-wrap">
+          <AnatomyCanvas
+            selected={selected}
+            antagonist={antagonistZone?.id ?? null}
+            hovered={hovered}
+            onSelect={handleSelect}
+            onHover={setHovered}
+          />
 
-          {/* SVG mannequin with flip */}
-          <div className="mannequin-flipper">
-            <div
-              className={`mannequin-inner${face === "posterior" ? " mannequin-inner--flipped" : ""}`}
-            >
-              {/* Anterior face */}
-              <div className="mannequin-face">
-                <MannequinSvg
-                  face="anterior"
-                  selected={face === "anterior" ? selected : null}
-                  antagonist={
-                    face === "anterior" ? (antagonistZone?.id ?? null) : null
-                  }
-                  hovered={face === "anterior" ? hovered : null}
-                  onSelect={handleSelect}
-                  onHover={setHovered}
-                  zoneLabels={zoneLabels}
-                />
+          {/* HUD overlay */}
+          <div className="anatomy-hud-overlay">
+            <div className="anatomy-hud-top">
+              <div className="anatomy-hud-title">
+                {t("anatomy.systemTitle")}
               </div>
-              {/* Posterior face */}
-              <div className="mannequin-face mannequin-face--back">
-                <MannequinSvg
-                  face="posterior"
-                  selected={face === "posterior" ? selected : null}
-                  antagonist={
-                    face === "posterior" ? (antagonistZone?.id ?? null) : null
-                  }
-                  hovered={face === "posterior" ? hovered : null}
-                  onSelect={handleSelect}
-                  onHover={setHovered}
-                  zoneLabels={zoneLabels}
-                />
+              <div className="anatomy-hud">
+                {selected
+                  ? `// ${zoneLabels[selected] ?? selected}`
+                  : t("anatomy.dataReady")}
               </div>
             </div>
-          </div>
-
-          {/* Flip button */}
-          <button
-            type="button"
-            className="anatomy-flip-btn"
-            onClick={handleFlip}
-          >
-            <span
-              className={`anatomy-flip-icon${face === "posterior" ? " anatomy-flip-icon--flipped" : ""}`}
-            >
-              ⇄
-            </span>
-            {t("anatomy.flip")}
-          </button>
-
-          {/* HUD status */}
-          <div className="anatomy-hud">
-            {selected ? t("anatomy.scanActive") : t("anatomy.dataReady")}
+            <div className="anatomy-hud-bottom">
+              <div className="anatomy-hud">
+                {selected ? t("anatomy.scanActive") : "19 " + t("anatomy.zones_word")}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -243,6 +190,7 @@ export default function AnatomyMap({ exercises }: Props) {
               }
               exercises={matchingExercises}
               onClose={() => setSelected(null)}
+              onSelectAntagonist={handleSelect}
               t={t}
               lang={lang}
             />
@@ -269,8 +217,8 @@ function SelectedPanel({
   antagonistLabel,
   exercises,
   onClose,
+  onSelectAntagonist,
   t,
-  lang,
 }: {
   zoneId: string;
   zoneLabel: string;
@@ -278,13 +226,12 @@ function SelectedPanel({
   antagonistLabel: string | null;
   exercises: LiveExerciseListItem[];
   onClose: () => void;
+  onSelectAntagonist: (id: string) => void;
   t: (key: string) => string;
   lang: string;
 }) {
   const zone = getZone(zoneId);
-  const regionLabel = zone
-    ? t(`anatomy.region.${zone.region}`)
-    : "";
+  const regionLabel = zone ? t(`anatomy.region.${zone.region}`) : "";
 
   return (
     <>
@@ -310,7 +257,13 @@ function SelectedPanel({
           <span className="anatomy-antagonist-label">
             {t("anatomy.pair")}
           </span>
-          <span className="anatomy-antagonist-name">{antagonistLabel}</span>
+          <button
+            type="button"
+            className="anatomy-antagonist-name"
+            onClick={() => onSelectAntagonist(antagonistZone.id)}
+          >
+            {antagonistLabel}
+          </button>
         </div>
       ) : null}
 

@@ -8,7 +8,6 @@
   --holo-orange: #FF6B00;
   --holo-orange-dim: rgba(255, 107, 0, 0.12);
   --holo-orange-mid: rgba(255, 107, 0, 0.4);
-  --holo-grid: rgba(0, 212, 255, 0.06);
   --holo-grid-line: rgba(0, 212, 255, 0.12);
   background: var(--holo-bg);
   color: var(--holo-blue);
@@ -38,10 +37,10 @@
 /* ── Scanline overlay ───────────────────────────────────────────────────── */
 
 .anatomy-scanline {
-  position: absolute;
+  position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 2;
+  z-index: 3;
   overflow: hidden;
 }
 
@@ -68,23 +67,6 @@
   100% { top: 100%; }
 }
 
-/* ── Glow pulse for selected zones ──────────────────────────────────────── */
-
-@keyframes glow-pulse {
-  0%, 100% {
-    filter: drop-shadow(0 0 6px var(--holo-orange-mid))
-            drop-shadow(0 0 12px var(--holo-orange-dim));
-  }
-  50% {
-    filter: drop-shadow(0 0 10px var(--holo-orange))
-            drop-shadow(0 0 24px var(--holo-orange-mid));
-  }
-}
-
-.zone-selected {
-  animation: glow-pulse 2s ease-in-out infinite;
-}
-
 /* ── Hologram flicker on mount ──────────────────────────────────────────── */
 
 @keyframes hologram-flicker {
@@ -99,105 +81,6 @@
   100% { opacity: 1; }
 }
 
-.anatomy-flicker {
-  animation: hologram-flicker 2s ease-out forwards;
-}
-
-/* ── Flip animation for anterior/posterior toggle ───────────────────────── */
-
-.mannequin-flipper {
-  perspective: 1000px;
-}
-
-.mannequin-inner {
-  position: relative;
-  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-  transform-style: preserve-3d;
-}
-
-.mannequin-inner--flipped {
-  transform: rotateY(180deg);
-}
-
-.mannequin-face {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-.mannequin-face--back {
-  position: absolute;
-  inset: 0;
-  transform: rotateY(180deg);
-}
-
-/* ── SVG zone styles ────────────────────────────────────────────────────── */
-
-.zone-path {
-  fill: transparent;
-  stroke: var(--holo-blue);
-  stroke-width: 1;
-  cursor: pointer;
-  transition: fill 0.25s ease, stroke 0.25s ease, filter 0.25s ease;
-}
-
-.zone-path:hover {
-  fill: var(--holo-blue-dim);
-  stroke-width: 1.5;
-  filter: drop-shadow(0 0 6px var(--holo-blue-dim));
-}
-
-.zone-path--active {
-  fill: var(--holo-orange-dim);
-  stroke: var(--holo-orange);
-  stroke-width: 1.8;
-}
-
-.zone-path--antagonist {
-  fill: rgba(0, 212, 255, 0.08);
-  stroke: var(--holo-blue);
-  stroke-width: 1.4;
-  stroke-dasharray: 4 3;
-}
-
-/* Body outline */
-.body-outline {
-  fill: none;
-  stroke: var(--holo-blue);
-  stroke-width: 0.8;
-  opacity: 0.35;
-}
-
-.body-outline-head {
-  fill: none;
-  stroke: var(--holo-blue);
-  stroke-width: 0.8;
-  opacity: 0.35;
-}
-
-/* ── Zone label (on SVG) ────────────────────────────────────────────────── */
-
-.zone-label {
-  font-family: var(--font-mono), "Space Mono", monospace;
-  font-size: 6px;
-  fill: var(--holo-blue);
-  text-anchor: middle;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.zone-label--visible {
-  opacity: 1;
-}
-
-.zone-label--active {
-  fill: var(--holo-orange);
-  opacity: 1;
-  font-weight: 700;
-}
-
 /* ── Layout ─────────────────────────────────────────────────────────────── */
 
 .anatomy-layout {
@@ -205,48 +88,95 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
-  padding: 16px;
-  gap: 16px;
+  height: 100dvh;
 }
 
 @media (min-width: 768px) {
   .anatomy-layout {
     flex-direction: row;
-    padding: 24px;
-    gap: 24px;
-    align-items: flex-start;
   }
 }
 
-/* ── Mannequin column ───────────────────────────────────────────────────── */
+/* ── 3D Canvas wrapper ──────────────────────────────────────────────────── */
 
-.anatomy-mannequin {
+.anatomy-canvas-wrap {
+  position: relative;
   flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  min-height: 50dvh;
 }
 
 @media (min-width: 768px) {
-  .anatomy-mannequin {
-    flex: 0 0 45%;
-    max-width: 400px;
-    position: sticky;
-    top: 80px;
+  .anatomy-canvas-wrap {
+    flex: 0 0 60%;
+    height: 100dvh;
   }
+}
+
+/* ── HUD overlay on canvas ──────────────────────────────────────────────── */
+
+.anatomy-hud-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px;
+}
+
+.anatomy-hud-top {
+  text-align: center;
+}
+
+.anatomy-hud-bottom {
+  text-align: center;
+}
+
+.anatomy-hud {
+  font-family: var(--font-mono), "Space Mono", monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(0, 212, 255, 0.45);
+}
+
+.anatomy-hud-title {
+  font-size: 12px;
+  letter-spacing: 0.30em;
+  color: var(--holo-blue);
+  margin-bottom: 4px;
+}
+
+/* ── Loading placeholder ────────────────────────────────────────────────── */
+
+.anatomy-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-family: var(--font-mono), "Space Mono", monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(0, 212, 255, 0.4);
+  animation: hologram-flicker 2s ease-out forwards;
 }
 
 /* ── Side panel ─────────────────────────────────────────────────────────── */
 
 .anatomy-panel {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   background: rgba(0, 212, 255, 0.04);
-  border: 1px solid rgba(0, 212, 255, 0.15);
-  border-radius: 8px;
+  border-left: 1px solid rgba(0, 212, 255, 0.15);
   padding: 20px;
-  min-height: 200px;
+  overflow-y: auto;
+}
+
+@media (min-width: 768px) {
+  .anatomy-panel {
+    flex: 0 0 40%;
+    height: 100dvh;
+  }
 }
 
 @media (max-width: 767px) {
@@ -256,9 +186,10 @@
     left: 0;
     right: 0;
     z-index: 20;
+    border-left: none;
+    border-top: 1px solid rgba(0, 212, 255, 0.15);
     border-radius: 16px 16px 0 0;
     max-height: 55dvh;
-    overflow-y: auto;
     transform: translateY(100%);
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
@@ -332,6 +263,11 @@
 .anatomy-antagonist-name {
   color: var(--holo-blue);
   font-weight: 700;
+  cursor: pointer;
+}
+
+.anatomy-antagonist-name:hover {
+  color: #fff;
 }
 
 /* ── Exercise list ──────────────────────────────────────────────────────── */
@@ -377,58 +313,6 @@
   white-space: nowrap;
 }
 
-/* ── Flip toggle button ─────────────────────────────────────────────────── */
-
-.anatomy-flip-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: none;
-  border: 1px solid rgba(0, 212, 255, 0.3);
-  color: var(--holo-blue);
-  font-family: var(--font-mono), "Space Mono", monospace;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 6px 14px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
-}
-
-.anatomy-flip-btn:hover {
-  border-color: var(--holo-blue);
-  background: var(--holo-blue-dim);
-  color: #fff;
-}
-
-.anatomy-flip-icon {
-  display: inline-block;
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.anatomy-flip-icon--flipped {
-  transform: rotateY(180deg);
-}
-
-/* ── HUD decorations ────────────────────────────────────────────────────── */
-
-.anatomy-hud {
-  font-family: var(--font-mono), "Space Mono", monospace;
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: rgba(0, 212, 255, 0.45);
-  text-align: center;
-}
-
-.anatomy-hud-title {
-  font-size: 11px;
-  letter-spacing: 0.25em;
-  color: var(--holo-blue);
-  margin-bottom: 4px;
-}
-
 /* ── Exercise count badge ───────────────────────────────────────────────── */
 
 .anatomy-count {
@@ -462,35 +346,30 @@
   z-index: 0;
 }
 
-/* ── Reduced motion ─────────────────────────────────────────────────────── */
+/* ── Placeholder (no zone selected, desktop) ────────────────────────────── */
 
-@media (prefers-reduced-motion: reduce) {
-  .anatomy-scanline::before {
-    animation: none;
-    display: none;
-  }
+.anatomy-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  height: 100%;
+}
 
-  .zone-selected {
-    animation: none;
-    filter: drop-shadow(0 0 8px var(--holo-orange-mid));
-  }
+.anatomy-placeholder-icon {
+  font-size: 32px;
+  opacity: 0.3;
+}
 
-  .anatomy-flicker {
-    animation: none;
-    opacity: 1;
-  }
-
-  .mannequin-inner {
-    transition: none;
-  }
-
-  .anatomy-flip-icon {
-    transition: none;
-  }
-
-  .anatomy-panel {
-    transition: none;
-  }
+.anatomy-placeholder-text {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(0, 212, 255, 0.4);
+  max-width: 200px;
 }
 
 /* ── Mobile drawer handle ───────────────────────────────────────────────── */
@@ -510,27 +389,15 @@
   }
 }
 
-/* ── Desktop panel placeholder ──────────────────────────────────────────── */
+/* ── Reduced motion ─────────────────────────────────────────────────────── */
 
-.anatomy-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 40px 20px;
-  text-align: center;
-}
+@media (prefers-reduced-motion: reduce) {
+  .anatomy-scanline::before {
+    animation: none;
+    display: none;
+  }
 
-.anatomy-placeholder-icon {
-  font-size: 32px;
-  opacity: 0.3;
-}
-
-.anatomy-placeholder-text {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: rgba(0, 212, 255, 0.4);
-  max-width: 200px;
+  .anatomy-panel {
+    transition: none;
+  }
 }
