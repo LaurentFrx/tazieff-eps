@@ -67,7 +67,7 @@ export function TabNav() {
     };
   }, []);
 
-  if (hideBottomNav) {
+  if (hideBottomNav || pathname === "/apprendre/anatomie") {
     return null;
   }
 

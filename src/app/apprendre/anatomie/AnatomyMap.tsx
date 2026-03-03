@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { Menu, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { LiveExerciseListItem } from "@/lib/live/types";
 import { MUSCLE_GROUPS, matchesGroup } from "./anatomy-data";
@@ -167,9 +168,30 @@ export default function AnatomyMap({ exercises }: Props) {
     name: string;
     group: string | null;
   } | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useParticles(canvasRef);
+
+  /* ── Close menu on click outside or Escape ───────────────────────────── */
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") setMenuOpen(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [menuOpen]);
 
   /* ── Exercises matching selected group ────────────────────────────────── */
   const matchingExercises = useMemo(() => {
@@ -245,8 +267,47 @@ export default function AnatomyMap({ exercises }: Props) {
       <canvas ref={canvasRef} className="anatomy-particles" />
       <div className="anatomy-scanline" />
 
+      {/* ── Floating hamburger menu ──────────────────────────────────── */}
+      <div className="anatomy-menu-wrap" ref={menuRef}>
+        <button
+          type="button"
+          className="anatomy-menu-btn"
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-label={menuOpen ? t("anatomy.closeMenu") : t("anatomy.openMenu")}
+        >
+          {menuOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+
+        {menuOpen && (
+          <nav className="anatomy-menu-dropdown" aria-label="Navigation">
+            <Link href="/exercices" className="anatomy-menu-item">
+              {t("nav.exos.label")}
+            </Link>
+            <Link href="/seances" className="anatomy-menu-item">
+              {t("nav.seances.label")}
+            </Link>
+            <Link href="/methodes" className="anatomy-menu-item">
+              {t("nav.methodes.label")}
+            </Link>
+            <Link href="/apprendre" className="anatomy-menu-item">
+              {t("nav.apprendre.label")}
+            </Link>
+            <Link href="/bac" className="anatomy-menu-item">
+              {t("nav.bac.label")}
+            </Link>
+            <Link href="/ma-seance" className="anatomy-menu-item">
+              {t("nav.maSeance.label")}
+            </Link>
+            <div className="anatomy-menu-divider" />
+            <Link href="/reglages" className="anatomy-menu-item">
+              {t("pages.settings.title")}
+            </Link>
+          </nav>
+        )}
+      </div>
+
       <div className="anatomy-layout">
-        {/* ── 3D Canvas ──────────────────────────────────────────────── */}
+        {/* ── 3D Canvas (full viewport) ──────────────────────────────── */}
         <div className="anatomy-canvas-wrap">
           <AnatomyCanvas
             selectedGroup={selectedGroup}
@@ -257,12 +318,9 @@ export default function AnatomyMap({ exercises }: Props) {
             onClickMuscle={handleClickMuscle}
           />
 
-          {/* HUD overlay */}
+          {/* HUD overlay (minimal — no redundant title) */}
           <div className="anatomy-hud-overlay">
             <div className="anatomy-hud-top">
-              <div className="anatomy-hud-title">
-                {t("anatomy.systemTitle")}
-              </div>
               <div className="anatomy-hud">
                 {selectedGroup
                   ? `// ${t(`anatomy.groups.${selectedGroup}`)}`
@@ -291,7 +349,7 @@ export default function AnatomyMap({ exercises }: Props) {
           )}
         </div>
 
-        {/* ── Side panel ─────────────────────────────────────────────── */}
+        {/* ── Floating side panel ────────────────────────────────────── */}
         <div
           className={`anatomy-panel${panelOpen ? " anatomy-panel--open" : ""}`}
         >

@@ -9,10 +9,13 @@
   --holo-orange-dim: rgba(255, 107, 0, 0.12);
   --holo-orange-mid: rgba(255, 107, 0, 0.4);
   --holo-grid-line: rgba(0, 212, 255, 0.12);
+
+  /* Full-viewport immersive mode — escapes .app-shell constraints */
+  position: fixed;
+  inset: 0;
+  z-index: 5;
   background: var(--holo-bg);
   color: var(--holo-blue);
-  min-height: 100dvh;
-  position: relative;
   overflow: hidden;
   font-family: var(--font-mono), "Space Mono", monospace;
 }
@@ -20,7 +23,7 @@
 /* ── Perspective grid background ────────────────────────────────────────── */
 
 .anatomy-grid-bg {
-  position: fixed;
+  position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 0;
@@ -37,7 +40,7 @@
 /* ── Scanline overlay ───────────────────────────────────────────────────── */
 
 .anatomy-scanline {
-  position: fixed;
+  position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 3;
@@ -81,35 +84,21 @@
   100% { opacity: 1; }
 }
 
-/* ── Layout ─────────────────────────────────────────────────────────────── */
+/* ── Layout — full viewport ─────────────────────────────────────────────── */
 
 .anatomy-layout {
   position: relative;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100dvh;
+  width: 100%;
+  height: 100%;
 }
 
-@media (min-width: 768px) {
-  .anatomy-layout {
-    flex-direction: row;
-  }
-}
-
-/* ── 3D Canvas wrapper ──────────────────────────────────────────────────── */
+/* ── 3D Canvas wrapper — fills entire viewport ──────────────────────────── */
 
 .anatomy-canvas-wrap {
-  position: relative;
-  flex: 1 1 auto;
-  min-height: 50dvh;
-}
-
-@media (min-width: 768px) {
-  .anatomy-canvas-wrap {
-    flex: 0 0 60%;
-    height: 100dvh;
-  }
+  position: absolute;
+  inset: 0;
+  z-index: 1;
 }
 
 /* ── HUD overlay on canvas ──────────────────────────────────────────────── */
@@ -122,6 +111,7 @@
   flex-direction: column;
   justify-content: space-between;
   padding: 16px;
+  z-index: 2;
 }
 
 .anatomy-hud-top {
@@ -138,13 +128,6 @@
   text-transform: uppercase;
   letter-spacing: 0.15em;
   color: rgba(0, 212, 255, 0.45);
-}
-
-.anatomy-hud-title {
-  font-size: 12px;
-  letter-spacing: 0.30em;
-  color: var(--holo-blue);
-  margin-bottom: 4px;
 }
 
 /* ── Loading placeholder ────────────────────────────────────────────────── */
@@ -195,47 +178,125 @@
   margin-top: 2px;
 }
 
-/* ── Side panel ─────────────────────────────────────────────────────────── */
+/* ── Floating hamburger menu ────────────────────────────────────────────── */
+
+.anatomy-menu-wrap {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top, 0px));
+  right: max(16px, env(safe-area-inset-right, 0px));
+  z-index: 30;
+}
+
+.anatomy-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  background: rgba(2, 8, 20, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--holo-blue);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.anatomy-menu-btn:hover {
+  border-color: var(--holo-blue);
+  background: rgba(2, 8, 20, 0.95);
+}
+
+.anatomy-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background: rgba(2, 8, 20, 0.95);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 10px;
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  animation: anatomy-menu-in 0.15s ease-out;
+}
+
+@keyframes anatomy-menu-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.anatomy-menu-item {
+  display: block;
+  padding: 10px 16px;
+  font-family: var(--font-mono), "Space Mono", monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(0, 212, 255, 0.7);
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.anatomy-menu-item:hover {
+  background: rgba(0, 212, 255, 0.08);
+  color: #fff;
+}
+
+.anatomy-menu-divider {
+  height: 1px;
+  margin: 4px 12px;
+  background: rgba(0, 212, 255, 0.12);
+}
+
+/* ── Floating side panel ────────────────────────────────────────────────── */
 
 .anatomy-panel {
-  flex: 0 0 auto;
-  background: rgba(0, 212, 255, 0.04);
-  border-left: 1px solid rgba(0, 212, 255, 0.15);
+  position: fixed;
+  z-index: 20;
+  background: rgba(2, 8, 20, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(0, 212, 255, 0.15);
   padding: 16px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@media (min-width: 768px) {
-  .anatomy-panel {
-    flex: 0 0 40%;
-    height: 100dvh;
-  }
-}
-
+/* Mobile: bottom drawer */
 @media (max-width: 767px) {
   .anatomy-panel {
-    position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 20;
     border-left: none;
     border-top: 1px solid rgba(0, 212, 255, 0.15);
     border-radius: 16px 16px 0 0;
     max-height: 60dvh;
-    transform: translateY(calc(100% - 140px));
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(calc(100% - 120px));
     padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    background: rgba(2, 8, 20, 0.97);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
   }
 
   .anatomy-panel--open {
     transform: translateY(0);
+  }
+}
+
+/* Desktop: floating right-side panel */
+@media (min-width: 768px) {
+  .anatomy-panel {
+    top: 76px;
+    right: 16px;
+    bottom: 16px;
+    width: 340px;
+    max-width: calc(100vw - 32px);
+    border-radius: 12px;
   }
 }
 
@@ -509,13 +570,13 @@
 /* ── Canvas particles ───────────────────────────────────────────────────── */
 
 .anatomy-particles {
-  position: fixed;
+  position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 0;
 }
 
-/* ── Placeholder (no zone selected, desktop) ────────────────────────────── */
+/* ── Placeholder (no zone selected) ─────────────────────────────────────── */
 
 .anatomy-placeholder {
   display: flex;
@@ -566,7 +627,9 @@
     display: none;
   }
 
-  .anatomy-panel {
+  .anatomy-panel,
+  .anatomy-menu-dropdown {
     transition: none;
+    animation: none;
   }
 }

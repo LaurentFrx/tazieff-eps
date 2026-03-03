@@ -68,7 +68,7 @@ export function AppHeader() {
   }`;
   const backLabel = t("header.back");
 
-  if (pathname === "/") {
+  if (pathname === "/" || pathname === "/apprendre/anatomie") {
     return null;
   }
 
