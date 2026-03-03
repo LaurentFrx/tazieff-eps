@@ -1,227 +1,251 @@
-import { type ThreeEvent } from "@react-three/fiber";
+"use client";
 
-/* ─── Mesh spec types ─────────────────────────────────────────────────── */
+import { useEffect, useMemo, useRef } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
+import { useGLTF } from "@react-three/drei";
+import * as THREE from "three";
+import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
+import { MUSCLE_GROUPS, getGroupForNode, getFrenchName, getSide } from "./anatomy-data";
 
-type Vec3 = [number, number, number];
+/* ─── Types ──────────────────────────────────────────────────────────────── */
 
-type MeshSpec = {
-  muscleId: string;
-  geo: "sphere" | "cylinder" | "box";
-  args: number[];
-  position: Vec3;
-  rotation?: Vec3;
-  scale?: Vec3;
+export type MuscleUserData = {
+  groupKey: string | null;
+  rawName: string;
+  frName: string;
+  baseFrName: string;
+  originalColor: THREE.Color;
 };
 
-/* ─── Mannequin mesh definitions (19 zones + decorative) ──────────────── */
+type Props = {
+  selectedGroup: string | null;
+  highlightedMuscle: string | null;
+  hoveredMuscle: string | null;
+  wireframe: boolean;
+  onHoverMuscle: (frName: string | null, groupKey: string | null) => void;
+  onClickMuscle: (frName: string, groupKey: string) => void;
+};
 
-const MESHES: MeshSpec[] = [
-  // ── Decorative (head, neck, feet — not selectable) ────────────────────
-  { muscleId: "", geo: "sphere", args: [0.11, 16, 16], position: [0, 0.82, 0] },
-  { muscleId: "", geo: "cylinder", args: [0.045, 0.055, 0.10, 8], position: [0, 0.72, 0] },
-  { muscleId: "", geo: "box", args: [0.06, 0.03, 0.12], position: [-0.10, -0.88, 0.02] },
-  { muscleId: "", geo: "box", args: [0.06, 0.03, 0.12], position: [0.10, -0.88, 0.02] },
+/* ─── Configure Draco for useGLTF ────────────────────────────────────────── */
 
-  // ── 1. Trapèzes ──────────────────────────────────────────────────────
-  { muscleId: "trapezes", geo: "box", args: [0.24, 0.12, 0.08], position: [0, 0.64, -0.02] },
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
 
-  // ── 2. Deltoïdes L+R ────────────────────────────────────────────────
-  { muscleId: "deltoides", geo: "sphere", args: [0.06, 12, 12], position: [-0.24, 0.56, 0] },
-  { muscleId: "deltoides", geo: "sphere", args: [0.06, 12, 12], position: [0.24, 0.56, 0] },
+useGLTF.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
 
-  // ── 3. Infra-épineux ────────────────────────────────────────────────
-  { muscleId: "infra-epineux", geo: "box", args: [0.20, 0.10, 0.05], position: [0, 0.54, -0.07] },
+/* ─── Silhouette body (wireframe) ────────────────────────────────────────── */
 
-  // ── 4. Pectoraux ────────────────────────────────────────────────────
-  { muscleId: "pectoraux", geo: "box", args: [0.26, 0.16, 0.08], position: [0, 0.46, 0.06] },
+function SilhouetteBody({ opacity }: { opacity: number }) {
+  const { scene } = useGLTF("/models/silhouette.glb");
+  const groupRef = useRef<THREE.Group>(null);
 
-  // ── 5. Grand dorsal ─────────────────────────────────────────────────
-  { muscleId: "grand-dorsal", geo: "box", args: [0.30, 0.22, 0.07], position: [0, 0.38, -0.07] },
-
-  // ── 6. Dentelé L+R ──────────────────────────────────────────────────
-  { muscleId: "dentele", geo: "box", args: [0.04, 0.16, 0.07], position: [-0.16, 0.42, 0.03] },
-  { muscleId: "dentele", geo: "box", args: [0.04, 0.16, 0.07], position: [0.16, 0.42, 0.03] },
-
-  // ── 7. Biceps L+R ───────────────────────────────────────────────────
-  { muscleId: "biceps", geo: "cylinder", args: [0.038, 0.032, 0.22, 8], position: [-0.27, 0.34, 0.02], rotation: [0, 0, 0.08] },
-  { muscleId: "biceps", geo: "cylinder", args: [0.038, 0.032, 0.22, 8], position: [0.27, 0.34, 0.02], rotation: [0, 0, -0.08] },
-
-  // ── 8. Triceps L+R ──────────────────────────────────────────────────
-  { muscleId: "triceps", geo: "cylinder", args: [0.035, 0.028, 0.22, 8], position: [-0.27, 0.34, -0.02], rotation: [0, 0, 0.08] },
-  { muscleId: "triceps", geo: "cylinder", args: [0.035, 0.028, 0.22, 8], position: [0.27, 0.34, -0.02], rotation: [0, 0, -0.08] },
-
-  // ── 9. Avant-bras L+R ───────────────────────────────────────────────
-  { muscleId: "avant-bras", geo: "cylinder", args: [0.032, 0.022, 0.22, 8], position: [-0.29, 0.12, 0], rotation: [0, 0, 0.05] },
-  { muscleId: "avant-bras", geo: "cylinder", args: [0.032, 0.022, 0.22, 8], position: [0.29, 0.12, 0], rotation: [0, 0, -0.05] },
-
-  // ── 10. Abdominaux ──────────────────────────────────────────────────
-  { muscleId: "abdominaux", geo: "box", args: [0.14, 0.20, 0.07], position: [0, 0.20, 0.05] },
-
-  // ── 11. Obliques L+R ────────────────────────────────────────────────
-  { muscleId: "obliques", geo: "box", args: [0.05, 0.18, 0.08], position: [-0.12, 0.20, 0.02] },
-  { muscleId: "obliques", geo: "box", args: [0.05, 0.18, 0.08], position: [0.12, 0.20, 0.02] },
-
-  // ── 12. Carré des lombes ────────────────────────────────────────────
-  { muscleId: "carre-des-lombes", geo: "box", args: [0.18, 0.12, 0.06], position: [0, 0.16, -0.06] },
-
-  // ── 13. Grand fessier L+R ──────────────────────────────────────────
-  { muscleId: "grand-fessier", geo: "sphere", args: [0.08, 12, 12], position: [-0.08, -0.02, -0.04], scale: [1.2, 0.9, 1] },
-  { muscleId: "grand-fessier", geo: "sphere", args: [0.08, 12, 12], position: [0.08, -0.02, -0.04], scale: [1.2, 0.9, 1] },
-
-  // ── 14. Moyen fessier L+R ──────────────────────────────────────────
-  { muscleId: "moyen-fessier", geo: "sphere", args: [0.055, 12, 12], position: [-0.16, 0.0, 0] },
-  { muscleId: "moyen-fessier", geo: "sphere", args: [0.055, 12, 12], position: [0.16, 0.0, 0] },
-
-  // ── 15. Quadriceps L+R ─────────────────────────────────────────────
-  { muscleId: "quadriceps", geo: "cylinder", args: [0.065, 0.050, 0.34, 8], position: [-0.10, -0.30, 0.02] },
-  { muscleId: "quadriceps", geo: "cylinder", args: [0.065, 0.050, 0.34, 8], position: [0.10, -0.30, 0.02] },
-
-  // ── 16. Ischio-jambiers L+R ────────────────────────────────────────
-  { muscleId: "ischio-jambiers", geo: "cylinder", args: [0.058, 0.045, 0.32, 8], position: [-0.10, -0.30, -0.02] },
-  { muscleId: "ischio-jambiers", geo: "cylinder", args: [0.058, 0.045, 0.32, 8], position: [0.10, -0.30, -0.02] },
-
-  // ── 17. Adducteurs L+R ─────────────────────────────────────────────
-  { muscleId: "adducteurs", geo: "cylinder", args: [0.032, 0.025, 0.26, 8], position: [-0.04, -0.28, 0] },
-  { muscleId: "adducteurs", geo: "cylinder", args: [0.032, 0.025, 0.26, 8], position: [0.04, -0.28, 0] },
-
-  // ── 18. Jambier antérieur L+R ──────────────────────────────────────
-  { muscleId: "jambier-anterieur", geo: "cylinder", args: [0.042, 0.032, 0.30, 8], position: [-0.10, -0.67, 0.02] },
-  { muscleId: "jambier-anterieur", geo: "cylinder", args: [0.042, 0.032, 0.30, 8], position: [0.10, -0.67, 0.02] },
-
-  // ── 19. Mollets L+R ────────────────────────────────────────────────
-  { muscleId: "mollets", geo: "cylinder", args: [0.048, 0.028, 0.28, 8], position: [-0.10, -0.65, -0.02] },
-  { muscleId: "mollets", geo: "cylinder", args: [0.048, 0.028, 0.28, 8], position: [0.10, -0.65, -0.02] },
-];
-
-/* ─── Geometry helper ─────────────────────────────────────────────────── */
-
-function Geo({ type, args }: { type: MeshSpec["geo"]; args: number[] }) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const a = args as any;
-  switch (type) {
-    case "sphere":
-      return <sphereGeometry args={a} />;
-    case "cylinder":
-      return <cylinderGeometry args={a} />;
-    case "box":
-      return <boxGeometry args={a} />;
-  }
-}
-
-/* ─── Single muscle mesh ──────────────────────────────────────────────── */
-
-function MuscleMesh({
-  spec,
-  selected,
-  antagonist,
-  hovered,
-  onSelect,
-  onHover,
-}: {
-  spec: MeshSpec;
-  selected: string | null;
-  antagonist: string | null;
-  hovered: string | null;
-  onSelect: (id: string) => void;
-  onHover: (id: string | null) => void;
-}) {
-  const { muscleId, geo, args, position, rotation, scale } = spec;
-  const isSelectable = muscleId !== "";
-  const isSelected = selected === muscleId;
-  const isAntagonist = antagonist === muscleId;
-  const isHovered = hovered === muscleId;
-
-  let color = "#00D4FF";
-  let wireframe = true;
-  let opacity = 0.6;
-
-  if (!isSelectable) {
-    opacity = 0.2;
-  } else if (isSelected) {
-    color = "#FF6B00";
-    wireframe = false;
-    opacity = 0.3;
-  } else if (isHovered) {
-    color = "#00FFFF";
-    opacity = 0.9;
-  } else if (isAntagonist) {
-    color = "#66EEFF";
-    opacity = 0.8;
-  }
-
-  const handleClick = isSelectable
-    ? (e: ThreeEvent<MouseEvent>) => {
-        e.stopPropagation();
-        onSelect(muscleId);
+  useEffect(() => {
+    scene.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
+        mesh.material = new THREE.MeshBasicMaterial({
+          color: 0x2266aa,
+          transparent: true,
+          opacity,
+          wireframe: true,
+          side: THREE.BackSide,
+          depthWrite: false,
+        });
+        mesh.renderOrder = -2;
       }
-    : undefined;
+    });
+  }, [scene, opacity]);
 
-  const handleOver = isSelectable
-    ? (e: ThreeEvent<PointerEvent>) => {
-        e.stopPropagation();
-        onHover(muscleId);
-        document.body.style.cursor = "pointer";
+  useEffect(() => {
+    scene.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mat = (child as THREE.Mesh).material as THREE.MeshBasicMaterial;
+        mat.opacity = opacity;
       }
-    : undefined;
-
-  const handleOut = isSelectable
-    ? () => {
-        onHover(null);
-        document.body.style.cursor = "auto";
-      }
-    : undefined;
+    });
+  }, [scene, opacity]);
 
   return (
-    <mesh
-      position={position}
-      rotation={rotation ?? [0, 0, 0]}
-      scale={scale ?? [1, 1, 1]}
-      onClick={handleClick}
-      onPointerOver={handleOver}
-      onPointerOut={handleOut}
-    >
-      <Geo type={geo} args={args} />
-      <meshBasicMaterial
-        color={color}
-        wireframe={wireframe}
-        transparent
-        opacity={opacity}
-        depthWrite={false}
-      />
-    </mesh>
+    <group ref={groupRef}>
+      <primitive object={scene} />
+    </group>
   );
 }
 
-/* ─── Exported mannequin group ────────────────────────────────────────── */
+/* ─── Muscles model ──────────────────────────────────────────────────────── */
 
-type Props = {
-  selected: string | null;
-  antagonist: string | null;
-  hovered: string | null;
-  onSelect: (id: string) => void;
-  onHover: (id: string | null) => void;
-};
+function MusclesModel({
+  selectedGroup,
+  highlightedMuscle,
+  wireframe,
+  onHoverMuscle,
+  onClickMuscle,
+}: Omit<Props, "hoveredMuscle">) {
+  const { scene } = useGLTF("/models/muscles.glb");
+  const { gl } = useThree();
+  const canvasElRef = useRef(gl.domElement);
+  const meshesRef = useRef<THREE.Mesh[]>([]);
+  const hoveredRef = useRef<THREE.Mesh | null>(null);
+
+  // Initialize muscle materials and userData on load
+  useEffect(() => {
+    const meshes: THREE.Mesh[] = [];
+    scene.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
+        const rawName =
+          mesh.name || (mesh.parent ? mesh.parent.name : "unknown");
+        const groupKey = getGroupForNode(rawName);
+        const color = new THREE.Color(
+          groupKey ? MUSCLE_GROUPS[groupKey].color : 0x888888,
+        );
+        mesh.material = new THREE.MeshPhongMaterial({
+          color,
+          emissive: new THREE.Color(0x000000),
+          shininess: 30,
+          transparent: true,
+          opacity: 1.0,
+          side: THREE.DoubleSide,
+        });
+        const frName = getFrenchName(rawName);
+        const side = getSide(rawName);
+        const displayName = side ? `${frName} (${side})` : frName;
+        mesh.userData = {
+          groupKey,
+          rawName,
+          frName: displayName,
+          baseFrName: frName,
+          originalColor: color.clone(),
+        } as MuscleUserData;
+        mesh.renderOrder = 1;
+        meshes.push(mesh);
+      }
+    });
+    meshesRef.current = meshes;
+  }, [scene]);
+
+  // Update materials when selection/highlight/wireframe changes
+  /* eslint-disable react-hooks/immutability -- Three.js materials are mutable by design */
+  useEffect(() => {
+    for (const mesh of meshesRef.current) {
+      const ud = mesh.userData as MuscleUserData;
+      const mat = mesh.material as THREE.MeshPhongMaterial;
+      mat.wireframe = wireframe;
+
+      if (highlightedMuscle) {
+        if (ud.baseFrName === highlightedMuscle) {
+          mat.opacity = 1;
+          mat.emissive.copy(ud.originalColor).multiplyScalar(0.8);
+        } else if (selectedGroup && ud.groupKey === selectedGroup) {
+          mat.opacity = 0.4;
+          mat.emissive.set(0x000000);
+        } else {
+          mat.opacity = 0.05;
+          mat.emissive.set(0x000000);
+        }
+      } else if (selectedGroup) {
+        if (ud.groupKey === selectedGroup) {
+          mat.opacity = 1;
+          mat.emissive.copy(ud.originalColor).multiplyScalar(0.8);
+        } else {
+          mat.opacity = 0.07;
+          mat.emissive.set(0x000000);
+        }
+      } else {
+        mat.opacity = 1;
+        mat.emissive.set(0x000000);
+      }
+    }
+  }, [selectedGroup, highlightedMuscle, wireframe]);
+  /* eslint-enable react-hooks/immutability */
+
+  // Raycasting for hover and click
+  const raycaster = useMemo(() => new THREE.Raycaster(), []);
+  const mouse = useMemo(() => new THREE.Vector2(), []);
+
+  useFrame(({ camera, pointer }) => {
+    mouse.copy(pointer);
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObjects(meshesRef.current, false);
+
+    if (hits.length > 0) {
+      const mesh = hits[0].object as THREE.Mesh;
+      if (mesh !== hoveredRef.current) {
+        // Un-glow previous
+        if (hoveredRef.current && !selectedGroup) {
+          const mat = hoveredRef.current
+            .material as THREE.MeshPhongMaterial;
+          mat.emissive.set(0x000000);
+        }
+        hoveredRef.current = mesh;
+        // Glow current
+        if (!selectedGroup) {
+          const mat = mesh.material as THREE.MeshPhongMaterial;
+          const ud = mesh.userData as MuscleUserData;
+          mat.emissive.copy(ud.originalColor).multiplyScalar(0.8);
+        }
+        const ud = mesh.userData as MuscleUserData;
+        onHoverMuscle(ud.frName, ud.groupKey);
+      }
+      canvasElRef.current.style.cursor = "pointer";
+    } else {
+      if (hoveredRef.current && !selectedGroup) {
+        const mat = hoveredRef.current.material as THREE.MeshPhongMaterial;
+        mat.emissive.set(0x000000);
+      }
+      hoveredRef.current = null;
+      onHoverMuscle(null, null);
+      canvasElRef.current.style.cursor = "grab";
+    }
+  });
+
+  // Click handler
+  useEffect(() => {
+    const el = canvasElRef.current;
+    const handleClick = () => {
+      const mesh = hoveredRef.current;
+      if (mesh) {
+        const ud = mesh.userData as MuscleUserData;
+        if (ud.groupKey) {
+          onClickMuscle(ud.baseFrName, ud.groupKey);
+        }
+      }
+    };
+    el.addEventListener("click", handleClick);
+    return () => el.removeEventListener("click", handleClick);
+  }, [onClickMuscle]);
+
+  return <primitive object={scene} />;
+}
+
+/* ─── Exported component ─────────────────────────────────────────────────── */
 
 export default function HologramMannequin({
-  selected,
-  antagonist,
-  hovered,
-  onSelect,
-  onHover,
-}: Props) {
+  selectedGroup,
+  highlightedMuscle,
+  wireframe,
+  onHoverMuscle,
+  onClickMuscle,
+  silhouetteOpacity = 0.4,
+}: Props & { silhouetteOpacity?: number }) {
+
   return (
     <group>
-      {MESHES.map((spec, i) => (
-        <MuscleMesh
-          key={i}
-          spec={spec}
-          selected={selected}
-          antagonist={antagonist}
-          hovered={hovered}
-          onSelect={onSelect}
-          onHover={onHover}
-        />
-      ))}
+      {/* Lighting */}
+      <ambientLight intensity={0.5} color={0x4466aa} />
+      <directionalLight position={[2, 3, 2]} intensity={0.9} />
+      <directionalLight position={[-2, 1, -1]} intensity={0.4} color={0x88aaff} />
+      <directionalLight position={[0, 2, -3]} intensity={0.3} />
+      <gridHelper args={[4, 20, 0x1a2540, 0x111d33]} />
+
+      <SilhouetteBody opacity={silhouetteOpacity} />
+      <MusclesModel
+        selectedGroup={selectedGroup}
+        highlightedMuscle={highlightedMuscle}
+        wireframe={wireframe}
+        onHoverMuscle={onHoverMuscle}
+        onClickMuscle={onClickMuscle}
+      />
     </group>
   );
 }

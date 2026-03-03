@@ -4,14 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import type { MethodeFrontmatter } from "@/lib/content/schema";
 import type { LiveExerciseListItem } from "@/lib/live/types";
-import {
-  ANATOMY_ZONES,
-  getAntagonist,
-  getZone,
-  matchesZone,
-} from "./anatomy-data";
+import { MUSCLE_GROUPS, matchesGroup } from "./anatomy-data";
 import "./anatomy.css";
 
 const AnatomyCanvas = dynamic(() => import("./AnatomyCanvas"), {
@@ -21,7 +15,6 @@ const AnatomyCanvas = dynamic(() => import("./AnatomyCanvas"), {
 
 type Props = {
   exercises: LiveExerciseListItem[];
-  methodes: MethodeFrontmatter[];
 };
 
 /* ─── Canvas particles (HTML overlay) ─────────────────────────────────── */
@@ -91,48 +84,159 @@ function useParticles(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
   }, [canvasRef]);
 }
 
+/* ─── Group list item (unique muscles from the model) ────────────────── */
+
+const GROUP_MUSCLES: Record<string, string[]> = {
+  dos: [
+    "Grand dorsal",
+    "Grand rhomboïde",
+    "Petit rhomboïde",
+    "Trapèze ascendant",
+    "Trapèze descendant",
+    "Trapèze transverse",
+    "Ilio-costal des lombes",
+    "Ilio-costal du thorax",
+    "Ilio-costal du cou",
+    "Longissimus du thorax",
+    "Longissimus de la tête",
+    "Longissimus du cou",
+    "Épineux de la tête",
+    "Épineux du cou",
+    "Épineux du thorax",
+  ],
+  pectoraux: [
+    "Pectoral (claviculaire)",
+    "Pectoral (sterno-costal)",
+    "Pectoral (abdominal)",
+    "Petit pectoral",
+    "Dentelé antérieur",
+  ],
+  abdominaux: [
+    "Grand droit abdomen",
+    "Oblique externe",
+    "Oblique interne",
+    "Transverse abdomen",
+  ],
+  epaules: [
+    "Deltoïde antérieur",
+    "Deltoïde moyen",
+    "Deltoïde postérieur",
+    "Grand rond",
+    "Infra-épineux",
+    "Supra-épineux",
+  ],
+  bras: [
+    "Biceps (long chef)",
+    "Biceps (court chef)",
+    "Brachial",
+    "Brachio-radial",
+    "Coraco-brachial",
+    "Triceps (long chef)",
+    "Triceps (latéral)",
+    "Triceps (médial)",
+  ],
+  psoas: ["Psoas", "Iliaque"],
+  fessiers: ["Grand fessier", "Moyen fessier", "Petit fessier"],
+  cuisses: [
+    "Droit fémoral",
+    "Vaste latéral",
+    "Vaste médial",
+    "Vaste intermédiaire",
+    "Couturier",
+    "Grand adducteur",
+    "Long adducteur",
+    "Court adducteur",
+    "Gracile",
+    "Semi-membraneux",
+    "Semi-tendineux",
+  ],
+  mollets: ["Gastrocnémien latéral", "Gastrocnémien médial", "Soléaire"],
+};
+
 /* ─── Main component ──────────────────────────────────────────────────── */
 
 export default function AnatomyMap({ exercises }: Props) {
-  const { t, lang } = useI18n();
-  const [selected, setSelected] = useState<string | null>(null);
-  const [hovered, setHovered] = useState<string | null>(null);
+  const { t } = useI18n();
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [highlightedMuscle, setHighlightedMuscle] = useState<string | null>(
+    null,
+  );
+  const [wireframe, setWireframe] = useState(false);
+  const [silhouetteOpacity, setSilhouetteOpacity] = useState(0.4);
+  const [tooltip, setTooltip] = useState<{
+    name: string;
+    group: string | null;
+  } | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useParticles(canvasRef);
 
-  /* ── Zone labels (translated) ───────────────────────────────────────── */
-  const zoneLabels = useMemo(() => {
-    const labels: Record<string, string> = {};
-    for (const z of ANATOMY_ZONES) {
-      labels[z.id] = t(`anatomy.zones.${z.id}`);
-    }
-    return labels;
-  }, [t]);
-
-  /* ── Exercises matching selected zone ───────────────────────────────── */
+  /* ── Exercises matching selected group ────────────────────────────────── */
   const matchingExercises = useMemo(() => {
-    if (!selected) return [];
-    const zone = getZone(selected);
-    if (!zone) return [];
+    if (!selectedGroup) return [];
+    const group = MUSCLE_GROUPS[selectedGroup];
+    if (!group) return [];
     return exercises.filter((ex) =>
-      ex.muscles.some((m) => matchesZone(zone, m)),
+      ex.muscles.some((m) => matchesGroup(group, m)),
     );
-  }, [selected, exercises]);
+  }, [selectedGroup, exercises]);
 
-  /* ── Antagonist zone ────────────────────────────────────────────────── */
-  const antagonistZone = useMemo(() => {
-    if (!selected) return null;
-    return getAntagonist(selected);
-  }, [selected]);
-
-  /* ── Handle zone selection (toggle) ─────────────────────────────────── */
-  const handleSelect = useCallback((id: string) => {
-    setSelected((prev) => (prev === id ? null : id));
+  /* ── Handle group selection (from panel click) ───────────────────────── */
+  const handleGroupToggle = useCallback((groupId: string) => {
+    setSelectedGroup((prev) => {
+      if (prev === groupId) {
+        setHighlightedMuscle(null);
+        return null;
+      }
+      setHighlightedMuscle(null);
+      return groupId;
+    });
   }, []);
 
-  /* ── Panel open state (mobile) ──────────────────────────────────────── */
-  const panelOpen = selected !== null;
+  /* ── Handle muscle highlight (from panel click) ──────────────────────── */
+  const handleMuscleHighlight = useCallback((muscleName: string) => {
+    setHighlightedMuscle((prev) =>
+      prev === muscleName ? null : muscleName,
+    );
+  }, []);
+
+  /* ── Handle 3D click ─────────────────────────────────────────────────── */
+  const handleClickMuscle = useCallback(
+    (frName: string, groupKey: string) => {
+      if (selectedGroup === groupKey) {
+        setHighlightedMuscle((prev) => (prev === frName ? null : frName));
+      } else {
+        setSelectedGroup(groupKey);
+        setHighlightedMuscle(null);
+      }
+    },
+    [selectedGroup],
+  );
+
+  /* ── Handle 3D hover ─────────────────────────────────────────────────── */
+  const handleHoverMuscle = useCallback(
+    (frName: string | null, groupKey: string | null) => {
+      if (frName) {
+        setTooltip({
+          name: frName,
+          group: groupKey ? MUSCLE_GROUPS[groupKey]?.id : null,
+        });
+      } else {
+        setTooltip(null);
+      }
+    },
+    [],
+  );
+
+  /* ── Reset all ───────────────────────────────────────────────────────── */
+  const handleReset = useCallback(() => {
+    setSelectedGroup(null);
+    setHighlightedMuscle(null);
+    setWireframe(false);
+    setSilhouetteOpacity(0.4);
+  }, []);
+
+  const panelOpen = selectedGroup !== null;
 
   return (
     <div className="anatomy-page">
@@ -142,14 +246,15 @@ export default function AnatomyMap({ exercises }: Props) {
       <div className="anatomy-scanline" />
 
       <div className="anatomy-layout">
-        {/* ── 3D Canvas ────────────────────────────────────────────────── */}
+        {/* ── 3D Canvas ──────────────────────────────────────────────── */}
         <div className="anatomy-canvas-wrap">
           <AnatomyCanvas
-            selected={selected}
-            antagonist={antagonistZone?.id ?? null}
-            hovered={hovered}
-            onSelect={handleSelect}
-            onHover={setHovered}
+            selectedGroup={selectedGroup}
+            highlightedMuscle={highlightedMuscle}
+            wireframe={wireframe}
+            silhouetteOpacity={silhouetteOpacity}
+            onHoverMuscle={handleHoverMuscle}
+            onClickMuscle={handleClickMuscle}
           />
 
           {/* HUD overlay */}
@@ -159,42 +264,173 @@ export default function AnatomyMap({ exercises }: Props) {
                 {t("anatomy.systemTitle")}
               </div>
               <div className="anatomy-hud">
-                {selected
-                  ? `// ${zoneLabels[selected] ?? selected}`
+                {selectedGroup
+                  ? `// ${t(`anatomy.groups.${selectedGroup}`)}`
                   : t("anatomy.dataReady")}
               </div>
             </div>
             <div className="anatomy-hud-bottom">
               <div className="anatomy-hud">
-                {selected ? t("anatomy.scanActive") : "19 " + t("anatomy.zones_word")}
+                {selectedGroup
+                  ? t("anatomy.scanActive")
+                  : `9 ${t("anatomy.groups_word")}`}
               </div>
             </div>
           </div>
+
+          {/* Tooltip (follows 3D hover) */}
+          {tooltip && (
+            <div className="anatomy-tooltip">
+              <div className="anatomy-tooltip-name">{tooltip.name}</div>
+              {tooltip.group && (
+                <div className="anatomy-tooltip-group">
+                  {t(`anatomy.groups.${tooltip.group}`)}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* ── Side panel / Bottom drawer ────────────────────────────────── */}
+        {/* ── Side panel ─────────────────────────────────────────────── */}
         <div
           className={`anatomy-panel${panelOpen ? " anatomy-panel--open" : ""}`}
         >
           <div className="anatomy-drawer-handle" />
 
-          {selected ? (
-            <SelectedPanel
-              zoneId={selected}
-              zoneLabel={zoneLabels[selected] ?? selected}
-              antagonistZone={antagonistZone}
-              antagonistLabel={
-                antagonistZone
-                  ? (zoneLabels[antagonistZone.id] ?? antagonistZone.id)
-                  : null
-              }
-              exercises={matchingExercises}
-              onClose={() => setSelected(null)}
-              onSelectAntagonist={handleSelect}
-              t={t}
-              lang={lang}
-            />
-          ) : (
+          {/* Controls bar */}
+          <div className="anatomy-controls">
+            <label className="anatomy-control-slider">
+              <span>{t("anatomy.opacity")}</span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={Math.round(silhouetteOpacity * 100)}
+                onChange={(e) =>
+                  setSilhouetteOpacity(Number(e.target.value) / 100)
+                }
+              />
+            </label>
+            <button
+              type="button"
+              className={`anatomy-control-btn${wireframe ? " active" : ""}`}
+              onClick={() => setWireframe((v) => !v)}
+            >
+              {t("anatomy.wireframe")}
+            </button>
+            <button
+              type="button"
+              className="anatomy-control-btn"
+              onClick={handleReset}
+            >
+              {t("anatomy.reset")}
+            </button>
+          </div>
+
+          {/* Muscle groups accordion */}
+          <div className="anatomy-groups">
+            {Object.entries(MUSCLE_GROUPS).map(([key, group]) => {
+              const isOpen = selectedGroup === key;
+              const muscles = GROUP_MUSCLES[key] ?? [];
+              return (
+                <div
+                  key={key}
+                  className={`anatomy-group${isOpen ? " anatomy-group--open" : ""}`}
+                >
+                  <button
+                    type="button"
+                    className="anatomy-group-header"
+                    onClick={() => handleGroupToggle(key)}
+                  >
+                    <span
+                      className="anatomy-group-dot"
+                      style={{ background: group.color }}
+                    />
+                    <span className="anatomy-group-name">
+                      {t(`anatomy.groups.${key}`)}
+                    </span>
+                    <span className="anatomy-group-count">
+                      {muscles.length}
+                    </span>
+                    <span className="anatomy-group-chevron">
+                      {isOpen ? "▼" : "▶"}
+                    </span>
+                  </button>
+                  {isOpen && (
+                    <div className="anatomy-group-muscles">
+                      {muscles.map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          className={`anatomy-muscle-item${highlightedMuscle === m ? " highlighted" : ""}`}
+                          onClick={() => handleMuscleHighlight(m)}
+                        >
+                          {m}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Info panel when group selected */}
+          {selectedGroup && (
+            <div className="anatomy-info-panel">
+              <div className="anatomy-info-header">
+                <span
+                  className="anatomy-group-dot"
+                  style={{
+                    background: MUSCLE_GROUPS[selectedGroup].color,
+                  }}
+                />
+                <span className="anatomy-info-title">
+                  {t(`anatomy.groups.${selectedGroup}`)}
+                </span>
+              </div>
+              <div className="anatomy-info-desc">
+                {t(`anatomy.groupInfo.${selectedGroup}`)}
+              </div>
+
+              {/* Matching exercises */}
+              <div className="anatomy-count">
+                <span className="anatomy-count-number">
+                  {matchingExercises.length}
+                </span>{" "}
+                {matchingExercises.length === 1
+                  ? t("anatomy.exerciseCount")
+                  : t("anatomy.exerciseCountPlural")}
+              </div>
+
+              {matchingExercises.length > 0 ? (
+                <div className="anatomy-exercise-list">
+                  {matchingExercises.map((ex) => (
+                    <Link
+                      key={ex.slug}
+                      href={`/exercices/${ex.slug}`}
+                      className="anatomy-exercise-item"
+                    >
+                      <span className="anatomy-exercise-title">
+                        {ex.title}
+                      </span>
+                      {ex.level ? (
+                        <span className="anatomy-exercise-level">
+                          {t(`difficulty.${ex.level}`)}
+                        </span>
+                      ) : null}
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="anatomy-empty">
+                  {t("anatomy.noExercise")}
+                </div>
+              )}
+            </div>
+          )}
+
+          {!selectedGroup && (
             <div className="anatomy-placeholder">
               <div className="anatomy-placeholder-icon">⬡</div>
               <div className="anatomy-placeholder-text">
@@ -205,97 +441,5 @@ export default function AnatomyMap({ exercises }: Props) {
         </div>
       </div>
     </div>
-  );
-}
-
-/* ─── Selected zone panel ─────────────────────────────────────────────── */
-
-function SelectedPanel({
-  zoneId,
-  zoneLabel,
-  antagonistZone,
-  antagonistLabel,
-  exercises,
-  onClose,
-  onSelectAntagonist,
-  t,
-}: {
-  zoneId: string;
-  zoneLabel: string;
-  antagonistZone: ReturnType<typeof getAntagonist>;
-  antagonistLabel: string | null;
-  exercises: LiveExerciseListItem[];
-  onClose: () => void;
-  onSelectAntagonist: (id: string) => void;
-  t: (key: string) => string;
-  lang: string;
-}) {
-  const zone = getZone(zoneId);
-  const regionLabel = zone ? t(`anatomy.region.${zone.region}`) : "";
-
-  return (
-    <>
-      <div className="anatomy-panel-header">
-        <div>
-          <div className="anatomy-panel-title">{zoneLabel}</div>
-          <div className="anatomy-hud" style={{ marginTop: 4 }}>
-            {regionLabel}
-          </div>
-        </div>
-        <button
-          type="button"
-          className="anatomy-panel-close"
-          onClick={onClose}
-        >
-          {t("anatomy.closePanel")}
-        </button>
-      </div>
-
-      {/* Antagonist */}
-      {antagonistZone && antagonistLabel ? (
-        <div className="anatomy-antagonist">
-          <span className="anatomy-antagonist-label">
-            {t("anatomy.pair")}
-          </span>
-          <button
-            type="button"
-            className="anatomy-antagonist-name"
-            onClick={() => onSelectAntagonist(antagonistZone.id)}
-          >
-            {antagonistLabel}
-          </button>
-        </div>
-      ) : null}
-
-      {/* Exercise count */}
-      <div className="anatomy-count" style={{ marginBottom: 12 }}>
-        <span className="anatomy-count-number">{exercises.length}</span>{" "}
-        {exercises.length === 1
-          ? t("anatomy.exerciseCount")
-          : t("anatomy.exerciseCountPlural")}
-      </div>
-
-      {/* Exercise list */}
-      {exercises.length > 0 ? (
-        <div className="anatomy-exercise-list">
-          {exercises.map((ex) => (
-            <Link
-              key={ex.slug}
-              href={`/exercices/${ex.slug}`}
-              className="anatomy-exercise-item"
-            >
-              <span className="anatomy-exercise-title">{ex.title}</span>
-              {ex.level ? (
-                <span className="anatomy-exercise-level">
-                  {t(`difficulty.${ex.level}`)}
-                </span>
-              ) : null}
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <div className="anatomy-empty">{t("anatomy.noExercise")}</div>
-      )}
-    </>
   );
 }
