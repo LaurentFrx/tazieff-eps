@@ -101,7 +101,6 @@ export default function AnatomyMap({ exercises }: Props) {
   } | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const bgRef = useRef<HTMLDivElement>(null);
 
   /* ── Close menu on click outside or Escape ───────────────────────────── */
   useEffect(() => {
@@ -184,7 +183,7 @@ export default function AnatomyMap({ exercises }: Props) {
   return (
     <div className="anatomy-page">
       {/* Background (parallax-synced with camera) */}
-      <div ref={bgRef} className="anatomy-bg" />
+      <div className="anatomy-bg" />
 
       {/* ── Floating hamburger menu ──────────────────────────────────── */}
       <div className="anatomy-menu-wrap" ref={menuRef}>
@@ -233,7 +232,6 @@ export default function AnatomyMap({ exercises }: Props) {
             highlightedMuscle={highlightedMuscle}
             onHoverMuscle={handleHoverMuscle}
             onClickMuscle={handleClickMuscle}
-            bgRef={bgRef}
           />
 
           {/* HUD overlay (minimal — no redundant title) */}
