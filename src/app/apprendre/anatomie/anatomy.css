@@ -21,18 +21,18 @@
 
 /* ── Background (building entrance photo) ──────────────────────────────── */
 
-/* The div extends 33 % below the viewport (inset bottom = -33 %).
-   With `cover` the image fills this 133 %-tall box.  The shadow line on the
-   deck sits at ≈ 65 % from the image top → 0.65 × 133 % ≈ 86.5 % from
-   viewport top → ≈ 13.5 % from viewport bottom — matching the mannequin's
-   feet position. */
+/* The div extends 30 % below the viewport (inset bottom = -30 %).
+   With `cover` the image fills this 130 %-tall box.  The shadow line on the
+   deck sits at ≈ 67 % from the image top → 0.67 × 130 % ≈ 87 % from
+   viewport top → ≈ 13 % from viewport bottom — matching the mannequin's
+   feet position (FEET_Y = -1.28). */
 .anatomy-bg {
   position: absolute;
-  inset: 0 0 -33% 0;
+  inset: 0 0 -30% 0;
   background: #0a0a14 url("/media/anatomy-bg.webp") center center / cover no-repeat;
   /* Scale origin at the feet / shadow line: 87 % from viewport top
-     = 87 / 133 ≈ 65.4 % of this extended div's height. */
-  transform-origin: 50% 65.4%;
+     = 87 / 130 ≈ 67 % of this extended div's height. */
+  transform-origin: 50% 67%;
   will-change: transform;
   z-index: 0;
 }
