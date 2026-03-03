@@ -2,7 +2,6 @@
 
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import HologramMannequin from "./HologramMannequin";
 
 type Props = {
@@ -29,8 +28,6 @@ export default function AnatomyCanvas({
       gl={{
         antialias: true,
         alpha: true,
-        toneMapping: 6, // ACESFilmicToneMapping
-        toneMappingExposure: 1.0,
       }}
     >
       <HologramMannequin
@@ -52,14 +49,6 @@ export default function AnatomyCanvas({
         autoRotate={!selectedGroup}
         autoRotateSpeed={0.4}
       />
-      <EffectComposer>
-        <Bloom
-          luminanceThreshold={0.4}
-          luminanceSmoothing={0.6}
-          intensity={1.8}
-          radius={0.6}
-        />
-      </EffectComposer>
     </Canvas>
   );
 }

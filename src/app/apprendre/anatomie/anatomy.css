@@ -1,87 +1,29 @@
 /* ── Anatomy hologram theme ─────────────────────────────────────────────── */
 
 .anatomy-page {
-  --holo-bg: #0a0e17;
+  --holo-bg: #1a1a2e;
   --holo-blue: #00D4FF;
   --holo-blue-dim: rgba(0, 212, 255, 0.15);
   --holo-blue-mid: rgba(0, 212, 255, 0.35);
   --holo-orange: #FF6B00;
   --holo-orange-dim: rgba(255, 107, 0, 0.12);
   --holo-orange-mid: rgba(255, 107, 0, 0.4);
-  --holo-grid-line: rgba(0, 212, 255, 0.12);
 
   /* Full-viewport immersive mode — escapes .app-shell constraints */
   position: fixed;
   inset: 0;
   z-index: 5;
-  background: var(--holo-bg);
+  background: url("/media/anatomy-bg.webp") center center / cover no-repeat;
   color: var(--holo-blue);
   overflow: hidden;
   font-family: var(--font-mono), "Space Mono", monospace;
 }
 
-/* ── Perspective grid background ────────────────────────────────────────── */
+/* ── Background overlays (hidden — photo background used instead) ───────── */
 
-.anatomy-grid-bg {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background:
-    linear-gradient(var(--holo-grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--holo-grid-line) 1px, transparent 1px);
-  background-size: 40px 40px;
-  transform: perspective(600px) rotateX(30deg);
-  transform-origin: center 70%;
-  mask-image: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 60%);
-  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 60%);
-}
-
-/* ── Scanline overlay ───────────────────────────────────────────────────── */
-
+.anatomy-grid-bg,
 .anatomy-scanline {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 3;
-  overflow: hidden;
-}
-
-.anatomy-scanline::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--holo-blue-mid) 20%,
-    var(--holo-blue) 50%,
-    var(--holo-blue-mid) 80%,
-    transparent 100%
-  );
-  box-shadow: 0 0 20px 4px var(--holo-blue-dim);
-  animation: scanline 8s linear infinite;
-}
-
-@keyframes scanline {
-  0% { top: -2px; }
-  100% { top: 100%; }
-}
-
-/* ── Hologram flicker on mount ──────────────────────────────────────────── */
-
-@keyframes hologram-flicker {
-  0%   { opacity: 0; }
-  5%   { opacity: 0.6; }
-  10%  { opacity: 0.2; }
-  15%  { opacity: 0.8; }
-  20%  { opacity: 0.3; }
-  30%  { opacity: 0.9; }
-  50%  { opacity: 0.5; }
-  70%  { opacity: 0.95; }
-  100% { opacity: 1; }
+  display: none;
 }
 
 /* ── Layout — full viewport ─────────────────────────────────────────────── */
@@ -127,7 +69,8 @@
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  color: rgba(0, 212, 255, 0.45);
+  color: rgba(255, 255, 255, 0.7);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
 }
 
 /* ── Loading placeholder ────────────────────────────────────────────────── */
@@ -141,8 +84,8 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  color: rgba(0, 212, 255, 0.4);
-  animation: hologram-flicker 2s ease-out forwards;
+  color: rgba(255, 255, 255, 0.7);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* ── 3D Tooltip ─────────────────────────────────────────────────────────── */
@@ -567,13 +510,10 @@
   letter-spacing: 0.1em;
 }
 
-/* ── Canvas particles ───────────────────────────────────────────────────── */
+/* ── Canvas particles (hidden — photo background used) ──────────────────── */
 
 .anatomy-particles {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
+  display: none;
 }
 
 /* ── Placeholder (no zone selected) ─────────────────────────────────────── */
