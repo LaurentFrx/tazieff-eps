@@ -13,17 +13,21 @@
   position: fixed;
   inset: 0;
   z-index: 5;
-  background: url("/media/anatomy-bg.webp") center center / cover no-repeat;
+  background: #0a0a14;
   color: var(--holo-blue);
   overflow: hidden;
   font-family: var(--font-mono), "Space Mono", monospace;
 }
 
-/* ── Background overlays (hidden — photo background used instead) ───────── */
+/* ── Parallax background (synced with camera) ─────────────────────────── */
 
-.anatomy-grid-bg,
-.anatomy-scanline {
-  display: none;
+.anatomy-bg {
+  position: absolute;
+  inset: -8%;
+  background: url("/media/anatomy-bg.webp") center center / cover no-repeat;
+  transform-origin: center center;
+  will-change: transform;
+  z-index: 0;
 }
 
 /* ── Layout — full viewport ─────────────────────────────────────────────── */
@@ -212,22 +216,31 @@
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Mobile: bottom drawer */
+/* Mobile: bottom sheet above chips bar */
 @media (max-width: 767px) {
   .anatomy-panel {
-    bottom: 0;
+    bottom: calc(48px + env(safe-area-inset-bottom, 0px));
     left: 0;
     right: 0;
     border-left: none;
     border-top: 1px solid rgba(0, 212, 255, 0.15);
     border-radius: 16px 16px 0 0;
-    max-height: 60dvh;
-    transform: translateY(calc(100% - 120px));
-    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    max-height: 55dvh;
+    transform: translateY(100%);
+    padding-bottom: 12px;
   }
 
   .anatomy-panel--open {
     transform: translateY(0);
+  }
+
+  /* Navigation via chips on mobile — hide accordion */
+  .anatomy-groups {
+    display: none;
+  }
+
+  .anatomy-placeholder {
+    display: none;
   }
 }
 
@@ -510,12 +523,6 @@
   letter-spacing: 0.1em;
 }
 
-/* ── Canvas particles (hidden — photo background used) ──────────────────── */
-
-.anatomy-particles {
-  display: none;
-}
-
 /* ── Placeholder (no zone selected) ─────────────────────────────────────── */
 
 .anatomy-placeholder {
@@ -559,14 +566,74 @@
   }
 }
 
+/* ── Mobile group chips bar ─────────────────────────────────────────────── */
+
+.anatomy-chips-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 22;
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.anatomy-chips-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.anatomy-chip {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: rgba(2, 8, 20, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  color: rgba(0, 212, 255, 0.8);
+  font-family: var(--font-mono), "Space Mono", monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.anatomy-chip:hover {
+  border-color: var(--holo-blue);
+}
+
+.anatomy-chip--active {
+  border-color: var(--holo-blue);
+  background: rgba(0, 212, 255, 0.2);
+  color: #fff;
+}
+
+.anatomy-chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Desktop: hide chips bar (use accordion panel instead) */
+@media (min-width: 768px) {
+  .anatomy-chips-bar {
+    display: none;
+  }
+}
+
 /* ── Reduced motion ─────────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .anatomy-scanline::before {
-    animation: none;
-    display: none;
-  }
-
   .anatomy-panel,
   .anatomy-menu-dropdown {
     transition: none;

@@ -18,73 +18,6 @@ type Props = {
   exercises: LiveExerciseListItem[];
 };
 
-/* ─── Canvas particles (HTML overlay) ─────────────────────────────────── */
-
-function useParticles(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (mql.matches) return;
-
-    let animId = 0;
-    const particles: {
-      x: number;
-      y: number;
-      vx: number;
-      vy: number;
-      r: number;
-      a: number;
-    }[] = [];
-    const COUNT = 35;
-
-    function resize() {
-      if (!canvas) return;
-      canvas.width = canvas.offsetWidth * devicePixelRatio;
-      canvas.height = canvas.offsetHeight * devicePixelRatio;
-    }
-
-    resize();
-    window.addEventListener("resize", resize);
-
-    for (let i = 0; i < COUNT; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        r: Math.random() * 1.5 + 0.5,
-        a: Math.random() * 0.35 + 0.05,
-      });
-    }
-
-    function draw() {
-      if (!ctx || !canvas) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (const p of particles) {
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r * devicePixelRatio, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0, 212, 255, ${p.a})`;
-        ctx.fill();
-      }
-      animId = requestAnimationFrame(draw);
-    }
-
-    draw();
-    return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener("resize", resize);
-    };
-  }, [canvasRef]);
-}
-
 /* ─── Group list item (unique muscles from the model) ────────────────── */
 
 const GROUP_MUSCLES: Record<string, string[]> = {
@@ -169,10 +102,8 @@ export default function AnatomyMap({ exercises }: Props) {
     group: string | null;
   } | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-
-  useParticles(canvasRef);
+  const bgRef = useRef<HTMLDivElement>(null);
 
   /* ── Close menu on click outside or Escape ───────────────────────────── */
   useEffect(() => {
@@ -262,10 +193,8 @@ export default function AnatomyMap({ exercises }: Props) {
 
   return (
     <div className="anatomy-page">
-      {/* Background layers */}
-      <div className="anatomy-grid-bg" />
-      <canvas ref={canvasRef} className="anatomy-particles" />
-      <div className="anatomy-scanline" />
+      {/* Background (parallax-synced with camera) */}
+      <div ref={bgRef} className="anatomy-bg" />
 
       {/* ── Floating hamburger menu ──────────────────────────────────── */}
       <div className="anatomy-menu-wrap" ref={menuRef}>
@@ -316,6 +245,7 @@ export default function AnatomyMap({ exercises }: Props) {
             silhouetteOpacity={silhouetteOpacity}
             onHoverMuscle={handleHoverMuscle}
             onClickMuscle={handleClickMuscle}
+            bgRef={bgRef}
           />
 
           {/* HUD overlay (minimal — no redundant title) */}
@@ -497,6 +427,24 @@ export default function AnatomyMap({ exercises }: Props) {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Mobile group chips */}
+      <div className="anatomy-chips-bar">
+        {Object.entries(MUSCLE_GROUPS).map(([key, group]) => (
+          <button
+            key={key}
+            type="button"
+            className={`anatomy-chip${selectedGroup === key ? " anatomy-chip--active" : ""}`}
+            onClick={() => handleGroupToggle(key)}
+          >
+            <span
+              className="anatomy-chip-dot"
+              style={{ background: group.color }}
+            />
+            {t(`anatomy.groups.${key}`)}
+          </button>
+        ))}
       </div>
     </div>
   );

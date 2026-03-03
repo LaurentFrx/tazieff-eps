@@ -1,6 +1,7 @@
 "use client";
 
-import { Canvas } from "@react-three/fiber";
+import type { RefObject } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import HologramMannequin from "./HologramMannequin";
 
@@ -11,7 +12,25 @@ type Props = {
   silhouetteOpacity: number;
   onHoverMuscle: (frName: string | null, groupKey: string | null) => void;
   onClickMuscle: (frName: string, groupKey: string) => void;
+  bgRef: RefObject<HTMLDivElement | null>;
 };
+
+/* Sync CSS background transform with camera for parallax illusion */
+function CameraSync({ bgRef }: Pick<Props, "bgRef">) {
+  useFrame(({ camera }) => {
+    const el = bgRef.current;
+    if (!el) return;
+    const dx = camera.position.x;
+    const dy = camera.position.y - 0.85;
+    const dz = camera.position.z;
+    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    const scale = Math.max(1, 2.2 / dist);
+    const azimuth = Math.atan2(dx, dz);
+    const offsetX = -(azimuth / Math.PI) * 5;
+    el.style.transform = `scale(${scale.toFixed(4)}) translateX(${offsetX.toFixed(2)}%)`;
+  });
+  return null;
+}
 
 export default function AnatomyCanvas({
   selectedGroup,
@@ -20,16 +39,15 @@ export default function AnatomyCanvas({
   silhouetteOpacity,
   onHoverMuscle,
   onClickMuscle,
+  bgRef,
 }: Props) {
   return (
     <Canvas
-      camera={{ position: [0, 0.8, 2.2], fov: 45, near: 0.01, far: 100 }}
+      camera={{ position: [0, 0.85, 2.2], fov: 45, near: 0.01, far: 100 }}
       style={{ background: "transparent" }}
-      gl={{
-        antialias: true,
-        alpha: true,
-      }}
+      gl={{ antialias: true, alpha: true }}
     >
+      <CameraSync bgRef={bgRef} />
       <HologramMannequin
         selectedGroup={selectedGroup}
         highlightedMuscle={highlightedMuscle}
@@ -46,6 +64,8 @@ export default function AnatomyCanvas({
         dampingFactor={0.08}
         minDistance={0.5}
         maxDistance={5}
+        minPolarAngle={Math.PI / 2}
+        maxPolarAngle={Math.PI / 2}
         autoRotate={!selectedGroup}
         autoRotateSpeed={0.4}
       />
