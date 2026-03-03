@@ -26,7 +26,7 @@ function CameraSync({ bgRef }: Pick<Props, "bgRef">) {
     const el = bgRef.current;
     if (!el) return;
     const dx = camera.position.x;
-    const dy = camera.position.y - 0.85;
+    const dy = camera.position.y - 0.7;
     const dz = camera.position.z;
     const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
     const scale = BASE_SCALE * (REF_DIST / dist);
@@ -48,7 +48,7 @@ export default function AnatomyCanvas({
 }: Props) {
   return (
     <Canvas
-      camera={{ position: [0, 0.85, 2.2], fov: 45, near: 0.01, far: 100 }}
+      camera={{ position: [0, 0.7, 2.2], fov: 50, near: 0.01, far: 100 }}
       style={{ background: "transparent" }}
       gl={{ antialias: true, alpha: true }}
     >
@@ -63,7 +63,7 @@ export default function AnatomyCanvas({
         onClickMuscle={onClickMuscle}
       />
       <OrbitControls
-        target={[0, 0.85, 0]}
+        target={[0, 0.7, 0]}
         enablePan={false}
         enableDamping
         dampingFactor={0.08}

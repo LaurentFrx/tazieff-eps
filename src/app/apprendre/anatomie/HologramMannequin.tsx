@@ -44,7 +44,7 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
         mesh.material = new THREE.MeshBasicMaterial({
-          color: 0x2266aa,
+          color: 0xb7410e,
           transparent: true,
           opacity,
           wireframe: true,
