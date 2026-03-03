@@ -15,7 +15,12 @@ type Props = {
   bgRef: RefObject<HTMLDivElement | null>;
 };
 
-/* Sync CSS background transform with camera for parallax illusion */
+/* Sync CSS background transform with camera for parallax illusion.
+   BASE_SCALE > 1 lets the background shrink on zoom-out while still
+   filling the viewport (the -20 % inset buffer covers the remainder). */
+const BASE_SCALE = 1.4;
+const REF_DIST = 2.2;
+
 function CameraSync({ bgRef }: Pick<Props, "bgRef">) {
   useFrame(({ camera }) => {
     const el = bgRef.current;
@@ -24,7 +29,7 @@ function CameraSync({ bgRef }: Pick<Props, "bgRef">) {
     const dy = camera.position.y - 0.85;
     const dz = camera.position.z;
     const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-    const scale = Math.max(1, 2.2 / dist);
+    const scale = BASE_SCALE * (REF_DIST / dist);
     const azimuth = Math.atan2(dx, dz);
     const offsetX = -(azimuth / Math.PI) * 5;
     el.style.transform = `scale(${scale.toFixed(4)}) translateX(${offsetX.toFixed(2)}%)`;
@@ -63,7 +68,7 @@ export default function AnatomyCanvas({
         enableDamping
         dampingFactor={0.08}
         minDistance={0.5}
-        maxDistance={5}
+        maxDistance={3.5}
         minPolarAngle={Math.PI / 2}
         maxPolarAngle={Math.PI / 2}
         autoRotate={!selectedGroup}

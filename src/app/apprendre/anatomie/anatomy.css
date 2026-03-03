@@ -23,7 +23,7 @@
 
 .anatomy-bg {
   position: absolute;
-  inset: -8%;
+  inset: -20%;
   background: url("/media/anatomy-bg.webp") center center / cover no-repeat;
   transform-origin: center center;
   will-change: transform;
