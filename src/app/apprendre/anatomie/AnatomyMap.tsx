@@ -95,8 +95,6 @@ export default function AnatomyMap({ exercises }: Props) {
   const [highlightedMuscle, setHighlightedMuscle] = useState<string | null>(
     null,
   );
-  const [wireframe, setWireframe] = useState(false);
-  const [silhouetteOpacity, setSilhouetteOpacity] = useState(0.4);
   const [tooltip, setTooltip] = useState<{
     name: string;
     group: string | null;
@@ -181,14 +179,6 @@ export default function AnatomyMap({ exercises }: Props) {
     [],
   );
 
-  /* ── Reset all ───────────────────────────────────────────────────────── */
-  const handleReset = useCallback(() => {
-    setSelectedGroup(null);
-    setHighlightedMuscle(null);
-    setWireframe(false);
-    setSilhouetteOpacity(0.4);
-  }, []);
-
   const panelOpen = selectedGroup !== null;
 
   return (
@@ -241,8 +231,6 @@ export default function AnatomyMap({ exercises }: Props) {
           <AnatomyCanvas
             selectedGroup={selectedGroup}
             highlightedMuscle={highlightedMuscle}
-            wireframe={wireframe}
-            silhouetteOpacity={silhouetteOpacity}
             onHoverMuscle={handleHoverMuscle}
             onClickMuscle={handleClickMuscle}
             bgRef={bgRef}
@@ -284,36 +272,6 @@ export default function AnatomyMap({ exercises }: Props) {
           className={`anatomy-panel${panelOpen ? " anatomy-panel--open" : ""}`}
         >
           <div className="anatomy-drawer-handle" />
-
-          {/* Controls bar */}
-          <div className="anatomy-controls">
-            <label className="anatomy-control-slider">
-              <span>{t("anatomy.opacity")}</span>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={Math.round(silhouetteOpacity * 100)}
-                onChange={(e) =>
-                  setSilhouetteOpacity(Number(e.target.value) / 100)
-                }
-              />
-            </label>
-            <button
-              type="button"
-              className={`anatomy-control-btn${wireframe ? " active" : ""}`}
-              onClick={() => setWireframe((v) => !v)}
-            >
-              {t("anatomy.wireframe")}
-            </button>
-            <button
-              type="button"
-              className="anatomy-control-btn"
-              onClick={handleReset}
-            >
-              {t("anatomy.reset")}
-            </button>
-          </div>
 
           {/* Muscle groups accordion */}
           <div className="anatomy-groups">

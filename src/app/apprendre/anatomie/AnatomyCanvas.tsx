@@ -8,25 +8,22 @@ import HologramMannequin from "./HologramMannequin";
 type Props = {
   selectedGroup: string | null;
   highlightedMuscle: string | null;
-  wireframe: boolean;
-  silhouetteOpacity: number;
   onHoverMuscle: (frName: string | null, groupKey: string | null) => void;
   onClickMuscle: (frName: string, groupKey: string) => void;
   bgRef: RefObject<HTMLDivElement | null>;
 };
 
-/* Sync CSS background with camera zoom (scale only, no crop at default). */
+/* Camera target at the mannequin's feet so they stay fixed during zoom.
+   Background is oversized (140 % height) and bottom-aligned so the
+   shadow line on the deck matches the viewport center (= feet). */
 const REF_DIST = 3.0;
-const TARGET_Y = 0.85;
 
 function CameraSync({ bgRef }: Pick<Props, "bgRef">) {
   useFrame(({ camera }) => {
     const el = bgRef.current;
     if (!el) return;
-    const dx = camera.position.x;
-    const dy = camera.position.y - TARGET_Y;
-    const dz = camera.position.z;
-    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    const { x, y, z } = camera.position;
+    const dist = Math.sqrt(x * x + y * y + z * z);
     const scale = Math.max(1, REF_DIST / dist);
     el.style.transform = `scale(${scale.toFixed(4)})`;
   });
@@ -36,15 +33,13 @@ function CameraSync({ bgRef }: Pick<Props, "bgRef">) {
 export default function AnatomyCanvas({
   selectedGroup,
   highlightedMuscle,
-  wireframe,
-  silhouetteOpacity,
   onHoverMuscle,
   onClickMuscle,
   bgRef,
 }: Props) {
   return (
     <Canvas
-      camera={{ position: [0, TARGET_Y, REF_DIST], fov: 55, near: 0.01, far: 100 }}
+      camera={{ position: [0, 0, REF_DIST], fov: 60, near: 0.01, far: 100 }}
       style={{ background: "transparent" }}
       gl={{ antialias: true, alpha: true }}
     >
@@ -53,13 +48,13 @@ export default function AnatomyCanvas({
         selectedGroup={selectedGroup}
         highlightedMuscle={highlightedMuscle}
         hoveredMuscle={null}
-        wireframe={wireframe}
-        silhouetteOpacity={silhouetteOpacity}
+        wireframe={false}
+        silhouetteOpacity={0.4}
         onHoverMuscle={onHoverMuscle}
         onClickMuscle={onClickMuscle}
       />
       <OrbitControls
-        target={[0, TARGET_Y, 0]}
+        target={[0, 0, 0]}
         enablePan={false}
         enableDamping
         dampingFactor={0.08}

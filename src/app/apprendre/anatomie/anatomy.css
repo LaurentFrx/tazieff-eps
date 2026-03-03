@@ -21,10 +21,12 @@
 
 /* ── Parallax background (synced with camera) ─────────────────────────── */
 
+/* Image at 140 % height, bottom-aligned, so the shadow line on the deck
+   lands at ≈ 50 % of the viewport — matching the mannequin's feet (target). */
 .anatomy-bg {
   position: absolute;
   inset: 0;
-  background: url("/media/anatomy-bg.webp") center center / cover no-repeat;
+  background: #0a0a14 url("/media/anatomy-bg.webp") center 100% / auto 140% no-repeat;
   transform-origin: center center;
   will-change: transform;
   z-index: 0;
