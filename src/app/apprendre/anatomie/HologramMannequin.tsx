@@ -230,7 +230,7 @@ export default function HologramMannequin({
 }: Props & { silhouetteOpacity?: number }) {
 
   return (
-    <group position={[0, -1.28, 0]}>
+    <group>
       {/* Lighting — outdoor-style to match building photo */}
       <ambientLight intensity={0.8} color={0xffeedd} />
       <directionalLight position={[2, 4, 2]} intensity={1.2} color={0xfff5e0} />

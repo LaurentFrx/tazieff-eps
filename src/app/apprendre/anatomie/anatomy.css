@@ -30,6 +30,10 @@
   position: absolute;
   inset: 0 0 -33% 0;
   background: #0a0a14 url("/media/anatomy-bg.webp") center center / cover no-repeat;
+  /* Scale origin at the feet / shadow line: 87 % from viewport top
+     = 87 / 133 ≈ 65.4 % of this extended div's height. */
+  transform-origin: 50% 65.4%;
+  will-change: transform;
   z-index: 0;
 }
 
