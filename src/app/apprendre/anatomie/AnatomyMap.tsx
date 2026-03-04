@@ -1,9 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { LiveExerciseListItem } from "@/lib/live/types";
 import { MUSCLE_GROUPS, matchesGroup } from "./anatomy-data";
@@ -21,70 +20,17 @@ type Props = {
 /* ─── Group list item (unique muscles from the model) ────────────────── */
 
 const GROUP_MUSCLES: Record<string, string[]> = {
-  dos: [
-    "Grand dorsal",
-    "Grand rhomboïde",
-    "Petit rhomboïde",
-    "Trapèze ascendant",
-    "Trapèze descendant",
-    "Trapèze transverse",
-    "Ilio-costal des lombes",
-    "Ilio-costal du thorax",
-    "Ilio-costal du cou",
-    "Longissimus du thorax",
-    "Longissimus de la tête",
-    "Longissimus du cou",
-    "Épineux de la tête",
-    "Épineux du cou",
-    "Épineux du thorax",
-  ],
-  pectoraux: [
-    "Pectoral (claviculaire)",
-    "Pectoral (sterno-costal)",
-    "Pectoral (abdominal)",
-    "Petit pectoral",
-    "Dentelé antérieur",
-  ],
-  abdominaux: [
-    "Grand droit abdomen",
-    "Oblique externe",
-    "Oblique interne",
-    "Transverse abdomen",
-  ],
-  epaules: [
-    "Deltoïde antérieur",
-    "Deltoïde moyen",
-    "Deltoïde postérieur",
-    "Grand rond",
-    "Infra-épineux",
-    "Supra-épineux",
-  ],
-  bras: [
-    "Biceps (long chef)",
-    "Biceps (court chef)",
-    "Brachial",
-    "Brachio-radial",
-    "Coraco-brachial",
-    "Triceps (long chef)",
-    "Triceps (latéral)",
-    "Triceps (médial)",
-  ],
-  psoas: ["Psoas", "Iliaque"],
-  fessiers: ["Grand fessier", "Moyen fessier", "Petit fessier"],
-  cuisses: [
-    "Droit fémoral",
-    "Vaste latéral",
-    "Vaste médial",
-    "Vaste intermédiaire",
-    "Couturier",
-    "Grand adducteur",
-    "Long adducteur",
-    "Court adducteur",
-    "Gracile",
-    "Semi-membraneux",
-    "Semi-tendineux",
-  ],
-  mollets: ["Gastrocnémien latéral", "Gastrocnémien médial", "Soléaire"],
+  dorsaux: ["Grand dorsal", "Trapèzes", "Rhomboïdes"],
+  pectoraux: ["Grand pectoral"],
+  abdominaux: ["Grand droit", "Obliques", "Transverse"],
+  deltoides: ["Deltoïde antérieur", "Deltoïde moyen", "Deltoïde postérieur"],
+  biceps: ["Biceps brachial", "Brachial"],
+  triceps: ["Triceps brachial"],
+  flechisseurs: ["Psoas-iliaque"],
+  fessiers: ["Grand fessier", "Moyen fessier"],
+  quadriceps: ["Droit fémoral", "Vastes"],
+  ischio_jambiers: ["Biceps fémoral", "Semi-tendineux", "Semi-membraneux"],
+  mollets: ["Gastrocnémiens", "Soléaire"],
 };
 
 /* ─── Main component ──────────────────────────────────────────────────── */
@@ -99,28 +45,7 @@ export default function AnatomyMap({ exercises }: Props) {
     name: string;
     group: string | null;
   } | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
-
-  /* ── Close menu on click outside or Escape ───────────────────────────── */
-  useEffect(() => {
-    if (!menuOpen) return;
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    }
-    function handleEscape(e: KeyboardEvent) {
-      if (e.key === "Escape") setMenuOpen(false);
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleEscape);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [menuOpen]);
 
   /* ── Exercises matching selected group ────────────────────────────────── */
   const matchingExercises = useMemo(() => {
@@ -186,45 +111,6 @@ export default function AnatomyMap({ exercises }: Props) {
       {/* Background (parallax-synced with camera) */}
       <div ref={bgRef} className="anatomy-bg" />
 
-      {/* ── Floating hamburger menu ──────────────────────────────────── */}
-      <div className="anatomy-menu-wrap" ref={menuRef}>
-        <button
-          type="button"
-          className="anatomy-menu-btn"
-          onClick={() => setMenuOpen((v) => !v)}
-          aria-label={menuOpen ? t("anatomy.closeMenu") : t("anatomy.openMenu")}
-        >
-          {menuOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
-
-        {menuOpen && (
-          <nav className="anatomy-menu-dropdown" aria-label="Navigation">
-            <Link href="/exercices" className="anatomy-menu-item">
-              {t("nav.exos.label")}
-            </Link>
-            <Link href="/seances" className="anatomy-menu-item">
-              {t("nav.seances.label")}
-            </Link>
-            <Link href="/methodes" className="anatomy-menu-item">
-              {t("nav.methodes.label")}
-            </Link>
-            <Link href="/apprendre" className="anatomy-menu-item">
-              {t("nav.apprendre.label")}
-            </Link>
-            <Link href="/bac" className="anatomy-menu-item">
-              {t("nav.bac.label")}
-            </Link>
-            <Link href="/ma-seance" className="anatomy-menu-item">
-              {t("nav.maSeance.label")}
-            </Link>
-            <div className="anatomy-menu-divider" />
-            <Link href="/reglages" className="anatomy-menu-item">
-              {t("pages.settings.title")}
-            </Link>
-          </nav>
-        )}
-      </div>
-
       <div className="anatomy-layout">
         {/* ── 3D Canvas (full viewport) ──────────────────────────────── */}
         <div className="anatomy-canvas-wrap">
@@ -249,7 +135,7 @@ export default function AnatomyMap({ exercises }: Props) {
               <div className="anatomy-hud">
                 {selectedGroup
                   ? t("anatomy.scanActive")
-                  : `9 ${t("anatomy.groups_word")}`}
+                  : `${Object.keys(MUSCLE_GROUPS).length} ${t("anatomy.groups_word")}`}
               </div>
             </div>
           </div>
