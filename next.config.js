@@ -15,6 +15,7 @@ const withSerwist = (withSerwistInit.default ?? withSerwistInit)({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: false,
   env: {
     NEXT_PUBLIC_COMMIT_SHA:
       process.env.VERCEL_GIT_COMMIT_SHA ||

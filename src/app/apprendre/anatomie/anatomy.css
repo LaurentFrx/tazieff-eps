@@ -30,9 +30,11 @@
   position: absolute;
   inset: 0 0 -30% 0;
   background: #0a0a14 url("/media/anatomy-bg.webp") center center / cover no-repeat;
-  /* Scale origin at the feet / shadow line: 87 % from viewport top
-     = 87 / 130 ≈ 67 % of this extended div's height. */
-  transform-origin: 50% 67%;
+  /* Scale origin must match mannequin feet after translate offset.
+     Feet at (50vw, 82vh). With translate(-6%, -27%) on 100vw×130vh div:
+     X: 50vw = (origin_x − 6)% × 100vw  → origin_x = 56 %
+     Y: 82vh = (origin_y − 27)% × 130vh  → origin_y = 90 % */
+  transform-origin: 56% 90%;
   will-change: transform;
   z-index: 0;
 }

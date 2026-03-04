@@ -15,10 +15,16 @@ type Props = {
   bgRef: RefObject<HTMLDivElement | null>;
 };
 
-/** Y-offset so mannequin feet sit at ≈ 13 % from viewport bottom. */
-const FEET_Y = -1.28;
-const MIN_ZOOM = 1;
+/** Y-offset so mannequin feet sit at ≈ 18 % from viewport bottom. */
+const FEET_Y = -1.1;
+const MIN_ZOOM = 0.8;
 const MAX_ZOOM = 2.5;
+/** Background base zoom + offset (%) — negative X = left, negative Y = up. */
+const BASE_BG_SCALE = 1.2;
+const BG_OFFSET_X = -6;
+const BG_OFFSET_Y = -27;
+/** Mannequin is 25 % larger than the raw GLB model. */
+const MANNEQUIN_SCALE = 1.5;
 
 const clamp = (v: number, lo: number, hi: number) =>
   Math.max(lo, Math.min(hi, v));
@@ -82,27 +88,35 @@ function ZoomableScene({
     };
   }, [gl]);
 
-  /* Sync 3D scale + CSS background transform each frame */
+  /* Sync 3D scale + CSS background each frame */
   useFrame(() => {
     const z = zoomRef.current;
     scaleRef.current?.scale.setScalar(z);
     if (bgRef.current) {
-      bgRef.current.style.transform = `scale(${z.toFixed(4)})`;
+      bgRef.current.style.transform = `translate(${BG_OFFSET_X}%, ${BG_OFFSET_Y}%) scale(${(BASE_BG_SCALE * z).toFixed(4)})`;
     }
   });
 
   return (
     <group position={[0, FEET_Y, 0]}>
+      {/* Fake shadow — ellipse on ground, offset right to match sun from left */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0.4, 0.01, 0.15]} renderOrder={-1}>
+        <planeGeometry args={[1.2, 2.4]} />
+        <meshBasicMaterial color={0x000000} transparent opacity={0.18} depthWrite={false} />
+      </mesh>
+
       <group ref={scaleRef}>
-        <HologramMannequin
-          selectedGroup={selectedGroup}
-          highlightedMuscle={highlightedMuscle}
-          hoveredMuscle={null}
-          wireframe={false}
-          silhouetteOpacity={0.4}
-          onHoverMuscle={onHoverMuscle}
-          onClickMuscle={onClickMuscle}
-        />
+        <group scale={MANNEQUIN_SCALE} position={[0, 0, -0.15]}>
+          <HologramMannequin
+            selectedGroup={selectedGroup}
+            highlightedMuscle={highlightedMuscle}
+            hoveredMuscle={null}
+            wireframe={false}
+            silhouetteOpacity={0.4}
+            onHoverMuscle={onHoverMuscle}
+            onClickMuscle={onClickMuscle}
+          />
+        </group>
       </group>
     </group>
   );
