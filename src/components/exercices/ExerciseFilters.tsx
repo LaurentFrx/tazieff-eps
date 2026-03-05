@@ -43,7 +43,7 @@ function renderSelectedChips<T extends MultiSelectValue>(
   selected: readonly T[],
   options: readonly T[],
   formatLabel?: (value: T) => string,
-  allLabel = "Tous",
+  allLabel?: string,
 ) {
   if (selected.length === 0) {
     return <span className="text-xs text-[color:var(--muted)]">{allLabel}</span>;
@@ -93,11 +93,16 @@ function MultiSelectMenu<T extends MultiSelectValue>({
   open,
   onToggle,
 }: MultiSelectMenuProps<T>) {
+  const { t } = useI18n();
   const ringClass = open ? "ring-2 ring-red-400/60" : "ring-1 ring-white/10";
 
   if (options.length === 0) {
     return null;
   }
+
+  const resolvedAllLabel = allLabel ?? t("filters.all");
+  const resolvedClearLabel = clearLabel ?? t("filters.clearAll");
+  const optionWord = options.length > 1 ? t("filters.optionCountPlural") : t("filters.optionCount");
 
   return (
     <div className="relative">
@@ -110,7 +115,7 @@ function MultiSelectMenu<T extends MultiSelectValue>({
         <span className="flex min-w-0 flex-1 flex-col items-start gap-2">
           <span className="text-sm font-medium">{label}</span>
           <span className="flex w-full flex-wrap items-center gap-2">
-            {renderSelectedChips(selected, options, formatLabel, allLabel)}
+            {renderSelectedChips(selected, options, formatLabel, resolvedAllLabel)}
           </span>
         </span>
         <span aria-hidden="true">▾</span>
@@ -119,11 +124,11 @@ function MultiSelectMenu<T extends MultiSelectValue>({
         <div className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-lg">
           <div className="flex items-center justify-between px-2 pb-2">
             <span className="text-xs text-[color:var(--muted)]">
-              {options.length} option{options.length > 1 ? "s" : ""}
+              {options.length} {optionWord}
             </span>
             {selected.length > 0 ? (
               <button type="button" className="chip chip-clear" onClick={onClear}>
-                {clearLabel ?? "Tout effacer"}
+                {resolvedClearLabel}
               </button>
             ) : null}
           </div>
@@ -176,6 +181,7 @@ function SingleSelectMenu<T>({
   open,
   onToggle,
 }: SingleSelectMenuProps<T>) {
+  const { t } = useI18n();
   const menuId = useId();
   const summary = formatLabel ? formatLabel(selected) : String(selected);
   const ringClass = open ? "ring-2 ring-red-400/60" : "ring-1 ring-white/10";
@@ -183,6 +189,8 @@ function SingleSelectMenu<T>({
   if (options.length === 0) {
     return null;
   }
+
+  const optionWord = options.length > 1 ? t("filters.optionCountPlural") : t("filters.optionCount");
 
   return (
     <div className="relative">
@@ -202,7 +210,7 @@ function SingleSelectMenu<T>({
         <div className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-lg">
           <div className="flex items-center justify-between px-2 pb-2">
             <span className="text-xs text-[color:var(--muted)]">
-              {options.length} option{options.length > 1 ? "s" : ""}
+              {options.length} {optionWord}
             </span>
           </div>
           <div className="max-h-56 space-y-1 overflow-y-auto">

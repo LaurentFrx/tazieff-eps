@@ -73,6 +73,8 @@ export const messages = {
       noEquipment: "Sans matériel",
       themePrefix: "Thème",
       favoritesOnly: "Favoris uniquement",
+      optionCount: "option",
+      optionCountPlural: "options",
     },
     exerciseGrid: {
       gridView: "Vue grille",
@@ -690,6 +692,8 @@ export const messages = {
       noEquipment: "No equipment",
       themePrefix: "Theme",
       favoritesOnly: "Favorites only",
+      optionCount: "option",
+      optionCountPlural: "options",
     },
     exerciseGrid: {
       gridView: "Grid view",
@@ -1307,6 +1311,8 @@ export const messages = {
       noEquipment: "Sin material",
       themePrefix: "Tema",
       favoritesOnly: "Solo favoritos",
+      optionCount: "opción",
+      optionCountPlural: "opciones",
     },
     exerciseGrid: {
       gridView: "Vista cuadrícula",
