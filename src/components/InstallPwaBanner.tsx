@@ -81,7 +81,7 @@ export function InstallPwaBanner() {
   return (
     <div
       className="pointer-events-auto fixed left-1/2 z-20 w-[calc(100%-32px)] max-w-[520px] -translate-x-1/2 rounded-2xl border border-[color:var(--border)] bg-[var(--card)] px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3 shadow-[var(--shadow)] backdrop-blur-xl"
-      style={{ bottom: "calc(var(--tabbar-offset) + var(--tabbar-height))" }}
+      style={{ bottom: "calc(16px + env(safe-area-inset-bottom))" }}
       role="status"
       aria-live="polite"
     >

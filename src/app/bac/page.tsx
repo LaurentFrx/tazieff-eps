@@ -104,6 +104,21 @@ export default async function BacPage() {
 
   return (
     <section className="page">
+      <Link
+        href="/parcours-bac"
+        className="card flex items-center justify-between gap-4 p-4 transition-colors hover:border-[color:var(--accent)]"
+      >
+        <div>
+          <p className="text-sm font-semibold text-[color:var(--ink)]">
+            {t("parcours.title")}
+          </p>
+          <p className="mt-0.5 line-clamp-2 text-xs text-[color:var(--muted)]">
+            {t("parcours.lede")}
+          </p>
+        </div>
+        <span className="pill shrink-0 text-xs">→</span>
+      </Link>
+
       {bacPages.length > 0 ? (
         <section>
           <h2 className="mb-3 text-base font-semibold text-[color:var(--ink)]">

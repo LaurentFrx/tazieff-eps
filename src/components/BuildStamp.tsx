@@ -59,7 +59,7 @@ export function BuildStamp() {
   return (
     <div
       className="pointer-events-none fixed left-1/2 z-10 -translate-x-1/2 whitespace-nowrap text-[10px] tabular-nums tracking-[0.2em] text-[color:var(--muted)] opacity-60"
-      style={{ bottom: "calc(var(--tabbar-offset) + var(--tabbar-height) + 8px)" }}
+      style={{ bottom: "calc(16px + env(safe-area-inset-bottom))" }}
       aria-hidden="true"
       title={fullLine}
     >
