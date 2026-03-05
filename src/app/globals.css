@@ -1131,6 +1131,46 @@ p {
   background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
+/* ── Enseignant ─────────────────────────────── */
+
+.enseignant-icon-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.enseignant-icon-btn:hover {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--border) 30%, transparent);
+}
+
+.enseignant-icon-btn-danger:hover {
+  color: #ef4444;
+}
+
+.enseignant-close-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.share-url-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--card));
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 12px 14px;
+  position: relative;
+}
+
 /* ── Onboarding ─────────────────────────────── */
 
 .onboarding-banner {

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Menu, Search, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useTeacherMode } from "@/hooks/useTeacherMode";
 import { SearchModal } from "@/components/SearchModal";
 
 const navItems = [
@@ -19,6 +20,7 @@ const navItems = [
 export function FloatingNav() {
   const pathname = usePathname() ?? "";
   const { t } = useI18n();
+  const { unlocked: teacherUnlocked } = useTeacherMode();
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -110,6 +112,15 @@ export function FloatingNav() {
           >
             {t("pages.settings.title")}
           </Link>
+          {teacherUnlocked && (
+            <Link
+              href="/enseignant"
+              className={`floating-nav-item${pathname.startsWith("/enseignant") ? " is-active" : ""}`}
+              aria-current={pathname.startsWith("/enseignant") ? "page" : undefined}
+            >
+              {t("enseignant.navLabel")}
+            </Link>
+          )}
         </nav>
       )}
       {searchOpen && <SearchModal onClose={() => setSearchOpen(false)} />}
