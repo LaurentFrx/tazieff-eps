@@ -47,6 +47,7 @@ next-env.d.ts
 public/build-info.json
 public/sw.js
 public/sw.js.map
+src/lib/search/search-index.ts
 
 # large local docs
 docs/pdfs/Muscu'Tazieff 2.pdf

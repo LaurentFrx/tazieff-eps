@@ -3,9 +3,9 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "predev": "node scripts/check-node.mjs && node scripts/gen-build-info.mjs",
+        "predev": "node scripts/check-node.mjs && node scripts/gen-build-info.mjs && node scripts/gen-search-index.mjs",
         "dev": "next dev --webpack -p 3000 -H 0.0.0.0",
-        "prebuild": "node scripts/gen-build-info.mjs",
+        "prebuild": "node scripts/gen-build-info.mjs && node scripts/gen-search-index.mjs",
         "build": "next build --webpack",
         "start": "next start",
         "lint": "eslint",

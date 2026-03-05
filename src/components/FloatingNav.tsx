@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { SearchModal } from "@/components/SearchModal";
 
 const navItems = [
   { href: "/exercices", labelKey: "nav.exos.label" },
@@ -19,7 +20,20 @@ export function FloatingNav() {
   const pathname = usePathname() ?? "";
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
+
+  /* ── Cmd/Ctrl+K shortcut for search ──────────────────────────────── */
+  useEffect(() => {
+    function handleShortcut(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen((v) => !v);
+      }
+    }
+    document.addEventListener("keydown", handleShortcut);
+    return () => document.removeEventListener("keydown", handleShortcut);
+  }, []);
 
   /* ── Close on click outside ─────────────────────────────────────────── */
   useEffect(() => {
@@ -53,6 +67,14 @@ export function FloatingNav() {
 
   return (
     <div className="floating-nav-wrap" ref={wrapRef}>
+      <button
+        type="button"
+        className="floating-nav-btn"
+        onClick={() => setSearchOpen(true)}
+        aria-label={t("search.open")}
+      >
+        <Search size={20} />
+      </button>
       <button
         type="button"
         className="floating-nav-btn"
@@ -90,6 +112,7 @@ export function FloatingNav() {
           </Link>
         </nav>
       )}
+      {searchOpen && <SearchModal onClose={() => setSearchOpen(false)} />}
     </div>
   );
 }

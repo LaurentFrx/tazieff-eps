@@ -696,6 +696,15 @@ export const messages = {
       hint: "Safari → Partager → « Sur l'écran d'accueil ».",
       close: "Fermer",
     },
+    search: {
+      open: "Rechercher",
+      placeholder: "Rechercher exercices, méthodes, cours…",
+      noResults: "Aucun résultat trouvé.",
+      typeExercice: "Exercices",
+      typeMethode: "Méthodes",
+      typeApprendre: "Apprendre",
+      typeGlossaire: "Glossaire",
+    },
   },
   en: {
     header: {
@@ -1244,6 +1253,15 @@ export const messages = {
       body: "Get a full-screen view (without iOS browser UI).",
       hint: "Safari → Share → \u201CAdd to Home Screen\u201D.",
       close: "Close",
+    },
+    search: {
+      open: "Search",
+      placeholder: "Search exercises, methods, courses…",
+      noResults: "No results found.",
+      typeExercice: "Exercises",
+      typeMethode: "Methods",
+      typeApprendre: "Learn",
+      typeGlossaire: "Glossary",
     },
     methodes: {
       eyebrow: "Methods",
@@ -2087,6 +2105,15 @@ export const messages = {
       body: "Para una vista en pantalla completa (sin menús iOS).",
       hint: "Safari → Compartir → «Añadir a pantalla de inicio».",
       close: "Cerrar",
+    },
+    search: {
+      open: "Buscar",
+      placeholder: "Buscar ejercicios, métodos, cursos…",
+      noResults: "Sin resultados.",
+      typeExercice: "Ejercicios",
+      typeMethode: "Métodos",
+      typeApprendre: "Aprender",
+      typeGlossaire: "Glosario",
     },
   },
 } as const;
