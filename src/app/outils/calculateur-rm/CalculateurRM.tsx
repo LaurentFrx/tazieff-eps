@@ -3,30 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-
-const RM_TABLE = [
-  { pct: 100, reps: 1, zone: "force_max" },
-  { pct: 90, reps: 4, zone: "force" },
-  { pct: 85, reps: 6, zone: "force" },
-  { pct: 80, reps: 8, zone: "volume" },
-  { pct: 75, reps: 10, zone: "volume" },
-  { pct: 70, reps: 12, zone: "volume" },
-  { pct: 65, reps: 15, zone: "endurance" },
-  { pct: 60, reps: 20, zone: "endurance" },
-  { pct: 50, reps: 25, zone: "endurance_legere" },
-  { pct: 30, reps: 0, zone: "puissance_vitesse" },
-] as const;
-
-function epley(charge: number, reps: number): number {
-  if (reps === 1) return charge;
-  return Math.round(charge * (1 + reps / 30));
-}
-
-function brzycki(charge: number, reps: number): number {
-  if (reps === 1) return charge;
-  if (reps >= 37) return Math.round(charge * 37);
-  return Math.round(charge * (36 / (37 - reps)));
-}
+import { epley, brzycki, RM_TABLE } from "@/lib/rm";
 
 export function CalculateurRM() {
   const { t } = useI18n();
