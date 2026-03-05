@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { FloatingHome } from "@/components/FloatingHome";
 import { FloatingNav } from "@/components/FloatingNav";
 import { InstallPwaBanner } from "@/components/InstallPwaBanner";
+import { OnlineStatus } from "@/components/OnlineStatus";
 import { AppProviders } from "@/components/providers/AppProviders";
 // RSC: useI18n() unavailable — read lang from cookie via getServerLang()
 import { getServerLang } from "@/lib/i18n/server";
@@ -79,6 +80,7 @@ export default async function RootLayout({
           </div>
           <FloatingHome />
           <FloatingNav />
+          <OnlineStatus />
           <InstallPwaBanner />
         </AppProviders>
       </body>

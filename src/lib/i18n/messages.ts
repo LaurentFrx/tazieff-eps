@@ -114,6 +114,9 @@ export const messages = {
       tip: "Astuce",
       tipBody: "Ouvrez une séance déjà téléchargée ou revenez à l'accueil dès que la connexion est rétablie.",
       backHome: "Retour à l'accueil",
+      indicator: "Hors ligne",
+      cachedSections: "Sections disponibles",
+      cachedSectionsBody: "Ces pages ont été mises en cache et sont peut-être accessibles hors ligne :",
     },
     apprendre: {
       eyebrow: "Apprendre",
@@ -819,6 +822,9 @@ export const messages = {
       tip: "Tip",
       tipBody: "Open an already downloaded session or return home once the connection is restored.",
       backHome: "Back to home",
+      indicator: "Offline",
+      cachedSections: "Available sections",
+      cachedSectionsBody: "These pages have been cached and may be accessible offline:",
     },
     apprendre: {
       eyebrow: "Learn",
@@ -1524,6 +1530,9 @@ export const messages = {
       tip: "Consejo",
       tipBody: "Abre una sesión ya descargada o vuelve al inicio cuando se restablezca la conexión.",
       backHome: "Volver al inicio",
+      indicator: "Sin conexión",
+      cachedSections: "Secciones disponibles",
+      cachedSectionsBody: "Estas páginas han sido almacenadas en caché y pueden estar accesibles sin conexión:",
     },
     apprendre: {
       eyebrow: "Aprender",

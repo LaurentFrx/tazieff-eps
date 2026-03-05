@@ -14,7 +14,13 @@ const isEssentialPage = (pathname: string) =>
   pathname === "/seances" ||
   pathname.startsWith("/seances/") ||
   pathname === "/bac" ||
-  pathname.startsWith("/apprendre");
+  pathname.startsWith("/apprendre") ||
+  pathname === "/methodes" ||
+  pathname.startsWith("/methodes/") ||
+  pathname === "/outils" ||
+  pathname.startsWith("/outils/") ||
+  pathname === "/parcours-bac" ||
+  pathname.startsWith("/parcours-bac/");
 
 const isHtmlRequest = (request: Request) =>
   request.mode === "navigate" ||
