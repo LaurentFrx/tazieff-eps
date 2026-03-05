@@ -33,7 +33,7 @@ function ThemeSync({ initialTheme }: { initialTheme: ThemePreference }) {
     }
 
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-    document.cookie = `${THEME_COOKIE_KEY}=${theme}; Path=/; Max-Age=${ONE_YEAR_IN_SECONDS}; SameSite=Lax`;
+    document.cookie = `${THEME_COOKIE_KEY}=${theme}; Path=/; Max-Age=${ONE_YEAR_IN_SECONDS}; SameSite=Lax; Secure`;
   }, [theme]);
 
   useEffect(() => {

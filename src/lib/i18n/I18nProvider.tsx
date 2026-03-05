@@ -64,7 +64,7 @@ export function I18nProvider({
     }
 
     window.localStorage.setItem(STORAGE_KEY, lang);
-    document.cookie = `${COOKIE_KEY}=${lang}; Path=/; Max-Age=${ONE_YEAR_IN_SECONDS}; SameSite=Lax`;
+    document.cookie = `${COOKIE_KEY}=${lang}; Path=/; Max-Age=${ONE_YEAR_IN_SECONDS}; SameSite=Lax; Secure`;
     document.documentElement.lang = lang;
   }, [lang]);
 
