@@ -23,7 +23,11 @@ export async function generateMetadata({
     return { title: t("seanceDetail.notFound") };
   }
 
-  return { title: result.frontmatter.title };
+  const title = result.frontmatter.title;
+  return {
+    title,
+    openGraph: { title },
+  };
 }
 
 export default async function SeancePage({ params }: SeancePageProps) {

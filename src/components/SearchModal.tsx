@@ -62,7 +62,7 @@ export function SearchModal({ onClose }: { onClose: () => void }) {
   const showEmpty = query.trim().length >= 2 && !hasResults;
 
   return (
-    <div className="search-overlay" onClick={onClose}>
+    <div className="search-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label={t("search.open")}>
       <div className="search-modal" onClick={(e) => e.stopPropagation()}>
         <div className="search-input-wrap">
           <Search size={18} className="search-input-icon" />

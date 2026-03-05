@@ -268,7 +268,7 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
                     </div>
                   </div>
                   {exercices.length > 1 && (
-                    <button type="button" className="carnet-remove-btn" onClick={() => removeExercice(i)}>
+                    <button type="button" className="carnet-remove-btn" onClick={() => removeExercice(i)} aria-label={t("carnet.delete")}>
                       <X size={14} />
                     </button>
                   )}

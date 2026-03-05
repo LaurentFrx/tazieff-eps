@@ -22,7 +22,13 @@ export async function generateMetadata({
   const t = getServerT(lang);
   const result = await getLearnPage(slug, lang);
   if (!result) return { title: t("apprendre.notFound") };
-  return { title: result.frontmatter.titre };
+  const { titre, description } = result.frontmatter;
+  const desc = description || titre;
+  return {
+    title: titre,
+    description: desc,
+    openGraph: { title: titre, description: desc },
+  };
 }
 
 export default async function LearnSlugPage({ params }: LearnPageProps) {

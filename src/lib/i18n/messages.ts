@@ -118,6 +118,10 @@ export const messages = {
       cachedSections: "Sections disponibles",
       cachedSectionsBody: "Ces pages ont été mises en cache et sont peut-être accessibles hors ligne :",
     },
+    notFound: {
+      title: "Page introuvable",
+      body: "Cette page n'existe pas ou a été déplacée.",
+    },
     apprendre: {
       eyebrow: "Apprendre",
       toc: "Sommaire",
@@ -241,6 +245,7 @@ export const messages = {
       pinInvalid: "PIN invalide.",
     },
     exerciseDetail: {
+      notFound: "Exercice introuvable",
       backLabel: "Retour aux exercices",
       menuLabel: "Menu",
       compatibleThemes: "Thèmes compatibles",
@@ -928,6 +933,10 @@ export const messages = {
       cachedSections: "Available sections",
       cachedSectionsBody: "These pages have been cached and may be accessible offline:",
     },
+    notFound: {
+      title: "Page not found",
+      body: "This page does not exist or has been moved.",
+    },
     apprendre: {
       eyebrow: "Learn",
       toc: "Contents",
@@ -1051,6 +1060,7 @@ export const messages = {
       pinInvalid: "Invalid PIN.",
     },
     exerciseDetail: {
+      notFound: "Exercise not found",
       backLabel: "Back to exercises",
       menuLabel: "Menu",
       compatibleThemes: "Compatible themes",
@@ -1738,6 +1748,10 @@ export const messages = {
       cachedSections: "Secciones disponibles",
       cachedSectionsBody: "Estas páginas han sido almacenadas en caché y pueden estar accesibles sin conexión:",
     },
+    notFound: {
+      title: "Página no encontrada",
+      body: "Esta página no existe o ha sido movida.",
+    },
     apprendre: {
       eyebrow: "Aprender",
       toc: "Contenidos",
@@ -1861,6 +1875,7 @@ export const messages = {
       pinInvalid: "PIN inválido.",
     },
     exerciseDetail: {
+      notFound: "Ejercicio no encontrado",
       backLabel: "Volver a ejercicios",
       menuLabel: "Menú",
       compatibleThemes: "Temas compatibles",

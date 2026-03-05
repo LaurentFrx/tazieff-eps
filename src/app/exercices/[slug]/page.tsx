@@ -96,12 +96,22 @@ export async function generateMetadata({
   const liveExercise = result ? null : await fetchLiveExercise(slug, locale);
   const importedExercise = result || liveExercise ? null : await getImportedExercise(slug);
 
+  const t = getServerT(locale);
+
   if (!result && !liveExercise && !importedExercise) {
-    return { title: "Exercice introuvable" };
+    return { title: t("exerciseDetail.notFound") };
   }
 
   if (importedExercise) {
-    return { title: importedExercise.title };
+    const title = importedExercise.title;
+    return {
+      title,
+      description: `${title} — ${t("header.exercicesSubtitle")}`,
+      openGraph: {
+        title,
+        ...(importedExercise.media ? { images: [importedExercise.media] } : {}),
+      },
+    };
   }
 
   const base = result
@@ -109,8 +119,19 @@ export async function generateMetadata({
     : liveExercise!.data_json;
   const override = await fetchExerciseOverride(slug, locale);
   const merged = applyExercisePatch(base, override?.patch_json ?? null);
+  const title = merged.frontmatter.title;
+  const muscles = merged.frontmatter.muscles?.join(", ") ?? "";
+  const description = muscles ? `${title} — ${muscles}` : title;
 
-  return { title: merged.frontmatter.title };
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      ...(merged.frontmatter.media ? { images: [merged.frontmatter.media] } : {}),
+    },
+  };
 }
 
 export default async function ExercicePage({ params }: ExercicePageProps) {
