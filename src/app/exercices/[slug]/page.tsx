@@ -7,6 +7,7 @@ import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
 import { applyExercisePatch } from "@/lib/live/patch";
 import { fetchExerciseOverride, fetchLiveExercise } from "@/lib/live/queries";
 import { ExerciseLiveDetail } from "@/app/exercices/[slug]/ExerciseLiveDetail";
+// RSC: useI18n() unavailable — read lang from cookie via getServerLang()
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { CategoryBadge } from "@/components/methodes/CategoryBadge";
 import { ScoresBlock } from "@/components/methodes/ScoreBar";

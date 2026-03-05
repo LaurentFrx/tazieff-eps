@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { HomeFlyer } from "@/components/HomeFlyer";
+// RSC: useI18n() unavailable — read lang from cookie via getServerLang()
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 
 export default async function HomePage() {

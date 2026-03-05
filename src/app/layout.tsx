@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Space_Mono, Sora } from "next/font/google";
 import { cookies } from "next/headers";
-import { AppHeader } from "@/components/AppHeader";
+import { FloatingHome } from "@/components/FloatingHome";
+import { FloatingNav } from "@/components/FloatingNav";
 import { InstallPwaBanner } from "@/components/InstallPwaBanner";
-import { TabNav } from "@/components/TabNav";
 import { AppProviders } from "@/components/providers/AppProviders";
+// RSC: useI18n() unavailable — read lang from cookie via getServerLang()
 import { getServerLang } from "@/lib/i18n/server";
 import "./globals.css";
 
@@ -74,10 +75,10 @@ export default async function RootLayout({
       <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable}`}>
         <AppProviders initialLang={initialLang} initialTheme={initialTheme}>
           <div className="app-shell">
-            <AppHeader />
             <main className="app-main">{children}</main>
           </div>
-          <TabNav />
+          <FloatingHome />
+          <FloatingNav />
           <InstallPwaBanner />
         </AppProviders>
       </body>
