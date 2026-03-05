@@ -145,19 +145,29 @@ export function Timer() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, amrapStatus]);
 
-  /* Background */
+  /* Background + color transitions: green → orange (≤10s) → red (≤3s / done) */
   const status: Status =
     mode === "recup" ? recupStatus :
     mode === "emom" ? emomStatus :
     amrapStatus;
 
+  const activeLeft =
+    mode === "recup" ? recupLeft :
+    mode === "emom" ? emomLeft :
+    amrapLeft;
+
+  const isUrgent = status === "running" && activeLeft <= 3;
+  const isWarning = status === "running" && activeLeft <= 10 && activeLeft > 3;
+
   const bg =
-    status === "done" ? "rgba(239,68,68,0.10)" :
+    status === "done" || isUrgent ? "rgba(239,68,68,0.10)" :
+    isWarning ? "rgba(251,146,60,0.10)" :
     status === "running" ? "rgba(34,197,94,0.10)" :
     "rgba(59,130,246,0.05)";
 
   const timeColor =
-    status === "done" ? "#ef4444" :
+    status === "done" || isUrgent ? "#ef4444" :
+    isWarning ? "#f97316" :
     status === "running" ? "#16a34a" :
     "var(--ink)";
 
@@ -180,8 +190,8 @@ export function Timer() {
       style={{ background: bg, transition: "background 0.6s ease", minHeight: "100dvh" }}
     >
       <header className="page-header">
-        <Link href="/apprendre" className="eyebrow hover:text-[color:var(--accent)]">
-          ← {t("apprendre.backLabel")}
+        <Link href="/outils" className="eyebrow hover:text-[color:var(--accent)]">
+          ← {t("outils.backLabel")}
         </Link>
         <h1>{t("apprendre.timer.title")}</h1>
       </header>

@@ -24,12 +24,12 @@ export default async function ApprendrePage() {
       description: t("pages.apprendre.cards.connaissances.description"),
     },
     {
-      href: "/apprendre/calculateur-rm",
+      href: "/outils/calculateur-rm",
       title: t("pages.apprendre.cards.calculateur.title"),
       description: t("pages.apprendre.cards.calculateur.description"),
     },
     {
-      href: "/apprendre/timer",
+      href: "/outils/timer",
       title: t("pages.apprendre.cards.timer.title"),
       description: t("pages.apprendre.cards.timer.description"),
     },
@@ -54,7 +54,7 @@ export default async function ApprendrePage() {
       {learnPages.length > 0 ? (
         <section>
           <h2 className="mb-3 text-base font-semibold text-[color:var(--ink)]">
-            {t("apprendre.anatomieHeading")}
+            {t("apprendre.learnPagesHeading")}
           </h2>
           <ul className="flex flex-col gap-2">
             {learnPages.map((page) => (

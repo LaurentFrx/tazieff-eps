@@ -120,7 +120,7 @@ export default async function MethodePage({ params }: MethodePageProps) {
         <>
           <MethodeTimer labels={timerLabels} />
           <Link
-            href="/apprendre/timer"
+            href="/outils/timer"
             className="card flex items-center justify-center py-3 text-sm font-semibold text-[color:var(--accent)] transition-colors hover:border-[color:var(--accent)]"
           >
             {t("methodes.timer.fullTimerLink")}

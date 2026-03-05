@@ -77,7 +77,7 @@ export function ProgrammesList() {
   return (
     <section className="page">
       <header className="page-header">
-        <Link href="/ma-seance" className="eyebrow hover:text-[color:var(--accent)]">
+        <Link href="/outils/ma-seance" className="eyebrow hover:text-[color:var(--accent)]">
           ← {t("programmes.backLabel")}
         </Link>
         <h1>{t("programmes.title")}</h1>
@@ -140,7 +140,7 @@ export function ProgrammesList() {
                   {/* Actions */}
                   <div className="flex flex-col gap-2 sm:flex-row">
                     <Link
-                      href={`/ma-seance?objectif=${prog.objectifCategorie}`}
+                      href={`/outils/ma-seance?objectif=${prog.objectifCategorie}`}
                       className="flex-1 rounded-xl bg-[color:var(--accent)] py-3 text-center text-sm font-bold text-white transition-opacity hover:opacity-90"
                     >
                       {t("programmes.useThisProgramme")}

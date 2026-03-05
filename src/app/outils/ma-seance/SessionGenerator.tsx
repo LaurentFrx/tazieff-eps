@@ -189,8 +189,8 @@ export function SessionGenerator({
   return (
     <section className="page">
       <header className="page-header no-print">
-        <Link href="/" className="eyebrow hover:text-[color:var(--accent)]">
-          ← {t("maSeance.eyebrow")}
+        <Link href="/outils" className="eyebrow hover:text-[color:var(--accent)]">
+          ← {t("outils.backLabel")}
         </Link>
         <h1>{t("maSeance.title")}</h1>
       </header>
@@ -516,7 +516,7 @@ export function SessionGenerator({
             return m?.timer;
           }) && (
             <Link
-              href="/apprendre/timer"
+              href="/outils/timer"
               className="no-print card flex items-center justify-center py-3 text-sm font-semibold text-[color:var(--accent)] transition-colors hover:border-[color:var(--accent)]"
             >
               {t("maSeance.result.timerLink")}
