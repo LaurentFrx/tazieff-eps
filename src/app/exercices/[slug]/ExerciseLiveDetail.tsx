@@ -2841,8 +2841,7 @@ export function ExerciseLiveDetail({
                             </span>
                           </div>
                           <p className="text-sm text-[color:var(--muted)]">
-                            Une version enregistrée existe pour cette fiche. Tu peux la supprimer
-                            (la fiche MDX reste intacte).
+                            {t("exerciseEditor.liveExistsWarning")}
                           </p>
                         </div>
                         <button
@@ -3286,15 +3285,15 @@ export function ExerciseLiveDetail({
                   <div className="rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-4 shadow-lg">
                     <div className="stack-md">
                       <div className="flex flex-col gap-1">
-                        <h3 className="text-base font-semibold">Contenu de la fiche</h3>
+                        <h3 className="text-base font-semibold">{t("exerciseEditor.contentCardTitle")}</h3>
                         <p className="text-sm text-[color:var(--muted)]">
-                          Sections et blocs visibles sur la fiche (texte, liste à puces, photo).
+                          {t("exerciseEditor.contentCardDesc")}
                         </p>
                       </div>
                       <div className="stack-md">
                         <div className="flex items-center justify-between gap-2">
                           <h3 className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">
-                            Sections
+                            {t("exerciseEditor.sectionsLabel")}
                           </h3>
                           <button
                             type="button"
@@ -3351,7 +3350,7 @@ export function ExerciseLiveDetail({
                                   setSectionMenuOpenId(null);
                                 }}
                               >
-                                Renommer
+                                {t("exerciseEditor.rename")}
                               </button>
                               <div className="mt-2 border-t border-white/10 pt-2">
                                 <span className="block px-2 pb-1 text-[10px] uppercase tracking-[0.18em] text-[color:var(--muted)]">
@@ -3366,7 +3365,7 @@ export function ExerciseLiveDetail({
                                     setSectionMenuOpenId(null);
                                   }}
                                 >
-                                  Texte
+                                  {t("exerciseEditor.textBlock")}
                                 </button>
                                 <button
                                   type="button"
@@ -3377,7 +3376,7 @@ export function ExerciseLiveDetail({
                                     setSectionMenuOpenId(null);
                                   }}
                                 >
-                                  Liste à puces
+                                  {t("exerciseEditor.bulletsList")}
                                 </button>
                                 <button
                                   type="button"
@@ -3388,7 +3387,7 @@ export function ExerciseLiveDetail({
                                     setSectionMenuOpenId(null);
                                   }}
                                 >
-                                  Photo
+                                  {t("exerciseEditor.photoBlock")}
                                 </button>
                               </div>
                               <button
@@ -3400,7 +3399,7 @@ export function ExerciseLiveDetail({
                                   setSectionMenuOpenId(null);
                                 }}
                               >
-                                Monter
+                                {t("exerciseEditor.moveUp")}
                               </button>
                               <button
                                 type="button"
@@ -3413,7 +3412,7 @@ export function ExerciseLiveDetail({
                                   setSectionMenuOpenId(null);
                                 }}
                               >
-                                Descendre
+                                {t("exerciseEditor.moveDown")}
                               </button>
                               <button
                                 type="button"
@@ -3431,7 +3430,7 @@ export function ExerciseLiveDetail({
                       </div>
                       {section.blocks.length === 0 ? (
                         <p className="text-xs text-[color:var(--muted)]">
-                          Aucun bloc pour cette section.
+                          {t("exerciseEditor.noBlocks")}
                         </p>
                       ) : null}
                       <div className="stack-sm">
@@ -3492,7 +3491,7 @@ export function ExerciseLiveDetail({
                                           setBlockMenuOpenKey(null);
                                         }}
                                       >
-                                        Éditer
+                                        {t("exerciseEditor.edit")}
                                       </button>
                                       <button
                                         type="button"
@@ -3503,7 +3502,7 @@ export function ExerciseLiveDetail({
                                           setBlockMenuOpenKey(null);
                                         }}
                                       >
-                                        Monter
+                                        {t("exerciseEditor.moveUp")}
                                       </button>
                                       <button
                                         type="button"
@@ -3514,7 +3513,7 @@ export function ExerciseLiveDetail({
                                           setBlockMenuOpenKey(null);
                                         }}
                                       >
-                                        Descendre
+                                        {t("exerciseEditor.moveDown")}
                                       </button>
                                       <button
                                         type="button"
@@ -3524,7 +3523,7 @@ export function ExerciseLiveDetail({
                                           setBlockMenuOpenKey(null);
                                         }}
                                       >
-                                        Supprimer
+                                        {t("exerciseEditor.delete")}
                                       </button>
                                     </div>
                                   ) : null}
@@ -3532,7 +3531,7 @@ export function ExerciseLiveDetail({
                               </div>
                               {block.type === "bullets" ? (
                                 <p className="text-xs text-[color:var(--muted)]">
-                                  Une puce = une ligne courte.
+                                  {t("exerciseEditor.bulletHint")}
                                 </p>
                               ) : null}
                       
@@ -3604,7 +3603,7 @@ export function ExerciseLiveDetail({
                                           }))
                                         }
                                       >
-                                        Supprimer
+                                        {t("exerciseEditor.delete")}
                                       </button>
                                     </div>
                                   ))}
@@ -3633,7 +3632,7 @@ export function ExerciseLiveDetail({
                                     <>
                                       <div className="flex flex-wrap items-center justify-between gap-2">
                                         <span className="text-xs text-[color:var(--muted)]">
-                                          Photo
+                                          {t("exerciseEditor.photoBlock")}
                                         </span>
                                         <div className="flex flex-wrap gap-2">
                                           {hasPhoto ? (
@@ -3645,14 +3644,14 @@ export function ExerciseLiveDetail({
                                                   handlePhotoUploadRequest(section.id, blockIndex)
                                                 }
                                               >
-                                                Remplacer
+                                                {t("exerciseEditor.replace")}
                                               </button>
                                               <button
                                                 type="button"
                                                 className="chip"
                                                 onClick={() => handleClearPhoto(section.id, blockIndex)}
                                               >
-                                                Supprimer
+                                                {t("exerciseEditor.delete")}
                                               </button>
                                             </>
                                           ) : (
@@ -3674,11 +3673,11 @@ export function ExerciseLiveDetail({
                                         </p>
                                       ) : block.url ? (
                                         <p className="text-xs text-[color:var(--muted)]">
-                                          URL héritée: {block.url}
+                                          {t("exerciseEditor.inheritedUrl")} {block.url}
                                         </p>
                                       ) : (
                                         <p className="text-xs text-[color:var(--muted)]">
-                                          Aucune photo associée.
+                                          {t("exerciseEditor.noPhoto")}
                                         </p>
                                       )}
                                       {hasPhoto
@@ -3981,7 +3980,7 @@ export function ExerciseLiveDetail({
               className="fixed left-1/2 z-[90] w-[min(520px,calc(100vw-32px))] -translate-x-1/2"
               style={{
                 bottom:
-                  "calc(var(--tabbar-offset, 0px) + var(--tabbar-height, 0px) + 72px)",
+                  "calc(16px + env(safe-area-inset-bottom) + 72px)",
               }}
               role="status"
               aria-live="polite"
@@ -4033,7 +4032,7 @@ export function ExerciseLiveDetail({
               <div className="modal-card">
                 <h2>{t("exerciseEditor.deleteSaved")}</h2>
                 <p className="text-sm text-[color:var(--muted)]">
-                  Cette action est irréversible. La fiche catalogue (MDX) n’est pas affectée.
+                  {t("exerciseEditor.deleteWarning")}
                 </p>
                 <div className="stack-sm">
                   <p className="text-xs text-[color:var(--muted)]">
@@ -4080,7 +4079,7 @@ export function ExerciseLiveDetail({
           <div className="modal-card">
             <h2>{t("exerciseEditor.createExercise")}</h2>
             <div className="stack-md">
-              <label className="field-label">Slug</label>
+              <label className="field-label">{t("exerciseEditor.slugLabel")}</label>
               <input
                 className="field-input"
                 value={liveDraft.slug}
@@ -4105,7 +4104,7 @@ export function ExerciseLiveDetail({
                   setLiveDraft({ ...liveDraft, tags: event.target.value })
                 }
               />
-              <label className="field-label">Muscles</label>
+              <label className="field-label">{t("exerciseEditor.musclesLabel")}</label>
               <input
                 className="field-input"
                 value={liveDraft.muscles}
