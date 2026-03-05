@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { HomeFlyer } from "@/components/HomeFlyer";
+import { OnboardingBanner } from "@/components/OnboardingBanner";
 // RSC: useI18n() unavailable — read lang from cookie via getServerLang()
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 
@@ -33,6 +34,7 @@ export default async function HomePage() {
 
   return (
     <section className="page">
+      <OnboardingBanner />
       <HomeFlyer />
       <header className="stack-md text-center">
         <h1 className="text-4xl font-semibold text-[color:var(--ink)]">

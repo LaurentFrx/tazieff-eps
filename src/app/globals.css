@@ -1131,6 +1131,35 @@ p {
   background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
+/* ── Onboarding ─────────────────────────────── */
+
+.onboarding-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  padding: 14px 16px;
+  position: relative;
+}
+
+.onboarding-banner-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.onboarding-step {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
 /* ── Carnet ──────────────────────────────────── */
 
 .carnet-field {
