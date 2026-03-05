@@ -13,8 +13,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const CATEGORY_ORDER: CategorieMethode[] = [
-  "endurance-de-force",
   "gain-de-volume",
+  "endurance-de-force",
   "gain-de-puissance",
 ];
 
