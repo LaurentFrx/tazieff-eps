@@ -1,0 +1,34 @@
+import type { Metadata } from "next";
+import { getAllMethodes } from "@/lib/content/fs";
+import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
+import { getServerLang, getServerT } from "@/lib/i18n/server";
+import { Carnet } from "./Carnet";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await getServerLang();
+  const t = getServerT(lang);
+  return { title: t("carnet.title") };
+}
+
+export default async function CarnetPage() {
+  const lang = await getServerLang();
+  const t = getServerT(lang);
+  const [allMethodes, allExercices] = await Promise.all([
+    getAllMethodes(),
+    getExercisesIndex(lang),
+  ]);
+
+  const methodeNames = allMethodes.map((m) => ({ slug: m.slug, titre: m.titre }));
+  const exerciceNames = allExercices.map((e) => ({ slug: e.slug, title: e.title }));
+
+  return (
+    <section className="page">
+      <header className="page-header">
+        <p className="eyebrow">{t("outils.title")}</p>
+        <h1>{t("carnet.title")}</h1>
+        <p className="lede">{t("carnet.lede")}</p>
+      </header>
+      <Carnet methodeNames={methodeNames} exerciceNames={exerciceNames} />
+    </section>
+  );
+}

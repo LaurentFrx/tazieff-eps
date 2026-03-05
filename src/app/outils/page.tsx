@@ -28,6 +28,11 @@ export default async function OutilsPage() {
       title: t("outils.timer"),
       description: t("outils.timerDesc"),
     },
+    {
+      href: "/outils/carnet",
+      title: t("outils.carnet"),
+      description: t("outils.carnetDesc"),
+    },
   ];
 
   return (
