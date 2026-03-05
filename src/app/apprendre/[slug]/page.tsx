@@ -36,6 +36,12 @@ export default async function LearnSlugPage({ params }: LearnPageProps) {
   const { frontmatter: fm, content } = result;
   const mdxContent = await renderMdx(content);
 
+  const allPages = await getAllLearnPages(lang);
+  const currentIndex = allPages.findIndex((p) => p.slug === slug);
+  const prev = currentIndex > 0 ? allPages[currentIndex - 1] : null;
+  const next =
+    currentIndex < allPages.length - 1 ? allPages[currentIndex + 1] : null;
+
   return (
     <section className="page">
       <header className="page-header">
@@ -60,6 +66,37 @@ export default async function LearnSlugPage({ params }: LearnPageProps) {
       </header>
 
       <div className="flex flex-col gap-4">{mdxContent}</div>
+
+      {(prev || next) && (
+        <nav className="mt-8 flex items-center justify-between gap-4 border-t border-[color:var(--border)] pt-6">
+          {prev ? (
+            <Link
+              href={`/apprendre/${prev.slug}`}
+              className="text-sm font-medium text-[color:var(--accent)] hover:underline"
+            >
+              {t("apprendre.prev")}
+              <span className="block text-xs font-normal text-[color:var(--muted)]">
+                {prev.titre}
+              </span>
+            </Link>
+          ) : (
+            <span />
+          )}
+          {next ? (
+            <Link
+              href={`/apprendre/${next.slug}`}
+              className="text-right text-sm font-medium text-[color:var(--accent)] hover:underline"
+            >
+              {t("apprendre.next")}
+              <span className="block text-xs font-normal text-[color:var(--muted)]">
+                {next.titre}
+              </span>
+            </Link>
+          ) : (
+            <span />
+          )}
+        </nav>
+      )}
     </section>
   );
 }
