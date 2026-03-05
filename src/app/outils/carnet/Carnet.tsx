@@ -229,6 +229,7 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
                     </select>
                     <input
                       type="number"
+                      inputMode="decimal"
                       className="carnet-input"
                       placeholder={t("carnet.charge")}
                       value={ex.charge || ""}
@@ -244,6 +245,7 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
                     />
                     <input
                       type="number"
+                      inputMode="numeric"
                       className="carnet-input"
                       placeholder="RIR"
                       value={ex.rir}
