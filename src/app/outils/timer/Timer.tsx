@@ -163,7 +163,7 @@ export function Timer() {
     status === "done" || isUrgent ? "rgba(239,68,68,0.10)" :
     isWarning ? "rgba(251,146,60,0.10)" :
     status === "running" ? "rgba(34,197,94,0.10)" :
-    "rgba(59,130,246,0.05)";
+    "transparent";
 
   const timeColor =
     status === "done" || isUrgent ? "#ef4444" :
@@ -173,9 +173,9 @@ export function Timer() {
 
   /* Button classes */
   const btnPrimary =
-    "min-h-[60px] flex-1 rounded-xl px-6 py-3 text-xl font-bold text-white transition-opacity active:opacity-75 disabled:opacity-30 bg-[color:var(--accent)]";
+    "min-h-[64px] flex-1 rounded-2xl px-6 py-4 text-xl font-black text-white transition-all active:scale-[0.97] disabled:opacity-30 bg-[color:var(--accent)] shadow-lg";
   const btnSecondary =
-    "min-h-[60px] rounded-xl border border-[color:var(--border)] px-6 py-3 text-xl font-semibold text-[color:var(--muted)] transition-colors hover:text-[color:var(--ink)] active:opacity-75";
+    "min-h-[64px] rounded-2xl border border-[color:var(--border)] px-6 py-4 text-xl font-semibold text-[color:var(--muted)] transition-all hover:text-[color:var(--ink)] hover:border-[color:var(--ink)] active:scale-[0.97]";
 
   /* Mode labels */
   const modeLabels: Record<Mode, string> = {
@@ -196,18 +196,14 @@ export function Timer() {
         <h1>{t("apprendre.timer.title")}</h1>
       </header>
 
-      {/* Mode tabs */}
-      <div className="flex gap-2">
+      {/* Mode segmented control */}
+      <div className="segmented">
         {(["recup", "emom", "amrap"] as const).map((m) => (
           <button
             key={m}
             type="button"
             onClick={() => setMode(m)}
-            className={`flex-1 rounded-lg border py-3 text-sm font-bold transition-colors ${
-              mode === m
-                ? "border-[color:var(--accent)] bg-[color:var(--accent-soft)] text-[color:var(--accent)]"
-                : "border-[color:var(--border)] text-[color:var(--muted)]"
-            }`}
+            className={`segment-button ${mode === m ? "is-active" : ""}`}
           >
             {modeLabels[m]}
           </button>
@@ -225,10 +221,10 @@ export function Timer() {
                 type="button"
                 disabled={recupStatus === "running"}
                 onClick={() => setRecupSec(s)}
-                className={`rounded-full border px-3 py-1 text-sm font-semibold transition-colors disabled:opacity-40 ${
+                className={`rounded-full px-4 py-1.5 text-sm font-bold transition-all disabled:opacity-40 ${
                   recupSec === s
-                    ? "border-[color:var(--accent)] text-[color:var(--accent)]"
-                    : "border-[color:var(--border)] text-[color:var(--muted)]"
+                    ? "bg-[color:var(--accent)] text-white shadow-md"
+                    : "border border-[color:var(--border)] text-[color:var(--muted)] hover:border-[color:var(--accent)] hover:text-[color:var(--ink)]"
                 }`}
               >
                 {s < 60 ? `${s}s` : `${s / 60}min`}
@@ -238,7 +234,9 @@ export function Timer() {
 
           {/* Time display */}
           <span
-            className="font-mono text-8xl font-black tabular-nums leading-none"
+            className={`font-mono text-8xl font-black tabular-nums leading-none ${
+              status === "running" ? "timer-pulse" : ""
+            }`}
             style={{ color: timeColor }}
           >
             {fmt(recupLeft)}
@@ -291,7 +289,7 @@ export function Timer() {
                 setEmomLeft(60);
                 setEmomStatus("idle");
               }}
-              className="w-16 rounded-lg border border-[color:var(--border)] bg-transparent px-2 py-1 text-center text-xl font-bold text-[color:var(--ink)] disabled:opacity-40"
+              className="w-16 rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-2)] px-2 py-1 text-center text-xl font-bold text-[color:var(--ink)] disabled:opacity-40"
             />
           </div>
 
@@ -302,7 +300,9 @@ export function Timer() {
 
           {/* Time in minute */}
           <span
-            className="font-mono text-8xl font-black tabular-nums leading-none"
+            className={`font-mono text-8xl font-black tabular-nums leading-none ${
+              status === "running" ? "timer-pulse" : ""
+            }`}
             style={{ color: timeColor }}
           >
             {fmt(emomLeft)}
@@ -352,14 +352,16 @@ export function Timer() {
               value={amrapMin}
               disabled={amrapStatus === "running"}
               onChange={(e) => setAmrapMin(Math.max(1, Math.min(60, Number(e.target.value))))}
-              className="w-16 rounded-lg border border-[color:var(--border)] bg-transparent px-2 py-1 text-center text-xl font-bold text-[color:var(--ink)] disabled:opacity-40"
+              className="w-16 rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-2)] px-2 py-1 text-center text-xl font-bold text-[color:var(--ink)] disabled:opacity-40"
             />
             <span className="text-sm text-[color:var(--muted)]">min</span>
           </div>
 
           {/* Time remaining */}
           <span
-            className="font-mono text-8xl font-black tabular-nums leading-none"
+            className={`font-mono text-8xl font-black tabular-nums leading-none ${
+              status === "running" ? "timer-pulse" : ""
+            }`}
             style={{ color: timeColor }}
           >
             {fmt(amrapLeft)}
@@ -374,7 +376,7 @@ export function Timer() {
               <button
                 type="button"
                 onClick={() => setAmrapRounds((r) => Math.max(0, r - 1))}
-                className="flex h-14 w-14 items-center justify-center rounded-full border border-[color:var(--border)] text-2xl font-bold text-[color:var(--muted)] active:opacity-60"
+                className="flex h-14 w-14 items-center justify-center rounded-full border border-[color:var(--border)] text-2xl font-bold text-[color:var(--muted)] transition-all hover:border-[color:var(--ink)] hover:text-[color:var(--ink)] active:scale-95"
               >
                 −
               </button>
@@ -384,7 +386,7 @@ export function Timer() {
               <button
                 type="button"
                 onClick={() => setAmrapRounds((r) => r + 1)}
-                className="flex h-14 w-14 items-center justify-center rounded-full bg-[color:var(--accent-soft)] text-2xl font-bold text-[color:var(--accent)] active:opacity-60"
+                className="flex h-14 w-14 items-center justify-center rounded-full bg-[color:var(--accent-soft)] text-2xl font-bold text-[color:var(--accent)] transition-all hover:bg-[color:var(--accent)] hover:text-white active:scale-95"
               >
                 +
               </button>

@@ -15,6 +15,12 @@ import type { LiveExerciseListItem } from "@/lib/live/types";
 
 type Step = 1 | 2 | 3 | "result";
 
+const OBJECTIF_ACCENT: Record<string, string> = {
+  "endurance-de-force": "#34d399",
+  "gain-de-volume": "#60a5fa",
+  "gain-de-puissance": "#fb923c",
+};
+
 type SavedSession = {
   niveau: NiveauMethode;
   objectif: CategorieMethode;
@@ -197,24 +203,37 @@ export function SessionGenerator({
 
       {/* Stepper */}
       {step !== "result" && (
-        <div className="no-print flex items-center gap-1">
+        <div className="no-print flex items-center gap-2">
           {stepLabels.map(({ num, label }) => (
-            <div key={num} className="flex flex-1 flex-col items-center gap-1">
-              <div
-                className={`h-1 w-full rounded-full transition-colors ${
-                  num <= currentStepNum
-                    ? "bg-[color:var(--accent)]"
-                    : "bg-[color:var(--border)]"
-                }`}
-              />
+            <div key={num} className="flex flex-1 flex-col items-center gap-1.5">
+              <div className="flex w-full items-center gap-2">
+                <span
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors ${
+                    num < currentStepNum
+                      ? "bg-[color:var(--accent)] text-white"
+                      : num === currentStepNum
+                      ? "border-2 border-[color:var(--accent)] text-[color:var(--accent)]"
+                      : "border border-[color:var(--border)] text-[color:var(--muted)]"
+                  }`}
+                >
+                  {num < currentStepNum ? "✓" : num}
+                </span>
+                <div
+                  className={`h-1 flex-1 rounded-full transition-colors ${
+                    num <= currentStepNum
+                      ? "bg-[color:var(--accent)]"
+                      : "bg-[color:var(--border)]"
+                  }`}
+                />
+              </div>
               <span
-                className={`text-xs font-semibold ${
+                className={`text-[10px] font-semibold ${
                   num === currentStepNum
                     ? "text-[color:var(--accent)]"
                     : "text-[color:var(--muted)]"
                 }`}
               >
-                {num}. {label}
+                {label}
               </span>
             </div>
           ))}
@@ -225,11 +244,11 @@ export function SessionGenerator({
       {step === 1 && (
         <div className="flex flex-col gap-4">
           {/* Niveau selector */}
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold text-[color:var(--muted)]">
+          <div className="flex flex-col gap-2">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-[color:var(--muted)]">
               {t("maSeance.niveauLabel")}
             </span>
-            <div className="flex gap-2">
+            <div className="segmented">
               {(["seconde", "premiere", "terminale"] as const).map((n) => (
                 <button
                   key={n}
@@ -239,11 +258,7 @@ export function SessionGenerator({
                     setSelectedMethodes([]);
                     setSelectedExercices([]);
                   }}
-                  className={`rounded-full border px-3 py-1 text-sm font-semibold transition-colors ${
-                    niveau === n
-                      ? "border-[color:var(--accent)] text-[color:var(--accent)]"
-                      : "border-[color:var(--border)] text-[color:var(--muted)]"
-                  }`}
+                  className={`segment-button ${niveau === n ? "is-active" : ""}`}
                 >
                   {niveauLabels[n]}
                 </button>
@@ -266,7 +281,8 @@ export function SessionGenerator({
                 setSelectedExercices([]);
                 setStep(2);
               }}
-              className="card flex flex-col gap-2 text-left transition-colors hover:border-[color:var(--accent)]"
+              className="tool-card flex flex-col gap-2 text-left"
+              style={{ "--tool-accent": OBJECTIF_ACCENT[cat] ?? "var(--accent)" } as React.CSSProperties}
             >
               <CategoryBadge categorie={cat} label={categoryLabels[cat] ?? cat} />
               <h2 className="text-lg font-bold text-[color:var(--ink)]">
@@ -336,7 +352,7 @@ export function SessionGenerator({
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="flex-1 rounded-xl border border-[color:var(--border)] py-3 text-sm font-semibold text-[color:var(--muted)] transition-colors hover:text-[color:var(--ink)]"
+              className="flex-1 rounded-2xl border border-[color:var(--border)] py-3.5 text-sm font-semibold text-[color:var(--muted)] transition-all hover:text-[color:var(--ink)] hover:border-[color:var(--ink)] active:scale-[0.97]"
             >
               {t("maSeance.previous")}
             </button>
@@ -344,7 +360,7 @@ export function SessionGenerator({
               type="button"
               disabled={selectedMethodes.length < minMethodes}
               onClick={() => setStep(3)}
-              className="flex-1 rounded-xl bg-[color:var(--accent)] py-3 text-sm font-bold text-white transition-opacity disabled:opacity-30"
+              className="flex-1 rounded-2xl bg-[color:var(--accent)] py-3.5 text-sm font-black text-white shadow-lg transition-all disabled:opacity-30 active:scale-[0.97]"
             >
               {t("maSeance.next")}
             </button>
@@ -413,7 +429,7 @@ export function SessionGenerator({
             <button
               type="button"
               onClick={() => setStep(2)}
-              className="flex-1 rounded-xl border border-[color:var(--border)] py-3 text-sm font-semibold text-[color:var(--muted)] transition-colors hover:text-[color:var(--ink)]"
+              className="flex-1 rounded-2xl border border-[color:var(--border)] py-3.5 text-sm font-semibold text-[color:var(--muted)] transition-all hover:text-[color:var(--ink)] hover:border-[color:var(--ink)] active:scale-[0.97]"
             >
               {t("maSeance.previous")}
             </button>
@@ -424,7 +440,7 @@ export function SessionGenerator({
                 saveSession();
                 setStep("result");
               }}
-              className="flex-1 rounded-xl bg-[color:var(--accent)] py-3 text-sm font-bold text-white transition-opacity disabled:opacity-30"
+              className="flex-1 rounded-2xl bg-[color:var(--accent)] py-3.5 text-sm font-black text-white shadow-lg transition-all disabled:opacity-30 active:scale-[0.97]"
             >
               {t("maSeance.generate")}
             </button>
@@ -531,14 +547,14 @@ export function SessionGenerator({
                 try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
                 setStep(1);
               }}
-              className="flex-1 rounded-xl border border-[color:var(--border)] py-3 text-sm font-semibold text-[color:var(--muted)] transition-colors hover:text-[color:var(--ink)]"
+              className="flex-1 rounded-2xl border border-[color:var(--border)] py-3.5 text-sm font-semibold text-[color:var(--muted)] transition-all hover:text-[color:var(--ink)] hover:border-[color:var(--ink)] active:scale-[0.97]"
             >
               {t("maSeance.result.modify")}
             </button>
             <button
               type="button"
               onClick={() => window.print()}
-              className="flex-1 rounded-xl bg-[color:var(--accent)] py-3 text-sm font-bold text-white transition-opacity"
+              className="flex-1 rounded-2xl bg-[color:var(--accent)] py-3.5 text-sm font-black text-white shadow-lg transition-all active:scale-[0.97]"
             >
               {t("maSeance.result.print")}
             </button>
@@ -572,14 +588,14 @@ function ExerciceToggle({
       type="button"
       disabled={disabled}
       onClick={onToggle}
-      className={`card flex items-center gap-3 p-3 text-left transition-colors disabled:opacity-40 ${
+      className={`card flex items-center gap-3 p-3 text-left transition-all disabled:opacity-40 ${
         selected
-          ? "border-[color:var(--accent)] bg-[color:var(--accent-soft)]"
-          : ""
+          ? "border-[color:var(--accent)] bg-[color:var(--accent-soft)] shadow-[0_0_20px_rgba(240,90,43,0.12)]"
+          : "hover:border-[color:var(--accent)]"
       }`}
     >
       <span
-        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${
+        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold transition-colors ${
           selected
             ? "border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
             : "border-[color:var(--border)] text-[color:var(--muted)]"

@@ -5,6 +5,15 @@ import { useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { epley, brzycki, RM_TABLE } from "@/lib/rm";
 
+const ZONE_COLORS: Record<string, string> = {
+  force_max: "#ef4444",
+  force: "#fb923c",
+  volume: "#60a5fa",
+  endurance: "#34d399",
+  endurance_legere: "#2dd4bf",
+  puissance_vitesse: "#c084fc",
+};
+
 export function CalculateurRM() {
   const { t } = useI18n();
   const [charge, setCharge] = useState("");
@@ -40,8 +49,8 @@ export function CalculateurRM() {
 
       <div className="card flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-3">
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[color:var(--muted)]">
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-[color:var(--muted)]">
               {t("apprendre.calculateur.chargeLabel")}
             </span>
             <input
@@ -53,11 +62,11 @@ export function CalculateurRM() {
               onChange={(e) => setCharge(e.target.value)}
               inputMode="decimal"
               placeholder="ex: 60"
-              className="rounded-lg border border-[color:var(--border)] bg-transparent px-3 py-2 text-xl font-bold text-[color:var(--ink)] focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]"
+              className="rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-2)] px-4 py-3 text-2xl font-black tabular-nums text-[color:var(--ink)] transition-shadow focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]"
             />
           </label>
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[color:var(--muted)]">
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-[color:var(--muted)]">
               {t("apprendre.calculateur.repsLabel")}
             </span>
             <input
@@ -69,29 +78,35 @@ export function CalculateurRM() {
               onChange={(e) => setReps(e.target.value)}
               inputMode="numeric"
               placeholder="ex: 10"
-              className="rounded-lg border border-[color:var(--border)] bg-transparent px-3 py-2 text-xl font-bold text-[color:var(--ink)] focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]"
+              className="rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-2)] px-4 py-3 text-2xl font-black tabular-nums text-[color:var(--ink)] transition-shadow focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]"
             />
           </label>
         </div>
 
-        {/* Results — Epley + Brzycki */}
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between rounded-lg bg-[color:var(--accent-soft)] px-4 py-3">
-            <span className="text-sm font-semibold text-[color:var(--muted)]">
-              {t("apprendre.calculateur.resultLabel")} (Epley)
-            </span>
-            <span className="text-3xl font-bold text-[color:var(--accent)]">
-              {rm1Epley !== null ? `${rm1Epley} kg` : t("apprendre.calculateur.placeholder")}
-            </span>
-          </div>
-          <div className="flex items-center justify-between rounded-lg bg-[color:var(--accent-soft)] px-4 py-2">
-            <span className="text-sm font-semibold text-[color:var(--muted)]">
-              {t("apprendre.calculateur.resultLabel")} (Brzycki)
-            </span>
-            <span className="text-2xl font-bold text-[color:var(--accent)]">
-              {rm1Brzycki !== null ? `${rm1Brzycki} kg` : t("apprendre.calculateur.placeholder")}
-            </span>
-          </div>
+        {/* Main result — Epley */}
+        <div
+          className="tool-result"
+          style={{ "--tool-accent": "#ff7a59" } as React.CSSProperties}
+        >
+          <span className="tool-result-label">
+            {t("apprendre.calculateur.resultLabel")} (Epley)
+          </span>
+          <span className="tool-result-value">
+            {rm1Epley !== null ? rm1Epley : "—"}
+          </span>
+          {rm1Epley !== null && (
+            <span className="tool-result-unit">kg</span>
+          )}
+        </div>
+
+        {/* Secondary result — Brzycki */}
+        <div className="flex items-center justify-between rounded-xl bg-[color:var(--accent-soft)] px-4 py-3">
+          <span className="text-xs font-semibold text-[color:var(--muted)]">
+            {t("apprendre.calculateur.resultLabel")} (Brzycki)
+          </span>
+          <span className="text-2xl font-bold tabular-nums text-[color:var(--accent)]">
+            {rm1Brzycki !== null ? `${rm1Brzycki} kg` : "—"}
+          </span>
         </div>
 
         <p className="text-right text-xs text-[color:var(--muted)]">
@@ -101,20 +116,20 @@ export function CalculateurRM() {
 
       {rm1 !== null ? (
         <div className="card">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-[color:var(--muted)]">
+          <h2 className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[color:var(--muted)]">
             {t("apprendre.calculateur.tableHeading")}
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[color:var(--border)]">
-                  <th className="pb-2 text-left text-xs font-semibold text-[color:var(--muted)]">
+                  <th className="pb-2 text-left text-[10px] font-semibold uppercase tracking-wide text-[color:var(--muted)]">
                     {t("apprendre.calculateur.percentCol")}
                   </th>
-                  <th className="pb-2 text-right text-xs font-semibold text-[color:var(--muted)]">
+                  <th className="pb-2 text-right text-[10px] font-semibold uppercase tracking-wide text-[color:var(--muted)]">
                     {t("apprendre.calculateur.weightCol")}
                   </th>
-                  <th className="hidden pb-2 text-left text-xs font-semibold text-[color:var(--muted)] sm:table-cell">
+                  <th className="hidden pb-2 text-left text-[10px] font-semibold uppercase tracking-wide text-[color:var(--muted)] sm:table-cell">
                     {t("outils.rm.zoneCol")}
                   </th>
                 </tr>
@@ -122,6 +137,7 @@ export function CalculateurRM() {
               <tbody>
                 {RM_TABLE.map(({ pct, reps: approxReps, zone }) => {
                   const weight = Math.round(((rm1 * pct) / 100) * 2) / 2;
+                  const zoneColor = ZONE_COLORS[zone] || "var(--muted)";
                   return (
                     <tr
                       key={pct}
@@ -135,11 +151,20 @@ export function CalculateurRM() {
                           </span>
                         )}
                       </td>
-                      <td className="py-2.5 text-right font-bold text-[color:var(--accent)]">
+                      <td className="py-2.5 text-right text-lg font-black tabular-nums" style={{ color: zoneColor }}>
                         {weight} kg
                       </td>
-                      <td className="hidden py-2.5 text-xs text-[color:var(--muted)] sm:table-cell">
-                        {zoneLabels[zone]}
+                      <td className="hidden py-2.5 text-xs sm:table-cell">
+                        <span
+                          className="inline-flex items-center gap-1.5"
+                          style={{ color: zoneColor }}
+                        >
+                          <span
+                            className="inline-block h-2 w-2 rounded-full"
+                            style={{ background: zoneColor }}
+                          />
+                          {zoneLabels[zone]}
+                        </span>
                       </td>
                     </tr>
                   );

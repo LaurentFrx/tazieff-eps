@@ -31,6 +31,12 @@ type Props = {
 const STORAGE_KEY = "tazieff-carnet";
 const OBJECTIFS = ["endurance", "volume", "puissance"] as const;
 
+const OBJECTIF_COLORS: Record<string, string> = {
+  endurance: "#34d399",
+  volume: "#60a5fa",
+  puissance: "#fb923c",
+};
+
 function loadEntries(): CarnetEntry[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -180,16 +186,25 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
           <fieldset className="carnet-field">
             <legend className="carnet-label">{t("carnet.objectif")}</legend>
             <div className="flex gap-2 flex-wrap">
-              {OBJECTIFS.map((o) => (
-                <button
-                  key={o}
-                  type="button"
-                  className={`pill ${objectif === o ? "pill-active" : ""}`}
-                  onClick={() => setObjectif(o)}
-                >
-                  {objectifLabels[o]}
-                </button>
-              ))}
+              {OBJECTIFS.map((o) => {
+                const color = OBJECTIF_COLORS[o];
+                const isActive = objectif === o;
+                return (
+                  <button
+                    key={o}
+                    type="button"
+                    className="rounded-full border px-4 py-1.5 text-sm font-bold transition-all"
+                    style={{
+                      borderColor: isActive ? color : "var(--border)",
+                      background: isActive ? `color-mix(in srgb, ${color} 15%, transparent)` : "transparent",
+                      color: isActive ? color : "var(--muted)",
+                    }}
+                    onClick={() => setObjectif(o)}
+                  >
+                    {objectifLabels[o]}
+                  </button>
+                );
+              })}
             </div>
           </fieldset>
 
@@ -327,10 +342,19 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
                   className="carnet-history-header"
                   onClick={() => setExpandedId(isExpanded ? null : entry.id)}
                 >
-                  <div>
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-[color:var(--ink)]">{entry.date}</span>
-                    <span className="ml-2 text-xs text-[color:var(--muted)]">
-                      {objectifLabels[entry.objectif]} · {entry.exercices.length} exos
+                    <span
+                      className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
+                      style={{
+                        background: `color-mix(in srgb, ${OBJECTIF_COLORS[entry.objectif] || "var(--accent)"} 15%, transparent)`,
+                        color: OBJECTIF_COLORS[entry.objectif] || "var(--accent)",
+                      }}
+                    >
+                      {objectifLabels[entry.objectif]}
+                    </span>
+                    <span className="text-xs text-[color:var(--muted)]">
+                      {entry.exercices.length} exos
                     </span>
                   </div>
                   {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
