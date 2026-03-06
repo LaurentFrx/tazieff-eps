@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Calculator, Clock, Dumbbell, BookOpen } from "lucide-react";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
+import { SectionHero } from "@/components/SectionHero";
+import { IlluDashboard } from "@/components/illustrations";
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await getServerLang();
@@ -46,9 +48,12 @@ export default async function OutilsPage() {
 
   return (
     <section className="page">
-      <header className="page-header">
-        <h1>{t("outils.title")}</h1>
-      </header>
+      <SectionHero
+        title={t("outils.title")}
+        subtitle={t("pages.home.heroOutilsSub")}
+        gradient="from-pink-500 to-rose-500"
+        illustration={<IlluDashboard />}
+      />
 
       <div className="card-grid">
         {tools.map((tool) => (

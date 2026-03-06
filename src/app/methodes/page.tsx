@@ -4,6 +4,8 @@ import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { CategoryBadge } from "@/components/methodes/CategoryBadge";
 import { MethodeCard } from "@/components/methodes/MethodeCard";
 import type { CategorieMethode } from "@/lib/content/schema";
+import { SectionHero } from "@/components/SectionHero";
+import { IlluClipboard } from "@/components/illustrations";
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await getServerLang();
@@ -37,11 +39,13 @@ export default async function MethodesPage() {
 
   return (
     <section className="page">
-      <header className="page-header">
-        <p className="eyebrow">{t("methodes.eyebrow")}</p>
-        <h1>{t("methodes.title")}</h1>
-        <p className="lede">{t("methodes.lede")}</p>
-      </header>
+      <SectionHero
+        title={t("methodes.title")}
+        count={methodes.length}
+        subtitle={t("pages.home.heroMethodesSub")}
+        gradient="from-blue-600 to-indigo-500"
+        illustration={<IlluClipboard />}
+      />
 
       <div className="stack-lg">
         {grouped.map(({ categorie, label, items }) =>

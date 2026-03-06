@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { ParcoursDashboard } from "./ParcoursDashboard";
+import { SectionHero } from "@/components/SectionHero";
+import { IlluTrophy } from "@/components/illustrations";
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await getServerLang();
@@ -15,11 +17,12 @@ export default async function ParcoursBacPage() {
 
   return (
     <section className="page">
-      <header className="page-header">
-        <p className="eyebrow">{t("parcours.eyebrow")}</p>
-        <h1>{t("parcours.title")}</h1>
-        <p className="lede">{t("parcours.lede")}</p>
-      </header>
+      <SectionHero
+        title={t("parcours.title")}
+        subtitle={t("pages.home.heroBacSub")}
+        gradient="from-violet-600 to-fuchsia-500"
+        illustration={<IlluTrophy />}
+      />
 
       <ParcoursDashboard />
 

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getAllLearnPages } from "@/lib/content/fs";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
+import { SectionHero } from "@/components/SectionHero";
+import { IlluBook } from "@/components/illustrations";
 
 export default async function ApprendrePage() {
   const lang = await getServerLang();
@@ -42,6 +44,13 @@ export default async function ApprendrePage() {
 
   return (
     <section className="page">
+      <SectionHero
+        title={t("pages.home.apprendreLabel")}
+        count={learnPages.length + staticCards.length}
+        subtitle={t("pages.home.heroApprendreSub")}
+        gradient="from-green-500 to-emerald-400"
+        illustration={<IlluBook />}
+      />
       <div className="card-grid">
         {staticCards.map((card) => (
           <Link key={card.href} href={card.href} className="card">
