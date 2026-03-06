@@ -226,3 +226,71 @@ describe("Anatomy data — utility functions", () => {
     expect(matchesGroup(quadriceps, "Mollets")).toBe(false);
   });
 });
+
+/* ── Anatomy — exercise matching per group ───────────────────────── */
+
+describe("Anatomy — exercise matching coverage", () => {
+  const GROUP_MUSCLES: Record<string, string[]> = {
+    dorsaux: ["Grand dorsal", "Trapèzes", "Rhomboïdes"],
+    pectoraux: ["Grand pectoral"],
+    abdominaux: ["Grand droit", "Obliques", "Transverse"],
+    deltoides: ["Deltoïde antérieur", "Deltoïde moyen", "Deltoïde postérieur"],
+    biceps: ["Biceps brachial", "Brachial"],
+    triceps: ["Triceps brachial"],
+    flechisseurs: ["Psoas-iliaque"],
+    fessiers: ["Grand fessier", "Moyen fessier"],
+    quadriceps: ["Droit fémoral", "Vastes"],
+    ischio_jambiers: ["Biceps fémoral", "Semi-tendineux", "Semi-membraneux"],
+    mollets: ["Gastrocnémiens", "Soléaire"],
+  };
+
+  it("GROUP_MUSCLES covers all 11 MUSCLE_GROUPS", () => {
+    for (const key of Object.keys(MUSCLE_GROUPS)) {
+      expect(GROUP_MUSCLES[key], `Missing GROUP_MUSCLES entry for ${key}`).toBeDefined();
+      expect(GROUP_MUSCLES[key].length).toBeGreaterThan(0);
+    }
+  });
+
+  it("each group has exerciseSearchTerms that match typical exercise tags", () => {
+    // exerciseSearchTerms are designed to match exercise catalog tags, not display names
+    const typicalTags: Record<string, string> = {
+      dorsaux: "Grand dorsal",
+      pectoraux: "Pectoraux",
+      abdominaux: "Abdominaux",
+      deltoides: "Deltoïde moyen",
+      biceps: "Biceps brachial",
+      triceps: "Triceps brachial",
+      flechisseurs: "Psoas-iliaque",
+      fessiers: "Fessiers",
+      quadriceps: "Quadriceps",
+      ischio_jambiers: "Ischio-jambiers",
+      mollets: "Mollets",
+    };
+    for (const [key, group] of Object.entries(MUSCLE_GROUPS)) {
+      const tag = typicalTags[key];
+      if (!tag) continue;
+      expect(matchesGroup(group, tag), `Group ${key} should match tag "${tag}"`).toBe(true);
+    }
+  });
+
+  it("no group matches muscles from an unrelated group", () => {
+    // Pectoraux should not match leg muscles
+    expect(matchesGroup(MUSCLE_GROUPS.pectoraux, "Gastrocnémiens")).toBe(false);
+    expect(matchesGroup(MUSCLE_GROUPS.pectoraux, "Quadriceps")).toBe(false);
+    // Mollets should not match upper body
+    expect(matchesGroup(MUSCLE_GROUPS.mollets, "Grand pectoral")).toBe(false);
+    expect(matchesGroup(MUSCLE_GROUPS.mollets, "Deltoïde antérieur")).toBe(false);
+  });
+
+  it("getFrenchName covers all GROUP_MUSCLES display names", () => {
+    const allDisplayNames = Object.values(GROUP_MUSCLES).flat();
+    // All display names should appear in MUSCLE_FR_NAMES values
+    const frNameValues = Object.values(MUSCLE_FR_NAMES);
+    for (const name of allDisplayNames) {
+      expect(
+        frNameValues.includes(name),
+        `Display name "${name}" not found in MUSCLE_FR_NAMES values`,
+      ).toBe(true);
+    }
+  });
+});
