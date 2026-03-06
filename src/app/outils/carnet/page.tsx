@@ -14,7 +14,7 @@ export default async function CarnetPage() {
   const lang = await getServerLang();
   const t = getServerT(lang);
   const [allMethodes, allExercices] = await Promise.all([
-    getAllMethodes(),
+    getAllMethodes(lang),
     getExercisesIndex(lang),
   ]);
 

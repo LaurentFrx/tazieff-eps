@@ -27,7 +27,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const lang = await getServerLang();
   const t = getServerT(lang);
-  const result = await getMethode(slug);
+  const result = await getMethode(slug, lang);
   if (!result) return { title: t("methodes.notFound") };
   const { titre, description, categorie } = result.frontmatter;
   const desc = description || `${titre} — ${categorie}`;
@@ -42,14 +42,14 @@ export default async function MethodePage({ params }: MethodePageProps) {
   const { slug } = await params;
   const lang = await getServerLang();
   const t = getServerT(lang);
-  const result = await getMethode(slug);
+  const result = await getMethode(slug, lang);
 
   if (!result) notFound();
 
   const { frontmatter: m, content } = result;
   const mdxContent = await renderMdx(content);
   const [allMethodes, allExercices] = await Promise.all([
-    getAllMethodes(),
+    getAllMethodes(lang),
     getExercisesIndex(lang),
   ]);
 

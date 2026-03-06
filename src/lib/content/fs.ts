@@ -216,24 +216,8 @@ export const seancesIndex = cache(async (lang: Lang = "fr") => getAllSeances(lan
 
 const METHODS_DIR = path.join(CONTENT_ROOT, "methodes");
 
-async function listMethodeMdxFiles() {
-  let entries: Dirent[] = [];
-  try {
-    entries = await fs.readdir(METHODS_DIR, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-  return entries
-    .filter(
-      (entry) =>
-        entry.isFile() &&
-        entry.name.endsWith(".fr.mdx"),
-    )
-    .map((entry) => entry.name);
-}
-
-export async function getAllMethodes(): Promise<MethodeFrontmatter[]> {
-  const files = await listMethodeMdxFiles();
+export async function getAllMethodes(lang: Lang = "fr"): Promise<MethodeFrontmatter[]> {
+  const files = await listMdxFiles(METHODS_DIR, lang);
   const items = await Promise.all(
     files.map(async (file) => {
       const fullPath = path.join(METHODS_DIR, file);
@@ -245,7 +229,7 @@ export async function getAllMethodes(): Promise<MethodeFrontmatter[]> {
     if (a.ordre !== undefined && b.ordre !== undefined) return a.ordre - b.ordre;
     if (a.ordre !== undefined) return -1;
     if (b.ordre !== undefined) return 1;
-    return a.titre.localeCompare(b.titre, "fr");
+    return a.titre.localeCompare(b.titre, lang);
   });
 }
 
@@ -254,23 +238,35 @@ type MethodeMdxResult = {
   content: string;
 };
 
-export async function getMethode(slug: string): Promise<MethodeMdxResult | null> {
-  const filePath = path.join(METHODS_DIR, `${slug}.fr.mdx`);
+export async function getMethode(slug: string, lang: Lang = "fr"): Promise<MethodeMdxResult | null> {
+  const localizedPath = path.join(METHODS_DIR, `${slug}.${lang}.mdx`);
   try {
-    return await readMdxFile(filePath, MethodeFrontmatterSchema);
+    return await readMdxFile(localizedPath, MethodeFrontmatterSchema);
   } catch (error) {
     const nodeError = error as NodeJS.ErrnoException;
     if (nodeError.code === "ENOENT") {
+      if (lang !== "fr") {
+        const fallbackPath = path.join(METHODS_DIR, `${slug}.fr.mdx`);
+        try {
+          return await readMdxFile(fallbackPath, MethodeFrontmatterSchema);
+        } catch (fallbackError) {
+          const fallbackNodeError = fallbackError as NodeJS.ErrnoException;
+          if (fallbackNodeError.code === "ENOENT") {
+            return null;
+          }
+          throw fallbackError;
+        }
+      }
       return null;
     }
     throw error;
   }
 }
 
-export const methodesIndex = cache(getAllMethodes);
+export const methodesIndex = cache((lang: Lang = "fr") => getAllMethodes(lang));
 
-export async function getMethodesForExercice(exerciceSlug: string): Promise<MethodeFrontmatter[]> {
-  const all = await getAllMethodes();
+export async function getMethodesForExercice(exerciceSlug: string, lang: Lang = "fr"): Promise<MethodeFrontmatter[]> {
+  const all = await getAllMethodes(lang);
   return all.filter((m) => m.exercices_compatibles.includes(exerciceSlug));
 }
 

@@ -21,7 +21,7 @@ const CATEGORY_ORDER: CategorieMethode[] = [
 export default async function MethodesPage() {
   const lang = await getServerLang();
   const t = getServerT(lang);
-  const methodes = await getAllMethodes();
+  const methodes = await getAllMethodes(lang);
 
   const grouped = CATEGORY_ORDER.map((cat) => ({
     categorie: cat,

@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function OnboardingPage() {
   const lang = await getServerLang();
   const [allMethodes, allExercices] = await Promise.all([
-    getAllMethodes(),
+    getAllMethodes(lang),
     getExercisesIndex(lang),
   ]);
 

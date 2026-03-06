@@ -169,7 +169,7 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
 
   const [override, compatibleMethodes] = await Promise.all([
     fetchExerciseOverride(slug, locale),
-    getMethodesForExercice(slug),
+    getMethodesForExercice(slug, locale),
   ]);
   const initialPatch = override?.patch_json ?? null;
 
