@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Space_Mono, Sora } from "next/font/google";
 import { cookies } from "next/headers";
+import { BottomTabBar } from "@/components/BottomTabBar";
 import { FloatingHome } from "@/components/FloatingHome";
 import { FloatingNav } from "@/components/FloatingNav";
 import { InstallPwaBanner } from "@/components/InstallPwaBanner";
@@ -79,6 +80,7 @@ export default async function RootLayout({
           <div className="app-shell">
             <main className="app-main">{children}</main>
           </div>
+          <BottomTabBar />
           <FloatingHome />
           <FloatingNav />
           <ScrollToTop />

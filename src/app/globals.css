@@ -103,7 +103,7 @@ p {
   z-index: 1;
   max-width: 980px;
   margin: 0 auto;
-  padding: 28px 20px calc(40px + env(safe-area-inset-bottom));
+  padding: 28px 20px calc(80px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: 28px;
