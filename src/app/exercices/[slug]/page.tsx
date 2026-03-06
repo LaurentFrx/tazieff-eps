@@ -9,8 +9,7 @@ import { fetchExerciseOverride, fetchLiveExercise } from "@/lib/live/queries";
 import { ExerciseLiveDetail } from "@/app/exercices/[slug]/ExerciseLiveDetail";
 // RSC: useI18n() unavailable — read lang from cookie via getServerLang()
 import { getServerLang, getServerT } from "@/lib/i18n/server";
-import { CategoryBadge } from "@/components/methodes/CategoryBadge";
-import { ScoresBlock } from "@/components/methodes/ScoreBar";
+import { MethodeCard } from "@/components/methodes/MethodeCard";
 
 type ExercicePageProps = {
   params: Promise<{ slug: string }>;
@@ -206,21 +205,14 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
           <ul className="flex flex-col gap-3">
             {compatibleMethodes.map((methode) => (
               <li key={methode.slug}>
-                <a
-                  href={`/methodes/${methode.slug}`}
-                  className="flex flex-col gap-2 rounded-lg border border-[color:var(--border)] p-3 transition-colors hover:border-[color:var(--accent)]"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-semibold text-[color:var(--ink)]">
-                      {methode.titre}
-                    </p>
-                    <CategoryBadge
-                      categorie={methode.categorie}
-                      label={categoryLabels[methode.categorie] ?? methode.categorie}
-                    />
-                  </div>
-                  <ScoresBlock scores={methode.scores} labels={scoreLabels} />
-                </a>
+                <MethodeCard
+                  slug={methode.slug}
+                  titre={methode.titre}
+                  categorie={methode.categorie}
+                  categoryLabel={categoryLabels[methode.categorie] ?? methode.categorie}
+                  scores={methode.scores}
+                  scoreLabels={scoreLabels}
+                />
               </li>
             ))}
           </ul>

@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getAllMethodes } from "@/lib/content/fs";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { CategoryBadge } from "@/components/methodes/CategoryBadge";
-import { ScoresBlock } from "@/components/methodes/ScoreBar";
+import { MethodeCard } from "@/components/methodes/MethodeCard";
 import type { CategorieMethode } from "@/lib/content/schema";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -57,38 +56,18 @@ export default async function MethodesPage() {
               <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {items.map((methode) => (
                   <li key={methode.slug}>
-                    <Link
-                      href={`/methodes/${methode.slug}`}
-                      className="card flex flex-col gap-3 p-4 transition-colors hover:border-[color:var(--accent)]"
-                    >
-                      <div>
-                        <p className="text-sm font-bold text-[color:var(--ink)]">
-                          {methode.titre}
-                        </p>
-                        {methode.soustitre ? (
-                          <p className="text-xs text-[color:var(--muted)]">
-                            {methode.soustitre}
-                          </p>
-                        ) : null}
-                      </div>
-                      <p className="line-clamp-2 text-xs text-[color:var(--muted)]">
-                        {methode.description}
-                      </p>
-                      <ScoresBlock scores={methode.scores} labels={scoreLabels} />
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-[color:var(--muted)]">
-                          {t("methodes.niveau")} :{" "}
-                          <span className="font-semibold text-[color:var(--ink)]">
-                            {t(`methodes.niveaux.${methode.niveau_minimum}`)}
-                          </span>
-                        </span>
-                        {methode.timer ? (
-                          <span className="rounded-full bg-[color:var(--accent-soft)] px-2 py-0.5 text-xs font-semibold text-[color:var(--accent)]">
-                            ⏱ {t("methodes.timer.heading")}
-                          </span>
-                        ) : null}
-                      </div>
-                    </Link>
+                    <MethodeCard
+                      slug={methode.slug}
+                      titre={methode.titre}
+                      soustitre={methode.soustitre}
+                      description={methode.description}
+                      categorie={methode.categorie}
+                      categoryLabel={t(`methodes.categories.${methode.categorie}`)}
+                      scores={methode.scores}
+                      scoreLabels={scoreLabels}
+                      niveauLabel={`${t("methodes.niveau")} : ${t(`methodes.niveaux.${methode.niveau_minimum}`)}`}
+                      timerLabel={methode.timer ? t("methodes.timer.heading") : undefined}
+                    />
                   </li>
                 ))}
               </ul>
