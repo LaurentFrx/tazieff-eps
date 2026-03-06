@@ -88,7 +88,7 @@ export function FloatingNav() {
       </button>
 
       {open && (
-        <nav className="floating-nav-dropdown" aria-label="Navigation">
+        <nav className="floating-nav-dropdown" aria-label={t("nav.mainNavigation")}>
           {navItems.map((item) => {
             const isActive =
               pathname === item.href ||

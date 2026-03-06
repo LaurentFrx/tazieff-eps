@@ -262,7 +262,7 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
                       type="number"
                       inputMode="numeric"
                       className="carnet-input"
-                      placeholder="RIR"
+                      placeholder={t("carnet.rirPlaceholder")}
                       value={ex.rir}
                       onChange={(e) => updateExercice(i, "rir", Number(e.target.value))}
                       min={0}

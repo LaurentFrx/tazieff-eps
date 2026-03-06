@@ -210,7 +210,7 @@ export function EnseignantDashboard({ methodeNames, exerciceNames }: Props) {
           <button type="button" className="pill text-xs" onClick={() => { try { navigator.clipboard.writeText(shareUrl); } catch {/* */} }}>
             <Copy size={12} /> {t("enseignant.copy")}
           </button>
-          <button type="button" onClick={() => setShareUrl(null)} className="enseignant-close-btn" aria-label="Close">
+          <button type="button" onClick={() => setShareUrl(null)} className="enseignant-close-btn" aria-label={t("enseignant.close")}>
             <X size={14} />
           </button>
         </div>
@@ -230,7 +230,7 @@ export function EnseignantDashboard({ methodeNames, exerciceNames }: Props) {
             <h2 className="text-base font-semibold text-[color:var(--ink)]">
               {editing ? t("enseignant.editSession") : t("enseignant.newSession")}
             </h2>
-            <button type="button" onClick={resetForm} className="enseignant-close-btn" aria-label="Close">
+            <button type="button" onClick={resetForm} className="enseignant-close-btn" aria-label={t("enseignant.close")}>
               <X size={16} />
             </button>
           </div>

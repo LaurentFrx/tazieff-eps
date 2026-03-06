@@ -15,6 +15,10 @@ export const messages = {
       maSeance: "Ma séance",
       maSeanceSubtitle: "GÉNÉRATEUR",
     },
+    media: {
+      fullscreenPlay: "Lire en plein écran",
+      closeLightbox: "Fermer",
+    },
     settings: {
       title: "Réglages",
       open: "Ouvrir les réglages",
@@ -50,6 +54,8 @@ export const messages = {
       bac: { label: "Bac", meta: "Épreuve" },
       methodes: { label: "Méthodes", meta: "Entraînement" },
       outils: { label: "Outils", meta: "Pratique" },
+      mainNavigation: "Navigation principale",
+      scrollToTop: "Remonter en haut",
     },
     difficulty: {
       debutant: "D\u00e9butant",
@@ -148,6 +154,8 @@ export const messages = {
         weightCol: "Charge",
         formulaNote: "Formule d'Epley : 1RM = charge × (1 + reps / 30)",
         placeholder: "—",
+        chargePlaceholder: "ex : 60",
+        repsPlaceholder: "ex : 10",
       },
       timer: {
         title: "Timer",
@@ -771,6 +779,7 @@ export const messages = {
       print: "Imprimer",
       exerciceCol: "Exercice",
       delete: "Supprimer",
+      rirPlaceholder: "RIR",
     },
     onboarding: {
       title: "Ma première séance",
@@ -845,6 +854,7 @@ export const messages = {
       sharedError: "Lien de partage invalide ou expiré.",
       sharedLoading: "Chargement…",
       goExercices: "Voir les exercices",
+      close: "Fermer",
     },
   },
   en: {
@@ -860,6 +870,10 @@ export const messages = {
       home: "Home",
       maSeance: "My Session",
       maSeanceSubtitle: "GENERATOR",
+    },
+    media: {
+      fullscreenPlay: "Play fullscreen",
+      closeLightbox: "Close",
     },
     settings: {
       title: "Settings",
@@ -896,6 +910,8 @@ export const messages = {
       bac: { label: "Bac", meta: "Exam" },
       methodes: { label: "Methods", meta: "Training" },
       outils: { label: "Tools", meta: "Practice" },
+      mainNavigation: "Main navigation",
+      scrollToTop: "Scroll to top",
     },
     difficulty: {
       debutant: "Beginner",
@@ -994,6 +1010,8 @@ export const messages = {
         weightCol: "Weight",
         formulaNote: "Epley formula: 1RM = weight × (1 + reps / 30)",
         placeholder: "—",
+        chargePlaceholder: "e.g. 60",
+        repsPlaceholder: "e.g. 10",
       },
       timer: {
         title: "Timer",
@@ -1468,6 +1486,7 @@ export const messages = {
       print: "Print",
       exerciceCol: "Exercise",
       delete: "Delete",
+      rirPlaceholder: "RIR",
     },
     onboarding: {
       title: "My First Session",
@@ -1542,6 +1561,7 @@ export const messages = {
       sharedError: "Invalid or expired share link.",
       sharedLoading: "Loading…",
       goExercices: "See exercises",
+      close: "Close",
     },
     methodes: {
       eyebrow: "Methods",
@@ -1661,8 +1681,8 @@ export const messages = {
       seeAllMethods: "See all methods →",
       detailLink: "See full programme →",
       methodNames: {
-        chargeConstante: "Charge constante",
-        pyramide: "Pyramide",
+        chargeConstante: "Constant load",
+        pyramide: "Pyramid",
         circuitTraining: "Circuit training",
         amrap: "AMRAP",
         triplTriSet: "Triple tri-set",
@@ -1707,6 +1727,10 @@ export const messages = {
       maSeance: "Mi sesión",
       maSeanceSubtitle: "GENERADOR",
     },
+    media: {
+      fullscreenPlay: "Reproducir a pantalla completa",
+      closeLightbox: "Cerrar",
+    },
     settings: {
       title: "Ajustes",
       open: "Abrir ajustes",
@@ -1742,6 +1766,8 @@ export const messages = {
       bac: { label: "Bac", meta: "Examen" },
       methodes: { label: "Métodos", meta: "Entren." },
       outils: { label: "Herramientas", meta: "Pr\u00e1ctica" },
+      mainNavigation: "Navegación principal",
+      scrollToTop: "Volver arriba",
     },
     difficulty: {
       debutant: "Principiante",
@@ -1827,7 +1853,7 @@ export const messages = {
       niveaux: {
         seconde: "2.\u00ba",
         premiere: "1.\u00ba",
-        terminale: "Terminale",
+        terminale: "2.º Bach.",
       },
       calculateur: {
         title: "Calculadora 1RM",
@@ -1840,6 +1866,8 @@ export const messages = {
         weightCol: "Carga",
         formulaNote: "Fórmula de Epley: 1RM = carga × (1 + reps / 30)",
         placeholder: "—",
+        chargePlaceholder: "ej: 60",
+        repsPlaceholder: "ej: 10",
       },
       timer: {
         title: "Cronómetro",
@@ -1866,7 +1894,7 @@ export const messages = {
       niveaux: {
         seconde: "2.º",
         premiere: "1.º",
-        terminale: "Terminale",
+        terminale: "2.º Bach.",
       },
     },
     parcours: {
@@ -1884,7 +1912,7 @@ export const messages = {
       niveaux: {
         seconde: "2.º",
         premiere: "1.º",
-        terminale: "Terminale",
+        terminale: "2.º Bach.",
       },
       competence: {
         realiser: "Realizar",
@@ -2243,7 +2271,7 @@ export const messages = {
       niveaux: {
         seconde: "2.º",
         premiere: "1.º",
-        terminale: "Terminale",
+        terminale: "2.º Bach.",
       },
       scores: {
         endurance: "Resistencia",
@@ -2346,8 +2374,8 @@ export const messages = {
       seeAllMethods: "Ver todos los métodos →",
       detailLink: "Ver programa completo →",
       methodNames: {
-        chargeConstante: "Charge constante",
-        pyramide: "Pyramide",
+        chargeConstante: "Carga constante",
+        pyramide: "Pirámide",
         circuitTraining: "Circuit training",
         amrap: "AMRAP",
         triplTriSet: "Triple tri-set",
@@ -2463,6 +2491,7 @@ export const messages = {
       print: "Imprimir",
       exerciceCol: "Ejercicio",
       delete: "Eliminar",
+      rirPlaceholder: "RIR",
     },
     onboarding: {
       title: "Mi primera sesión",
@@ -2488,7 +2517,7 @@ export const messages = {
       chooseExercices: "Elige tus ejercicios",
       exerciceHint: "Selecciona de 4 a 6 ejercicios para tu sesión",
       zoneHaut: "Tren superior",
-      zoneMilieu: "Core",
+      zoneMilieu: "Tronco",
       zoneBas: "Tren inferior",
       finish: "Terminar",
       recapTitle: "¡Tu sesión está lista!",
@@ -2537,6 +2566,7 @@ export const messages = {
       sharedError: "Enlace de compartir no válido o caducado.",
       sharedLoading: "Cargando…",
       goExercices: "Ver ejercicios",
+      close: "Cerrar",
     },
   },
 } as const;

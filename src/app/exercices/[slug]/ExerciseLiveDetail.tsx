@@ -4124,7 +4124,7 @@ export function ExerciseLiveDetail({
               <input
                 className="field-input"
                 value={liveDraft.level}
-                placeholder="debutant / intermediaire / avance"
+                placeholder={t("exerciseEditor.levelPlaceholder")}
                 onChange={(event) =>
                   setLiveDraft({ ...liveDraft, level: event.target.value })
                 }

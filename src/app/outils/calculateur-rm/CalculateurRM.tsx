@@ -61,7 +61,7 @@ export function CalculateurRM() {
               value={charge}
               onChange={(e) => setCharge(e.target.value)}
               inputMode="decimal"
-              placeholder="ex: 60"
+              placeholder={t("apprendre.calculateur.chargePlaceholder")}
               className="rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-2)] px-4 py-3 text-2xl font-black tabular-nums text-[color:var(--ink)] transition-shadow focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]"
             />
           </label>
@@ -77,7 +77,7 @@ export function CalculateurRM() {
               value={reps}
               onChange={(e) => setReps(e.target.value)}
               inputMode="numeric"
-              placeholder="ex: 10"
+              placeholder={t("apprendre.calculateur.repsPlaceholder")}
               className="rounded-xl border border-[color:var(--border)] bg-[color:var(--bg-2)] px-4 py-3 text-2xl font-black tabular-nums text-[color:var(--ink)] transition-shadow focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]"
             />
           </label>

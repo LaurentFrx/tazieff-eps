@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Image, { type StaticImageData } from "next/image";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 type HeroMediaProps =
   | {
@@ -33,6 +34,7 @@ type HeroMediaProps =
 
 export function HeroMedia(props: HeroMediaProps) {
   const { alt } = props;
+  const { t } = useI18n();
   const rounded = props.rounded ?? true;
   const [videoError, setVideoError] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
@@ -106,7 +108,7 @@ export function HeroMedia(props: HeroMediaProps) {
           type="button"
           onClick={handlePlayFullscreen}
           className="absolute bottom-4 right-4 z-20 flex items-center justify-center w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm ring-1 ring-white/20 text-white hover:bg-black/40 transition-colors"
-          aria-label="Lire en plein écran"
+          aria-label={t("media.fullscreenPlay")}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -180,7 +182,7 @@ export function HeroMedia(props: HeroMediaProps) {
             type="button"
             onClick={() => setShowLightbox(false)}
             className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-            aria-label="Fermer"
+            aria-label={t("media.closeLightbox")}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
