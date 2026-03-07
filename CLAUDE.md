@@ -224,7 +224,7 @@ npx tsc --noEmit               # Type-check sans build
 | Programmes hebdo               | 28-30     | ✅ Complet (3 programmes MDX) | P2    |
 | Démarche spiralaire            | 60        | ✅ Complet (3 niveaux, 4 compétences, liens croisés) | P4    |
 | Évaluations (2nde/1ère/Term)   | 61-63     | ✅ Complet (4 compétences × 3 niveaux + checklists) | P4    |
-| Épreuve du BAC                 | 64-65     | ⚠️ Non vérifié (contenu existant, source non validée contre PDF de Fred) | P4    |
+| Épreuve du BAC                 | 64        | ✅ Vérifié contre PDF source (barème 20pts, 4 compétences) | P4    |
 
 ---
 
