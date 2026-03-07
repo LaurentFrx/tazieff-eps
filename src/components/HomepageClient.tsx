@@ -6,6 +6,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useFavorites } from "@/hooks/useFavorites";
 import { OnboardingBanner } from "@/components/OnboardingBanner";
 import { IlluDumbbell, IlluClipboard, IlluBook, IlluTrophy } from "@/components/illustrations";
+import { HomeFlyer } from "@/components/HomeFlyer";
 
 /* ── Greeting helper ──────────────────────────────────────────────── */
 
@@ -58,6 +59,9 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
   return (
     <section className="page">
       <OnboardingBanner />
+
+      {/* ── Flyer hero + greeting ─────────────────────────────────── */}
+      <HomeFlyer greeting={greeting || undefined} />
 
       {/* ── Greeting ──────────────────────────────────────────────── */}
       <div className="mt-2 mb-2">

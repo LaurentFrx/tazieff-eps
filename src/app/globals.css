@@ -741,6 +741,19 @@ p {
   }
 }
 
+@keyframes scroll-text {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-scroll-text {
+  animation: scroll-text 12s linear infinite;
+}
+
 @media (min-width: 768px) {
   .app-shell {
     padding: calc(60px + env(safe-area-inset-top, 0px)) 40px 36px;
