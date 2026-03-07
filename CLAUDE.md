@@ -203,13 +203,13 @@ npx tsc --noEmit               # Type-check sans build
 - Refonte UX complète : 5 onglets, homepage colorée, SVG partagés
 - Dictionnaire fitness i18n validé (0 erreur DeepL)
 - 267 tests passants, 28 routes, 325+ MDX
+- Phase 1 — Méthodes d'entraînement : 19 fiches MDX trilingues, page /methodes, liens croisés exercice ↔ méthode ↔ muscle
+- Phase 2 — Contenu théorique : RM/RIR/RPE (MDX + calculateur + glossaire), anatomie (MDX + contractions + carte 3D), sécurité (6 principes), programmes hebdo (3 programmes MDX)
 
 ### Prochaines priorités (dans l'ordre)
 
-1. **Phase 1 — Méthodes d'entraînement** : 17+ fiches MDX, page /methodes, liens croisés exercice ↔ méthode ↔ muscle. C'est le manque le plus critique.
-2. **Phase 2 — Contenu théorique** : RM/RIR/RPE (calculateur), anatomie, principes sécuritaires
-3. **Quick wins** : recherche interne, breadcrumbs, mode sombre, alt text enrichis
-4. **Phase 4 — Parcours BAC** : grille BAC interactive, checklist compétences par niveau
+1. **Quick wins** : recherche interne, breadcrumbs, mode sombre, alt text enrichis
+2. **Phase 4 — Parcours BAC** : grille BAC interactive, checklist compétences par niveau, évaluations 2nde/1ère/Term, épreuve du BAC
 
 ### Couverture du PDF de Fred
 
@@ -218,10 +218,10 @@ npx tsc --noEmit               # Type-check sans build
 | Exercices (catalogue)          | dispersés | ✅ Existe  | —     |
 | Endurance / Volume / Puissance | 3-26      | ✅ Couvert via méthodes + exercices | P1    |
 | Méthodes d'entraînement        | 33-54     | ✅ 19 fiches MDX (FR/EN/ES)  | P1    |
-| Muscles & fonctionnement       | 31-32     | ⚠️ Partiel | P2    |
-| RM / RIR / RPE                 | 55-56     | ❌ Absent  | P2    |
-| Principes sécuritaires         | 57-59     | ⚠️ Partiel | P2    |
-| Programmes hebdo               | 28-30     | ❌ Absent  | P3    |
+| Muscles & fonctionnement       | 31-32     | ✅ Complet (MDX + contractions + carte anatomique 3D + champ muscles exercices) | P2    |
+| RM / RIR / RPE                 | 55-56     | ✅ Complet (MDX + calculateur + glossaire) | P2    |
+| Principes sécuritaires         | 57-59     | ✅ Complet (6 principes + sécurité contextuelle dans méthodes) | P2    |
+| Programmes hebdo               | 28-30     | ✅ Complet (3 programmes MDX) | P2    |
 | Évaluations (2nde/1ère/Term)   | 61-63     | ❌ Absent  | P4    |
 | Épreuve du BAC                 | 64-65     | ❌ Absent  | P4    |
 
