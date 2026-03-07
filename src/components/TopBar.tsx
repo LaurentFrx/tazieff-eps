@@ -87,7 +87,7 @@ export function TopBar() {
           <Link href="/" className="flex items-center gap-2 shrink-0 min-h-[44px]">
             <Image
               src="/media/branding/logo-eps.webp"
-              alt=""
+              alt="Logo Tazieff EPS"
               width={24}
               height={24}
               unoptimized

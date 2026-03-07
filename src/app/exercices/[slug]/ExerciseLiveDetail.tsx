@@ -2687,7 +2687,7 @@ export function ExerciseLiveDetail({
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
                                 src={resolvedUrl}
-                                alt={block.caption ?? section.title}
+                                alt={block.caption || `${displayTitle} — ${(merged.frontmatter.muscles ?? []).slice(0, 3).join(", ")}`}
                                 className="w-full h-auto rounded-2xl ring-1 ring-white/10"
                                 loading="lazy"
                                 decoding="async"
@@ -3701,7 +3701,7 @@ export function ExerciseLiveDetail({
                                             return (
                                               <PhotoPreview
                                                 previewUrl={previewUrl}
-                                                alt={block.caption ?? section.title}
+                                                alt={block.caption || `${displayTitle} — ${(merged.frontmatter.muscles ?? []).slice(0, 3).join(", ")}`}
                                                 infoLine={infoLine}
                                                 isResolving={resolveState === "loading"}
                                                 hasError={resolveState === "error"}

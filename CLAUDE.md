@@ -1,186 +1,271 @@
-# CLAUDE.md
+# CLAUDE.md — Tazieff EPS
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+> Ce fichier est lu automatiquement par Claude Code CLI à chaque session.
+> Il constitue la référence unique pour tout développement sur ce projet.
+> Dernière mise à jour : Mars 2026
 
-## Commands
+---
 
-### Development
-```bash
-npm run dev          # Start dev server at localhost:3000 (keep running during development)
-npm run build        # Production build (runs prebuild script first)
-npm start            # Start production server (NOT for iteration)
+## 1. Identité du projet
+
+**Tazieff EPS** est la seule PWA pédagogique moderne dédiée à la musculation en EPS au lycée en France.
+
+- **App prod** : https://guide-musculation.vercel.app
+- **Repo** : github.com/LaurentFrx/tazieff-eps (branche `main` uniquement)
+- **Public cible** : lycéens de 15-18 ans (2nde → Terminale) en option musculation BAC EPS
+- **Usage réel** : consulté sur smartphone EN SALLE DE SPORT, entre deux séries d'exercices (5-15 secondes d'attention)
+- **Source pédagogique** : diaporama Muscu'EPS de Frédérique Proisy (65 pages), enseignante au Lycée Haroun Tazieff, Saint-Paul-lès-Dax
+
+L'app est l'incarnation numérique native du contenu de Fred — plus accessible, plus interactive, et plus utile qu'un diaporama de 200 Mo.
+
+---
+
+## 2. Stack technique
+
+- **Framework** : Next.js 16.1.4, React 19.2.3, TypeScript
+- **Styling** : Tailwind CSS
+- **Contenu** : MDX (exercices, méthodes, apprendre)
+- **Base de données** : Supabase (exercices live enseignant)
+- **Tests** : Vitest 4.0.18 + jsdom — 267+ tests
+- **PWA** : Serwist (service worker)
+- **Déploiement** : Vercel (auto-deploy depuis `main`)
+- **i18n** : Tri-lingue (FR/EN/ES) avec dictionnaire fitness dédié
+- **Node** : 20.9+
+
+---
+
+## 3. Architecture des données
+
+### Sources d'exercices (priorité de merge)
+
+1. **MDX natifs** (`/content/exercises/{locale}/*.mdx`) — source de vérité
+2. **Supabase live** — exercices créés par l'enseignant en temps réel
+3. **Import v2** — legacy, migration progressive
+
+### Autres contenus MDX
+
+- Méthodes : `/content/methods/{locale}/*.mdx`
+- Apprendre : `/content/learn/{locale}/*.mdx`
+
+### Médias
+
+- Images/vidéos : `/public/images/exos/{slug}.webp` / `.webm`
+- Thumbnails : `thumb-{slug}.webp`, `thumb169-{slug}.webp`, `thumb916-{slug}.webp`
+
+### Hooks principaux
+
+- `useFavorites` — favoris élève (localStorage)
+- `useTeacherMode` — mode enseignant
+- `useExercisesLiveSync` — sync Supabase temps réel
+
+### Filtres
+
+- Logique pure dans `src/lib/exercices/filters.ts`
+
+---
+
+## 4. Navigation et UI
+
+### Design système "Sport Vibrant"
+
+- **BottomTabBar** fixe sur mobile — 5 onglets avec icônes SVG
+- **Palette par section** : orange (exercices), bleu (méthodes), vert (apprendre), violet (BAC), rose (outils)
+- **SectionHero** : composant réutilisable sur les 5 pages index
+- **Illustrations** : SVG partagés dans `illustrations.tsx`
+- **Touch targets** : minimum 44px partout
+
+### Composants clés
+
+- `ExerciseFilters` — filtres chips scrollables
+- `ExerciseGrid` — grille responsive (2 col mobile, 3-4 desktop)
+- `MethodeCard` — carte méthode réutilisable (page méthodes + fiches exercices)
+- `DetailHeader` / `BackButton` — navigation retour cohérente
+- `HeroMedia` — wrapper Next.js Image/Video avec lazy loading
+
+---
+
+## 5. Règles de développement ABSOLUES
+
+### 5.1 Workflow obligatoire
+
+```
+1. git pull origin main              # Toujours synchroniser avant de travailler
+2. [modifications]
+3. npm run build                     # OBLIGATOIRE — ne jamais skip
+4. npm test                          # Vérifier la non-régression
+5. git add + commit (message FR)     # Message descriptif en français
+6. git push origin main              # Push systématique, jamais de travail local non poussé
 ```
 
-**Critical**: Always keep `npm run dev` running during development sessions. After changes, verify with:
-- `curl.exe -I --max-time 20 http://127.0.0.1:3000` → expect 200/3xx
-- Smoke test routes: `/exos`, `/exos/<slug>`, `/seances/<slug>`
-- Report: "✅ Local dev OK (127.0.0.1:3000) + routes testées"
+### 5.2 Fichiers protégés
 
-If dev server hangs: stop Node on port 3000, delete `.next/`, restart `npm run dev`.
+- **Ne JAMAIS modifier `app/page.tsx`** (homepage) sauf demande explicite de Laurent
+- **Ne JAMAIS modifier `app/layout.tsx`** sans demande explicite
+- **Ne JAMAIS supprimer un fichier MDX** sans demande explicite
 
-### Testing
+### 5.3 Standards de code
+
+- TypeScript strict — pas de `any` sauf cas documenté
+- Composants fonctionnels React uniquement (pas de classes)
+- Imports absolus avec `@/` (configuré dans tsconfig)
+- Noms de fichiers : camelCase pour les utils, PascalCase pour les composants
+- Messages de commit : en français, descriptifs (ex: "feat: ajouter page méthodes avec filtres par objectif")
+- Préfixes commit : `feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `test:`
+
+### 5.4 Tests
+
+- Tout nouveau composant ou utilitaire → test Vitest associé
+- Tout bug corrigé → test de non-régression
+- Minimum : les tests existants ne doivent JAMAIS casser
+- Lancer `npm test` avant chaque commit
+
+### 5.5 Performance
+
+- Utiliser `next/image` partout (jamais de `<img>` natif)
+- Lazy-load les composants lourds (Three.js, vidéos) avec `dynamic import`
+- Pages exercices et méthodes en SSG (static generation), pas SSR
+- Images en WebP, vidéos en WebM
+
+---
+
+## 6. Contenu pédagogique — Principes critiques
+
+### 6.1 Source de vérité
+
+Le PDF de Fred (Diapo Muscu'EPS, 65 pages) est la SEULE source de vérité pour le contenu pédagogique. Tu n'as PAS accès à ce document. Laurent te fournira toujours le contenu exact à intégrer dans ses prompts.
+
+**INTERDIT** : inventer, halluciner, ou compléter du contenu pédagogique depuis ta mémoire générale. Si Laurent ne te donne pas le contenu source, DEMANDE-LE.
+
+### 6.2 Terminologie fitness
+
+Le dictionnaire fitness i18n est validé et déployé. Respecter strictement :
+
+- FR : "entraînement" (pas "formation")
+- ES : "entrenamiento" (pas "formación" — erreur courante de DeepL)
+- EN : "training" (pas "formation")
+
+Ne jamais modifier le dictionnaire sans demande explicite.
+
+### 6.3 Niveau de langage
+
+Le contenu s'adresse à des lycéens de 15-18 ans :
+
+- Vocabulaire précis mais accessible
+- Phrases courtes et directes
+- Pas de jargon scientifique non expliqué
+- Les termes techniques (RM, RIR, RPE, séries, reps) sont utilisés car ce sont les termes du programme — mais toujours définis à la première occurrence
+
+### 6.4 Progressive disclosure par niveau
+
+- **2nde** : initiation, maîtrise technique, guidage fort
+- **1ère** : consolidation, autonomie encadrée, construction de programme
+- **Terminale** : projet autonome, optimisation, analyse fine
+
+Un élève de Seconde ne doit JAMAIS être submergé par du contenu Terminale.
+
+---
+
+## 7. Ce qu'il ne faut PAS faire
+
+Ces décisions sont issues de 3 audits croisés (Claude, Gemini, ChatGPT) et sont définitives :
+
+- **PAS d'élargissement** aux autres APSA (badminton, course d'orientation, etc.) — l'app cible la musculation uniquement
+- **PAS de gamification superficielle** (badges, points, récompenses) — les lycéens veulent du contenu utile, pas du décorum
+- **PAS d'IA personnalisée** intégrée — prématuré et problématique RGPD pour des mineurs
+- **PAS de forum de discussion** — hors besoin, les élèves ont leurs propres réseaux
+- **PAS d'authentification EduConnect** — surcharge technique pour bénéfice marginal
+- **PAS de gestion de notes certificatives** — c'est le rôle de Pronote/ScoNet
+- **PAS de feature creep** — chaque fonctionnalité ajoutée doit servir un usage concret en salle de musculation
+
+---
+
+## 8. Commandes de référence
+
 ```bash
-npm test             # Run Vitest in watch mode
-npm run test:ui      # Run Vitest with UI
-npm run test:run     # Run all tests once (CI mode)
-npm run type-check   # TypeScript type checking
-npm run lint         # ESLint
+# Développement
+npm run dev                    # Serveur local (port 3000)
+npm run build                  # Build production (OBLIGATOIRE avant commit)
+npm test                       # Lancer tous les tests
+npm run test:watch             # Tests en mode watch
+
+# Vérification
+npx next lint                  # Lint ESLint
+npx tsc --noEmit               # Type-check sans build
 ```
 
-### PDF Image Extraction
-```bash
-npm run pdf:extract:parametres  # Extract images from Paramètres PDF to webp
+---
+
+## 9. État actuel et roadmap
+
+### Phases terminées ✅
+
+- Phase 0 : Refonte navigation (BottomTabBar, SectionHero, design Sport Vibrant)
+- Refonte UX complète : 5 onglets, homepage colorée, SVG partagés
+- Dictionnaire fitness i18n validé (0 erreur DeepL)
+- 267 tests passants, 28 routes, 325+ MDX
+
+### Prochaines priorités (dans l'ordre)
+
+1. **Phase 1 — Méthodes d'entraînement** : 17+ fiches MDX, page /methodes, liens croisés exercice ↔ méthode ↔ muscle. C'est le manque le plus critique.
+2. **Phase 2 — Contenu théorique** : RM/RIR/RPE (calculateur), anatomie, principes sécuritaires
+3. **Quick wins** : recherche interne, breadcrumbs, mode sombre, alt text enrichis
+4. **Phase 4 — Parcours BAC** : grille BAC interactive, checklist compétences par niveau
+
+### Couverture du PDF de Fred
+
+| Section                        | Pages     | Statut     | Phase |
+| ------------------------------ | --------- | ---------- | ----- |
+| Exercices (catalogue)          | dispersés | ✅ Existe  | —     |
+| Endurance / Volume / Puissance | 3-26      | ⚠️ Partiel | P1    |
+| Méthodes d'entraînement        | 33-54     | ❌ ABSENT  | P1    |
+| Muscles & fonctionnement       | 31-32     | ⚠️ Partiel | P2    |
+| RM / RIR / RPE                 | 55-56     | ❌ Absent  | P2    |
+| Principes sécuritaires         | 57-59     | ⚠️ Partiel | P2    |
+| Programmes hebdo               | 28-30     | ❌ Absent  | P3    |
+| Évaluations (2nde/1ère/Term)   | 61-63     | ❌ Absent  | P4    |
+| Épreuve du BAC                 | 64-65     | ❌ Absent  | P4    |
+
+---
+
+## 10. Structure des fichiers clés
+
+```
+src/
+├── app/
+│   ├── [locale]/
+│   │   ├── exercices/          # Catalogue + fiches détail
+│   │   ├── methodes/           # Catalogue méthodes + fiches
+│   │   ├── apprendre/          # Contenu théorique
+│   │   ├── bac/                # Parcours évaluation
+│   │   └── outils/             # Timer, calculateur RM, etc.
+│   └── page.tsx                # Homepage (NE PAS MODIFIER)
+├── components/
+│   ├── media/                  # HeroMedia, VideoPlayer
+│   ├── ui/                     # Composants génériques
+│   └── illustrations.tsx       # SVG partagés
+├── lib/
+│   ├── exercices/
+│   │   ├── filters.ts          # Filtres purs
+│   │   ├── fs.ts               # Loader multi-locale MDX
+│   │   └── schema.ts           # Types TypeScript
+│   └── i18n/                   # Dictionnaires, config locale
+├── hooks/                      # useFavorites, useTeacherMode, etc.
+content/
+├── exercises/{locale}/*.mdx
+├── methods/{locale}/*.mdx
+└── learn/{locale}/*.mdx
 ```
 
-## Architecture
+---
 
-### Exercise Content — Three Sources with Merge Priority
+## 11. Démarrage de session CC
 
-Exercises come from three sources, merged with strict priority: **MDX > Live (Supabase) > Imported exercises**
+À chaque nouvelle session Claude Code, exécuter dans cet ordre :
 
-1. **MDX files** (`content/exercices/*.mdx`)
-   - Gray-matter frontmatter + MDX content
-   - Loaded via `getAllExercises()` from `src/lib/content/fs.ts`
-   - Schema validated with Zod in `src/lib/content/schema.ts`
-
-2. **Live exercises** (Supabase `live_exercises` table)
-   - JSON-stored exercises created via teacher mode
-   - Real-time sync with `useExercisesLiveSync` hook (Supabase realtime + 20s polling fallback)
-   - Fetched via `fetchLiveExercises(locale)` from `src/lib/live/queries.ts`
-
-3. **Imported exercises** (`public/import/v2/`)
-   - Legacy PDF-imported exercises
-   - Indexed via `getImportedExercisesIndex()` from `src/lib/exercices/getImportedExercisesIndex.ts`
-   - Media files in `public/images/exos/` (unified location)
-
-**Merge logic**: `getExercisesIndex(locale)` in `src/lib/exercices/getExercisesIndex.ts` combines all three sources. Deduplication by slug ensures MDX exercises override live exercises, which override imported exercises.
-
-**Static generation**: `generateStaticParams()` in `src/app/exercices/[slug]/page.tsx` uses `getExercisesIndex("fr")` to pre-generate all exercise pages at build time.
-
-### Media System
-
-All exercise media unified under `/images/exos/`:
-- Hero images: `/images/exos/{slug}.webp`
-- Thumbnails: `/images/exos/thumb-{slug}.webp`
-- Aspect-ratio variants:
-  - `thumb169-{slug}.webp` (16:9)
-  - `thumb916-{slug}.webp` (9:16)
-- Video support: `.webm` files (e.g., `S1-002.webm`)
-
-Thumbnail resolution uses filesystem checks at build time (see `getImportedExercisesIndex.ts` lines 218-235).
-
-### External Store Pattern (Favorites, Teacher Mode, View Mode)
-
-Three external stores use `useSyncExternalStore` for React integration:
-
-1. **`favoritesStore`** (`src/lib/stores/favoritesStore.ts`)
-   - localStorage-backed set of favorite exercise slugs
-   - Wrapped by `useFavorites()` hook (`src/hooks/useFavorites.ts`)
-   - Returns: `{ favorites, isFavorite, toggle, set }`
-
-2. **`window.__teacherMode`** (global)
-   - In-memory teacher authentication state
-   - Wrapped by `useTeacherMode()` hook (`src/hooks/useTeacherMode.ts`)
-   - Returns: `{ unlocked, pin, unlock, lock }`
-   - **Critical**: Snapshot must be cached with `Object.freeze()` to prevent infinite re-renders
-
-3. **View mode store** (inline in `ExerciseListClient.tsx`)
-   - localStorage for grid/list view preference
-   - Uses custom subscribe/getSnapshot pattern
-
-### Hooks
-
-- **`useFavorites()`**: Access favoritesStore (read-only view, toggle, set)
-- **`useTeacherMode()`**: Access teacher mode state (unlock, lock)
-- **`useExercisesLiveSync(locale, initialData)`**: Supabase realtime sync for live exercises
-  - Subscribes to `live_exercises` table via Supabase channel
-  - Polls every 20s when realtime unavailable
-  - Returns: `{ liveExercises, isRealtimeReady }`
-
-### Filters
-
-Pure filter functions in `src/lib/exercices/filters.ts`:
-- **`mergeExercises(exercises, liveRows)`**: Merge MDX + live exercises
-- **`filterVisibleExercises(merged, teacherUnlocked)`**: Hide drafts unless teacher unlocked
-- **`filterExercises(visible, criteria)`**: Apply search query + level/equipment/tags/themes/favorites filters
-
-All filters are tested in `src/lib/exercices/filters.test.ts` (46 tests).
-
-### UI Components (Phase 3 Extraction)
-
-Exercise list UI split into focused components:
-- **`ExerciseFilters`** (`src/components/exercices/ExerciseFilters.tsx`): Multi-select menus, chips, search
-- **`ExerciseGrid`** (`src/components/exercices/ExerciseGrid.tsx`): Grid/list view toggle, favorite button
-- **`TeacherToolbar`** (`src/components/exercices/TeacherToolbar.tsx`): Exercise creation for teacher mode
-
-Main client component: `ExerciseListClient` (`src/app/exercices/ExerciseListClient.tsx`) coordinates all UI.
-
-### Testing
-
-- **Framework**: Vitest 4.0.18 + jsdom
-- **React testing**: @testing-library/react
-- **Coverage**: 80 tests across filters, hooks
-- **Mock strategy**: Supabase client fully mocked in hook tests (see `useExercisesLiveSync.test.ts`)
-
-Config: `vitest.config.ts` with globals, jsdom, path alias `@` → `src`
-
-## Critical Rules
-
-### CMS-Ready (Non-Negotiable)
-
-All content must remain editable via Git-based CMS (e.g., Keystatic) without refactoring.
-
-**Invariants**:
-1. Content in `content/**/*.mdx`, media in `public/media/**`
-2. Frontmatter must be simple and backward-compatible (no breaking renames/deletions)
-3. No hardcoded content in TypeScript/JSON (only derived indexes)
-4. No database dependency for content (Supabase only for live exercises, separate layer)
-5. App is read-only for MDX (editing via CMS only)
-6. Indexes derived from `content/**` at build time
-7. UI decoupled from content (MDX files remain renderable)
-
-**CMS-Ready Gate** (every PR):
-- Can a Git-based CMS edit this content without refactoring? ✅
-- Is frontmatter schema backward-compatible? ✅
-- Content in `content/**`, media in `public/media/**`? ✅
-
-If any answer is NO → reject, propose backward-compatible alternative.
-
-### Search Rules (Anti-iCloud)
-
-**Never** run global searches (e.g., `rg "pattern" C:\Users\...`).
-
-Always scope searches to repo:
 ```bash
-rg "pattern" src docs README.md package.json  # ✅ Correct
-rg "pattern" .                                 # ✅ Correct
-rg "pattern" C:\Users\...                      # ❌ FORBIDDEN
+git pull origin main
+git status
+npm test
 ```
 
-Execute all commands from repo root.
-
-## Key Files
-
-- **Exercise index**: `src/lib/exercices/getExercisesIndex.ts` (merges 3 sources)
-- **Imported exercises**: `src/lib/exercices/getImportedExercisesIndex.ts` (legacy PDF imports)
-- **Filters**: `src/lib/exercices/filters.ts` (pure functions)
-- **Live sync hook**: `src/hooks/useExercisesLiveSync.ts` (Supabase realtime + polling)
-- **Exercise detail page**: `src/app/exercices/[slug]/page.tsx` (uses `generateStaticParams`)
-- **Exercise detail UI**: `src/app/exercices/[slug]/ExerciseLiveDetail.tsx` (4000+ lines, main detail component)
-- **Content schema**: `src/lib/content/schema.ts` (Zod validation)
-
-## Environment
-
-- **Node**: >=20.9 <23 (Next.js 16 requirement)
-- **npm**: >=10
-- **Next.js**: 16.1.4 (App Router)
-- **React**: 19.2.3
-- **Supabase**: @supabase/supabase-js 2.93.1
-
-## Deployment
-
-- **Platform**: Vercel
-- **Production URL**: https://tazieff-eps.vercel.app
-- **Static generation**: All exercise routes pre-generated via `generateStaticParams()`
-- **Revalidation**: `revalidatePath` + `revalidateTag` for on-demand ISR
-- **Service Worker**: Serwist for PWA (disabled in dev)
+Si des tests échouent AVANT toute modification, signaler le problème à Laurent avant de continuer.
