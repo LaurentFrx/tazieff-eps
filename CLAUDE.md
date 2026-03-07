@@ -216,8 +216,8 @@ npx tsc --noEmit               # Type-check sans build
 | Section                        | Pages     | Statut     | Phase |
 | ------------------------------ | --------- | ---------- | ----- |
 | Exercices (catalogue)          | dispersés | ✅ Existe  | —     |
-| Endurance / Volume / Puissance | 3-26      | ⚠️ Partiel | P1    |
-| Méthodes d'entraînement        | 33-54     | ❌ ABSENT  | P1    |
+| Endurance / Volume / Puissance | 3-26      | ✅ Couvert via méthodes + exercices | P1    |
+| Méthodes d'entraînement        | 33-54     | ✅ 19 fiches MDX (FR/EN/ES)  | P1    |
 | Muscles & fonctionnement       | 31-32     | ⚠️ Partiel | P2    |
 | RM / RIR / RPE                 | 55-56     | ❌ Absent  | P2    |
 | Principes sécuritaires         | 57-59     | ⚠️ Partiel | P2    |
