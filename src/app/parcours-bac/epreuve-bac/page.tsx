@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { GrilleBac } from "./GrilleBac";
+import { BackButton } from "@/components/BackButton";
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await getServerLang();
@@ -15,6 +16,7 @@ export default async function EpreuveBacPage() {
 
   return (
     <section className="page">
+      <BackButton href="/parcours-bac" label={t("parcours.title")} />
       <header className="page-header">
         <p className="eyebrow">{t("parcours.grille.eyebrow")}</p>
         <h1>{t("parcours.grille.title")}</h1>

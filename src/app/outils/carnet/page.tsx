@@ -3,6 +3,7 @@ import { getAllMethodes } from "@/lib/content/fs";
 import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { Carnet } from "./Carnet";
+import { BackButton } from "@/components/BackButton";
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await getServerLang();
@@ -23,6 +24,7 @@ export default async function CarnetPage() {
 
   return (
     <section className="page">
+      <BackButton href="/outils" label={t("outils.backLabel")} />
       <header className="page-header">
         <p className="eyebrow">{t("outils.title")}</p>
         <h1>{t("carnet.title")}</h1>

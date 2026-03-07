@@ -113,6 +113,7 @@ export const messages = {
       unnamedExercise: "Exercice à renseigner",
       sets: "séries",
       rest: "repos",
+      backLabel: "Séances",
     },
     offline: {
       eyebrow: "Hors ligne",
@@ -969,6 +970,7 @@ export const messages = {
       unnamedExercise: "Exercise to be specified",
       sets: "sets",
       rest: "rest",
+      backLabel: "Sessions",
     },
     offline: {
       eyebrow: "Offline",
@@ -1825,6 +1827,7 @@ export const messages = {
       unnamedExercise: "Ejercicio a especificar",
       sets: "series",
       rest: "descanso",
+      backLabel: "Sesiones",
     },
     offline: {
       eyebrow: "Sin conexión",

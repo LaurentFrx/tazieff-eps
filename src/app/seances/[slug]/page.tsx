@@ -6,6 +6,7 @@ import { exercisesIndex, getSeance } from "@/lib/content/fs";
 import { renderMdx } from "@/lib/mdx/render";
 import { SeanceDownloadButton } from "@/app/seances/[slug]/SeanceDownloadButton";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
+import { BackButton } from "@/components/BackButton";
 
 type SeancePageProps = {
   params: Promise<{ slug: string }>;
@@ -48,6 +49,7 @@ export default async function SeancePage({ params }: SeancePageProps) {
 
   return (
     <section className="page">
+      <BackButton href="/seances" label={t("seanceDetail.backLabel")} />
       <header className="page-header">
         <p className="eyebrow">{t("seanceDetail.eyebrow")}</p>
         <h1>{frontmatter.title}</h1>

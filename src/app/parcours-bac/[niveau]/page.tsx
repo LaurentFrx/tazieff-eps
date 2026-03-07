@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { NIVEAUX, type Niveau } from "../data";
 import { NiveauChecklist } from "./NiveauChecklist";
+import { BackButton } from "@/components/BackButton";
 
 const VALID_NIVEAUX: Niveau[] = ["seconde", "premiere", "terminale"];
 
@@ -33,6 +34,7 @@ export default async function NiveauPage({ params }: Props) {
 
   return (
     <section className="page">
+      <BackButton href="/parcours-bac" label={t("parcours.title")} />
       <header className="page-header">
         <p className="eyebrow">{t(data.subtitleKey)}</p>
         <h1>{t(`parcours.niveaux.${niveau as Niveau}`)}</h1>
