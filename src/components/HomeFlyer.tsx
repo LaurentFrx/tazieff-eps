@@ -16,9 +16,10 @@ export function HomeFlyer({ greeting }: HomeFlyerProps) {
         sizes="(max-width: 768px) 100vw, 1280px"
       />
       {greeting && (
-        <div className="absolute bottom-0 left-0 right-0 bg-black/50 backdrop-blur-sm py-2 overflow-hidden">
+        <div className="absolute top-0 left-[20%] right-[20%] py-3 overflow-hidden pointer-events-none">
           <span
-            className="inline-block whitespace-nowrap text-base md:text-lg font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] animate-scroll-text"
+            className="inline-block whitespace-nowrap text-base md:text-lg font-bold text-white animate-scroll-text"
+            style={{ textShadow: "0 1px 4px rgba(0,0,0,0.9), 0 0 12px rgba(0,0,0,0.5)" }}
           >
             {greeting}
           </span>

@@ -63,13 +63,6 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
       {/* ── Flyer hero + greeting ─────────────────────────────────── */}
       <HomeFlyer greeting={greeting || undefined} />
 
-      {/* ── Greeting ──────────────────────────────────────────────── */}
-      <div className="mt-2 mb-2">
-        <h1 className="text-2xl md:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100">
-          {greeting || "\u00A0"}
-        </h1>
-      </div>
-
       {/* ── Main navigation cards ─────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
 
