@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getAllLearnPages, getLearnPage } from "@/lib/content/fs";
 import { renderMdx } from "@/lib/mdx/render";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { DetailHeader } from "@/components/DetailHeader";
 
 type LearnPageProps = {
@@ -51,6 +52,13 @@ export default async function LearnSlugPage({ params }: LearnPageProps) {
 
   return (
     <section className="page">
+      <Breadcrumbs
+        items={[
+          { label: t("nav.home.label"), href: "/" },
+          { label: t("breadcrumbs.apprendre"), href: "/apprendre" },
+          { label: fm.titre },
+        ]}
+      />
       <DetailHeader
         title={fm.titre}
         gradient="from-emerald-600 to-teal-500"

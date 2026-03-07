@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getAllBacPages, getBacPage } from "@/lib/content/fs";
 import { renderMdx } from "@/lib/mdx/render";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 type BacSlugPageProps = {
   params: Promise<{ slug: string }>;
@@ -38,6 +39,13 @@ export default async function BacSlugPage({ params }: BacSlugPageProps) {
 
   return (
     <section className="page">
+      <Breadcrumbs
+        items={[
+          { label: t("nav.home.label"), href: "/" },
+          { label: t("breadcrumbs.bac"), href: "/bac" },
+          { label: fm.titre },
+        ]}
+      />
       <header className="page-header">
         <Link
           href="/bac"

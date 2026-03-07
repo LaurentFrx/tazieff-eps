@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getAllMethodes, getMethode } from "@/lib/content/fs";
 import { renderMdx } from "@/lib/mdx/render";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { DetailHeader } from "@/components/DetailHeader";
 import { CategoryBadge } from "@/components/methodes/CategoryBadge";
 import { ScoresBlock } from "@/components/methodes/ScoreBar";
@@ -86,6 +87,13 @@ export default async function MethodePage({ params }: MethodePageProps) {
 
   return (
     <section className="page">
+      <Breadcrumbs
+        items={[
+          { label: t("nav.home.label"), href: "/" },
+          { label: t("breadcrumbs.methodes"), href: "/methodes" },
+          { label: m.titre },
+        ]}
+      />
       <DetailHeader
         title={m.titre}
         gradient="from-blue-600 to-cyan-500"

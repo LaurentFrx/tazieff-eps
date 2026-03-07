@@ -57,6 +57,12 @@ export const messages = {
       mainNavigation: "Navigation principale",
       scrollToTop: "Remonter en haut",
     },
+    breadcrumbs: {
+      exercices: "Exercices",
+      methodes: "Méthodes",
+      apprendre: "Apprendre",
+      bac: "Parcours BAC",
+    },
     difficulty: {
       debutant: "D\u00e9butant",
       intermediaire: "Intermédiaire",
@@ -914,6 +920,12 @@ export const messages = {
       mainNavigation: "Main navigation",
       scrollToTop: "Scroll to top",
     },
+    breadcrumbs: {
+      exercices: "Exercises",
+      methodes: "Methods",
+      apprendre: "Learn",
+      bac: "BAC Path",
+    },
     difficulty: {
       debutant: "Beginner",
       intermediaire: "Intermediate",
@@ -1770,6 +1782,12 @@ export const messages = {
       outils: { label: "Herramientas", meta: "Pr\u00e1ctica" },
       mainNavigation: "Navegación principal",
       scrollToTop: "Volver arriba",
+    },
+    breadcrumbs: {
+      exercices: "Ejercicios",
+      methodes: "Métodos",
+      apprendre: "Aprender",
+      bac: "Recorrido BAC",
     },
     difficulty: {
       debutant: "Principiante",

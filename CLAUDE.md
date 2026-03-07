@@ -202,14 +202,20 @@ npx tsc --noEmit               # Type-check sans build
 - Phase 0 : Refonte navigation (BottomTabBar, SectionHero, design Sport Vibrant)
 - Refonte UX complète : 5 onglets, homepage colorée, SVG partagés
 - Dictionnaire fitness i18n validé (0 erreur DeepL)
-- 267 tests passants, 28 routes, 325+ MDX
+- 272 tests passants, 28 routes, 325+ MDX
 - Phase 1 — Méthodes d'entraînement : 19 fiches MDX trilingues, page /methodes, liens croisés exercice ↔ méthode ↔ muscle
 - Phase 2 — Contenu théorique : RM/RIR/RPE (MDX + calculateur + glossaire), anatomie (MDX + contractions + carte 3D), sécurité (6 principes), programmes hebdo (3 programmes MDX)
 - Phase 4 — Parcours BAC : démarche spiralaire, évaluations 2nde/1ère/Term (4 compétences × 3 niveaux + checklists), épreuve du BAC (barème 20pts + stratégie)
 
+### Quick wins UX ✅
+
+- Recherche interne : existait déjà (SearchModal + Ctrl/Cmd+K + index statique 80+ entrées)
+- Mode sombre : existait déjà (next-themes + CSS custom properties + toggle dans /reglages)
+- Breadcrumbs : composant Breadcrumbs.tsx ajouté sur les 4 pages détail (exercices, méthodes, apprendre, BAC)
+
 ### Prochaines priorités
 
-1. **Quick wins** : recherche interne, breadcrumbs, mode sombre, alt text enrichis
+1. **Quick wins restants** : alt text enrichis
 
 ### Couverture du PDF de Fred
 
