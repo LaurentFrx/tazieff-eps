@@ -175,60 +175,7 @@ export default function AnatomyMap({ exercises }: Props) {
           )}
         </div>
 
-        {/* ── Muscle popup (click on 3D muscle) ──────────────────────── */}
-        {popupInfo && (
-          <div
-            ref={popupRef}
-            className="anatomy-popup"
-            style={{
-              "--popup-x": `${popupInfo.x}px`,
-              "--popup-y": `${popupInfo.y}px`,
-            } as React.CSSProperties}
-          >
-            <div className="anatomy-popup-header">
-              <div className="anatomy-popup-title">{popupInfo.muscleName}</div>
-              <button
-                type="button"
-                className="anatomy-popup-close"
-                onClick={() => setPopupInfo(null)}
-                aria-label={t("anatomy.close")}
-              >
-                ✕
-              </button>
-            </div>
-            <div className="anatomy-popup-group">
-              <span
-                className="anatomy-group-dot"
-                style={{ background: MUSCLE_GROUPS[popupInfo.groupKey]?.color }}
-              />
-              {t(`anatomy.groups.${popupInfo.groupKey}`)}
-            </div>
-            {popupExercises.length > 0 ? (
-              <div className="anatomy-popup-exercises">
-                {popupExercises.slice(0, 5).map((ex) => (
-                  <Link
-                    key={ex.slug}
-                    href={`/exercices/${ex.slug}`}
-                    className="anatomy-popup-exercise"
-                  >
-                    {ex.title}
-                  </Link>
-                ))}
-                {popupExercises.length > 5 && (
-                  <span className="anatomy-popup-more">
-                    +{popupExercises.length - 5}
-                  </span>
-                )}
-              </div>
-            ) : (
-              <div className="anatomy-popup-empty">
-                {t("anatomy.noExercise")}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── Floating side panel ────────────────────────────────────── */}
+        {/* ── Floating side panel (desktop only) ─────────────────────── */}
         <div
           className={`anatomy-panel${panelOpen ? " anatomy-panel--open" : ""}`}
         >
@@ -319,6 +266,59 @@ export default function AnatomyMap({ exercises }: Props) {
           )}
         </div>
       </div>
+
+      {/* ── Muscle popup (click on 3D muscle — fixed overlay) ──────── */}
+      {popupInfo && (
+        <div
+          ref={popupRef}
+          className="anatomy-popup"
+          style={{
+            "--popup-x": `${popupInfo.x}px`,
+            "--popup-y": `${popupInfo.y}px`,
+          } as React.CSSProperties}
+        >
+          <div className="anatomy-popup-header">
+            <div className="anatomy-popup-title">{popupInfo.muscleName}</div>
+            <button
+              type="button"
+              className="anatomy-popup-close"
+              onClick={() => setPopupInfo(null)}
+              aria-label={t("anatomy.close")}
+            >
+              ✕
+            </button>
+          </div>
+          <div className="anatomy-popup-group">
+            <span
+              className="anatomy-group-dot"
+              style={{ background: MUSCLE_GROUPS[popupInfo.groupKey]?.color }}
+            />
+            {t(`anatomy.groups.${popupInfo.groupKey}`)}
+          </div>
+          {popupExercises.length > 0 ? (
+            <div className="anatomy-popup-exercises">
+              {popupExercises.slice(0, 5).map((ex) => (
+                <Link
+                  key={ex.slug}
+                  href={`/exercices/${ex.slug}`}
+                  className="anatomy-popup-exercise"
+                >
+                  {ex.title}
+                </Link>
+              ))}
+              {popupExercises.length > 5 && (
+                <span className="anatomy-popup-more">
+                  +{popupExercises.length - 5}
+                </span>
+              )}
+            </div>
+          ) : (
+            <div className="anatomy-popup-empty">
+              {t("anatomy.noExercise")}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Mobile group chips */}
       <div className="anatomy-chips-bar">
