@@ -286,8 +286,8 @@ export default function ReglagesPage() {
             <span
               className={`rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${
                 teacherMode.unlocked
-                  ? "border-emerald-400/40 bg-emerald-400/15 text-emerald-700 dark:text-emerald-100"
-                  : "border-zinc-200 bg-zinc-100 text-[color:var(--muted)] dark:border-white/10 dark:bg-white/5"
+                  ? "border-emerald-400/40 bg-emerald-400/15 text-emerald-100"
+                  : "border-white/10 bg-white/5 text-[color:var(--muted)]"
               }`}
             >
               {teacherMode.unlocked ? t("teacherMode.unlocked") : t("teacherMode.locked")}
