@@ -716,6 +716,7 @@ export const messages = {
       opacity: "Opacité",
       wireframe: "Fil de fer",
       reset: "Réinit.",
+      close: "Fermer",
       groups: {
         dorsaux: "Dorsaux",
         pectoraux: "Pectoraux",
@@ -1430,6 +1431,7 @@ export const messages = {
       opacity: "Opacity",
       wireframe: "Wireframe",
       reset: "Reset",
+      close: "Close",
       groups: {
         dorsaux: "Back",
         pectoraux: "Pectorals",
@@ -2442,6 +2444,7 @@ export const messages = {
       opacity: "Opacidad",
       wireframe: "Alambre",
       reset: "Reiniciar",
+      close: "Cerrar",
       groups: {
         dorsaux: "Dorsales",
         pectoraux: "Pectorales",

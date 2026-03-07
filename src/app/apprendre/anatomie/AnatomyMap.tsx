@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -15,6 +15,13 @@ const AnatomyCanvas = dynamic(() => import("./AnatomyCanvas"), {
 
 type Props = {
   exercises: LiveExerciseListItem[];
+};
+
+type PopupInfo = {
+  muscleName: string;
+  groupKey: string;
+  x: number;
+  y: number;
 };
 
 /* ─── Group list item (unique muscles from the model) ────────────────── */
@@ -45,6 +52,8 @@ export default function AnatomyMap({ exercises }: Props) {
     name: string;
     group: string | null;
   } | null>(null);
+  const [popupInfo, setPopupInfo] = useState<PopupInfo | null>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
 
   /* ── Exercises matching selected group ────────────────────────────────── */
@@ -57,8 +66,31 @@ export default function AnatomyMap({ exercises }: Props) {
     );
   }, [selectedGroup, exercises]);
 
-  /* ── Handle group selection (from panel click) ───────────────────────── */
+  /* ── Exercises for popup (uses popup's groupKey) ───────────────────────── */
+  const popupExercises = useMemo(() => {
+    if (!popupInfo) return [];
+    const group = MUSCLE_GROUPS[popupInfo.groupKey];
+    if (!group) return [];
+    return exercises.filter((ex) =>
+      ex.muscles.some((m) => matchesGroup(group, m)),
+    );
+  }, [popupInfo, exercises]);
+
+  /* ── Close popup on outside click ──────────────────────────────────────── */
+  useEffect(() => {
+    if (!popupInfo) return;
+    const handleOutside = (e: MouseEvent) => {
+      if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
+        setPopupInfo(null);
+      }
+    };
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, [popupInfo]);
+
+  /* ── Handle group selection (from panel or chip click) ─────────────────── */
   const handleGroupToggle = useCallback((groupId: string) => {
+    setPopupInfo(null);
     setSelectedGroup((prev) => {
       if (prev === groupId) {
         setHighlightedMuscle(null);
@@ -69,24 +101,14 @@ export default function AnatomyMap({ exercises }: Props) {
     });
   }, []);
 
-  /* ── Handle muscle highlight (from panel click) ──────────────────────── */
-  const handleMuscleHighlight = useCallback((muscleName: string) => {
-    setHighlightedMuscle((prev) =>
-      prev === muscleName ? null : muscleName,
-    );
-  }, []);
-
-  /* ── Handle 3D click ─────────────────────────────────────────────────── */
+  /* ── Handle 3D click → open popup ──────────────────────────────────────── */
   const handleClickMuscle = useCallback(
-    (frName: string, groupKey: string) => {
-      if (selectedGroup === groupKey) {
-        setHighlightedMuscle((prev) => (prev === frName ? null : frName));
-      } else {
-        setSelectedGroup(groupKey);
-        setHighlightedMuscle(null);
-      }
+    (frName: string, groupKey: string, x: number, y: number) => {
+      setSelectedGroup(groupKey);
+      setHighlightedMuscle(frName);
+      setPopupInfo({ muscleName: frName, groupKey, x, y });
     },
-    [selectedGroup],
+    [],
   );
 
   /* ── Handle 3D hover ─────────────────────────────────────────────────── */
@@ -153,58 +175,83 @@ export default function AnatomyMap({ exercises }: Props) {
           )}
         </div>
 
+        {/* ── Muscle popup (click on 3D muscle) ──────────────────────── */}
+        {popupInfo && (
+          <div
+            ref={popupRef}
+            className="anatomy-popup"
+            style={{
+              "--popup-x": `${popupInfo.x}px`,
+              "--popup-y": `${popupInfo.y}px`,
+            } as React.CSSProperties}
+          >
+            <div className="anatomy-popup-header">
+              <div className="anatomy-popup-title">{popupInfo.muscleName}</div>
+              <button
+                type="button"
+                className="anatomy-popup-close"
+                onClick={() => setPopupInfo(null)}
+                aria-label={t("anatomy.close")}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="anatomy-popup-group">
+              <span
+                className="anatomy-group-dot"
+                style={{ background: MUSCLE_GROUPS[popupInfo.groupKey]?.color }}
+              />
+              {t(`anatomy.groups.${popupInfo.groupKey}`)}
+            </div>
+            {popupExercises.length > 0 ? (
+              <div className="anatomy-popup-exercises">
+                {popupExercises.slice(0, 5).map((ex) => (
+                  <Link
+                    key={ex.slug}
+                    href={`/exercices/${ex.slug}`}
+                    className="anatomy-popup-exercise"
+                  >
+                    {ex.title}
+                  </Link>
+                ))}
+                {popupExercises.length > 5 && (
+                  <span className="anatomy-popup-more">
+                    +{popupExercises.length - 5}
+                  </span>
+                )}
+              </div>
+            ) : (
+              <div className="anatomy-popup-empty">
+                {t("anatomy.noExercise")}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ── Floating side panel ────────────────────────────────────── */}
         <div
           className={`anatomy-panel${panelOpen ? " anatomy-panel--open" : ""}`}
         >
           <div className="anatomy-drawer-handle" />
 
-          {/* Muscle groups accordion */}
+          {/* Muscle groups — simple button list */}
           <div className="anatomy-groups">
-            {Object.entries(MUSCLE_GROUPS).map(([key, group]) => {
-              const isOpen = selectedGroup === key;
-              const muscles = GROUP_MUSCLES[key] ?? [];
-              return (
-                <div
-                  key={key}
-                  className={`anatomy-group${isOpen ? " anatomy-group--open" : ""}`}
-                >
-                  <button
-                    type="button"
-                    className="anatomy-group-header"
-                    onClick={() => handleGroupToggle(key)}
-                  >
-                    <span
-                      className="anatomy-group-dot"
-                      style={{ background: group.color }}
-                    />
-                    <span className="anatomy-group-name">
-                      {t(`anatomy.groups.${key}`)}
-                    </span>
-                    <span className="anatomy-group-count">
-                      {muscles.length}
-                    </span>
-                    <span className="anatomy-group-chevron">
-                      {isOpen ? "▼" : "▶"}
-                    </span>
-                  </button>
-                  {isOpen && (
-                    <div className="anatomy-group-muscles">
-                      {muscles.map((m) => (
-                        <button
-                          key={m}
-                          type="button"
-                          className={`anatomy-muscle-item${highlightedMuscle === m ? " highlighted" : ""}`}
-                          onClick={() => handleMuscleHighlight(m)}
-                        >
-                          {m}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {Object.entries(MUSCLE_GROUPS).map(([key, group]) => (
+              <button
+                key={key}
+                type="button"
+                className={`anatomy-group-header${selectedGroup === key ? " anatomy-group-header--active" : ""}`}
+                onClick={() => handleGroupToggle(key)}
+              >
+                <span
+                  className="anatomy-group-dot"
+                  style={{ background: group.color }}
+                />
+                <span className="anatomy-group-name">
+                  {t(`anatomy.groups.${key}`)}
+                </span>
+              </button>
+            ))}
           </div>
 
           {/* Info panel when group selected */}

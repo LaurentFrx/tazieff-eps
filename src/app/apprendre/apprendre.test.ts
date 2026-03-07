@@ -293,4 +293,25 @@ describe("Anatomy — exercise matching coverage", () => {
       ).toBe(true);
     }
   });
+
+  it("GROUP_MUSCLES keys match MUSCLE_GROUPS keys exactly", () => {
+    const gmKeys = Object.keys(GROUP_MUSCLES).sort();
+    const mgKeys = Object.keys(MUSCLE_GROUPS).sort();
+    expect(gmKeys).toEqual(mgKeys);
+  });
+
+  it("each GROUP_MUSCLES entry has at least 1 muscle", () => {
+    for (const [key, muscles] of Object.entries(GROUP_MUSCLES)) {
+      expect(muscles.length, `GROUP_MUSCLES[${key}] is empty`).toBeGreaterThan(0);
+    }
+  });
+
+  it("matchesGroup self-matches at least 1 exerciseSearchTerm per group", () => {
+    for (const [key, group] of Object.entries(MUSCLE_GROUPS)) {
+      const hasMatch = group.exerciseSearchTerms.some((term) =>
+        matchesGroup(group, term),
+      );
+      expect(hasMatch, `No exerciseSearchTerm self-matches for group ${key}`).toBe(true);
+    }
+  });
 });

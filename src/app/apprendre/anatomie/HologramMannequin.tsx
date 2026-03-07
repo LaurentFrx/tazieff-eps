@@ -23,7 +23,7 @@ type Props = {
   hoveredMuscle: string | null;
   wireframe: boolean;
   onHoverMuscle: (frName: string | null, groupKey: string | null) => void;
-  onClickMuscle: (frName: string, groupKey: string) => void;
+  onClickMuscle: (frName: string, groupKey: string, x: number, y: number) => void;
 };
 
 /* ─── Configure Draco for useGLTF ────────────────────────────────────────── */
@@ -227,12 +227,12 @@ function MusclesModel({
   // Click handler
   useEffect(() => {
     const el = canvasElRef.current;
-    const handleClick = () => {
+    const handleClick = (e: MouseEvent) => {
       const mesh = hoveredRef.current;
       if (mesh) {
         const ud = mesh.userData as MuscleUserData;
         if (ud.groupKey) {
-          onClickMuscle(ud.baseFrName, ud.groupKey);
+          onClickMuscle(ud.baseFrName, ud.groupKey, e.clientX, e.clientY);
         }
       }
     };

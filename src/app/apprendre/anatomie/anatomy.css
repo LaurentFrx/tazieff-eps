@@ -259,23 +259,12 @@
   color: var(--holo-blue);
 }
 
-/* ── Muscle groups accordion ───────────────────────────────────────────── */
+/* ── Muscle groups — simple button list ─────────────────────────────────── */
 
 .anatomy-groups {
   display: flex;
   flex-direction: column;
   gap: 2px;
-}
-
-.anatomy-group {
-  border: 1px solid rgba(0, 212, 255, 0.08);
-  border-radius: 6px;
-  overflow: hidden;
-  transition: border-color 0.2s ease;
-}
-
-.anatomy-group--open {
-  border-color: rgba(0, 212, 255, 0.25);
 }
 
 .anatomy-group-header {
@@ -285,18 +274,25 @@
   width: 100%;
   padding: 8px 10px;
   background: none;
-  border: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
   color: var(--holo-blue);
   font-family: var(--font-mono), "Space Mono", monospace;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .anatomy-group-header:hover {
   background: rgba(0, 212, 255, 0.06);
+}
+
+.anatomy-group-header--active {
+  border-color: rgba(0, 212, 255, 0.25);
+  background: rgba(0, 212, 255, 0.1);
+  color: #fff;
 }
 
 .anatomy-group-dot {
@@ -311,53 +307,123 @@
   text-align: left;
 }
 
-.anatomy-group-count {
-  font-size: 9px;
-  color: rgba(0, 212, 255, 0.4);
-  padding: 1px 6px;
-  border: 1px solid rgba(0, 212, 255, 0.15);
-  border-radius: 8px;
+/* ── Muscle popup (card on 3D click) ───────────────────────────────────── */
+
+.anatomy-popup {
+  position: fixed;
+  z-index: 25;
+  background: rgba(2, 8, 20, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  border-radius: 12px;
+  padding: 14px 16px;
+  max-width: 300px;
+  min-width: 220px;
+  animation: popup-in 0.2s ease both;
+  font-family: var(--font-body), sans-serif;
 }
 
-.anatomy-group-chevron {
-  font-size: 8px;
-  color: rgba(0, 212, 255, 0.4);
-  transition: transform 0.2s ease;
+@keyframes popup-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
-/* ── Individual muscle items ───────────────────────────────────────────── */
+/* Desktop: positioned at click coordinates */
+@media (min-width: 768px) {
+  .anatomy-popup {
+    left: clamp(16px, var(--popup-x), calc(100vw - 320px));
+    top: clamp(16px, var(--popup-y), calc(100vh - 280px));
+  }
+}
 
-.anatomy-group-muscles {
+/* Mobile: bottom sheet centered */
+@media (max-width: 767px) {
+  .anatomy-popup {
+    left: 16px;
+    right: 16px;
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+    max-width: none;
+  }
+}
+
+.anatomy-popup-header {
   display: flex;
-  flex-direction: column;
-  padding: 0 6px 6px;
-  gap: 1px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
 }
 
-.anatomy-muscle-item {
-  display: block;
-  width: 100%;
-  text-align: left;
+.anatomy-popup-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.anatomy-popup-close {
   background: none;
   border: none;
-  color: rgba(0, 212, 255, 0.7);
-  font-family: var(--font-body), sans-serif;
-  font-size: 11px;
-  padding: 5px 10px 5px 28px;
-  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  padding: 2px;
+  line-height: 1;
+  transition: color 0.15s;
 }
 
-.anatomy-muscle-item:hover {
-  background: rgba(0, 212, 255, 0.08);
+.anatomy-popup-close:hover {
   color: #fff;
 }
 
-.anatomy-muscle-item.highlighted {
-  background: rgba(0, 212, 255, 0.15);
-  color: #fff;
-  font-weight: 600;
+.anatomy-popup-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--holo-blue);
+  margin-top: 4px;
+}
+
+.anatomy-popup-exercises {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+  border-top: 1px solid rgba(0, 212, 255, 0.12);
+  padding-top: 10px;
+}
+
+.anatomy-popup-exercise {
+  display: block;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--holo-blue);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.anatomy-popup-exercise:hover {
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--holo-orange);
+}
+
+.anatomy-popup-more {
+  font-size: 10px;
+  color: rgba(0, 212, 255, 0.5);
+  text-align: center;
+  padding: 4px;
+}
+
+.anatomy-popup-empty {
+  font-size: 11px;
+  color: rgba(0, 212, 255, 0.4);
+  text-align: center;
+  padding: 8px 0 2px;
 }
 
 /* ── Info panel (below groups) ─────────────────────────────────────────── */
@@ -569,7 +635,8 @@
 /* ── Reduced motion ─────────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .anatomy-panel {
+  .anatomy-panel,
+  .anatomy-popup {
     transition: none;
     animation: none;
   }

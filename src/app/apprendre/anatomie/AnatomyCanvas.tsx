@@ -11,7 +11,7 @@ type Props = {
   selectedGroup: string | null;
   highlightedMuscle: string | null;
   onHoverMuscle: (frName: string | null, groupKey: string | null) => void;
-  onClickMuscle: (frName: string, groupKey: string) => void;
+  onClickMuscle: (frName: string, groupKey: string, x: number, y: number) => void;
   bgRef: RefObject<HTMLDivElement | null>;
 };
 
