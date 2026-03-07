@@ -205,11 +205,11 @@ npx tsc --noEmit               # Type-check sans build
 - 267 tests passants, 28 routes, 325+ MDX
 - Phase 1 — Méthodes d'entraînement : 19 fiches MDX trilingues, page /methodes, liens croisés exercice ↔ méthode ↔ muscle
 - Phase 2 — Contenu théorique : RM/RIR/RPE (MDX + calculateur + glossaire), anatomie (MDX + contractions + carte 3D), sécurité (6 principes), programmes hebdo (3 programmes MDX)
+- Phase 4 — Parcours BAC : démarche spiralaire, évaluations 2nde/1ère/Term (4 compétences × 3 niveaux + checklists), épreuve du BAC (barème 20pts + stratégie)
 
-### Prochaines priorités (dans l'ordre)
+### Prochaines priorités
 
 1. **Quick wins** : recherche interne, breadcrumbs, mode sombre, alt text enrichis
-2. **Phase 4 — Parcours BAC** : grille BAC interactive, checklist compétences par niveau, évaluations 2nde/1ère/Term, épreuve du BAC
 
 ### Couverture du PDF de Fred
 
@@ -222,8 +222,9 @@ npx tsc --noEmit               # Type-check sans build
 | RM / RIR / RPE                 | 55-56     | ✅ Complet (MDX + calculateur + glossaire) | P2    |
 | Principes sécuritaires         | 57-59     | ✅ Complet (6 principes + sécurité contextuelle dans méthodes) | P2    |
 | Programmes hebdo               | 28-30     | ✅ Complet (3 programmes MDX) | P2    |
-| Évaluations (2nde/1ère/Term)   | 61-63     | ❌ Absent  | P4    |
-| Épreuve du BAC                 | 64-65     | ❌ Absent  | P4    |
+| Démarche spiralaire            | 60        | ✅ Complet (3 niveaux, 4 compétences, liens croisés) | P4    |
+| Évaluations (2nde/1ère/Term)   | 61-63     | ✅ Complet (4 compétences × 3 niveaux + checklists) | P4    |
+| Épreuve du BAC                 | 64-65     | ⚠️ Non vérifié (contenu existant, source non validée contre PDF de Fred) | P4    |
 
 ---
 
