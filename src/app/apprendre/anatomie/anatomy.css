@@ -21,19 +21,10 @@
 
 /* ── Background (building entrance photo) ──────────────────────────────── */
 
-/* The div extends 30 % below the viewport (inset bottom = -30 %).
-   With `cover` the image fills this 130 %-tall box.  The shadow line on the
-   deck sits at ≈ 67 % from the image top → 0.67 × 130 % ≈ 87 % from
-   viewport top → ≈ 13 % from viewport bottom — matching the mannequin's
-   feet position (FEET_Y = -1.28). */
 .anatomy-bg {
   position: absolute;
   inset: 0 0 -30% 0;
   background: #0a0a14 url("/media/anatomy-bg.webp") center center / cover no-repeat;
-  /* Scale origin must match mannequin feet after translate offset.
-     Feet at (50vw, 82vh). With translate(-6%, -27%) on 100vw×130vh div:
-     X: 50vw = (origin_x − 6)% × 100vw  → origin_x = 56 %
-     Y: 82vh = (origin_y − 27)% × 130vh  → origin_y = 90 % */
   transform-origin: 56% 90%;
   will-change: transform;
   z-index: 0;
@@ -69,13 +60,8 @@
   z-index: 2;
 }
 
-.anatomy-hud-top {
-  text-align: center;
-}
-
-.anatomy-hud-bottom {
-  text-align: center;
-}
+.anatomy-hud-top { text-align: center; }
+.anatomy-hud-bottom { text-align: center; }
 
 .anatomy-hud {
   font-family: var(--font-mono), "Space Mono", monospace;
@@ -101,7 +87,7 @@
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* ── 3D Tooltip ─────────────────────────────────────────────────────────── */
+/* ── Desktop hover tooltip ─────────────────────────────────────────────── */
 
 .anatomy-tooltip {
   position: absolute;
@@ -134,145 +120,49 @@
   margin-top: 2px;
 }
 
-/* ── Floating side panel ────────────────────────────────────────────────── */
+/* ── Floating label (tap on muscle) ────────────────────────────────────── */
 
-.anatomy-panel {
+.anatomy-label {
   position: fixed;
-  z-index: 20;
-  background: rgba(2, 8, 20, 0.92);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(0, 212, 255, 0.15);
-  padding: 16px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 15;
+  pointer-events: none;
+  background: rgba(2, 8, 20, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 8px;
+  padding: 8px 12px;
+  transform: translate(-50%, -100%);
+  animation: label-in 0.15s ease both;
 }
 
-/* Mobile: panel entirely hidden — navigation via chips + popup only */
-@media (max-width: 767px) {
-  .anatomy-panel {
-    display: none;
-  }
+@keyframes label-in {
+  from { opacity: 0; transform: translate(-50%, -100%) scale(0.92); }
+  to   { opacity: 1; transform: translate(-50%, -100%) scale(1); }
 }
 
-/* Desktop: floating right-side panel */
-@media (min-width: 768px) {
-  .anatomy-panel {
-    top: 76px;
-    right: 16px;
-    bottom: 16px;
-    width: 340px;
-    max-width: calc(100vw - 32px);
-    border-radius: 12px;
-  }
-}
-
-/* ── Controls bar ──────────────────────────────────────────────────────── */
-
-.anatomy-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(0, 212, 255, 0.12);
-}
-
-.anatomy-control-slider {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 9px;
+.anatomy-label-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: rgba(0, 212, 255, 0.6);
-  flex: 1;
-  min-width: 120px;
-}
-
-.anatomy-control-slider input[type="range"] {
-  flex: 1;
-  height: 3px;
-  appearance: none;
-  -webkit-appearance: none;
-  background: rgba(0, 212, 255, 0.2);
-  border-radius: 2px;
-  outline: none;
-}
-
-.anatomy-control-slider input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--holo-blue);
-  cursor: pointer;
-}
-
-.anatomy-control-btn {
-  background: none;
-  border: 1px solid rgba(0, 212, 255, 0.25);
-  color: rgba(0, 212, 255, 0.7);
-  font-family: var(--font-mono), "Space Mono", monospace;
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 4px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+  letter-spacing: 0.04em;
   white-space: nowrap;
 }
 
-.anatomy-control-btn:hover {
-  border-color: var(--holo-blue);
-  color: #fff;
-}
-
-.anatomy-control-btn.active {
-  background: rgba(0, 212, 255, 0.15);
-  border-color: var(--holo-blue);
-  color: var(--holo-blue);
-}
-
-/* ── Muscle groups — simple button list ─────────────────────────────────── */
-
-.anatomy-groups {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.anatomy-group-header {
+.anatomy-label-group {
   display: flex;
   align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 8px 10px;
-  background: none;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  color: var(--holo-blue);
-  font-family: var(--font-mono), "Space Mono", monospace;
-  font-size: 11px;
+  gap: 5px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  color: var(--holo-blue);
+  margin-top: 2px;
+  white-space: nowrap;
 }
 
-.anatomy-group-header:hover {
-  background: rgba(0, 212, 255, 0.06);
-}
-
-.anatomy-group-header--active {
-  border-color: rgba(0, 212, 255, 0.25);
-  background: rgba(0, 212, 255, 0.1);
-  color: #fff;
-}
+/* ── Shared: group color dot ───────────────────────────────────────────── */
 
 .anatomy-group-dot {
   width: 10px;
@@ -281,170 +171,228 @@
   flex-shrink: 0;
 }
 
-.anatomy-group-name {
-  flex: 1;
-  text-align: left;
+/* ── Legend button (top right) ──────────────────────────────────────────── */
+
+.anatomy-legend-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 18;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2, 8, 20, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  border-radius: 10px;
+  color: rgba(0, 212, 255, 0.8);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
 }
 
-/* ── Muscle popup (card on 3D click) ───────────────────────────────────── */
+.anatomy-legend-btn:hover {
+  border-color: var(--holo-blue);
+  color: #fff;
+}
 
-.anatomy-popup {
+.anatomy-legend-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* ── Legend overlay ─────────────────────────────────────────────────────── */
+
+.anatomy-legend {
   position: fixed;
-  z-index: 25;
+  top: 64px;
+  right: 16px;
+  z-index: 30;
   background: rgba(2, 8, 20, 0.95);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 212, 255, 0.25);
+  border: 1px solid rgba(0, 212, 255, 0.2);
   border-radius: 12px;
-  padding: 14px 16px;
-  max-width: 300px;
-  min-width: 220px;
-  animation: popup-in 0.2s ease both;
-  font-family: var(--font-body), sans-serif;
-}
-
-@keyframes popup-in {
-  from { opacity: 0; transform: scale(0.95); }
-  to   { opacity: 1; transform: scale(1); }
-}
-
-/* Desktop: positioned at click coordinates */
-@media (min-width: 768px) {
-  .anatomy-popup {
-    left: clamp(16px, var(--popup-x), calc(100vw - 320px));
-    top: clamp(16px, var(--popup-y), calc(100vh - 280px));
-  }
-}
-
-/* Mobile: bottom sheet centered */
-@media (max-width: 767px) {
-  .anatomy-popup {
-    left: 16px;
-    right: 16px;
-    bottom: calc(60px + env(safe-area-inset-bottom, 0px));
-    max-width: none;
-  }
-}
-
-.anatomy-popup-header {
+  padding: 12px;
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 200px;
+  animation: label-in 0.15s ease both;
+}
+
+.anatomy-legend-title {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(0, 212, 255, 0.5);
+  padding: 4px 8px 8px;
+}
+
+.anatomy-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 8px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--holo-blue);
+  font-family: var(--font-mono), "Space Mono", monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.anatomy-legend-item:hover {
+  background: rgba(0, 212, 255, 0.06);
+}
+
+.anatomy-legend-item--active {
+  border-color: rgba(0, 212, 255, 0.3);
+  background: rgba(0, 212, 255, 0.1);
+  color: #fff;
+}
+
+/* ── Backdrop (for sheet + legend) ─────────────────────────────────────── */
+
+.anatomy-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 28;
+  background: rgba(0, 0, 0, 0.5);
+  animation: fade-in 0.2s ease both;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Bottom sheet (long press detail) ──────────────────────────────────── */
+
+.anatomy-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  max-height: 45dvh;
+  overflow-y: auto;
+  background: rgba(2, 8, 20, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 16px 16px 0 0;
+  padding: 8px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: sheet-up 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+@media (min-width: 768px) {
+  .anatomy-sheet {
+    left: auto;
+    right: 16px;
+    bottom: 16px;
+    width: 380px;
+    max-height: calc(100vh - 100px);
+    border-radius: 12px;
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    animation: label-in 0.2s ease both;
+  }
+}
+
+.anatomy-sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: rgba(0, 212, 255, 0.3);
+  border-radius: 2px;
+  margin: 0 auto 4px;
+}
+
+@media (min-width: 768px) {
+  .anatomy-sheet-handle { display: none; }
+}
+
+.anatomy-sheet-header {
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-.anatomy-popup-title {
+.anatomy-sheet-title {
+  flex: 1;
   font-size: 14px;
-  font-weight: 700;
-  color: #fff;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.1em;
+  color: var(--holo-orange);
+  font-weight: 700;
 }
 
-.anatomy-popup-close {
+.anatomy-sheet-close {
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.5);
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
-  padding: 2px;
+  padding: 4px;
   line-height: 1;
   transition: color 0.15s;
 }
 
-.anatomy-popup-close:hover {
-  color: #fff;
-}
+.anatomy-sheet-close:hover { color: #fff; }
 
-.anatomy-popup-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--holo-blue);
-  margin-top: 4px;
-}
-
-.anatomy-popup-exercises {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: 10px;
-  border-top: 1px solid rgba(0, 212, 255, 0.12);
-  padding-top: 10px;
-}
-
-.anatomy-popup-exercise {
-  display: block;
-  padding: 6px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  color: var(--holo-blue);
-  text-decoration: none;
-  transition: background 0.15s, color 0.15s;
-}
-
-.anatomy-popup-exercise:hover {
-  background: rgba(255, 107, 0, 0.1);
-  color: var(--holo-orange);
-}
-
-.anatomy-popup-more {
-  font-size: 10px;
-  color: rgba(0, 212, 255, 0.5);
-  text-align: center;
-  padding: 4px;
-}
-
-.anatomy-popup-empty {
-  font-size: 11px;
-  color: rgba(0, 212, 255, 0.4);
-  text-align: center;
-  padding: 8px 0 2px;
-}
-
-/* ── Info panel (below groups) ─────────────────────────────────────────── */
-
-.anatomy-info-panel {
-  border-top: 1px solid rgba(0, 212, 255, 0.12);
-  padding-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.anatomy-info-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.anatomy-info-title {
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--holo-orange);
-  font-weight: 700;
-}
-
-.anatomy-info-desc {
+.anatomy-sheet-desc {
   font-size: 11px;
   line-height: 1.5;
   color: rgba(0, 212, 255, 0.6);
   font-family: var(--font-body), sans-serif;
 }
 
-/* ── Exercise list ──────────────────────────────────────────────────────── */
-
-.anatomy-exercise-list {
+.anatomy-sheet-muscles {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 6px;
 }
 
-.anatomy-exercise-item {
+.anatomy-sheet-muscle {
+  font-size: 10px;
+  padding: 3px 8px;
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 12px;
+  color: rgba(0, 212, 255, 0.7);
+}
+
+.anatomy-sheet-exercises {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid rgba(0, 212, 255, 0.12);
+  padding-top: 10px;
+}
+
+.anatomy-sheet-exercises-title {
+  font-family: var(--font-mono), "Space Mono", monospace;
+  font-size: 10px;
+  color: rgba(0, 212, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.anatomy-sheet-exercise {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -454,20 +402,20 @@
   text-decoration: none;
   color: var(--holo-blue);
   font-size: 12px;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  font-family: var(--font-body), sans-serif;
+  transition: border-color 0.2s, background 0.2s;
 }
 
-.anatomy-exercise-item:hover {
+.anatomy-sheet-exercise:hover {
   border-color: var(--holo-orange-mid);
   background: rgba(255, 107, 0, 0.06);
 }
 
-.anatomy-exercise-title {
+.anatomy-sheet-exercise-title {
   flex: 1;
-  font-family: var(--font-body), sans-serif;
 }
 
-.anatomy-exercise-level {
+.anatomy-sheet-exercise-level {
   font-family: var(--font-mono), "Space Mono", monospace;
   font-size: 9px;
   text-transform: uppercase;
@@ -479,143 +427,22 @@
   white-space: nowrap;
 }
 
-/* ── Exercise count badge ───────────────────────────────────────────────── */
-
-.anatomy-count {
-  font-family: var(--font-mono), "Space Mono", monospace;
-  font-size: 11px;
-  color: rgba(0, 212, 255, 0.6);
-}
-
-.anatomy-count-number {
-  color: var(--holo-orange);
-  font-weight: 700;
-}
-
-/* ── Empty state ────────────────────────────────────────────────────────── */
-
-.anatomy-empty {
+.anatomy-sheet-empty {
   text-align: center;
-  padding: 16px 12px;
+  padding: 12px;
   color: rgba(0, 212, 255, 0.4);
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
 
-/* ── Placeholder (no zone selected) ─────────────────────────────────────── */
-
-.anatomy-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 40px 20px;
-  text-align: center;
-  flex: 1;
-}
-
-.anatomy-placeholder-icon {
-  font-size: 32px;
-  opacity: 0.3;
-}
-
-.anatomy-placeholder-text {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: rgba(0, 212, 255, 0.4);
-  max-width: 200px;
-}
-
-/* ── Mobile drawer handle ───────────────────────────────────────────────── */
-
-.anatomy-drawer-handle {
-  display: none;
-}
-
-@media (max-width: 767px) {
-  .anatomy-drawer-handle {
-    display: block;
-    width: 36px;
-    height: 4px;
-    background: rgba(0, 212, 255, 0.3);
-    border-radius: 2px;
-    margin: 0 auto 8px;
-  }
-}
-
-/* ── Mobile group chips bar ─────────────────────────────────────────────── */
-
-.anatomy-chips-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 22;
-  display: flex;
-  gap: 6px;
-  padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.anatomy-chips-bar::-webkit-scrollbar {
-  display: none;
-}
-
-.anatomy-chip {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
-  border-radius: 20px;
-  background: rgba(2, 8, 20, 0.8);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 212, 255, 0.2);
-  color: rgba(0, 212, 255, 0.8);
-  font-family: var(--font-mono), "Space Mono", monospace;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: border-color 0.2s, background 0.2s, color 0.2s;
-}
-
-.anatomy-chip:hover {
-  border-color: var(--holo-blue);
-}
-
-.anatomy-chip--active {
-  border-color: var(--holo-blue);
-  background: rgba(0, 212, 255, 0.2);
-  color: #fff;
-}
-
-.anatomy-chip-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-/* Desktop: hide chips bar (use accordion panel instead) */
-@media (min-width: 768px) {
-  .anatomy-chips-bar {
-    display: none;
-  }
-}
-
 /* ── Reduced motion ─────────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .anatomy-panel,
-  .anatomy-popup {
+  .anatomy-label,
+  .anatomy-sheet,
+  .anatomy-legend,
+  .anatomy-backdrop {
     transition: none;
     animation: none;
   }

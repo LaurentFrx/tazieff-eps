@@ -315,3 +315,27 @@ describe("Anatomy — exercise matching coverage", () => {
     }
   });
 });
+
+/* ── Anatomy — label + sheet data contracts ─────────────────────── */
+
+describe("Anatomy — label and sheet data", () => {
+  it("every MUSCLE_GROUPS key has a valid color for label display", () => {
+    for (const [key, group] of Object.entries(MUSCLE_GROUPS)) {
+      expect(group.color, `Group ${key} missing color`).toMatch(/^#[0-9a-f]{6}$/);
+      expect(group.id, `Group ${key} id mismatch`).toBe(key);
+    }
+  });
+
+  it("getGroupForNode returns a key present in MUSCLE_GROUPS for known meshes", () => {
+    const knownMeshes = [
+      "latissimus dorsi", "pectoralis major", "rectus abdominis",
+      "deltoid", "biceps brachii", "triceps", "psoas", "gluteus maximus",
+      "rectus femoris", "biceps femoris", "gastrocnemius",
+    ];
+    for (const mesh of knownMeshes) {
+      const key = getGroupForNode(mesh);
+      expect(key, `No group for mesh "${mesh}"`).not.toBeNull();
+      expect(MUSCLE_GROUPS[key!], `Group "${key}" not in MUSCLE_GROUPS`).toBeDefined();
+    }
+  });
+});

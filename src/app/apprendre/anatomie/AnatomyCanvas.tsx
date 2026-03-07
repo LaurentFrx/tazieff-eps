@@ -11,12 +11,13 @@ type Props = {
   selectedGroup: string | null;
   highlightedMuscle: string | null;
   onHoverMuscle: (frName: string | null, groupKey: string | null) => void;
-  onClickMuscle: (frName: string, groupKey: string, x: number, y: number) => void;
+  onClickMuscle: (frName: string | null, groupKey: string | null, x: number, y: number) => void;
+  onLongPressMuscle: (frName: string, groupKey: string, x: number, y: number) => void;
   bgRef: RefObject<HTMLDivElement | null>;
 };
 
-/** Y-offset so mannequin feet sit at ≈ 18 % from viewport bottom. */
-const FEET_Y = -1.1;
+/** Y-offset so mannequin feet sit at shadow line on background image. */
+const FEET_Y = -1.28;
 const MIN_ZOOM = 0.8;
 const MAX_ZOOM = 2.5;
 /** Background base zoom + offset (%) — negative X = left, negative Y = up. */
@@ -36,6 +37,7 @@ function ZoomableScene({
   highlightedMuscle,
   onHoverMuscle,
   onClickMuscle,
+  onLongPressMuscle,
   bgRef,
 }: Props) {
   const scaleRef = useRef<Group>(null);
@@ -151,6 +153,7 @@ function ZoomableScene({
             silhouetteOpacity={0.36}
             onHoverMuscle={onHoverMuscle}
             onClickMuscle={onClickMuscle}
+            onLongPressMuscle={onLongPressMuscle}
           />
         </group>
       </group>
@@ -165,6 +168,7 @@ export default function AnatomyCanvas({
   highlightedMuscle,
   onHoverMuscle,
   onClickMuscle,
+  onLongPressMuscle,
   bgRef,
 }: Props) {
   return (
@@ -179,6 +183,7 @@ export default function AnatomyCanvas({
         highlightedMuscle={highlightedMuscle}
         onHoverMuscle={onHoverMuscle}
         onClickMuscle={onClickMuscle}
+        onLongPressMuscle={onLongPressMuscle}
         bgRef={bgRef}
       />
       <OrbitControls

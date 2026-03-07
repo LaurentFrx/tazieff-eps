@@ -23,7 +23,8 @@ type Props = {
   hoveredMuscle: string | null;
   wireframe: boolean;
   onHoverMuscle: (frName: string | null, groupKey: string | null) => void;
-  onClickMuscle: (frName: string, groupKey: string, x: number, y: number) => void;
+  onClickMuscle: (frName: string | null, groupKey: string | null, x: number, y: number) => void;
+  onLongPressMuscle: (frName: string, groupKey: string, x: number, y: number) => void;
 };
 
 /* ─── Configure Draco for useGLTF ────────────────────────────────────────── */
@@ -105,6 +106,7 @@ function MusclesModel({
   wireframe,
   onHoverMuscle,
   onClickMuscle,
+  onLongPressMuscle,
 }: Omit<Props, "hoveredMuscle">) {
   const { scene } = useGLTF("/models/muscles.glb");
   const { gl } = useThree();
@@ -224,21 +226,83 @@ function MusclesModel({
     }
   });
 
-  // Click handler
+  // Pointer interaction: tap → label, long press → sheet, dblclick → sheet
   useEffect(() => {
     const el = canvasElRef.current;
-    const handleClick = (e: MouseEvent) => {
+    let lpTimer: ReturnType<typeof setTimeout> | null = null;
+    let lpFired = false;
+    let startX = 0;
+    let startY = 0;
+
+    const onPointerDown = (e: PointerEvent) => {
+      startX = e.clientX;
+      startY = e.clientY;
+      lpFired = false;
+      lpTimer = setTimeout(() => {
+        lpFired = true;
+        const mesh = hoveredRef.current;
+        if (mesh) {
+          const ud = mesh.userData as MuscleUserData;
+          if (ud.groupKey) {
+            onLongPressMuscle(ud.baseFrName, ud.groupKey, e.clientX, e.clientY);
+          }
+        }
+      }, 500);
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!lpTimer) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if (dx * dx + dy * dy > 100) {
+        clearTimeout(lpTimer);
+        lpTimer = null;
+      }
+    };
+
+    const onPointerUp = (e: PointerEvent) => {
+      if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
+      if (lpFired) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if (dx * dx + dy * dy > 100) return; // drag — not a tap
       const mesh = hoveredRef.current;
       if (mesh) {
         const ud = mesh.userData as MuscleUserData;
         if (ud.groupKey) {
           onClickMuscle(ud.baseFrName, ud.groupKey, e.clientX, e.clientY);
+          return;
+        }
+      }
+      onClickMuscle(null, null, e.clientX, e.clientY);
+    };
+
+    const onCtxMenu = (e: Event) => e.preventDefault();
+
+    const onDblClick = (e: MouseEvent) => {
+      const mesh = hoveredRef.current;
+      if (mesh) {
+        const ud = mesh.userData as MuscleUserData;
+        if (ud.groupKey) {
+          onLongPressMuscle(ud.baseFrName, ud.groupKey, e.clientX, e.clientY);
         }
       }
     };
-    el.addEventListener("click", handleClick);
-    return () => el.removeEventListener("click", handleClick);
-  }, [onClickMuscle]);
+
+    el.addEventListener("pointerdown", onPointerDown);
+    el.addEventListener("pointermove", onPointerMove);
+    el.addEventListener("pointerup", onPointerUp);
+    el.addEventListener("contextmenu", onCtxMenu);
+    el.addEventListener("dblclick", onDblClick);
+    return () => {
+      el.removeEventListener("pointerdown", onPointerDown);
+      el.removeEventListener("pointermove", onPointerMove);
+      el.removeEventListener("pointerup", onPointerUp);
+      el.removeEventListener("contextmenu", onCtxMenu);
+      el.removeEventListener("dblclick", onDblClick);
+      if (lpTimer) clearTimeout(lpTimer);
+    };
+  }, [onClickMuscle, onLongPressMuscle]);
 
   return <primitive object={scene} />;
 }
@@ -251,6 +315,7 @@ export default function HologramMannequin({
   wireframe,
   onHoverMuscle,
   onClickMuscle,
+  onLongPressMuscle,
   silhouetteOpacity = 0.4,
 }: Props & { silhouetteOpacity?: number }) {
 
@@ -269,6 +334,7 @@ export default function HologramMannequin({
         wireframe={wireframe}
         onHoverMuscle={onHoverMuscle}
         onClickMuscle={onClickMuscle}
+        onLongPressMuscle={onLongPressMuscle}
       />
     </group>
   );
