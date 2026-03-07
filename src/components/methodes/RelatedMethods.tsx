@@ -23,7 +23,9 @@ export function RelatedMethods({
 
   return (
     <div className="card">
-      <h2 className="mb-3 text-base font-semibold text-[color:var(--ink)]">{heading}</h2>
+      {heading ? (
+        <h2 className="mb-3 text-base font-semibold text-[color:var(--ink)]">{heading}</h2>
+      ) : null}
       <ul className="flex flex-col divide-y divide-[color:var(--border)]">
         {related.map((methode) => (
           <li key={methode.slug}>

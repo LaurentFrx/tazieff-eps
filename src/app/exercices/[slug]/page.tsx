@@ -198,13 +198,13 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
       />
 
       {compatibleMethodes.length > 0 ? (
-        <div className="card">
-          <h2 className="mb-4 text-base font-semibold text-[color:var(--ink)]">
-            {t("methodes.compatiblesHeading")}
+        <div className="flex flex-col gap-3">
+          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+            <span className="border-b-2 border-orange-400 pb-1">{t("methodes.compatiblesHeading")}</span>
           </h2>
-          <ul className="flex flex-col gap-3">
+          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-1 px-1">
             {compatibleMethodes.map((methode) => (
-              <li key={methode.slug}>
+              <div key={methode.slug} className="snap-start shrink-0 w-[280px] md:w-auto md:shrink md:flex-1 md:min-w-[240px]">
                 <MethodeCard
                   slug={methode.slug}
                   titre={methode.titre}
@@ -213,9 +213,9 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
                   scores={methode.scores}
                   scoreLabels={scoreLabels}
                 />
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       ) : null}
     </section>

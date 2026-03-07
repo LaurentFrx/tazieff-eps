@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { GrilleBac } from "./GrilleBac";
-import { BackButton } from "@/components/BackButton";
+import { DetailHeader } from "@/components/DetailHeader";
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = await getServerLang();
@@ -16,18 +15,21 @@ export default async function EpreuveBacPage() {
 
   return (
     <section className="page">
-      <BackButton href="/parcours-bac" label={t("parcours.title")} />
-      <header className="page-header">
-        <p className="eyebrow">{t("parcours.grille.eyebrow")}</p>
-        <h1>{t("parcours.grille.title")}</h1>
-        <p className="lede">{t("parcours.grille.lede")}</p>
-      </header>
+      <DetailHeader
+        title={t("parcours.grille.title")}
+        gradient="from-violet-600 to-purple-500"
+        backHref="/parcours-bac"
+        backLabel={t("parcours.title")}
+        badges={
+          <span className="inline-flex items-center rounded-full bg-white/20 text-white px-3 py-1 text-xs font-medium">
+            {t("parcours.grille.eyebrow")}
+          </span>
+        }
+      >
+        <p className="text-sm text-white/80 mt-1">{t("parcours.grille.lede")}</p>
+      </DetailHeader>
 
       <GrilleBac />
-
-      <Link href="/parcours-bac" className="eyebrow hover:text-[color:var(--accent)]">
-        {t("parcours.backLabel")}
-      </Link>
     </section>
   );
 }

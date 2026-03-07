@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { NIVEAUX, type Niveau } from "../data";
 import { NiveauChecklist } from "./NiveauChecklist";
-import { BackButton } from "@/components/BackButton";
+import { DetailHeader } from "@/components/DetailHeader";
 
 const VALID_NIVEAUX: Niveau[] = ["seconde", "premiere", "terminale"];
 
@@ -34,18 +33,21 @@ export default async function NiveauPage({ params }: Props) {
 
   return (
     <section className="page">
-      <BackButton href="/parcours-bac" label={t("parcours.title")} />
-      <header className="page-header">
-        <p className="eyebrow">{t(data.subtitleKey)}</p>
-        <h1>{t(`parcours.niveaux.${niveau as Niveau}`)}</h1>
-        <p className="lede">{t(data.summaryKey)}</p>
-      </header>
+      <DetailHeader
+        title={t(`parcours.niveaux.${niveau as Niveau}`)}
+        gradient="from-violet-600 to-purple-500"
+        backHref="/parcours-bac"
+        backLabel={t("parcours.title")}
+        badges={
+          <span className="inline-flex items-center rounded-full bg-white/20 text-white px-3 py-1 text-xs font-medium">
+            {t(data.subtitleKey)}
+          </span>
+        }
+      >
+        <p className="text-sm text-white/80 mt-1">{t(data.summaryKey)}</p>
+      </DetailHeader>
 
       <NiveauChecklist niveau={niveau as Niveau} />
-
-      <Link href="/parcours-bac" className="eyebrow hover:text-[color:var(--accent)]">
-        {t("parcours.backLabel")}
-      </Link>
     </section>
   );
 }

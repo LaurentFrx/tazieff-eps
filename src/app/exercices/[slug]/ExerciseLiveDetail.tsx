@@ -2584,38 +2584,36 @@ export function ExerciseLiveDetail({
         </div>
       ) : null}
 
-      {/* Contenu après le hero */}
-      <div className="page-header">
+      {/* Infos rapides — badges & metadata */}
+      <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-4 flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <DifficultyPill level={difficulty} />
           {translateTerms(merged.frontmatter.muscles, "muscles", lang).map((muscle, i) => (
-            <span key={merged.frontmatter.muscles[i]} className="pill">
+            <span key={merged.frontmatter.muscles[i]} className="inline-flex items-center rounded-full bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400 px-3 py-1 text-xs font-medium">
               {muscle}
             </span>
           ))}
         </div>
-        <div className="meta-row">
-          <span className="meta-text">
-            {t("exerciseDetail.compatibleThemes")}: {merged.frontmatter.themeCompatibility.join(", ")}
-          </span>
-        </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {tagPills.map((pill, index) => (
             <span
               key={`${pill.label}-${index}`}
-              className={pill.kind ? `pill pill-${pill.kind}` : "pill"}
+              className="inline-flex items-center rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400 px-3 py-1 text-xs font-medium"
             >
               {translateTerms([pill.label], "tags", lang)[0]}
             </span>
           ))}
         </div>
         {merged.frontmatter.equipment && merged.frontmatter.equipment.length > 0 ? (
-          <div className="text-sm text-[color:var(--muted)]">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
             {t("exerciseDetail.equipment")}: {translateTerms(merged.frontmatter.equipment, "equipment", lang).join(", ")}
-          </div>
+          </p>
         ) : (
-          <div className="text-sm text-[color:var(--muted)]">{t("exerciseDetail.noEquipment")}</div>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("exerciseDetail.noEquipment")}</p>
         )}
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          {t("exerciseDetail.compatibleThemes")}: {merged.frontmatter.themeCompatibility.join(", ")}
+        </p>
       </div>
 
       {teacherUnlocked ? (
@@ -2636,12 +2634,12 @@ export function ExerciseLiveDetail({
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-4">
+      <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-5 md:p-6 flex flex-col gap-5">
         {overrideDocView ? (
           overrideDocView.sections.map((section) => (
             <section key={section.id} className="stack-md">
               {section.title ? (
-                <h2 className="text-lg font-semibold">{section.title}</h2>
+                <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{section.title}</h2>
               ) : null}
               <div className="stack-md">
                 {section.blocks.map((block, blockIndex) => {

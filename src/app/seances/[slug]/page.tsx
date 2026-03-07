@@ -6,7 +6,7 @@ import { exercisesIndex, getSeance } from "@/lib/content/fs";
 import { renderMdx } from "@/lib/mdx/render";
 import { SeanceDownloadButton } from "@/app/seances/[slug]/SeanceDownloadButton";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
-import { BackButton } from "@/components/BackButton";
+import { DetailHeader } from "@/components/DetailHeader";
 
 type SeancePageProps = {
   params: Promise<{ slug: string }>;
@@ -49,29 +49,35 @@ export default async function SeancePage({ params }: SeancePageProps) {
 
   return (
     <section className="page">
-      <BackButton href="/seances" label={t("seanceDetail.backLabel")} />
-      <header className="page-header">
-        <p className="eyebrow">{t("seanceDetail.eyebrow")}</p>
-        <h1>{frontmatter.title}</h1>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="pill">{frontmatter.durationMin} min</span>
-          {frontmatter.level ? <DifficultyPill level={frontmatter.level} /> : null}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {frontmatter.tags.map((tag) => (
-            <span key={tag} className="pill">
-              {tag}
+      <DetailHeader
+        title={frontmatter.title}
+        gradient="from-orange-500 to-amber-400"
+        backHref="/seances"
+        backLabel={t("seanceDetail.backLabel")}
+        badges={
+          <>
+            <span className="inline-flex items-center rounded-full bg-white/20 text-white px-3 py-1 text-xs font-medium">
+              {frontmatter.durationMin} min
             </span>
-          ))}
-        </div>
+            {frontmatter.level ? <DifficultyPill level={frontmatter.level} /> : null}
+            {frontmatter.tags.map((tag) => (
+              <span key={tag} className="inline-flex items-center rounded-full bg-white/20 text-white px-3 py-1 text-xs font-medium">
+                {tag}
+              </span>
+            ))}
+          </>
+        }
+      />
+
+      <div className="flex flex-wrap gap-3">
         <Link href={`/seances/${frontmatter.slug}/terrain`} className="primary-button">
           {t("seanceDetail.terrainMode")}
         </Link>
         <SeanceDownloadButton exerciseSlugs={exerciseSlugs} />
-      </header>
+      </div>
 
-      <div className="card">
-        <h2>{t("seanceDetail.rundown")}</h2>
+      <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-5">
+        <h2 className="mb-4 text-base font-bold text-zinc-900 dark:text-zinc-100">{t("seanceDetail.rundown")}</h2>
         <div className="stack-md">
           {frontmatter.blocks.map((block, index) => {
             const exercise = exerciseMap.get(block.exoSlug);
@@ -99,7 +105,11 @@ export default async function SeancePage({ params }: SeancePageProps) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4">{mdxContent}</div>
+      {content ? (
+        <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-5 md:p-6 flex flex-col gap-5">
+          {mdxContent}
+        </div>
+      ) : null}
     </section>
   );
 }

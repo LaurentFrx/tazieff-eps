@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getAllLearnPages, getLearnPage } from "@/lib/content/fs";
 import { renderMdx } from "@/lib/mdx/render";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
+import { DetailHeader } from "@/components/DetailHeader";
 
 type LearnPageProps = {
   params: Promise<{ slug: string }>;
@@ -50,56 +51,103 @@ export default async function LearnSlugPage({ params }: LearnPageProps) {
 
   return (
     <section className="page">
-      <header className="page-header">
-        <Link
-          href="/apprendre"
-          className="eyebrow hover:text-[color:var(--accent)]"
-        >
-          ← {t("apprendre.backLabel")}
-        </Link>
-        <h1>{fm.titre}</h1>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="pill">
-            {t(`apprendre.niveaux.${fm.niveau_minimum}`)}
-          </span>
-          {fm.mots_cles.slice(0, 4).map((mot) => (
-            <span key={mot} className="pill">
-              {mot}
+      <DetailHeader
+        title={fm.titre}
+        gradient="from-emerald-600 to-teal-500"
+        backHref="/apprendre"
+        backLabel={t("apprendre.backLabel")}
+        badges={
+          <>
+            <span className="inline-flex items-center rounded-full bg-white/20 text-white px-3 py-1 text-xs font-medium">
+              {t(`apprendre.niveaux.${fm.niveau_minimum}`)}
             </span>
-          ))}
-        </div>
-        <p className="lede">{fm.description}</p>
-      </header>
-
-      <div className="flex flex-col gap-4">{mdxContent}</div>
+            {fm.mots_cles.slice(0, 4).map((mot) => (
+              <span key={mot} className="inline-flex items-center rounded-full bg-white/20 text-white px-3 py-1 text-xs font-medium">
+                {mot}
+              </span>
+            ))}
+          </>
+        }
+      >
+        {fm.description ? (
+          <p className="text-sm text-white/80 mt-1 max-w-[560px]">{fm.description}</p>
+        ) : null}
+      </DetailHeader>
 
       {(prev || next) && (
-        <nav className="mt-8 flex items-center justify-between gap-4 border-t border-[color:var(--border)] pt-6">
+        <nav className="flex items-stretch gap-3">
           {prev ? (
             <Link
               href={`/apprendre/${prev.slug}`}
-              className="text-sm font-medium text-[color:var(--accent)] hover:underline"
+              className="flex-1 flex items-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 px-4 py-3 text-sm font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/50 transition-colors group"
             >
-              {t("apprendre.prev")}
-              <span className="block text-xs font-normal text-[color:var(--muted)]">
-                {prev.titre}
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 transition-transform group-hover:-translate-x-0.5">
+                <path d="M12.5 15l-5-5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span className="min-w-0">
+                <span className="block text-xs text-emerald-600/70 dark:text-emerald-500/70">{t("apprendre.prev")}</span>
+                <span className="block truncate">{prev.titre}</span>
               </span>
             </Link>
           ) : (
-            <span />
+            <span className="flex-1" />
           )}
           {next ? (
             <Link
               href={`/apprendre/${next.slug}`}
-              className="text-right text-sm font-medium text-[color:var(--accent)] hover:underline"
+              className="flex-1 flex items-center justify-end gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 px-4 py-3 text-sm font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/50 transition-colors text-right group"
             >
-              {t("apprendre.next")}
-              <span className="block text-xs font-normal text-[color:var(--muted)]">
-                {next.titre}
+              <span className="min-w-0">
+                <span className="block text-xs text-emerald-600/70 dark:text-emerald-500/70">{t("apprendre.next")}</span>
+                <span className="block truncate">{next.titre}</span>
+              </span>
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 transition-transform group-hover:translate-x-0.5">
+                <path d="M7.5 15l5-5-5-5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Link>
+          ) : (
+            <span className="flex-1" />
+          )}
+        </nav>
+      )}
+
+      <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-5 md:p-6 flex flex-col gap-5">
+        {mdxContent}
+      </div>
+
+      {(prev || next) && (
+        <nav className="flex items-stretch gap-3">
+          {prev ? (
+            <Link
+              href={`/apprendre/${prev.slug}`}
+              className="flex-1 flex items-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 px-4 py-3 text-sm font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/50 transition-colors group"
+            >
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 transition-transform group-hover:-translate-x-0.5">
+                <path d="M12.5 15l-5-5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span className="min-w-0">
+                <span className="block text-xs text-emerald-600/70 dark:text-emerald-500/70">{t("apprendre.prev")}</span>
+                <span className="block truncate">{prev.titre}</span>
               </span>
             </Link>
           ) : (
-            <span />
+            <span className="flex-1" />
+          )}
+          {next ? (
+            <Link
+              href={`/apprendre/${next.slug}`}
+              className="flex-1 flex items-center justify-end gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 px-4 py-3 text-sm font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/50 transition-colors text-right group"
+            >
+              <span className="min-w-0">
+                <span className="block text-xs text-emerald-600/70 dark:text-emerald-500/70">{t("apprendre.next")}</span>
+                <span className="block truncate">{next.titre}</span>
+              </span>
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 transition-transform group-hover:translate-x-0.5">
+                <path d="M7.5 15l5-5-5-5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Link>
+          ) : (
+            <span className="flex-1" />
           )}
         </nav>
       )}

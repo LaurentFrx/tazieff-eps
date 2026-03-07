@@ -63,8 +63,8 @@ export function MethodeTimer({ labels }: MethodeTimerProps) {
   const isDone = remaining === 0;
 
   return (
-    <div className="card flex flex-col items-center gap-4 py-6">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-[color:var(--muted)]">
+    <div className="flex flex-col items-center gap-4">
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
         {labels.heading}
       </h2>
 

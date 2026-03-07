@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getAllMethodes, getMethode } from "@/lib/content/fs";
 import { renderMdx } from "@/lib/mdx/render";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
+import { DetailHeader } from "@/components/DetailHeader";
 import { CategoryBadge } from "@/components/methodes/CategoryBadge";
 import { ScoresBlock } from "@/components/methodes/ScoreBar";
 import { ParametresTable } from "@/components/methodes/ParametresTable";
@@ -85,72 +86,84 @@ export default async function MethodePage({ params }: MethodePageProps) {
 
   return (
     <section className="page">
-      <header className="page-header">
-        <Link
-          href="/methodes"
-          className="eyebrow hover:text-[color:var(--accent)]"
-        >
-          ← {t("methodes.backLabel")}
-        </Link>
-        <h1>{m.titre}</h1>
+      <DetailHeader
+        title={m.titre}
+        gradient="from-blue-600 to-cyan-500"
+        backHref="/methodes"
+        backLabel={t("methodes.backLabel")}
+        badges={
+          <>
+            <CategoryBadge
+              categorie={m.categorie}
+              label={categoryLabels[m.categorie] ?? m.categorie}
+            />
+            <span className="inline-flex items-center rounded-full bg-white/20 text-white px-3 py-1 text-xs font-medium">
+              {t("methodes.niveau")} : {t(`methodes.niveaux.${m.niveau_minimum}`)}
+            </span>
+          </>
+        }
+      >
         {m.soustitre ? (
-          <p className="text-sm text-[color:var(--muted)]">{m.soustitre}</p>
+          <p className="text-sm text-white/80 mt-1">{m.soustitre}</p>
         ) : null}
-        <div className="flex flex-wrap items-center gap-2">
-          <CategoryBadge
-            categorie={m.categorie}
-            label={categoryLabels[m.categorie] ?? m.categorie}
-          />
-          <span className="pill">
-            {t("methodes.niveau")} : {t(`methodes.niveaux.${m.niveau_minimum}`)}
-          </span>
-        </div>
-      </header>
+      </DetailHeader>
 
-      <div className="card">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-[color:var(--muted)]">
+      <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-5">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
           {t("methodes.scores.endurance")} / {t("methodes.scores.hypertrophie")} /{" "}
           {t("methodes.scores.force")} / {t("methodes.scores.puissance")}
         </h2>
         <ScoresBlock scores={m.scores} labels={scoreLabels} />
       </div>
 
-      <div className="card">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-[color:var(--muted)]">
+      <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-5">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
           {t("methodes.parametres.label")}
         </h2>
         <ParametresTable parametres={m.parametres} labels={parametresLabels} />
       </div>
 
       {m.timer ? (
-        <>
+        <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/40 dark:to-cyan-950/30 shadow-sm p-5">
           <MethodeTimer labels={timerLabels} />
           <Link
             href="/outils/timer"
-            className="card flex items-center justify-center py-3 text-sm font-semibold text-[color:var(--accent)] transition-colors hover:border-[color:var(--accent)]"
+            className="mt-4 flex items-center justify-center py-3 text-sm font-semibold text-blue-600 dark:text-blue-400 rounded-xl bg-white/60 dark:bg-zinc-900/40 hover:bg-white dark:hover:bg-zinc-800 transition-colors"
           >
             {t("methodes.timer.fullTimerLink")}
           </Link>
-        </>
+        </div>
       ) : null}
 
-      <div className="flex flex-col gap-4">{mdxContent}</div>
+      <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-5 md:p-6 flex flex-col gap-5">
+        {mdxContent}
+      </div>
 
       {m.methodes_complementaires.length > 0 ? (
-        <RelatedMethods
-          slugs={m.methodes_complementaires}
-          allMethodes={allMethodes}
-          heading={t("methodes.related")}
-          categoryLabels={categoryLabels}
-        />
+        <div className="flex flex-col gap-3">
+          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+            <span className="border-b-2 border-blue-400 pb-1">{t("methodes.related")}</span>
+          </h2>
+          <RelatedMethods
+            slugs={m.methodes_complementaires}
+            allMethodes={allMethodes}
+            heading=""
+            categoryLabels={categoryLabels}
+          />
+        </div>
       ) : null}
 
       {m.exercices_compatibles.length > 0 ? (
-        <RelatedExercices
-          slugs={m.exercices_compatibles}
-          allExercices={allExercices}
-          heading={t("methodes.exercicesCompatibles")}
-        />
+        <div className="flex flex-col gap-3">
+          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+            <span className="border-b-2 border-blue-400 pb-1">{t("methodes.exercicesCompatibles")}</span>
+          </h2>
+          <RelatedExercices
+            slugs={m.exercices_compatibles}
+            allExercices={allExercices}
+            heading=""
+          />
+        </div>
       ) : null}
     </section>
   );
