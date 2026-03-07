@@ -81,7 +81,7 @@ export function TopBar() {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-40 border-b border-zinc-200 bg-white/95 backdrop-blur-lg dark:border-zinc-700 dark:bg-zinc-900/95" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
-        <div className="mx-auto flex h-12 max-w-[980px] items-center justify-between gap-2 px-4">
+        <div className="mx-auto flex h-12 max-w-7xl items-center justify-between gap-2 px-4">
 
           {/* ── Left: Logo ────────────────────────────────────────── */}
           <Link href="/" className="flex items-center gap-2 shrink-0 min-h-[44px]">

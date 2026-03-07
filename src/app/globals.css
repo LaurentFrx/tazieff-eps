@@ -101,7 +101,7 @@ p {
 .app-shell {
   position: relative;
   z-index: 1;
-  max-width: 980px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: calc(56px + env(safe-area-inset-top, 0px)) 20px calc(80px + env(safe-area-inset-bottom));
   display: flex;
@@ -743,7 +743,7 @@ p {
 
 @media (min-width: 768px) {
   .app-shell {
-    padding: calc(60px + env(safe-area-inset-top, 0px)) 32px 36px;
+    padding: calc(60px + env(safe-area-inset-top, 0px)) 40px 36px;
   }
 
   .block-row {
