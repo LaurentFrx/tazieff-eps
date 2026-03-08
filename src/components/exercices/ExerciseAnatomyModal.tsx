@@ -81,8 +81,6 @@ function ModalMannequin({
         color,
         emissive: new THREE.Color(0x000000),
         shininess: 30,
-        transparent: true,
-        opacity: 1,
         side: THREE.DoubleSide,
       });
       mesh.renderOrder = 1;
@@ -104,7 +102,11 @@ function ModalMannequin({
     });
   }, [musclesScene, silhouetteScene]);
 
-  /* Update materials when selection changes */
+  /* Track highlighted name for useFrame pulse */
+  const highlightedRef = useRef<string | null>(null);
+  highlightedRef.current = highlightedMuscle;
+
+  /* Update materials when selection changes — NEVER reduce opacity */
   useEffect(() => {
     for (const { mesh, groupKey, baseFrName } of meshesRef.current) {
       const mat = mesh.material as THREE.MeshPhongMaterial;
@@ -115,29 +117,35 @@ function ModalMannequin({
         );
       }
 
-      if (highlightedMuscle) {
-        /* Single sub-muscle highlighted */
-        if (baseFrName === highlightedMuscle) {
-          mat.opacity = 1;
-          mat.emissive.copy(ud.originalColor).multiplyScalar(0.8);
-        } else if (groupKey && activeGroups.has(groupKey)) {
-          mat.opacity = 0.3;
-          mat.emissive.set(0x000000);
-        } else {
-          mat.opacity = 0.05;
-          mat.emissive.set(0x000000);
-        }
+      /* Opacity always 1 — no dimming ever */
+      mat.opacity = 1;
+
+      if (highlightedMuscle && baseFrName === highlightedMuscle) {
+        /* Selected sub-muscle: strong emissive (pulse in useFrame) */
+        mat.emissive.copy(ud.originalColor).multiplyScalar(0.8);
       } else if (groupKey && activeGroups.has(groupKey)) {
-        /* Full group highlight */
-        mat.opacity = 1;
-        mat.emissive.copy(ud.originalColor).multiplyScalar(0.6);
+        /* Active group muscle: moderate emissive glow */
+        mat.emissive.copy(ud.originalColor).multiplyScalar(0.4);
       } else {
-        /* Inactive */
-        mat.opacity = 0.06;
+        /* Non-active muscle: normal appearance, no emissive */
         mat.emissive.set(0x000000);
       }
     }
   }, [activeGroups, highlightedMuscle]);
+
+  /* Pulse animation on highlighted sub-muscle */
+  useFrame(({ clock }) => {
+    if (!highlightedRef.current) return;
+    const t = clock.getElapsedTime();
+    const pulse = 0.6 + 0.4 * Math.sin(t * 3);
+    for (const { mesh, baseFrName } of meshesRef.current) {
+      if (baseFrName !== highlightedRef.current) continue;
+      const ud = mesh.userData as { originalColor?: THREE.Color };
+      if (!ud.originalColor) continue;
+      const mat = mesh.material as THREE.MeshPhongMaterial;
+      mat.emissive.copy(ud.originalColor).multiplyScalar(pulse);
+    }
+  });
 
   return (
     <group>
