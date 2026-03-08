@@ -30,11 +30,11 @@ const MAX_ZOOM = 2.5;
 /** Background base zoom + offset (%) — negative X = left, negative Y = up. */
 const BASE_BG_SCALE = 1.25;
 const BG_OFFSET_X = -6;
-const BG_OFFSET_Y = -27;
+const BG_OFFSET_Y = -22;
 /** Mannequin is 50 % larger than the raw GLB model. */
 const MANNEQUIN_SCALE = 1.5;
-/** Orbit / zoom target — mannequin center of mass (chest area), not feet. */
-const TARGET_Y = FEET_Y + 1.0;
+/** Orbit / zoom target — mannequin vertical center (head-to-feet midpoint). */
+const TARGET_Y = FEET_Y + 1.5;
 
 const clamp = (v: number, lo: number, hi: number) =>
   Math.max(lo, Math.min(hi, v));
@@ -274,7 +274,7 @@ export default function AnatomyCanvas({
   return (
     <Canvas
       shadows={{ type: PCFSoftShadowMap }}
-      camera={{ position: [0, 0, 3.8], fov: 60, near: 0.01, far: 100 }}
+      camera={{ position: [0, 0, 4.5], fov: 60, near: 0.01, far: 100 }}
       style={{ background: "transparent" }}
       gl={{ antialias: true, alpha: true }}
     >
