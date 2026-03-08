@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   getExerciseMuscleGroups,
   isPosteriorDominant,
@@ -84,7 +84,7 @@ describe("isPosteriorDominant", () => {
   });
 });
 
-/* ── Component tests (mocked Three.js) ────────────────────────────────── */
+/* ── Component tests ───────────────────────────────────────────────────── */
 
 /* Mock next/dynamic to use React.lazy + Suspense (resolves in act()) */
 vi.mock("next/dynamic", () => {
@@ -104,12 +104,12 @@ vi.mock("next/dynamic", () => {
   };
 });
 
-/* Mock the Canvas — Three.js doesn't work in jsdom */
-let thumbOnLoaded: (() => void) | null = null;
-vi.mock("./ExerciseAnatomyThumbCanvas", () => ({
-  default: ({ onLoaded }: { onLoaded: () => void }) => {
-    thumbOnLoaded = onLoaded;
-    return <div data-testid="thumb-canvas">3D Canvas Mock</div>;
+/* Mock next/image to render a plain <img> */
+vi.mock("next/image", () => ({
+  __esModule: true,
+  default: (props: Record<string, unknown>) => {
+    const { fill, sizes, priority, ...rest } = props;
+    return <img {...rest} data-testid="mannequin-img" />;
   },
 }));
 
@@ -141,11 +141,7 @@ import { render, screen, fireEvent, act, waitFor } from "@testing-library/react"
 import ExerciseAnatomyThumb from "./ExerciseAnatomyThumb";
 
 describe("ExerciseAnatomyThumb", () => {
-  beforeEach(() => {
-    thumbOnLoaded = null;
-  });
-
-  it("renders thumb button when muscles match groups", async () => {
+  it("renders thumb with mannequin image when muscles match groups", async () => {
     await act(async () => {
       render(
         <ExerciseAnatomyThumb
@@ -158,6 +154,21 @@ describe("ExerciseAnatomyThumb", () => {
     expect(
       screen.getByLabelText("exerciseAnatomy.musclesWorked"),
     ).toBeTruthy();
+    expect(screen.getByTestId("mannequin-img")).toBeTruthy();
+  });
+
+  it("shows group labels on the thumb", async () => {
+    await act(async () => {
+      render(
+        <ExerciseAnatomyThumb
+          muscles={["Pectoraux", "Triceps"]}
+          translatedMuscles={["Pectoraux", "Triceps"]}
+        />,
+      );
+    });
+
+    expect(screen.getByText("anatomy.groups.pectoraux")).toBeTruthy();
+    expect(screen.getByText("anatomy.groups.triceps")).toBeTruthy();
   });
 
   it("renders fallback chips for unrecognized muscles", async () => {
@@ -171,33 +182,7 @@ describe("ExerciseAnatomyThumb", () => {
     });
 
     expect(screen.getByText("Cardio")).toBeTruthy();
-  });
-
-  it("renders fallback chips on 3-second timeout when canvas never loads", async () => {
-    vi.useFakeTimers();
-
-    await act(async () => {
-      render(
-        <ExerciseAnatomyThumb
-          muscles={["Pectoraux"]}
-          translatedMuscles={["Pectoraux"]}
-        />,
-      );
-    });
-
-    // Canvas is rendered but onLoaded has NOT been called
-    expect(thumbOnLoaded).not.toBeNull();
-
-    // Advance past the 3-second timeout WITHOUT calling onLoaded
-    act(() => {
-      vi.advanceTimersByTime(3100);
-    });
-
-    // Should now show fallback chips
-    expect(screen.getByText("Pectoraux")).toBeTruthy();
-    expect(screen.queryByTestId("thumb-canvas")).toBeNull();
-
-    vi.useRealTimers();
+    expect(screen.queryByTestId("mannequin-img")).toBeNull();
   });
 
   it("opens modal on click and closes on button click", async () => {
@@ -210,11 +195,6 @@ describe("ExerciseAnatomyThumb", () => {
       );
     });
 
-    // Simulate canvas loaded
-    act(() => {
-      thumbOnLoaded?.();
-    });
-
     // Click the thumb to open modal
     const thumb = screen.getByLabelText("exerciseAnatomy.musclesWorked");
     fireEvent.click(thumb);
@@ -225,6 +205,11 @@ describe("ExerciseAnatomyThumb", () => {
         document.querySelector("[data-testid='anatomy-modal']"),
       ).toBeTruthy();
     });
+
+    // Verify groups passed to modal
+    expect(
+      document.querySelector("[data-testid='modal-groups']")?.textContent,
+    ).toContain("pectoraux");
 
     // Close the modal
     fireEvent.click(

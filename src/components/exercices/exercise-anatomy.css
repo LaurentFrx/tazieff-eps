@@ -24,10 +24,9 @@
   }
 }
 
-.exo-anatomy-thumb canvas {
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
+.exo-anatomy-thumb-img {
+  object-fit: contain;
+  object-position: center bottom;
   pointer-events: none;
 }
 
@@ -72,30 +71,6 @@
   flex-shrink: 0;
 }
 
-.exo-anatomy-thumb-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 120px;
-  height: 200px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #0a0a14 0%, #1a1a2e 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-@media (min-width: 768px) {
-  .exo-anatomy-thumb-loading {
-    width: 150px;
-    height: 250px;
-  }
-}
-
-.exo-anatomy-thumb-loading-text {
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: rgba(255, 255, 255, 0.4);
-}
 
 /* ── Exercise Anatomy Modal ─────────────────────────────────────────────── */
 

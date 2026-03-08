@@ -1,20 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
+import NextImage from "next/image";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { MUSCLE_GROUPS } from "@/app/apprendre/anatomie/anatomy-data";
-import {
-  getExerciseMuscleGroups,
-  isPosteriorDominant,
-} from "@/lib/exercices/muscle-groups";
+import { getExerciseMuscleGroups } from "@/lib/exercices/muscle-groups";
+import miniMannequin from "../../../public/images/anatomy/mini-mannequin.webp";
 import "./exercise-anatomy.css";
-
-const ThumbCanvas = dynamic(() => import("./ExerciseAnatomyThumbCanvas"), {
-  ssr: false,
-  loading: () => null,
-});
 
 const ExerciseAnatomyModal = dynamic(
   () => import("./ExerciseAnatomyModal"),
@@ -32,27 +26,14 @@ export default function ExerciseAnatomyThumb({
 }: Props) {
   const { t } = useI18n();
   const [modalOpen, setModalOpen] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-  const [timedOut, setTimedOut] = useState(false);
 
   const groupKeys = getExerciseMuscleGroups(muscles);
-  const posterior = isPosteriorDominant(groupKeys);
-
-  /* 3-second timeout fallback */
-  useEffect(() => {
-    if (loaded) return;
-    const timer = setTimeout(() => {
-      if (!loaded) setTimedOut(true);
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, [loaded]);
 
   const handleOpen = useCallback(() => setModalOpen(true), []);
   const handleClose = useCallback(() => setModalOpen(false), []);
-  const handleLoaded = useCallback(() => setLoaded(true), []);
 
-  /* No matched groups or timed out → fallback to text chips */
-  if (groupKeys.length === 0 || (timedOut && !loaded)) {
+  /* No matched groups → fallback to text chips */
+  if (groupKeys.length === 0) {
     return (
       <div className="flex flex-wrap gap-2">
         {translatedMuscles.map((muscle, i) => (
@@ -75,13 +56,16 @@ export default function ExerciseAnatomyThumb({
         className="exo-anatomy-thumb"
         aria-label={t("exerciseAnatomy.musclesWorked")}
       >
-        <ThumbCanvas
-          groupKeys={groupKeys}
-          posterior={posterior}
-          onLoaded={handleLoaded}
+        <NextImage
+          src={miniMannequin}
+          alt={t("exerciseAnatomy.musclesWorked")}
+          className="exo-anatomy-thumb-img"
+          fill
+          sizes="(min-width: 768px) 150px, 120px"
+          priority={false}
         />
         <div className="exo-anatomy-thumb-labels">
-          {groupKeys.slice(0, 4).map((key) => (
+          {groupKeys.slice(0, 5).map((key) => (
             <span key={key} className="exo-anatomy-thumb-label">
               <span
                 className="exo-anatomy-thumb-dot"
@@ -90,9 +74,9 @@ export default function ExerciseAnatomyThumb({
               {t(`anatomy.groups.${key}`)}
             </span>
           ))}
-          {groupKeys.length > 4 && (
+          {groupKeys.length > 5 && (
             <span className="exo-anatomy-thumb-label">
-              +{groupKeys.length - 4}
+              +{groupKeys.length - 5}
             </span>
           )}
         </div>
