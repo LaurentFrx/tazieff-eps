@@ -26,6 +26,8 @@ const BG_OFFSET_X = -6;
 const BG_OFFSET_Y = -27;
 /** Mannequin is 25 % larger than the raw GLB model. */
 const MANNEQUIN_SCALE = 1.5;
+/** Orbit / zoom target — mannequin center of mass (torso), not feet. */
+const TARGET_Y = FEET_Y + 0.8;
 
 const clamp = (v: number, lo: number, hi: number) =>
   Math.max(lo, Math.min(hi, v));
@@ -187,7 +189,7 @@ export default function AnatomyCanvas({
         bgRef={bgRef}
       />
       <OrbitControls
-        target={[0, 0, 0]}
+        target={[0, TARGET_Y, 0]}
         enablePan={false}
         enableZoom={false}
         enableDamping

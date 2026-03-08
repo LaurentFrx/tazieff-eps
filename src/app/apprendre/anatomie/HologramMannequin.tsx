@@ -289,12 +289,17 @@ function MusclesModel({
       }
     };
 
+    /* Block iOS callout / text selection on long press */
+    const onTouchStart = (e: TouchEvent) => { e.preventDefault(); };
+
+    el.addEventListener("touchstart", onTouchStart, { passive: false });
     el.addEventListener("pointerdown", onPointerDown);
     el.addEventListener("pointermove", onPointerMove);
     el.addEventListener("pointerup", onPointerUp);
     el.addEventListener("contextmenu", onCtxMenu);
     el.addEventListener("dblclick", onDblClick);
     return () => {
+      el.removeEventListener("touchstart", onTouchStart);
       el.removeEventListener("pointerdown", onPointerDown);
       el.removeEventListener("pointermove", onPointerMove);
       el.removeEventListener("pointerup", onPointerUp);
