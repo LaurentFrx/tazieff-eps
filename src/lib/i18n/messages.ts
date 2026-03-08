@@ -744,6 +744,13 @@ export const messages = {
         mollets: "Gastrocnémiens, soléaire. Sollicités : extensions mollets, course, sauts.",
       },
     },
+    exerciseAnatomy: {
+      musclesWorked: "Muscles sollicités",
+      tapToExplore: "Appuyer pour explorer",
+      loading: "Chargement 3D…",
+      viewAll: "Voir tous",
+      subMuscles: "Muscles du groupe",
+    },
     checklist: {
       reset: "Réinitialiser",
     },
@@ -1458,6 +1465,13 @@ export const messages = {
         ischio_jambiers: "Biceps femoris, semitendinosus, semimembranosus. Used in: leg curls, stiff-leg deadlifts.",
         mollets: "Gastrocnemius, soleus. Used in: calf raises, running, jumping.",
       },
+    },
+    exerciseAnatomy: {
+      musclesWorked: "Muscles worked",
+      tapToExplore: "Tap to explore",
+      loading: "Loading 3D…",
+      viewAll: "View all",
+      subMuscles: "Group muscles",
     },
     checklist: {
       reset: "Reset",
@@ -2471,6 +2485,13 @@ export const messages = {
         ischio_jambiers: "Bíceps femoral, semitendinoso, semimembranoso. Usados en: curl de pierna, peso muerto piernas rígidas.",
         mollets: "Gastrocnemios, sóleo. Usados en: elevación de talones, carrera, saltos.",
       },
+    },
+    exerciseAnatomy: {
+      musclesWorked: "Músculos trabajados",
+      tapToExplore: "Toca para explorar",
+      loading: "Cargando 3D…",
+      viewAll: "Ver todos",
+      subMuscles: "Músculos del grupo",
     },
     checklist: {
       reset: "Restablecer",

@@ -8,6 +8,7 @@ import NextImage, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import DifficultyPill from "@/components/DifficultyPill";
+import ExerciseAnatomyThumb from "@/components/exercices/ExerciseAnatomyThumb";
 import { HeroMedia } from "@/components/media/HeroMedia";
 import {
   getFavoritesSnapshot,
@@ -2584,36 +2585,37 @@ export function ExerciseLiveDetail({
         </div>
       ) : null}
 
-      {/* Infos rapides — badges & metadata */}
-      <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-4 flex flex-col gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <DifficultyPill level={difficulty} />
-          {translateTerms(merged.frontmatter.muscles, "muscles", lang).map((muscle, i) => (
-            <span key={merged.frontmatter.muscles[i]} className="inline-flex items-center rounded-full bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400 px-3 py-1 text-xs font-medium">
-              {muscle}
-            </span>
-          ))}
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {tagPills.map((pill, index) => (
-            <span
-              key={`${pill.label}-${index}`}
-              className="inline-flex items-center rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400 px-3 py-1 text-xs font-medium"
-            >
-              {translateTerms([pill.label], "tags", lang)[0]}
-            </span>
-          ))}
-        </div>
-        {merged.frontmatter.equipment && merged.frontmatter.equipment.length > 0 ? (
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            {t("exerciseDetail.equipment")}: {translateTerms(merged.frontmatter.equipment, "equipment", lang).join(", ")}
+      {/* Infos rapides — badges & metadata + anatomy thumb */}
+      <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-4 flex gap-4">
+        <div className="flex-1 flex flex-col gap-3 min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <DifficultyPill level={difficulty} />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {tagPills.map((pill, index) => (
+              <span
+                key={`${pill.label}-${index}`}
+                className="inline-flex items-center rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400 px-3 py-1 text-xs font-medium"
+              >
+                {translateTerms([pill.label], "tags", lang)[0]}
+              </span>
+            ))}
+          </div>
+          {merged.frontmatter.equipment && merged.frontmatter.equipment.length > 0 ? (
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              {t("exerciseDetail.equipment")}: {translateTerms(merged.frontmatter.equipment, "equipment", lang).join(", ")}
+            </p>
+          ) : (
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("exerciseDetail.noEquipment")}</p>
+          )}
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            {t("exerciseDetail.compatibleThemes")}: {merged.frontmatter.themeCompatibility.join(", ")}
           </p>
-        ) : (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("exerciseDetail.noEquipment")}</p>
-        )}
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          {t("exerciseDetail.compatibleThemes")}: {merged.frontmatter.themeCompatibility.join(", ")}
-        </p>
+        </div>
+        <ExerciseAnatomyThumb
+          muscles={merged.frontmatter.muscles}
+          translatedMuscles={translateTerms(merged.frontmatter.muscles, "muscles", lang)}
+        />
       </div>
 
       {teacherUnlocked ? (

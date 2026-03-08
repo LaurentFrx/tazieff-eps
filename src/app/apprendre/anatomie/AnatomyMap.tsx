@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { LiveExerciseListItem } from "@/lib/live/types";
-import { MUSCLE_GROUPS, matchesGroup } from "./anatomy-data";
+import { MUSCLE_GROUPS, GROUP_MUSCLES, matchesGroup } from "./anatomy-data";
 import "./anatomy.css";
 
 const AnatomyCanvas = dynamic(() => import("./AnatomyCanvas"), {
@@ -22,22 +22,6 @@ type LabelInfo = {
   groupKey: string;
   x: number;
   y: number;
-};
-
-/* ─── Group sub-muscles (for bottom sheet detail) ────────────────────── */
-
-const GROUP_MUSCLES: Record<string, string[]> = {
-  dorsaux: ["Grand dorsal", "Trapèzes", "Rhomboïdes"],
-  pectoraux: ["Grand pectoral"],
-  abdominaux: ["Grand droit", "Obliques", "Transverse"],
-  deltoides: ["Deltoïde antérieur", "Deltoïde moyen", "Deltoïde postérieur"],
-  biceps: ["Biceps brachial", "Brachial"],
-  triceps: ["Triceps brachial"],
-  flechisseurs: ["Psoas-iliaque"],
-  fessiers: ["Grand fessier", "Moyen fessier"],
-  quadriceps: ["Droit fémoral", "Vastes"],
-  ischio_jambiers: ["Biceps fémoral", "Semi-tendineux", "Semi-membraneux"],
-  mollets: ["Gastrocnémiens", "Soléaire"],
 };
 
 /* ─── Main component ──────────────────────────────────────────────────── */

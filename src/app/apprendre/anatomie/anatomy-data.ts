@@ -144,6 +144,46 @@ export const MUSCLE_GROUPS: Record<string, MuscleGroup> = {
   },
 };
 
+/* ── Sub-muscles per group (French display names for bottom sheets) ──────── */
+
+export const GROUP_MUSCLES: Record<string, string[]> = {
+  dorsaux: ["Grand dorsal", "Trapèzes", "Rhomboïdes"],
+  pectoraux: ["Grand pectoral"],
+  abdominaux: ["Grand droit", "Obliques", "Transverse"],
+  deltoides: ["Deltoïde antérieur", "Deltoïde moyen", "Deltoïde postérieur"],
+  biceps: ["Biceps brachial", "Brachial"],
+  triceps: ["Triceps brachial"],
+  flechisseurs: ["Psoas-iliaque"],
+  fessiers: ["Grand fessier", "Moyen fessier"],
+  quadriceps: ["Droit fémoral", "Vastes"],
+  ischio_jambiers: ["Biceps fémoral", "Semi-tendineux", "Semi-membraneux"],
+  mollets: ["Gastrocnémiens", "Soléaire"],
+};
+
+/* ── 3D anchor positions per group (model space, before MANNEQUIN_SCALE) ── */
+
+export const GROUP_ANCHORS: Record<string, [number, number, number]> = {
+  dorsaux: [0, 1.15, -0.12],
+  pectoraux: [0, 1.20, 0.12],
+  abdominaux: [0, 0.90, 0.11],
+  deltoides: [0.20, 1.35, 0.02],
+  biceps: [0.26, 1.10, 0.06],
+  triceps: [-0.26, 1.10, -0.06],
+  flechisseurs: [0.08, 0.72, 0.06],
+  fessiers: [0.10, 0.68, -0.12],
+  quadriceps: [0.12, 0.45, 0.08],
+  ischio_jambiers: [-0.12, 0.42, -0.08],
+  mollets: [0.08, 0.15, -0.04],
+};
+
+/* ── Posterior-dominant groups (for camera orientation) ─────────────────── */
+
+export const POSTERIOR_GROUPS = new Set([
+  "dorsaux",
+  "fessiers",
+  "ischio_jambiers",
+]);
+
 /* ── French display names for individual muscles ─────────────────────────── */
 
 export const MUSCLE_FR_NAMES: Record<string, string> = {
