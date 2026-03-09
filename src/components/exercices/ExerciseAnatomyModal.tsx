@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Html, useGLTF } from "@react-three/drei";
+import { useGesture } from "@use-gesture/react";
 import * as THREE from "three";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import {
@@ -238,8 +239,7 @@ function ModalScene({
   const zeroVec = useRef(new THREE.Vector3(0, 0, 0));
   const raycasterObj = useRef(new THREE.Raycaster());
   const ndcVec = useRef(new THREE.Vector2());
-  const prevPinchRef = useRef<{ dist: number; mx: number; my: number } | null>(null);
-  const { gl, camera, scene } = useThree();
+  const { gl, camera } = useThree();
 
   const FOV_RAD = (60 * Math.PI) / 180;
 
@@ -266,91 +266,73 @@ function ModalScene({
     }
   }, [defaultTarget]);
 
-  /* Wheel → zoom-to-cursor (desktop) */
+  /* Prevent browser gesture handling on iOS */
   useEffect(() => {
-    const el = gl.domElement;
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const oldZoom = zoomRef.current;
-      const newZoom = clamp(oldZoom * (1 - e.deltaY * 0.001), MIN_ZOOM, MAX_ZOOM);
-      if (newZoom === oldZoom) return;
+    gl.domElement.style.touchAction = "none";
+  }, [gl]);
 
-      const worldCursor = screenToWorld(e.clientX, e.clientY);
-      const feetPos = new THREE.Vector3(0, FEET_Y, 0);
-      const shift = worldCursor.sub(feetPos).multiplyScalar(newZoom / oldZoom - 1);
-      panRef.current.add(shift);
+  /* Pinch zoom + pan & wheel zoom via @use-gesture (pointer events) */
+  useGesture(
+    {
+      onPinch: ({ da: [dist], origin: [ox, oy], first, memo }) => {
+        if (first || !memo) {
+          return { prevDist: dist, lastOx: ox, lastOy: oy };
+        }
 
-      zoomRef.current = newZoom;
-      if (newZoom <= 1.02) {
-        panRef.current.set(0, 0, 0);
-      }
-    };
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
-  }, [gl, camera, scene]);
+        /* Ratio-based zoom (matches native pinch feel) */
+        if (memo.prevDist > 0 && dist > 0) {
+          const oldZoom = zoomRef.current;
+          const newZoom = clamp(
+            oldZoom * (dist / memo.prevDist),
+            MIN_ZOOM,
+            MAX_ZOOM,
+          );
+          if (newZoom !== oldZoom) {
+            const worldMid = screenToWorld(ox, oy);
+            const feetPos = new THREE.Vector3(0, FEET_Y, 0);
+            const shift = worldMid
+              .sub(feetPos)
+              .multiplyScalar(newZoom / oldZoom - 1);
+            panRef.current.add(shift);
+          }
+          zoomRef.current = newZoom;
+        }
 
-  /* Pinch → zoom-to-point + 2-finger pan (mobile) */
-  useEffect(() => {
-    const el = gl.domElement;
+        /* Pan from finger midpoint movement */
+        const rect = gl.domElement.getBoundingClientRect();
+        const visibleH = 2 * camera.position.z * Math.tan(FOV_RAD / 2);
+        const worldPerPx = visibleH / rect.height;
+        panRef.current.x -= (ox - memo.lastOx) * worldPerPx;
+        panRef.current.y += (oy - memo.lastOy) * worldPerPx;
 
-    const onTouchStart = (e: TouchEvent) => {
-      if (e.touches.length !== 2) { prevPinchRef.current = null; return; }
-      const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-      const my = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      prevPinchRef.current = { dist: Math.sqrt(dx * dx + dy * dy), mx, my };
-    };
+        return { prevDist: dist, lastOx: ox, lastOy: oy };
+      },
+      onWheel: ({ event, delta: [, dy] }) => {
+        event.preventDefault();
+        const e = event as WheelEvent;
+        const oldZoom = zoomRef.current;
+        const newZoom = clamp(
+          oldZoom * (1 - dy * 0.001),
+          MIN_ZOOM,
+          MAX_ZOOM,
+        );
+        if (newZoom === oldZoom) return;
 
-    const onTouchMove = (e: TouchEvent) => {
-      if (e.touches.length !== 2 || !prevPinchRef.current) return;
-      e.preventDefault();
-
-      const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-      const my = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const prev = prevPinchRef.current;
-
-      /* 1. Zoom */
-      const oldZoom = zoomRef.current;
-      const newZoom = clamp(oldZoom * (dist / prev.dist), MIN_ZOOM, MAX_ZOOM);
-
-      /* 2. Zoom-to-point: keep content under midpoint fixed on screen */
-      if (newZoom !== oldZoom) {
-        const worldMid = screenToWorld(mx, my);
+        const worldCursor = screenToWorld(e.clientX, e.clientY);
         const feetPos = new THREE.Vector3(0, FEET_Y, 0);
-        const shift = worldMid.sub(feetPos).multiplyScalar(newZoom / oldZoom - 1);
+        const shift = worldCursor
+          .sub(feetPos)
+          .multiplyScalar(newZoom / oldZoom - 1);
         panRef.current.add(shift);
-      }
-      zoomRef.current = newZoom;
-
-      /* 3. Pan: translate orbit target to follow finger midpoint movement */
-      const rect = el.getBoundingClientRect();
-      const visibleH = 2 * camera.position.z * Math.tan(FOV_RAD / 2);
-      const worldPerPx = visibleH / rect.height;
-      panRef.current.x -= (mx - prev.mx) * worldPerPx;
-      panRef.current.y += (my - prev.my) * worldPerPx;
-
-      prevPinchRef.current = { dist, mx, my };
-    };
-
-    const resetPinch = () => {
-      prevPinchRef.current = null;
-    };
-
-    el.addEventListener("touchstart", onTouchStart, { passive: true });
-    el.addEventListener("touchmove", onTouchMove, { passive: false });
-    el.addEventListener("touchend", resetPinch);
-    el.addEventListener("touchcancel", resetPinch);
-    return () => {
-      el.removeEventListener("touchstart", onTouchStart);
-      el.removeEventListener("touchmove", onTouchMove);
-      el.removeEventListener("touchend", resetPinch);
-      el.removeEventListener("touchcancel", resetPinch);
-    };
-  }, [gl, camera, scene, FOV_RAD]);
+        zoomRef.current = newZoom;
+        if (newZoom <= 1.02) panRef.current.set(0, 0, 0);
+      },
+    },
+    {
+      target: gl.domElement,
+      eventOptions: { passive: false },
+    },
+  );
 
   /* Per-frame sync */
   useFrame(() => {
