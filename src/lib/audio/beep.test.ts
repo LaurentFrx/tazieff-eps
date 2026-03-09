@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { playBeep, beepCountdown, beepWork, beepRest, beepDone } from "./beep";
+import { playBeep, hapticFeedback, playCountdownBeep, playTransitionBeep } from "./beep";
 
 const mockStart = vi.fn();
 const mockStop = vi.fn();
@@ -11,7 +11,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.stubGlobal("AudioContext", class {
     createOscillator() {
-      return { connect: mockConnect, frequency: { value: 0 }, start: mockStart, stop: mockStop };
+      return { connect: mockConnect, type: "sine", frequency: { value: 0, setValueAtTime: vi.fn() }, start: mockStart, stop: mockStop };
     }
     createGain() {
       return {
@@ -19,53 +19,68 @@ beforeEach(() => {
         gain: { value: 0, setValueAtTime: mockSetValue, exponentialRampToValueAtTime: mockRamp },
       };
     }
+    createBuffer() { return {}; }
+    createBufferSource() { return { buffer: null, connect: mockConnect, start: vi.fn() }; }
     get destination() { return {}; }
     get currentTime() { return 0; }
+    get state() { return "running"; }
+    resume() { return Promise.resolve(); }
   });
   Object.defineProperty(navigator, "vibrate", { value: vi.fn(), writable: true, configurable: true });
 });
 
 describe("playBeep", () => {
   it("creates oscillator and starts it", () => {
-    playBeep(880, 100);
+    playBeep(880, 0.1);
     expect(mockStart).toHaveBeenCalled();
     expect(mockStop).toHaveBeenCalled();
   });
 
   it("sets gain volume", () => {
-    playBeep(880, 100, 0.5);
+    playBeep(880, 0.1, 0.5);
     expect(mockSetValue).toHaveBeenCalledWith(0.5, 0);
   });
 });
 
-describe("beepCountdown", () => {
-  it("plays beep and vibrates", () => {
-    beepCountdown();
-    expect(mockStart).toHaveBeenCalled();
+describe("hapticFeedback", () => {
+  it("calls navigator.vibrate on Android", () => {
+    hapticFeedback("tap");
     expect(navigator.vibrate).toHaveBeenCalledWith([50]);
   });
-});
 
-describe("beepWork", () => {
-  it("plays beep and vibrates", () => {
-    beepWork();
+  it("calls vibrate with double pattern", () => {
+    hapticFeedback("double");
+    expect(navigator.vibrate).toHaveBeenCalledWith([80, 40, 80]);
+  });
+
+  it("calls vibrate with heavy pattern", () => {
+    hapticFeedback("heavy");
+    expect(navigator.vibrate).toHaveBeenCalledWith([400]);
+  });
+
+  it("falls back to audio thump when vibrate not available", () => {
+    Object.defineProperty(navigator, "vibrate", { value: undefined, writable: true, configurable: true });
+    hapticFeedback("tap");
+    // Should play audio thump instead — oscillator started
     expect(mockStart).toHaveBeenCalled();
-    expect(navigator.vibrate).toHaveBeenCalledWith([200]);
   });
 });
 
-describe("beepRest", () => {
-  it("plays beep and vibrates", () => {
-    beepRest();
+describe("playCountdownBeep", () => {
+  it("plays beep for seconds 1-3", () => {
+    playCountdownBeep(3);
     expect(mockStart).toHaveBeenCalled();
-    expect(navigator.vibrate).toHaveBeenCalledWith([100, 50, 100]);
+  });
+
+  it("plays higher pitch for GO (0)", () => {
+    playCountdownBeep(0);
+    expect(mockStart).toHaveBeenCalled();
   });
 });
 
-describe("beepDone", () => {
-  it("plays beep and vibrates", () => {
-    beepDone();
+describe("playTransitionBeep", () => {
+  it("plays a beep", () => {
+    playTransitionBeep();
     expect(mockStart).toHaveBeenCalled();
-    expect(navigator.vibrate).toHaveBeenCalledWith([500]);
   });
 });

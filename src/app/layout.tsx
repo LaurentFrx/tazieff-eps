@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Space_Mono, Sora } from "next/font/google";
+import { Space_Grotesk, Space_Mono, Sora, Orbitron } from "next/font/google";
 import { cookies } from "next/headers";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { TopBar } from "@/components/TopBar";
@@ -27,6 +27,12 @@ const spaceMono = Space_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
   weight: ["400", "700"],
+});
+
+const orbitron = Orbitron({
+  subsets: ["latin"],
+  variable: "--font-orbitron",
+  weight: ["700", "900"],
 });
 
 export const metadata: Metadata = {
@@ -74,7 +80,7 @@ export default async function RootLayout({
       className={htmlClassName}
       suppressHydrationWarning
     >
-      <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable}`}>
+      <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable} ${orbitron.variable}`}>
         <AppProviders initialLang={initialLang} initialTheme={initialTheme}>
           <div className="app-shell">
             <main className="app-main">{children}</main>

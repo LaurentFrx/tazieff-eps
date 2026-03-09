@@ -1,48 +1,227 @@
-/* ── Coaching vocal via SpeechSynthesis API ───────────────────────────── */
+// Coaching vocal — diversified speech pools with anti-repetition
 
-const MESSAGES = {
-  prepare: { fr: "Préparez-vous", en: "Get ready", es: "Prepárense" },
-  work: { fr: "C'est parti !", en: "Go!", es: "¡Vamos!" },
-  rest: { fr: "Repos", en: "Rest", es: "Descanso" },
-  recovery: { fr: "Récupération", en: "Recovery", es: "Recuperación" },
-  three: { fr: "Trois", en: "Three", es: "Tres" },
-  two: { fr: "Deux", en: "Two", es: "Dos" },
-  one: { fr: "Un", en: "One", es: "Uno" },
-  lastRound: {
-    fr: "Dernière série !",
-    en: "Last round!",
-    es: "¡Última serie!",
+const SPEECH_POOLS: Record<string, Record<string, string[]>> = {
+  fr: {
+    prepare: [
+      "Préparez-vous",
+      "On se met en place",
+      "C'est bientôt à vous",
+      "Concentration",
+      "Allez, on y va bientôt",
+      "Positionnez-vous",
+      "Attention, ça démarre",
+      "En position",
+    ],
+    work_start: [
+      "C'est parti !",
+      "Go go go !",
+      "Allez, on donne tout !",
+      "Envoyez !",
+      "C'est maintenant !",
+      "À fond !",
+      "On y va !",
+      "Top départ !",
+    ],
+    rest_start: [
+      "Repos",
+      "Soufflez",
+      "Récupérez",
+      "Pause bien méritée",
+      "On reprend son souffle",
+      "Relâchez",
+      "Hydratez-vous",
+      "Détendez-vous",
+    ],
+    last_round: [
+      "Dernière série !",
+      "C'est la dernière !",
+      "Plus qu'une !",
+      "Ultime round !",
+      "La der des der !",
+      "Tout donner, c'est la dernière !",
+      "Allez, dernier effort !",
+    ],
+    halfway: [
+      "Mi-parcours !",
+      "La moitié, bravo !",
+      "On est à la moitié, courage !",
+      "50 pourcent, continuez !",
+    ],
+    done: [
+      "Bravo, c'est fini !",
+      "Excellent travail !",
+      "Séance terminée, bien joué !",
+      "Vous avez tout donné !",
+      "C'est dans la boîte !",
+      "Chapeau, belle séance !",
+      "Mission accomplie !",
+    ],
+    countdown_3: ["Trois"],
+    countdown_2: ["Deux"],
+    countdown_1: ["Un"],
   },
-  done: {
-    fr: "Bravo, c'est fini !",
-    en: "Great job, you're done!",
-    es: "¡Buen trabajo, terminaste!",
+  en: {
+    prepare: [
+      "Get ready",
+      "Here we go soon",
+      "Stand by",
+      "Focus up",
+      "Almost time",
+      "Get in position",
+      "Brace yourself",
+      "Lock in",
+    ],
+    work_start: [
+      "Go!",
+      "Let's go!",
+      "Push it!",
+      "Send it!",
+      "Time to work!",
+      "Give it all!",
+      "Now!",
+      "Full power!",
+    ],
+    rest_start: [
+      "Rest",
+      "Breathe",
+      "Take a break",
+      "Easy now",
+      "Recover",
+      "Shake it off",
+      "Catch your breath",
+      "Chill for a sec",
+    ],
+    last_round: [
+      "Last round!",
+      "Final push!",
+      "One more!",
+      "This is it!",
+      "Finish strong!",
+      "The last one!",
+      "Everything you've got!",
+    ],
+    halfway: [
+      "Halfway there!",
+      "50 percent done!",
+      "Half done, keep going!",
+      "Midpoint, nice work!",
+    ],
+    done: [
+      "Great job, you're done!",
+      "Awesome workout!",
+      "Session complete!",
+      "Crushed it!",
+      "You did it!",
+      "Beast mode complete!",
+      "Nailed it!",
+    ],
+    countdown_3: ["Three"],
+    countdown_2: ["Two"],
+    countdown_1: ["One"],
   },
-} as const;
-
-const LOCALE_MAP: Record<string, string> = {
-  fr: "fr-FR",
-  en: "en-US",
-  es: "es-ES",
+  es: {
+    prepare: [
+      "Prepárense",
+      "Casi empezamos",
+      "En posición",
+      "Concentración",
+      "Listos",
+      "Atención, ya casi",
+      "A prepararse",
+      "En sus marcas",
+    ],
+    work_start: [
+      "¡Vamos!",
+      "¡A darle!",
+      "¡Ya!",
+      "¡Con todo!",
+      "¡Ahora!",
+      "¡Fuego!",
+      "¡Dale con fuerza!",
+      "¡Arriba!",
+    ],
+    rest_start: [
+      "Descanso",
+      "Respira",
+      "Recupera",
+      "Relájate",
+      "Tómate un respiro",
+      "Pausa",
+      "Hidrátate",
+      "Suelta la tensión",
+    ],
+    last_round: [
+      "¡Última serie!",
+      "¡La última!",
+      "¡Queda una!",
+      "¡Último esfuerzo!",
+      "¡A terminar con todo!",
+      "¡La final!",
+    ],
+    halfway: [
+      "¡Mitad del camino!",
+      "¡50 por ciento!",
+      "¡Vamos, la mitad ya!",
+      "¡Medio recorrido!",
+    ],
+    done: [
+      "¡Buen trabajo, terminaste!",
+      "¡Excelente sesión!",
+      "¡Sesión completada!",
+      "¡Lo lograste!",
+      "¡Increíble esfuerzo!",
+      "¡Misión cumplida!",
+    ],
+    countdown_3: ["Tres"],
+    countdown_2: ["Dos"],
+    countdown_1: ["Uno"],
+  },
 };
 
-export type SpeechKey = keyof typeof MESSAGES;
+const lastSpoken: Record<string, number> = {};
+let speechEnabled = true;
 
-/** Speak a coaching message using browser SpeechSynthesis. */
-export function speak(key: SpeechKey, locale: string): void {
-  if (typeof window === "undefined" || !window.speechSynthesis) return;
-  const lang = locale in MESSAGES.prepare ? locale : "fr";
-  const text = MESSAGES[key][lang as "fr" | "en" | "es"];
+export function setSpeechEnabled(enabled: boolean): void {
+  speechEnabled = enabled;
+}
+
+export function isSpeechEnabled(): boolean {
+  return speechEnabled;
+}
+
+function speak(text: string, locale: string): void {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+
+  // Cancel any ongoing speech
+  window.speechSynthesis.cancel();
+
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = LOCALE_MAP[lang] || "fr-FR";
+  utterance.lang = locale === 'es' ? 'es-ES' : locale === 'en' ? 'en-US' : 'fr-FR';
   utterance.rate = 1.1;
+  utterance.pitch = 1.0;
   utterance.volume = 1.0;
+
   window.speechSynthesis.speak(utterance);
 }
 
-/** Speak countdown number (3, 2, 1). */
-export function speakCountdown(seconds: number, locale: string): void {
-  if (seconds === 3) speak("three", locale);
-  else if (seconds === 2) speak("two", locale);
-  else if (seconds === 1) speak("one", locale);
+export function speakEvent(event: string, locale = 'fr'): void {
+  if (!speechEnabled) return;
+
+  const pool = SPEECH_POOLS[locale]?.[event] || SPEECH_POOLS['fr']?.[event];
+  if (!pool || pool.length === 0) return;
+
+  const lastIndex = lastSpoken[event] ?? -1;
+  let index: number;
+  do {
+    index = Math.floor(Math.random() * pool.length);
+  } while (index === lastIndex && pool.length > 1);
+
+  lastSpoken[event] = index;
+  speak(pool[index], locale);
+}
+
+/** Get a random "done" message for the end screen */
+export function getRandomDoneMessage(locale = 'fr'): string {
+  const pool = SPEECH_POOLS[locale]?.done || SPEECH_POOLS['fr'].done;
+  return pool[Math.floor(Math.random() * pool.length)];
 }

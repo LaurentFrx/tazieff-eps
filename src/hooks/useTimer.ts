@@ -1,251 +1,354 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
-import { beepCountdown, beepDone, beepRest, beepWork } from "@/lib/audio/beep";
+'use client';
 
-/* ── Public types ─────────────────────────────────────────────────────── */
+import { useState, useRef, useCallback, useEffect } from 'react';
 
-export type TimerPhase =
-  | "idle"
-  | "prepare"
-  | "work"
-  | "rest"
-  | "recovery"
-  | "cooldown"
-  | "done";
+// ---------- Types ----------
 
-export interface TimerConfig {
-  prepareSeconds: number;
-  workSeconds: number;
-  restSeconds: number;
+export type TimerPhaseType = 'prepare' | 'work' | 'rest' | 'recovery' | 'cooldown';
+export type TimerStatus = 'idle' | 'running' | 'paused' | 'done';
+
+export interface PhaseEntry {
+  type: TimerPhaseType;
+  duration: number; // seconds
+  status: 'done' | 'active' | 'upcoming';
+  label: string;
+  roundIndex?: number; // 1-based round number for work/rest
+  cycleIndex?: number; // 1-based cycle number
+}
+
+export interface TimerPreset {
+  name: string;
+  prepareDuration: number;
+  workDuration: number;
+  restDuration: number;
   rounds: number;
   cycles: number;
-  recoverySeconds: number;
-  cooldownSeconds: number;
+  recoveryDuration: number; // between cycles
+  cooldownDuration: number;
 }
 
 export interface TimerState {
-  phase: TimerPhase;
-  secondsRemaining: number;
+  status: TimerStatus;
+  phases: PhaseEntry[];
+  activePhaseIndex: number;
+  secondsLeft: number;
+  totalSecondsLeft: number;
   currentRound: number;
   totalRounds: number;
   currentCycle: number;
   totalCycles: number;
-  totalElapsed: number;
-  totalDuration: number;
-  isRunning: boolean;
+  elapsedSeconds: number;
 }
 
-export interface TimerActions {
-  start: () => void;
-  pause: () => void;
-  resume: () => void;
-  reset: () => void;
-  skip: () => void;
+export interface TimerCallbacks {
+  onPhaseChange?: (phase: PhaseEntry, prevPhase: PhaseEntry | null) => void;
+  onTick?: (secondsLeft: number, phase: PhaseEntry) => void;
+  onHalfway?: () => void;
+  onLastRound?: () => void;
+  onDone?: (elapsedSeconds: number) => void;
 }
 
-/* ── Phase sequence builder ───────────────────────────────────────────── */
+// ---------- Build phase list ----------
 
-interface PhaseStep {
-  phase: TimerPhase;
-  seconds: number;
-  round: number;
-  cycle: number;
-}
+function buildPhases(preset: TimerPreset): PhaseEntry[] {
+  const phases: PhaseEntry[] = [];
 
-export function buildPhaseSequence(config: TimerConfig): PhaseStep[] {
-  const seq: PhaseStep[] = [];
-
-  if (config.prepareSeconds > 0) {
-    seq.push({ phase: "prepare", seconds: config.prepareSeconds, round: 0, cycle: 0 });
+  if (preset.prepareDuration > 0) {
+    phases.push({
+      type: 'prepare',
+      duration: preset.prepareDuration,
+      status: 'upcoming',
+      label: 'PREPARE',
+    });
   }
 
-  for (let c = 1; c <= config.cycles; c++) {
-    for (let r = 1; r <= config.rounds; r++) {
-      if (config.workSeconds > 0) {
-        seq.push({ phase: "work", seconds: config.workSeconds, round: r, cycle: c });
-      }
-      if (config.restSeconds > 0) {
-        seq.push({ phase: "rest", seconds: config.restSeconds, round: r, cycle: c });
+  for (let c = 1; c <= preset.cycles; c++) {
+    for (let r = 1; r <= preset.rounds; r++) {
+      phases.push({
+        type: 'work',
+        duration: preset.workDuration,
+        status: 'upcoming',
+        label: `WORK`,
+        roundIndex: r,
+        cycleIndex: c,
+      });
+
+      // Rest after each round except the last of the cycle
+      if (preset.restDuration > 0 && r < preset.rounds) {
+        phases.push({
+          type: 'rest',
+          duration: preset.restDuration,
+          status: 'upcoming',
+          label: `REST`,
+          roundIndex: r,
+          cycleIndex: c,
+        });
       }
     }
-    if (c < config.cycles && config.recoverySeconds > 0) {
-      seq.push({
-        phase: "recovery",
-        seconds: config.recoverySeconds,
-        round: config.rounds,
-        cycle: c,
+
+    // Recovery between cycles (not after the last cycle)
+    if (preset.recoveryDuration > 0 && c < preset.cycles) {
+      phases.push({
+        type: 'recovery',
+        duration: preset.recoveryDuration,
+        status: 'upcoming',
+        label: 'RECOVERY',
+        cycleIndex: c,
       });
     }
   }
 
-  if (config.cooldownSeconds > 0) {
-    seq.push({
-      phase: "cooldown",
-      seconds: config.cooldownSeconds,
-      round: config.rounds,
-      cycle: config.cycles,
+  if (preset.cooldownDuration > 0) {
+    phases.push({
+      type: 'cooldown',
+      duration: preset.cooldownDuration,
+      status: 'upcoming',
+      label: 'COOLDOWN',
     });
   }
 
-  seq.push({ phase: "done", seconds: 0, round: config.rounds, cycle: config.cycles });
-
-  return seq;
+  return phases;
 }
 
-export function computeTotalDuration(config: TimerConfig): number {
-  return buildPhaseSequence(config).reduce((sum, step) => sum + step.seconds, 0);
+function computeTotalRemaining(phases: PhaseEntry[], activeIndex: number, secondsLeft: number): number {
+  let total = secondsLeft;
+  for (let i = activeIndex + 1; i < phases.length; i++) {
+    total += phases[i].duration;
+  }
+  return total;
 }
 
-/* ── Reducer ──────────────────────────────────────────────────────────── */
-
-interface InternalState {
-  phaseIndex: number;
-  secondsRemaining: number;
-  totalElapsed: number;
-  isRunning: boolean;
+function getCurrentRoundCycle(phases: PhaseEntry[], activeIndex: number) {
+  const phase = phases[activeIndex];
+  return {
+    currentRound: phase?.roundIndex ?? 1,
+    currentCycle: phase?.cycleIndex ?? 1,
+  };
 }
 
-type Action =
-  | { type: "START"; sequence: PhaseStep[] }
-  | { type: "TICK"; sequence: PhaseStep[] }
-  | { type: "PAUSE" }
-  | { type: "RESUME" }
-  | { type: "RESET" }
-  | { type: "SKIP"; sequence: PhaseStep[] };
+// ---------- Hook ----------
 
-function reducer(state: InternalState, action: Action): InternalState {
-  switch (action.type) {
-    case "START": {
-      if (action.sequence.length <= 1) {
-        return { phaseIndex: action.sequence.length - 1, secondsRemaining: 0, totalElapsed: 0, isRunning: false };
+export function useTimer(preset: TimerPreset, callbacks?: TimerCallbacks) {
+  const [state, setState] = useState<TimerState>(() => {
+    const phases = buildPhases(preset);
+    return {
+      status: 'idle',
+      phases,
+      activePhaseIndex: 0,
+      secondsLeft: phases[0]?.duration ?? 0,
+      totalSecondsLeft: phases.reduce((s, p) => s + p.duration, 0),
+      currentRound: 1,
+      totalRounds: preset.rounds,
+      currentCycle: 1,
+      totalCycles: preset.cycles,
+      elapsedSeconds: 0,
+    };
+  });
+
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const callbacksRef = useRef(callbacks);
+  useEffect(() => {
+    callbacksRef.current = callbacks;
+  }, [callbacks]);
+
+  const halfwayFiredRef = useRef(false);
+  const lastRoundFiredRef = useRef(false);
+  const presetRef = useRef(preset);
+
+  // Keep presetRef in sync for use inside callbacks
+  useEffect(() => {
+    presetRef.current = preset;
+  }, [preset]);
+
+  // Wake Lock
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  const acquireWakeLock = useCallback(async () => {
+    try {
+      if ('wakeLock' in navigator) {
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
       }
-      return { phaseIndex: 0, secondsRemaining: action.sequence[0].seconds, totalElapsed: 0, isRunning: true };
+    } catch {
+      // Wake lock not available
     }
-    case "TICK": {
-      if (!state.isRunning) return state;
-      if (state.secondsRemaining <= 1) {
-        const nextIdx = state.phaseIndex + 1;
-        if (nextIdx >= action.sequence.length) {
-          return { ...state, secondsRemaining: 0, totalElapsed: state.totalElapsed + 1, isRunning: false };
-        }
-        const next = action.sequence[nextIdx];
-        return {
-          phaseIndex: nextIdx,
-          secondsRemaining: next.seconds,
-          totalElapsed: state.totalElapsed + 1,
-          isRunning: next.phase !== "done",
-        };
-      }
-      return { ...state, secondsRemaining: state.secondsRemaining - 1, totalElapsed: state.totalElapsed + 1 };
+  }, []);
+
+  const releaseWakeLock = useCallback(() => {
+    wakeLockRef.current?.release();
+    wakeLockRef.current = null;
+  }, []);
+
+  const clearTimer = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
-    case "PAUSE":
-      return { ...state, isRunning: false };
-    case "RESUME":
-      return state.secondsRemaining > 0 ? { ...state, isRunning: true } : state;
-    case "RESET":
-      return { phaseIndex: -1, secondsRemaining: 0, totalElapsed: 0, isRunning: false };
-    case "SKIP": {
-      const nextIdx = state.phaseIndex + 1;
-      if (nextIdx >= action.sequence.length) return state;
-      const next = action.sequence[nextIdx];
+  }, []);
+
+  const advancePhase = useCallback((currentState: TimerState): TimerState => {
+    const { phases, activePhaseIndex } = currentState;
+    const nextIndex = activePhaseIndex + 1;
+
+    // Mark current phase as done
+    const newPhases = phases.map((p, i) => {
+      if (i === activePhaseIndex) return { ...p, status: 'done' as const };
+      if (i === nextIndex) return { ...p, status: 'active' as const };
+      return p;
+    });
+
+    if (nextIndex >= phases.length) {
+      // All phases done
+      callbacksRef.current?.onDone?.(currentState.elapsedSeconds);
       return {
-        ...state,
-        phaseIndex: nextIdx,
-        secondsRemaining: next.seconds,
-        isRunning: next.phase !== "done" && state.isRunning,
+        ...currentState,
+        status: 'done',
+        phases: newPhases,
+        secondsLeft: 0,
+        totalSecondsLeft: 0,
       };
     }
-    default:
-      return state;
-  }
-}
 
-const INITIAL: InternalState = {
-  phaseIndex: -1,
-  secondsRemaining: 0,
-  totalElapsed: 0,
-  isRunning: false,
-};
+    const nextPhase = newPhases[nextIndex];
+    const prevPhase = phases[activePhaseIndex];
 
-/* ── Hook ─────────────────────────────────────────────────────────────── */
+    // Fire phase change callback
+    callbacksRef.current?.onPhaseChange?.(nextPhase, prevPhase);
 
-export function useTimer(config: TimerConfig): [TimerState, TimerActions] {
-  const sequence = useMemo(() => buildPhaseSequence(config), [config]);
-  const totalDuration = useMemo(() => computeTotalDuration(config), [config]);
-  const sequenceRef = useRef(sequence);
-  sequenceRef.current = sequence;
+    // Halfway detection
+    const totalRounds = presetRef.current.rounds * presetRef.current.cycles;
+    const { currentRound, currentCycle } = getCurrentRoundCycle(newPhases, nextIndex);
+    const globalRound = (currentCycle - 1) * presetRef.current.rounds + currentRound;
 
-  const [internal, dispatch] = useReducer(reducer, INITIAL);
-
-  /* Phase-change side effects (beep + vibrate) */
-  const prevPhaseIdxRef = useRef(-1);
-  const currentStep = internal.phaseIndex >= 0 && internal.phaseIndex < sequence.length
-    ? sequence[internal.phaseIndex]
-    : null;
-  const currentPhase: TimerPhase = currentStep?.phase ?? "idle";
-
-  useEffect(() => {
-    if (internal.phaseIndex === prevPhaseIdxRef.current) return;
-    prevPhaseIdxRef.current = internal.phaseIndex;
-    switch (currentPhase) {
-      case "work": beepWork(); break;
-      case "rest": beepRest(); break;
-      case "recovery": beepRest(); break;
-      case "done": beepDone(); break;
-    }
-  }, [internal.phaseIndex, currentPhase]);
-
-  /* Countdown beep at 3-2-1 */
-  useEffect(() => {
     if (
-      internal.isRunning &&
-      internal.secondsRemaining > 0 &&
-      internal.secondsRemaining <= 3 &&
-      currentPhase !== "idle" &&
-      currentPhase !== "done"
+      !halfwayFiredRef.current &&
+      nextPhase.type === 'work' &&
+      totalRounds > 2 &&
+      globalRound === Math.ceil(totalRounds / 2)
     ) {
-      beepCountdown();
+      halfwayFiredRef.current = true;
+      callbacksRef.current?.onHalfway?.();
     }
-  }, [internal.secondsRemaining, internal.isRunning, currentPhase]);
 
-  /* Interval */
+    // Last round detection
+    if (
+      !lastRoundFiredRef.current &&
+      nextPhase.type === 'work' &&
+      globalRound === totalRounds
+    ) {
+      lastRoundFiredRef.current = true;
+      callbacksRef.current?.onLastRound?.();
+    }
+
+    return {
+      ...currentState,
+      phases: newPhases,
+      activePhaseIndex: nextIndex,
+      secondsLeft: nextPhase.duration,
+      totalSecondsLeft: computeTotalRemaining(newPhases, nextIndex, nextPhase.duration),
+      currentRound: currentRound,
+      currentCycle: currentCycle,
+    };
+  }, []);
+
+  const tick = useCallback(() => {
+    setState((prev) => {
+      if (prev.status !== 'running') return prev;
+
+      const newSecondsLeft = prev.secondsLeft - 1;
+      const newElapsed = prev.elapsedSeconds + 1;
+
+      // Fire tick callback
+      callbacksRef.current?.onTick?.(newSecondsLeft, prev.phases[prev.activePhaseIndex]);
+
+      if (newSecondsLeft <= 0) {
+        return advancePhase({ ...prev, secondsLeft: 0, elapsedSeconds: newElapsed });
+      }
+
+      return {
+        ...prev,
+        secondsLeft: newSecondsLeft,
+        totalSecondsLeft: prev.totalSecondsLeft - 1,
+        elapsedSeconds: newElapsed,
+      };
+    });
+  }, [advancePhase]);
+
+  const start = useCallback(() => {
+    setState((prev) => {
+      if (prev.status !== 'idle') return prev;
+
+      const newPhases = prev.phases.map((p, i) =>
+        i === 0 ? { ...p, status: 'active' as const } : p,
+      );
+
+      // Fire initial phase change
+      callbacksRef.current?.onPhaseChange?.(newPhases[0], null);
+
+      return {
+        ...prev,
+        status: 'running',
+        phases: newPhases,
+      };
+    });
+
+    acquireWakeLock();
+    clearTimer();
+    intervalRef.current = setInterval(tick, 1000);
+  }, [tick, clearTimer, acquireWakeLock]);
+
+  const pause = useCallback(() => {
+    setState((prev) => (prev.status === 'running' ? { ...prev, status: 'paused' } : prev));
+    clearTimer();
+  }, [clearTimer]);
+
+  const resume = useCallback(() => {
+    setState((prev) => (prev.status === 'paused' ? { ...prev, status: 'running' } : prev));
+    clearTimer();
+    intervalRef.current = setInterval(tick, 1000);
+  }, [tick, clearTimer]);
+
+  const reset = useCallback(() => {
+    clearTimer();
+    releaseWakeLock();
+    halfwayFiredRef.current = false;
+    lastRoundFiredRef.current = false;
+
+    const phases = buildPhases(presetRef.current);
+    setState({
+      status: 'idle',
+      phases,
+      activePhaseIndex: 0,
+      secondsLeft: phases[0]?.duration ?? 0,
+      totalSecondsLeft: phases.reduce((s, p) => s + p.duration, 0),
+      currentRound: 1,
+      totalRounds: presetRef.current.rounds,
+      currentCycle: 1,
+      totalCycles: presetRef.current.cycles,
+      elapsedSeconds: 0,
+    });
+  }, [clearTimer, releaseWakeLock]);
+
+  const skip = useCallback(() => {
+    setState((prev) => {
+      if (prev.status !== 'running' && prev.status !== 'paused') return prev;
+      return advancePhase({ ...prev, secondsLeft: 0 });
+    });
+  }, [advancePhase]);
+
+  // Cleanup
   useEffect(() => {
-    if (!internal.isRunning) return;
-    const iv = setInterval(() => {
-      dispatch({ type: "TICK", sequence: sequenceRef.current });
-    }, 1000);
-    return () => clearInterval(iv);
-  }, [internal.isRunning]);
+    return () => {
+      clearTimer();
+      releaseWakeLock();
+    };
+  }, [clearTimer, releaseWakeLock]);
 
-  /* Derived public state */
-  const state: TimerState = useMemo(() => ({
-    phase: currentPhase,
-    secondsRemaining: internal.secondsRemaining,
-    currentRound: currentStep?.round ?? 1,
-    totalRounds: config.rounds,
-    currentCycle: currentStep?.cycle ?? 1,
-    totalCycles: config.cycles,
-    totalElapsed: internal.totalElapsed,
-    totalDuration,
-    isRunning: internal.isRunning,
-  }), [currentPhase, internal, currentStep, config.rounds, config.cycles, totalDuration]);
-
-  /* Actions */
-  const start = useCallback(
-    () => dispatch({ type: "START", sequence: sequenceRef.current }),
-    [],
-  );
-  const pause = useCallback(() => dispatch({ type: "PAUSE" }), []);
-  const resume = useCallback(() => dispatch({ type: "RESUME" }), []);
-  const reset = useCallback(() => dispatch({ type: "RESET" }), []);
-  const skip = useCallback(
-    () => dispatch({ type: "SKIP", sequence: sequenceRef.current }),
-    [],
-  );
-
-  const actions: TimerActions = useMemo(
-    () => ({ start, pause, resume, reset, skip }),
-    [start, pause, resume, reset, skip],
-  );
-
-  return [state, actions];
+  return {
+    state,
+    start,
+    pause,
+    resume,
+    reset,
+    skip,
+  };
 }
