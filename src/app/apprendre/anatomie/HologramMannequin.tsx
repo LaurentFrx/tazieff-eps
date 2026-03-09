@@ -42,10 +42,10 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
 
   useEffect(() => {
     const glowMat = new THREE.PointsMaterial({
-      color: 0x5c3a1a,
+      color: 0x444444,
       size: 0.006,
       transparent: true,
-      opacity: 0.15,
+      opacity: 0.08,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       sizeAttenuation: true,
@@ -56,12 +56,13 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
         mesh.material = new THREE.MeshBasicMaterial({
-          color: 0x9b7340,
+          color: 0x555555,
           transparent: true,
-          opacity,
+          opacity: Math.min(opacity, 0.15),
           wireframe: true,
           side: THREE.BackSide,
           depthWrite: false,
+          depthTest: false,
         });
         mesh.renderOrder = -2;
 
@@ -86,7 +87,7 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mat = (child as THREE.Mesh).material as THREE.MeshBasicMaterial;
-        mat.opacity = opacity;
+        mat.opacity = Math.min(opacity, 0.15);
       }
     });
   }, [scene, opacity]);

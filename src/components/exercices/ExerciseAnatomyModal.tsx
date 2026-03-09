@@ -91,12 +91,13 @@ function ModalMannequin({
     silhouetteScene.traverse((child) => {
       if (!(child as THREE.Mesh).isMesh) return;
       (child as THREE.Mesh).material = new THREE.MeshBasicMaterial({
-        color: 0x9b7340,
+        color: 0x555555,
         transparent: true,
-        opacity: 0.25,
+        opacity: 0.12,
         wireframe: true,
         side: THREE.BackSide,
         depthWrite: false,
+        depthTest: false,
       });
       (child as THREE.Mesh).renderOrder = -2;
     });
@@ -117,17 +118,23 @@ function ModalMannequin({
         );
       }
 
-      /* Opacity always 1 — no dimming ever */
-      mat.opacity = 1;
-
       if (highlightedMuscle && baseFrName === highlightedMuscle) {
-        /* Selected sub-muscle: strong emissive (pulse in useFrame) */
+        /* Selected sub-muscle: full opacity + strong emissive (pulse in useFrame) */
+        mat.color.copy(ud.originalColor);
+        mat.opacity = 1;
+        mat.transparent = false;
         mat.emissive.copy(ud.originalColor).multiplyScalar(0.8);
       } else if (groupKey && activeGroups.has(groupKey)) {
-        /* Active group muscle: moderate emissive glow */
-        mat.emissive.copy(ud.originalColor).multiplyScalar(0.4);
+        /* Active group muscle: vivid with moderate emissive glow */
+        mat.color.copy(ud.originalColor);
+        mat.opacity = 0.9;
+        mat.transparent = true;
+        mat.emissive.copy(ud.originalColor).multiplyScalar(0.3);
       } else {
-        /* Non-active muscle: normal appearance, no emissive */
+        /* Non-active muscle: nearly invisible gray */
+        mat.color.set(0x2a2a2a);
+        mat.opacity = 0.15;
+        mat.transparent = true;
         mat.emissive.set(0x000000);
       }
     }
