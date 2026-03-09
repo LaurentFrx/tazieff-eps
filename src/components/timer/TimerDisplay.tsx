@@ -8,11 +8,11 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 // ---------- Phase gradients (Sport Vibrant) ----------
 
 const PHASE_GRADIENTS: Record<string, { from: string; to: string }> = {
-  prepare:  { from: '#f59e0b', to: '#facc15' },  // amber-500 → yellow-400
-  work:     { from: '#22c55e', to: '#34d399' },  // green-500 → emerald-400
-  rest:     { from: '#ef4444', to: '#fb7185' },  // red-500   → rose-400
-  recovery: { from: '#3b82f6', to: '#818cf8' },  // blue-500  → indigo-400
-  cooldown: { from: '#06b6d4', to: '#2dd4bf' },  // cyan-500  → teal-400
+  prepare:  { from: '#fbbf24', to: '#eab308' },  // amber-400 → yellow-500
+  work:     { from: '#4ade80', to: '#10b981' },  // green-400 → emerald-500
+  rest:     { from: '#f87171', to: '#f43f5e' },  // red-400   → rose-500
+  recovery: { from: '#60a5fa', to: '#6366f1' },  // blue-400  → indigo-500
+  cooldown: { from: '#22d3ee', to: '#14b8a6' },  // cyan-400  → teal-500
 };
 
 function getGradient(type: string) {
@@ -265,7 +265,7 @@ function PhaseBand({ phase, isActive, secondsLeft, index }: PhaseBandProps) {
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'rgba(0,0,0,0.35)',
+          background: 'rgba(0,0,0,0.20)',
           borderRadius: 'inherit',
           pointerEvents: 'none',
         }}
@@ -648,140 +648,137 @@ export function TimerDisplay({
         />
       </div>
 
-      {/* 4. Controls — flex-none with safe-area bottom padding */}
+      {/* 4. Controls — flex-none, safe-area bottom padding */}
       <div
         style={{
           flexShrink: 0,
           padding: '8px 16px',
-          paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-          alignItems: 'center',
+          paddingBottom: 'max(40px, env(safe-area-inset-bottom, 40px))',
         }}
       >
-        {/* Main button */}
+        {/* Idle: START + back */}
         {isIdle && (
-          <button
-            onClick={onStart}
-            style={{
-              width: '100%',
-              height: '56px',
-              borderRadius: '12px',
-              border: 'none',
-              background: 'linear-gradient(180deg, #e0e0e0, #b0b0b0, #808080)',
-              color: '#000',
-              fontSize: '18px',
-              fontWeight: 700,
-              fontFamily: 'var(--font-display)',
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              cursor: 'pointer',
-            }}
-          >
-            {t('timer.controls.start')}
-          </button>
-        )}
-        {isRunning && (
-          <button
-            onClick={onPause}
-            style={{
-              width: '100%',
-              height: '52px',
-              borderRadius: '12px',
-              border: 'none',
-              background: '#ef4444',
-              color: '#fff',
-              fontSize: '18px',
-              fontWeight: 700,
-              fontFamily: 'var(--font-display)',
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              cursor: 'pointer',
-            }}
-          >
-            {t('timer.controls.pause')}
-          </button>
-        )}
-        {isPaused && (
-          <button
-            onClick={onResume}
-            style={{
-              width: '100%',
-              height: '52px',
-              borderRadius: '12px',
-              border: 'none',
-              background: '#22c55e',
-              color: '#000',
-              fontSize: '18px',
-              fontWeight: 700,
-              fontFamily: 'var(--font-display)',
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              cursor: 'pointer',
-            }}
-          >
-            {t('timer.controls.resume')}
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center' }}>
+            <button
+              onClick={onStart}
+              style={{
+                width: '100%',
+                height: '56px',
+                borderRadius: '12px',
+                border: 'none',
+                background: 'linear-gradient(180deg, #e0e0e0, #b0b0b0, #808080)',
+                color: '#000',
+                fontSize: '18px',
+                fontWeight: 700,
+                fontFamily: 'var(--font-display)',
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+              }}
+            >
+              {t('timer.controls.start')}
+            </button>
+            <button
+              onClick={onBack}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#666',
+                fontSize: '14px',
+                cursor: 'pointer',
+                padding: '4px',
+              }}
+            >
+              ← {t('timer.back')}
+            </button>
+          </div>
         )}
 
-        {/* Secondary buttons row */}
+        {/* Active: single row  [Reset]  [  PAUSE/RESUME  ]  [Skip] */}
         {isActive && (
-          <div style={{ display: 'flex', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button
               onClick={onReset}
               style={{
-                width: '44px',
-                height: '44px',
+                width: '48px',
+                height: '48px',
                 borderRadius: '50%',
                 border: 'none',
-                background: '#333',
+                background: '#374151',
                 color: '#fff',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                flexShrink: 0,
               }}
               aria-label={t('timer.controls.reset')}
             >
               <ResetIcon />
             </button>
+
+            {isRunning ? (
+              <button
+                onClick={onPause}
+                style={{
+                  flex: 1,
+                  height: '56px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: '#ef4444',
+                  color: '#fff',
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-display)',
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                }}
+              >
+                {t('timer.controls.pause')}
+              </button>
+            ) : (
+              <button
+                onClick={onResume}
+                style={{
+                  flex: 1,
+                  height: '56px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: '#22c55e',
+                  color: '#000',
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-display)',
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                }}
+              >
+                {t('timer.controls.resume')}
+              </button>
+            )}
+
             <button
               onClick={onSkip}
               style={{
-                width: '44px',
-                height: '44px',
+                width: '48px',
+                height: '48px',
                 borderRadius: '50%',
                 border: 'none',
-                background: '#333',
+                background: '#374151',
                 color: '#fff',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                flexShrink: 0,
               }}
               aria-label={t('timer.controls.skip')}
             >
               <SkipIcon />
             </button>
           </div>
-        )}
-
-        {/* Back button on idle */}
-        {isIdle && (
-          <button
-            onClick={onBack}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#666',
-              fontSize: '14px',
-              cursor: 'pointer',
-              padding: '4px',
-            }}
-          >
-            ← {t('timer.back')}
-          </button>
         )}
       </div>
     </div>
