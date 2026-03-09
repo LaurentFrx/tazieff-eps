@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { PhaseEntry, TimerState } from '@/hooks/useTimer';
 import { isSpeechEnabled, setSpeechEnabled } from '@/lib/audio/speech';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -540,21 +541,22 @@ export function TimerDisplay({
     }
   }, [isActive, isDone]);
 
-  // Done screen
+  // Done screen — portal to body to escape .app-shell stacking context
   if (isDone) {
-    return (
+    return createPortal(
       <DoneScreen
         elapsedSeconds={state.elapsedSeconds}
         totalRounds={state.totalRounds}
         totalCycles={state.totalCycles}
         onRestart={onReset}
         onBack={onBack}
-      />
+      />,
+      document.body,
     );
   }
 
-  // Full-screen timer (active or idle with preview)
-  return (
+  // Full-screen timer — portal to body when active to escape .app-shell stacking context
+  const timerContent = (
     <div
       className={isActive ? 'fixed inset-0 z-[9999] bg-[#0a0a0a] flex flex-col h-[100dvh]' : 'relative flex flex-col min-h-[80dvh] bg-[#0a0a0a]'}
     >
@@ -776,4 +778,6 @@ export function TimerDisplay({
       </div>
     </div>
   );
+
+  return isActive ? createPortal(timerContent, document.body) : timerContent;
 }
