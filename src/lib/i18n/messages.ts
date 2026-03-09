@@ -655,11 +655,11 @@ export const messages = {
       },
       presets: {
         repos: { name: "Repos", desc: "Chrono de repos entre séries" },
-        emom: { name: "EMOM", desc: "Every Minute On the Minute" },
-        amrap: { name: "AMRAP", desc: "As Many Reps As Possible" },
+        emom: { name: "EMOM", desc: "1 exercice par minute, chaque minute" },
+        amrap: { name: "AMRAP", desc: "Max de répétitions en temps limité" },
         circuit: { name: "Circuit Training", desc: "Travail/repos par stations" },
         tabata: { name: "Tabata", desc: "20s effort / 10s repos × 8" },
-        custom: { name: "Personnalisé", desc: "Configure ton timer" },
+        custom: { name: "Personnalisé", desc: "Configure ton chrono" },
       },
     },
     maSeance: {
@@ -1741,8 +1741,8 @@ export const messages = {
       },
       presets: {
         repos: { name: "Rest", desc: "Rest timer between sets" },
-        emom: { name: "EMOM", desc: "Every Minute On the Minute" },
-        amrap: { name: "AMRAP", desc: "As Many Reps As Possible" },
+        emom: { name: "EMOM", desc: "1 exercise per minute, every minute" },
+        amrap: { name: "AMRAP", desc: "Max reps in a set time" },
         circuit: { name: "Circuit Training", desc: "Work/rest by stations" },
         tabata: { name: "Tabata", desc: "20s effort / 10s rest × 8" },
         custom: { name: "Custom", desc: "Build your own timer" },
@@ -2485,11 +2485,11 @@ export const messages = {
       },
       presets: {
         repos: { name: "Descanso", desc: "Cronómetro de descanso entre series" },
-        emom: { name: "EMOM", desc: "Every Minute On the Minute" },
-        amrap: { name: "AMRAP", desc: "As Many Reps As Possible" },
+        emom: { name: "EMOM", desc: "1 ejercicio por minuto, cada minuto" },
+        amrap: { name: "AMRAP", desc: "Máx. repeticiones en tiempo limitado" },
         circuit: { name: "Circuito", desc: "Trabajo/descanso por estaciones" },
         tabata: { name: "Tabata", desc: "20s esfuerzo / 10s descanso × 8" },
-        custom: { name: "Personalizado", desc: "Configura tu temporizador" },
+        custom: { name: "Personalizado", desc: "Configura tu cronómetro" },
       },
     },
     maSeance: {
