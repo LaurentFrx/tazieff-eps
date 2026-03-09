@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Space_Mono, Sora, Orbitron } from "next/font/google";
 import { cookies } from "next/headers";
 import { BottomTabBar } from "@/components/BottomTabBar";
@@ -34,6 +34,12 @@ const orbitron = Orbitron({
   variable: "--font-orbitron",
   weight: ["700", "900"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: "Tazieff EPS",

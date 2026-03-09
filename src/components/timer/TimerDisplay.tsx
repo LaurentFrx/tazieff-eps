@@ -8,10 +8,10 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 // ---------- Phase gradients (Sport Vibrant) ----------
 
 const PHASE_GRADIENTS: Record<string, { from: string; to: string }> = {
-  prepare:  { from: '#3b82f6', to: '#818cf8' },  // blue-500  → indigo-400  (= card Méthodes)
+  prepare:  { from: '#2563eb', to: '#6366f1' },  // blue-600  → indigo-500  (= card Méthodes)
   work:     { from: '#f97316', to: '#fbbf24' },  // orange-500 → amber-400  (= card Exercices)
-  rest:     { from: '#a855f7', to: '#e879f9' },  // purple-500 → fuchsia-400 (= card BAC)
-  recovery: { from: '#34d399', to: '#22c55e' },  // emerald-400 → green-500  (= card Apprendre)
+  rest:     { from: '#7c3aed', to: '#d946ef' },  // violet-600 → fuchsia-500 (= card BAC)
+  recovery: { from: '#22c55e', to: '#34d399' },  // green-500  → emerald-400 (= card Apprendre)
   cooldown: { from: '#22d3ee', to: '#14b8a6' },  // cyan-400  → teal-500
 };
 
@@ -265,7 +265,7 @@ function PhaseBand({ phase, isActive, secondsLeft, index }: PhaseBandProps) {
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'rgba(0,0,0,0.20)',
+          background: 'rgba(0,0,0,0.10)',
           borderRadius: 'inherit',
           pointerEvents: 'none',
         }}
@@ -659,7 +659,7 @@ export function TimerDisplay({
         style={{
           flexShrink: 0,
           padding: '8px 16px',
-          paddingBottom: 'max(40px, env(safe-area-inset-bottom, 40px))',
+          paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 20px))',
         }}
       >
         {/* Idle: START + back */}
