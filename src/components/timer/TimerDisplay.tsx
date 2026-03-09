@@ -556,12 +556,7 @@ export function TimerDisplay({
   // Full-screen timer (active or idle with preview)
   return (
     <div
-      className={isActive ? 'fixed inset-0 z-[9999] bg-[#0a0a0a] flex flex-col' : 'relative flex flex-col'}
-      style={{
-        height: isActive ? '100dvh' : undefined,
-        minHeight: isActive ? undefined : '80dvh',
-        background: isActive ? undefined : '#0a0a0a',
-      }}
+      className={isActive ? 'fixed inset-0 z-[9999] bg-[#0a0a0a] flex flex-col h-[100dvh]' : 'relative flex flex-col min-h-[80dvh] bg-[#0a0a0a]'}
     >
       {/* 1. Info bar — flex-none h-10 */}
       <div
@@ -614,18 +609,10 @@ export function TimerDisplay({
         </button>
       </div>
 
-      {/* 2. Phase bands — flex-1, scrollable */}
+      {/* 2. Phase bands — flex-1 min-h-0 is CRITICAL for flexbox shrink */}
       <div
         ref={bandsContainerRef}
-        style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '8px',
-          padding: '12px',
-          overflowY: 'auto',
-          minHeight: 0,
-        }}
+        className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2 p-3"
       >
         {state.phases.map((phase, i) => (
           <PhaseBand
