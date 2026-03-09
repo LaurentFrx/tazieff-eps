@@ -8,10 +8,10 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 // ---------- Phase gradients (Sport Vibrant) ----------
 
 const PHASE_GRADIENTS: Record<string, { from: string; to: string }> = {
-  prepare:  { from: '#fbbf24', to: '#eab308' },  // amber-400 → yellow-500
-  work:     { from: '#4ade80', to: '#10b981' },  // green-400 → emerald-500
-  rest:     { from: '#f87171', to: '#f43f5e' },  // red-400   → rose-500
-  recovery: { from: '#60a5fa', to: '#6366f1' },  // blue-400  → indigo-500
+  prepare:  { from: '#3b82f6', to: '#818cf8' },  // blue-500  → indigo-400  (= card Méthodes)
+  work:     { from: '#f97316', to: '#fbbf24' },  // orange-500 → amber-400  (= card Exercices)
+  rest:     { from: '#a855f7', to: '#e879f9' },  // purple-500 → fuchsia-400 (= card BAC)
+  recovery: { from: '#34d399', to: '#22c55e' },  // emerald-400 → green-500  (= card Apprendre)
   cooldown: { from: '#22d3ee', to: '#14b8a6' },  // cyan-400  → teal-500
 };
 
@@ -532,6 +532,14 @@ export function TimerDisplay({
   const isPaused = state.status === 'paused';
   const isActive = isRunning || isPaused;
 
+  // Lock body scroll when timer is active (hides content behind fullscreen)
+  useEffect(() => {
+    if (isActive || isDone) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [isActive, isDone]);
+
   // Done screen
   if (isDone) {
     return (
@@ -548,13 +556,11 @@ export function TimerDisplay({
   // Full-screen timer (active or idle with preview)
   return (
     <div
-      className={isActive ? 'fixed inset-0 z-[9999]' : 'relative'}
+      className={isActive ? 'fixed inset-0 z-[9999] bg-[#0a0a0a] flex flex-col' : 'relative flex flex-col'}
       style={{
-        background: '#0a0a0a',
-        display: 'flex',
-        flexDirection: 'column',
         height: isActive ? '100dvh' : undefined,
         minHeight: isActive ? undefined : '80dvh',
+        background: isActive ? undefined : '#0a0a0a',
       }}
     >
       {/* 1. Info bar — flex-none h-10 */}
