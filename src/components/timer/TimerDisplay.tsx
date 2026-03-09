@@ -7,12 +7,12 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 
 // ---------- Phase colors ----------
 
-const PHASE_COLORS: Record<string, { from: string; to: string; text: string; dimBg: string; doneBg: string }> = {
-  prepare:  { from: '#f59e0b', to: '#d97706', text: '#000',   dimBg: 'rgba(245,158,11,0.2)',  doneBg: '#3a2a0a' },
-  work:     { from: '#22c55e', to: '#16a34a', text: '#000',   dimBg: 'rgba(34,197,94,0.2)',   doneBg: '#1a3a1a' },
-  rest:     { from: '#ef4444', to: '#dc2626', text: '#fff',   dimBg: 'rgba(239,68,68,0.2)',   doneBg: '#3a1a1a' },
-  recovery: { from: '#3b82f6', to: '#2563eb', text: '#fff',   dimBg: 'rgba(59,130,246,0.2)',  doneBg: '#1a1a3a' },
-  cooldown: { from: '#06b6d4', to: '#0891b2', text: '#fff',   dimBg: 'rgba(6,182,212,0.2)',   doneBg: '#0a2a2a' },
+const PHASE_COLORS: Record<string, { from: string; to: string; text: string; upcomingBg: string; accent: string }> = {
+  prepare:  { from: '#f59e0b', to: '#d97706', text: '#000', upcomingBg: '#78350f', accent: '#f59e0b' },
+  work:     { from: '#22c55e', to: '#16a34a', text: '#000', upcomingBg: '#166534', accent: '#22c55e' },
+  rest:     { from: '#ef4444', to: '#dc2626', text: '#fff', upcomingBg: '#7f1d1d', accent: '#ef4444' },
+  recovery: { from: '#3b82f6', to: '#2563eb', text: '#fff', upcomingBg: '#1e3a5f', accent: '#3b82f6' },
+  cooldown: { from: '#06b6d4', to: '#0891b2', text: '#fff', upcomingBg: '#164e63', accent: '#06b6d4' },
 };
 
 function getPhaseColor(type: string) {
@@ -76,10 +76,10 @@ function PhaseBand({ phase, isActive, secondsLeft, index }: PhaseBandProps) {
   const scale = showCountdown ? 1 + (4 - secondsLeft) * 0.1 : 1;
 
   const bgStyle: React.CSSProperties = isDone
-    ? { background: colors.doneBg, opacity: 0.5 }
+    ? { background: '#1a1a1a' }
     : isActive
       ? { background: `linear-gradient(135deg, ${colors.from}, ${colors.to})` }
-      : { background: colors.dimBg };
+      : { background: colors.upcomingBg, borderLeft: `4px solid ${colors.accent}` };
 
   const textColor = isActive ? colors.text : '#fff';
 
@@ -89,7 +89,7 @@ function PhaseBand({ phase, isActive, secondsLeft, index }: PhaseBandProps) {
       style={{
         ...bgStyle,
         flex: isActive ? '1 1 auto' : '0 0 auto',
-        height: isActive ? undefined : isDone ? '44px' : '56px',
+        height: isActive ? undefined : isDone ? '36px' : '56px',
         minHeight: isActive ? '120px' : undefined,
         borderRadius: '12px',
         padding: isActive ? '16px 20px' : '10px 20px',
@@ -99,6 +99,7 @@ function PhaseBand({ phase, isActive, secondsLeft, index }: PhaseBandProps) {
         justifyContent: isActive ? 'center' : 'space-between',
         gap: isActive ? '8px' : '0',
         color: textColor,
+        opacity: isDone ? 0.4 : 1,
         transition: 'all 300ms ease',
         position: 'relative',
         overflow: 'hidden',
@@ -147,7 +148,7 @@ function PhaseBand({ phase, isActive, secondsLeft, index }: PhaseBandProps) {
           fontSize: isActive ? '14px' : '13px',
           letterSpacing: '0.08em',
           textTransform: 'uppercase' as const,
-          opacity: isDone ? 0.6 : 1,
+          opacity: isDone ? 0.8 : 1,
           textDecoration: isDone ? 'line-through' : 'none',
           position: isActive ? 'relative' : 'static',
           zIndex: 1,
@@ -185,7 +186,7 @@ function PhaseBand({ phase, isActive, secondsLeft, index }: PhaseBandProps) {
             fontWeight: 700,
             fontSize: '15px',
             fontVariantNumeric: 'tabular-nums',
-            opacity: isDone ? 0.5 : 0.8,
+            opacity: isDone ? 0.6 : 0.9,
           }}
         >
           {isDone ? '00:00' : formatTime(phase.duration)}
@@ -452,10 +453,8 @@ export function TimerDisplay({
   // Full-screen timer (active or idle with preview)
   return (
     <div
+      className={isActive ? 'fixed inset-0 z-[9999]' : 'relative'}
       style={{
-        position: isActive ? 'fixed' : 'relative',
-        inset: isActive ? 0 : undefined,
-        zIndex: isActive ? 9999 : undefined,
         background: '#0a0a0a',
         display: 'flex',
         flexDirection: 'column',
@@ -527,7 +526,7 @@ export function TimerDisplay({
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          gap: '6px',
+          gap: '8px',
           padding: '8px 12px',
           overflowY: 'auto',
           minHeight: 0,
