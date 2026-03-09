@@ -5,6 +5,7 @@ import { useTimer, type TimerPreset } from '@/hooks/useTimer';
 import { TimerDisplay } from '@/components/timer/TimerDisplay';
 import { unlockAudio, hapticFeedback, playCountdownBeep, playTransitionBeep } from '@/lib/audio/beep';
 import { speakEvent } from '@/lib/audio/speech';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 // ---------- Preset definitions ----------
 
@@ -155,6 +156,7 @@ function NumberField({ label, value, onChange, min = 0, max = 999, step = 1, uni
 // ---------- Page ----------
 
 export default function TimerPage() {
+  const { t } = useI18n();
   const [selectedPreset, setSelectedPreset] = useState<PresetDef | null>(null);
   const [customPreset, setCustomPreset] = useState<TimerPreset | null>(null);
   const [showTimer, setShowTimer] = useState(false);
@@ -187,10 +189,10 @@ export default function TimerPage() {
       <div style={{ background: '#0a0a0a', minHeight: '100dvh', padding: '20px 16px 100px' }}>
         <div style={{ maxWidth: '560px', margin: '0 auto' }}>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>
-            Timer
+            {t('timer.pageTitle')}
           </h1>
           <p style={{ color: '#888', fontSize: '14px', marginBottom: '24px' }}>
-            Choisissez un format d&apos;entraînement
+            {t('timer.pageSubtitle')}
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
@@ -212,10 +214,10 @@ export default function TimerPage() {
               >
                 <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: def.color }} />
                 <span style={{ color: '#fff', fontSize: '16px', fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '0.05em' }}>
-                  {def.name}
+                  {t(`timer.presets.${def.id}.name`)}
                 </span>
                 <span style={{ color: '#888', fontSize: '12px', lineHeight: 1.4 }}>
-                  {def.description}
+                  {t(`timer.presets.${def.id}.desc`)}
                 </span>
               </button>
             ))}
@@ -234,35 +236,35 @@ export default function TimerPage() {
             onClick={() => { setSelectedPreset(null); setCustomPreset(null); }}
             style={{ background: 'none', border: 'none', color: '#888', fontSize: '14px', cursor: 'pointer', marginBottom: '16px', padding: '4px 0' }}
           >
-            ← Retour aux presets
+            ← {t('timer.done.backToPresets')}
           </button>
 
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '24px', fontWeight: 700, color: '#fff', marginBottom: '20px' }}>
             <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: selectedPreset.color, marginRight: '10px' }} />
-            {selectedPreset.name}
+            {t(`timer.presets.${selectedPreset.id}.name`)}
           </h2>
 
           <div style={{ background: '#111', borderRadius: '16px', border: '1px solid #222', padding: '4px 16px', marginBottom: '24px' }}>
             <NumberField
-              label="Préparation"
+              label={t('timer.config.prepare')}
               value={customPreset.prepareDuration}
               onChange={(v) => setCustomPreset({ ...customPreset, prepareDuration: v })}
               step={5}
             />
             <NumberField
-              label="Travail"
+              label={t('timer.config.work')}
               value={customPreset.workDuration}
               onChange={(v) => setCustomPreset({ ...customPreset, workDuration: v })}
               step={5}
             />
             <NumberField
-              label="Repos"
+              label={t('timer.config.rest')}
               value={customPreset.restDuration}
               onChange={(v) => setCustomPreset({ ...customPreset, restDuration: v })}
               step={5}
             />
             <NumberField
-              label="Séries"
+              label={t('timer.config.rounds')}
               value={customPreset.rounds}
               onChange={(v) => setCustomPreset({ ...customPreset, rounds: v })}
               min={1}
@@ -270,7 +272,7 @@ export default function TimerPage() {
               unit=""
             />
             <NumberField
-              label="Cycles"
+              label={t('timer.config.cycles')}
               value={customPreset.cycles}
               onChange={(v) => setCustomPreset({ ...customPreset, cycles: v })}
               min={1}
@@ -279,14 +281,14 @@ export default function TimerPage() {
             />
             {customPreset.cycles > 1 && (
               <NumberField
-                label="Récupération"
+                label={t('timer.config.recovery')}
                 value={customPreset.recoveryDuration}
                 onChange={(v) => setCustomPreset({ ...customPreset, recoveryDuration: v })}
                 step={10}
               />
             )}
             <NumberField
-              label="Retour au calme"
+              label={t('timer.config.cooldown')}
               value={customPreset.cooldownDuration}
               onChange={(v) => setCustomPreset({ ...customPreset, cooldownDuration: v })}
               step={10}
@@ -310,7 +312,7 @@ export default function TimerPage() {
               cursor: 'pointer',
             }}
           >
-            START
+            {t('timer.controls.start')}
           </button>
         </div>
       </div>
@@ -322,7 +324,7 @@ export default function TimerPage() {
     return (
       <TimerRunner
         preset={activePreset}
-        presetName={selectedPreset.name}
+        presetName={t(`timer.presets.${selectedPreset.id}.name`)}
         onBackToPresets={handleBackToPresets}
       />
     );

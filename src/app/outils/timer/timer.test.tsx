@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { I18nProvider } from "@/lib/i18n/I18nProvider";
 
 // Mock audio modules
 vi.mock("@/lib/audio/beep", () => ({
@@ -36,24 +37,28 @@ beforeEach(() => {
 
 import TimerPage from "./page";
 
+function renderWithI18n(ui: React.ReactElement) {
+  return render(<I18nProvider initialLang="fr">{ui}</I18nProvider>);
+}
+
 describe("Timer page — preset grid", () => {
   it("renders 6 preset cards", () => {
-    render(<TimerPage />);
-    expect(screen.getByText("TABATA")).toBeDefined();
+    renderWithI18n(<TimerPage />);
+    expect(screen.getByText("Tabata")).toBeDefined();
     expect(screen.getByText("EMOM")).toBeDefined();
     expect(screen.getByText("AMRAP")).toBeDefined();
-    expect(screen.getByText("CIRCUIT")).toBeDefined();
-    expect(screen.getByText("REPOS")).toBeDefined();
-    expect(screen.getByText("PERSONNALISÉ")).toBeDefined();
+    expect(screen.getByText("Circuit Training")).toBeDefined();
+    expect(screen.getByText("Repos")).toBeDefined();
+    expect(screen.getByText("Personnalisé")).toBeDefined();
   });
 
   it("renders the Timer heading", () => {
-    render(<TimerPage />);
+    renderWithI18n(<TimerPage />);
     expect(screen.getByText("Timer")).toBeDefined();
   });
 
   it("shows instruction text", () => {
-    render(<TimerPage />);
-    expect(screen.getByText(/Choisissez un format/)).toBeDefined();
+    renderWithI18n(<TimerPage />);
+    expect(screen.getByText(/Choisis un format/)).toBeDefined();
   });
 });

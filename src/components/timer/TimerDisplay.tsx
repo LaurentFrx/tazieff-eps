@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PhaseEntry, TimerState } from '@/hooks/useTimer';
 import { isSpeechEnabled, setSpeechEnabled } from '@/lib/audio/speech';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 // ---------- Phase colors ----------
 
@@ -68,6 +69,7 @@ interface PhaseBandProps {
 }
 
 function PhaseBand({ phase, isActive, secondsLeft, index }: PhaseBandProps) {
+  const { t } = useI18n();
   const colors = getPhaseColor(phase.type);
   const isDone = phase.status === 'done';
   const showCountdown = isActive && secondsLeft <= 3 && secondsLeft > 0;
@@ -151,7 +153,7 @@ function PhaseBand({ phase, isActive, secondsLeft, index }: PhaseBandProps) {
           zIndex: 1,
         }}
       >
-        {phase.label}
+        {t(`timer.phases.${phase.type}`)}
         {phase.roundIndex != null && !isActive && (
           <span style={{ opacity: 0.6, fontStyle: 'normal', fontWeight: 400, marginLeft: '6px' }}>
             R{phase.roundIndex}
@@ -202,7 +204,7 @@ function PhaseBand({ phase, isActive, secondsLeft, index }: PhaseBandProps) {
             zIndex: 1,
           }}
         >
-          Round {phase.roundIndex}
+          {t('timer.roundOf')} {phase.roundIndex}
         </span>
       )}
     </div>
@@ -219,6 +221,7 @@ interface ScoreboardProps {
 }
 
 function Scoreboard({ currentRound, totalRounds, currentCycle, totalCycles }: ScoreboardProps) {
+  const { t } = useI18n();
   const showCycles = totalCycles > 1;
 
   const counterStyle: React.CSSProperties = {
@@ -242,7 +245,7 @@ function Scoreboard({ currentRound, totalRounds, currentCycle, totalCycles }: Sc
           {currentRound}<span style={{ opacity: 0.4, fontSize: '20px' }}>/{totalRounds}</span>
         </span>
         <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#888', marginTop: '2px' }}>
-          Série
+          {t('timer.roundOf')}
         </span>
       </div>
       {showCycles && (
@@ -254,7 +257,7 @@ function Scoreboard({ currentRound, totalRounds, currentCycle, totalCycles }: Sc
             {currentCycle}<span style={{ opacity: 0.4, fontSize: '20px' }}>/{totalCycles}</span>
           </span>
           <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#888', marginTop: '2px' }}>
-            Cycle
+            {t('timer.cycleOf')}
           </span>
         </div>
       )}
@@ -273,6 +276,7 @@ interface DoneScreenProps {
 }
 
 function DoneScreen({ elapsedSeconds, totalRounds, totalCycles, onRestart, onBack }: DoneScreenProps) {
+  const { t } = useI18n();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -314,7 +318,7 @@ function DoneScreen({ elapsedSeconds, totalRounds, totalCycles, onRestart, onBac
           transition: 'opacity 400ms ease 200ms',
         }}
       >
-        BRAVO !
+        {t('timer.done.bravo')}
       </h2>
       <div
         style={{
@@ -328,10 +332,10 @@ function DoneScreen({ elapsedSeconds, totalRounds, totalCycles, onRestart, onBac
           transition: 'opacity 400ms ease 400ms',
         }}
       >
-        <span>Durée : {formatTime(elapsedSeconds)}</span>
+        <span>{t('timer.done.duration')} : {formatTime(elapsedSeconds)}</span>
         <span>
-          {totalRounds} série{totalRounds > 1 ? 's' : ''}
-          {totalCycles > 1 ? ` × ${totalCycles} cycles` : ''}
+          {totalRounds} {totalRounds > 1 ? t('timer.done.seriesPlural') : t('timer.done.series')}
+          {totalCycles > 1 ? ` × ${totalCycles} ${t('timer.done.cycles')}` : ''}
         </span>
       </div>
       <div
@@ -363,7 +367,7 @@ function DoneScreen({ elapsedSeconds, totalRounds, totalCycles, onRestart, onBac
             cursor: 'pointer',
           }}
         >
-          RECOMMENCER
+          {t('timer.done.restart')}
         </button>
         <button
           onClick={onBack}
@@ -376,7 +380,7 @@ function DoneScreen({ elapsedSeconds, totalRounds, totalCycles, onRestart, onBac
             padding: '8px',
           }}
         >
-          ← Retour aux presets
+          ← {t('timer.done.backToPresets')}
         </button>
       </div>
     </div>
@@ -406,6 +410,7 @@ export function TimerDisplay({
   onSkip,
   onBack,
 }: TimerDisplayProps) {
+  const { t } = useI18n();
   const [speechOn, setSpeechOn] = useState(isSpeechEnabled());
   const bandsContainerRef = useRef<HTMLDivElement>(null);
 
@@ -509,7 +514,7 @@ export function TimerDisplay({
             display: 'flex',
             alignItems: 'center',
           }}
-          aria-label={speechOn ? 'Désactiver le coaching vocal' : 'Activer le coaching vocal'}
+          aria-label={speechOn ? t('timer.voiceOn') : t('timer.voiceOff')}
         >
           {speechOn ? <SpeakerOnIcon /> : <SpeakerOffIcon />}
         </button>
@@ -541,7 +546,7 @@ export function TimerDisplay({
         {/* Idle state: show preview bands (all upcoming) */}
         {isIdle && state.phases.length === 0 && (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555' }}>
-            Aucune phase configurée
+            {t('timer.noPhase')}
           </div>
         )}
       </div>
@@ -577,7 +582,7 @@ export function TimerDisplay({
               cursor: 'pointer',
             }}
           >
-            START
+            {t('timer.controls.start')}
           </button>
         )}
         {isRunning && (
@@ -598,7 +603,7 @@ export function TimerDisplay({
               cursor: 'pointer',
             }}
           >
-            PAUSE
+            {t('timer.controls.pause')}
           </button>
         )}
         {isPaused && (
@@ -619,7 +624,7 @@ export function TimerDisplay({
               cursor: 'pointer',
             }}
           >
-            REPRENDRE
+            {t('timer.controls.resume')}
           </button>
         )}
 
@@ -640,7 +645,7 @@ export function TimerDisplay({
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
-              aria-label="Réinitialiser"
+              aria-label={t('timer.controls.reset')}
             >
               <ResetIcon />
             </button>
@@ -658,7 +663,7 @@ export function TimerDisplay({
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
-              aria-label="Phase suivante"
+              aria-label={t('timer.controls.skip')}
             >
               <SkipIcon />
             </button>
@@ -678,7 +683,7 @@ export function TimerDisplay({
               padding: '4px',
             }}
           >
-            ← Retour
+            ← {t('timer.back')}
           </button>
         )}
       </div>
