@@ -5,18 +5,18 @@ import type { PhaseEntry, TimerState } from '@/hooks/useTimer';
 import { isSpeechEnabled, setSpeechEnabled } from '@/lib/audio/speech';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
-// ---------- Phase colors ----------
+// ---------- Phase gradients (Sport Vibrant) ----------
 
-const PHASE_COLORS: Record<string, { from: string; to: string; text: string; upcomingBg: string; accent: string }> = {
-  prepare:  { from: '#f59e0b', to: '#d97706', text: '#000', upcomingBg: '#78350f', accent: '#f59e0b' },
-  work:     { from: '#22c55e', to: '#16a34a', text: '#000', upcomingBg: '#166534', accent: '#22c55e' },
-  rest:     { from: '#ef4444', to: '#dc2626', text: '#fff', upcomingBg: '#7f1d1d', accent: '#ef4444' },
-  recovery: { from: '#3b82f6', to: '#2563eb', text: '#fff', upcomingBg: '#1e3a5f', accent: '#3b82f6' },
-  cooldown: { from: '#06b6d4', to: '#0891b2', text: '#fff', upcomingBg: '#164e63', accent: '#06b6d4' },
+const PHASE_GRADIENTS: Record<string, { from: string; to: string }> = {
+  prepare:  { from: '#f59e0b', to: '#facc15' },  // amber-500 → yellow-400
+  work:     { from: '#22c55e', to: '#34d399' },  // green-500 → emerald-400
+  rest:     { from: '#ef4444', to: '#fb7185' },  // red-500   → rose-400
+  recovery: { from: '#3b82f6', to: '#818cf8' },  // blue-500  → indigo-400
+  cooldown: { from: '#06b6d4', to: '#2dd4bf' },  // cyan-500  → teal-400
 };
 
-function getPhaseColor(type: string) {
-  return PHASE_COLORS[type] || PHASE_COLORS.work;
+function getGradient(type: string) {
+  return PHASE_GRADIENTS[type] || PHASE_GRADIENTS.work;
 }
 
 // ---------- Format time ----------
@@ -70,64 +70,108 @@ interface PhaseBandProps {
 
 function PhaseBand({ phase, isActive, secondsLeft, index }: PhaseBandProps) {
   const { t } = useI18n();
-  const colors = getPhaseColor(phase.type);
+  const g = getGradient(phase.type);
   const isDone = phase.status === 'done';
   const showCountdown = isActive && secondsLeft <= 3 && secondsLeft > 0;
   const scale = showCountdown ? 1 + (4 - secondsLeft) * 0.1 : 1;
 
-  const bgStyle: React.CSSProperties = isDone
-    ? { background: '#1a1a1a' }
-    : isActive
-      ? { background: `linear-gradient(135deg, ${colors.from}, ${colors.to})` }
-      : { background: colors.upcomingBg, borderLeft: `4px solid ${colors.accent}` };
-
-  const textColor = isActive ? colors.text : '#fff';
-
-  return (
-    <div
-      className="timer-band"
-      style={{
-        ...bgStyle,
-        flex: isActive ? '1 1 auto' : '0 0 auto',
-        height: isActive ? undefined : isDone ? '36px' : '56px',
-        minHeight: isActive ? '120px' : undefined,
-        borderRadius: '12px',
-        padding: isActive ? '16px 20px' : '10px 20px',
-        display: 'flex',
-        flexDirection: isActive ? 'column' : 'row',
-        alignItems: isActive ? 'center' : 'center',
-        justifyContent: isActive ? 'center' : 'space-between',
-        gap: isActive ? '8px' : '0',
-        color: textColor,
-        opacity: isDone ? 0.4 : 1,
-        transition: 'all 300ms ease',
-        position: 'relative',
-        overflow: 'hidden',
-        animationDelay: `${index * 30}ms`,
-      }}
-      data-phase-status={phase.status}
-      data-phase-type={phase.type}
-    >
-      {/* Heartbeat pulse overlay for active WORK */}
-      {isActive && phase.type === 'work' && (
-        <div
-          className="timer-pulse-overlay"
+  // ── Done band: compressed, gray ──
+  if (isDone) {
+    return (
+      <div
+        className="timer-band"
+        style={{
+          flex: '0 0 auto',
+          height: '36px',
+          borderRadius: '12px',
+          padding: '0 16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          background: 'linear-gradient(to right, #374151, #4b5563)',
+          color: '#fff',
+          opacity: 0.5,
+          transition: 'all 300ms ease',
+        }}
+        data-phase-status="done"
+        data-phase-type={phase.type}
+      >
+        <span
           style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'inherit',
-            borderRadius: 'inherit',
-            animation: 'timer-heartbeat 1s ease-in-out infinite',
-            pointerEvents: 'none',
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            fontStyle: 'italic',
+            fontSize: '12px',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            textDecoration: 'line-through',
           }}
-        />
-      )}
+        >
+          {t(`timer.phases.${phase.type}`)}
+          {phase.roundIndex != null && (
+            <span style={{ opacity: 0.5, fontStyle: 'normal', fontWeight: 400, marginLeft: '6px' }}>
+              R{phase.roundIndex}
+            </span>
+          )}
+        </span>
+        <span
+          style={{
+            fontFamily: "ui-monospace, 'Courier New', monospace",
+            fontWeight: 700,
+            fontSize: '13px',
+            opacity: 0.5,
+          }}
+        >
+          00:00
+        </span>
+      </div>
+    );
+  }
 
-      {/* Phase transition flash overlay */}
-      {isActive && (
+  // ── Active band: large, dominant ──
+  if (isActive) {
+    return (
+      <div
+        className="timer-band"
+        style={{
+          flex: '1 1 auto',
+          minHeight: '200px',
+          borderRadius: '24px',
+          padding: '20px 24px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          background: `linear-gradient(135deg, ${g.from}, ${g.to})`,
+          color: '#fff',
+          position: 'relative',
+          overflow: 'hidden',
+          boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+          transition: 'all 300ms ease',
+        }}
+        data-phase-status="active"
+        data-phase-type={phase.type}
+      >
+        {/* Heartbeat pulse overlay for WORK */}
+        {phase.type === 'work' && (
+          <div
+            className="timer-pulse-overlay"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'inherit',
+              borderRadius: 'inherit',
+              animation: 'timer-heartbeat 1s ease-in-out infinite',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+
+        {/* Phase transition flash */}
         <div
           className="timer-flash-overlay"
-          key={`flash-${index}-${phase.status}`}
+          key={`flash-${index}-active`}
           style={{
             position: 'absolute',
             inset: 0,
@@ -137,40 +181,33 @@ function PhaseBand({ phase, isActive, secondsLeft, index }: PhaseBandProps) {
             pointerEvents: 'none',
           }}
         />
-      )}
 
-      {/* Phase label */}
-      <span
-        style={{
-          fontFamily: 'var(--font-display)',
-          fontWeight: 700,
-          fontStyle: 'italic',
-          fontSize: isActive ? '14px' : '13px',
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase' as const,
-          opacity: isDone ? 0.8 : 1,
-          textDecoration: isDone ? 'line-through' : 'none',
-          position: isActive ? 'relative' : 'static',
-          zIndex: 1,
-        }}
-      >
-        {t(`timer.phases.${phase.type}`)}
-        {phase.roundIndex != null && !isActive && (
-          <span style={{ opacity: 0.6, fontStyle: 'normal', fontWeight: 400, marginLeft: '6px' }}>
-            R{phase.roundIndex}
-          </span>
-        )}
-      </span>
+        {/* Phase label */}
+        <span
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            fontStyle: 'italic',
+            fontSize: '20px',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+            position: 'relative',
+            zIndex: 1,
+          }}
+        >
+          {t(`timer.phases.${phase.type}`)}
+        </span>
 
-      {/* Countdown */}
-      {isActive ? (
+        {/* Giant countdown */}
         <span
           className="font-orbitron"
           style={{
-            fontSize: 'clamp(64px, 18vw, 110px)',
+            fontSize: 'clamp(72px, 20vw, 120px)',
             fontWeight: 900,
             lineHeight: 1,
             fontVariantNumeric: 'tabular-nums',
+            textShadow: '0 4px 8px rgba(0,0,0,0.3)',
             transform: `scale(${scale})`,
             transition: 'transform 200ms ease',
             position: 'relative',
@@ -179,35 +216,94 @@ function PhaseBand({ phase, isActive, secondsLeft, index }: PhaseBandProps) {
         >
           {formatTime(secondsLeft)}
         </span>
-      ) : (
-        <span
-          style={{
-            fontFamily: "ui-monospace, 'Courier New', monospace",
-            fontWeight: 700,
-            fontSize: '15px',
-            fontVariantNumeric: 'tabular-nums',
-            opacity: isDone ? 0.6 : 0.9,
-          }}
-        >
-          {isDone ? '00:00' : formatTime(phase.duration)}
-        </span>
-      )}
 
-      {/* Round info on active band */}
-      {isActive && phase.roundIndex != null && (
-        <span
-          style={{
-            fontSize: '13px',
-            fontWeight: 600,
-            letterSpacing: '0.06em',
-            opacity: 0.7,
-            position: 'relative',
-            zIndex: 1,
-          }}
-        >
-          {t('timer.roundOf')} {phase.roundIndex}
-        </span>
-      )}
+        {/* Round info */}
+        {phase.roundIndex != null && (
+          <span
+            style={{
+              fontSize: '16px',
+              fontWeight: 600,
+              letterSpacing: '0.06em',
+              opacity: 0.8,
+              textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+              position: 'relative',
+              zIndex: 1,
+            }}
+          >
+            {t('timer.roundOf')} {phase.roundIndex}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  // ── Upcoming band: compact, gradient with dark overlay ──
+  return (
+    <div
+      className="timer-band"
+      style={{
+        flex: '0 0 auto',
+        height: '56px',
+        borderRadius: '16px',
+        padding: '0 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        background: `linear-gradient(to right, ${g.from}, ${g.to})`,
+        color: '#fff',
+        position: 'relative',
+        overflow: 'hidden',
+        boxShadow: '0 10px 15px -3px rgba(0,0,0,0.3)',
+        transition: 'all 300ms ease',
+        animationDelay: `${index * 30}ms`,
+      }}
+      data-phase-status="upcoming"
+      data-phase-type={phase.type}
+    >
+      {/* Dark overlay for subtlety */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'rgba(0,0,0,0.35)',
+          borderRadius: 'inherit',
+          pointerEvents: 'none',
+        }}
+      />
+
+      <span
+        style={{
+          fontFamily: 'var(--font-display)',
+          fontWeight: 700,
+          fontStyle: 'italic',
+          fontSize: '13px',
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          textShadow: '0 1px 3px rgba(0,0,0,0.4)',
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
+        {t(`timer.phases.${phase.type}`)}
+        {phase.roundIndex != null && (
+          <span style={{ opacity: 0.7, fontStyle: 'normal', fontWeight: 400, marginLeft: '6px' }}>
+            R{phase.roundIndex}
+          </span>
+        )}
+      </span>
+      <span
+        style={{
+          fontFamily: "ui-monospace, 'Courier New', monospace",
+          fontWeight: 700,
+          fontSize: '15px',
+          fontVariantNumeric: 'tabular-nums',
+          textShadow: '0 1px 3px rgba(0,0,0,0.4)',
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
+        {formatTime(phase.duration)}
+      </span>
     </div>
   );
 }
@@ -225,37 +321,49 @@ function Scoreboard({ currentRound, totalRounds, currentCycle, totalCycles }: Sc
   const { t } = useI18n();
   const showCycles = totalCycles > 1;
 
-  const counterStyle: React.CSSProperties = {
-    background: 'linear-gradient(180deg, #2a2a3e 0%, #1a1a2e 50%, #0a0a1e 100%)',
-    border: '1px solid #333',
-    borderRadius: '12px',
-    padding: '10px 16px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    flex: 1,
-  };
-
   return (
     <div style={{ display: 'flex', gap: '12px', padding: '0 12px' }}>
-      <div style={{ ...counterStyle, ...(showCycles ? {} : { maxWidth: '200px', margin: '0 auto' }) }}>
+      <div
+        style={{
+          background: 'linear-gradient(180deg, #2a2a3e 0%, #1a1a2e 50%, #0a0a1e 100%)',
+          border: '1px solid #333',
+          borderRadius: '12px',
+          padding: '8px 16px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          flex: 1,
+          ...(showCycles ? {} : { maxWidth: '200px', margin: '0 auto' }),
+        }}
+      >
         <span
           className="font-orbitron"
-          style={{ fontSize: '36px', fontWeight: 900, color: '#fff', lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' }}
+          style={{ fontSize: '32px', fontWeight: 900, color: '#fff', lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' }}
         >
-          {currentRound}<span style={{ opacity: 0.4, fontSize: '20px' }}>/{totalRounds}</span>
+          {currentRound}<span style={{ opacity: 0.4, fontSize: '18px' }}>/{totalRounds}</span>
         </span>
         <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#888', marginTop: '2px' }}>
           {t('timer.roundOf')}
         </span>
       </div>
       {showCycles && (
-        <div style={counterStyle}>
+        <div
+          style={{
+            background: 'linear-gradient(180deg, #2a2a3e 0%, #1a1a2e 50%, #0a0a1e 100%)',
+            border: '1px solid #333',
+            borderRadius: '12px',
+            padding: '8px 16px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            flex: 1,
+          }}
+        >
           <span
             className="font-orbitron"
-            style={{ fontSize: '36px', fontWeight: 900, color: '#fff', lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' }}
+            style={{ fontSize: '32px', fontWeight: 900, color: '#fff', lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' }}
           >
-            {currentCycle}<span style={{ opacity: 0.4, fontSize: '20px' }}>/{totalCycles}</span>
+            {currentCycle}<span style={{ opacity: 0.4, fontSize: '18px' }}>/{totalCycles}</span>
           </span>
           <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#888', marginTop: '2px' }}>
             {t('timer.cycleOf')}
@@ -281,25 +389,12 @@ function DoneScreen({ elapsedSeconds, totalRounds, totalCycles, onRestart, onBac
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setShow(true), 50);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setShow(true), 50);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9999,
-        background: '#0a0a0a',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '24px',
-        padding: '24px',
-      }}
-    >
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-6 bg-[#0a0a0a] p-6">
       <div
         style={{
           fontSize: '80px',
@@ -460,13 +555,12 @@ export function TimerDisplay({
         flexDirection: 'column',
         height: isActive ? '100dvh' : undefined,
         minHeight: isActive ? undefined : '80dvh',
-        overflow: 'hidden',
       }}
     >
-      {/* 1. Info bar */}
+      {/* 1. Info bar — flex-none h-10 */}
       <div
         style={{
-          height: '44px',
+          height: '40px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -475,7 +569,6 @@ export function TimerDisplay({
           flexShrink: 0,
         }}
       >
-        {/* Left: total time remaining */}
         <span
           style={{
             fontFamily: "ui-monospace, 'Courier New', monospace",
@@ -486,8 +579,6 @@ export function TimerDisplay({
         >
           {formatTime(state.totalSecondsLeft)}
         </span>
-
-        {/* Center: preset name */}
         <span
           style={{
             fontSize: '12px',
@@ -500,8 +591,6 @@ export function TimerDisplay({
         >
           {presetName}
         </span>
-
-        {/* Right: speaker toggle */}
         <button
           onClick={toggleSpeech}
           style={{
@@ -519,7 +608,7 @@ export function TimerDisplay({
         </button>
       </div>
 
-      {/* 2. Phase bands */}
+      {/* 2. Phase bands — flex-1, scrollable */}
       <div
         ref={bandsContainerRef}
         style={{
@@ -527,7 +616,7 @@ export function TimerDisplay({
           display: 'flex',
           flexDirection: 'column',
           gap: '8px',
-          padding: '8px 12px',
+          padding: '12px',
           overflowY: 'auto',
           minHeight: 0,
         }}
@@ -542,7 +631,6 @@ export function TimerDisplay({
           />
         ))}
 
-        {/* Idle state: show preview bands (all upcoming) */}
         {isIdle && state.phases.length === 0 && (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555' }}>
             {t('timer.noPhase')}
@@ -550,8 +638,8 @@ export function TimerDisplay({
         )}
       </div>
 
-      {/* 3. Scoreboard counters */}
-      <div style={{ flexShrink: 0, padding: '8px 0' }}>
+      {/* 3. Scoreboard — flex-none */}
+      <div style={{ flexShrink: 0, padding: '6px 0' }}>
         <Scoreboard
           currentRound={state.currentRound}
           totalRounds={state.totalRounds}
@@ -560,8 +648,18 @@ export function TimerDisplay({
         />
       </div>
 
-      {/* 4. Controls */}
-      <div style={{ flexShrink: 0, padding: '8px 16px 20px', display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+      {/* 4. Controls — flex-none with safe-area bottom padding */}
+      <div
+        style={{
+          flexShrink: 0,
+          padding: '8px 16px',
+          paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
+          alignItems: 'center',
+        }}
+      >
         {/* Main button */}
         {isIdle && (
           <button
@@ -589,7 +687,7 @@ export function TimerDisplay({
             onClick={onPause}
             style={{
               width: '100%',
-              height: '56px',
+              height: '52px',
               borderRadius: '12px',
               border: 'none',
               background: '#ef4444',
@@ -610,7 +708,7 @@ export function TimerDisplay({
             onClick={onResume}
             style={{
               width: '100%',
-              height: '56px',
+              height: '52px',
               borderRadius: '12px',
               border: 'none',
               background: '#22c55e',
@@ -627,7 +725,7 @@ export function TimerDisplay({
           </button>
         )}
 
-        {/* Secondary buttons */}
+        {/* Secondary buttons row */}
         {isActive && (
           <div style={{ display: 'flex', gap: '16px' }}>
             <button
