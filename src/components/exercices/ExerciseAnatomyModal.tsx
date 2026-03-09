@@ -82,6 +82,8 @@ function ModalMannequin({
         color,
         emissive: new THREE.Color(0x000000),
         shininess: 30,
+        transparent: true,
+        opacity: 1,
         side: THREE.DoubleSide,
       });
       mesh.renderOrder = 1;
@@ -108,7 +110,7 @@ function ModalMannequin({
   const highlightedRef = useRef<string | null>(null);
   highlightedRef.current = highlightedMuscle;
 
-  /* Update materials when selection changes — NEVER reduce opacity */
+  /* Update materials when selection changes */
   useEffect(() => {
     for (const { mesh, groupKey, baseFrName } of meshesRef.current) {
       const mat = mesh.material as THREE.MeshPhongMaterial;
@@ -123,21 +125,19 @@ function ModalMannequin({
         /* Selected sub-muscle: full opacity + strong emissive (pulse in useFrame) */
         mat.color.copy(ud.originalColor);
         mat.opacity = 1;
-        mat.transparent = false;
         mat.emissive.copy(ud.originalColor).multiplyScalar(0.8);
       } else if (groupKey && activeGroups.has(groupKey)) {
         /* Active group muscle: vivid with moderate emissive glow */
         mat.color.copy(ud.originalColor);
         mat.opacity = 0.9;
-        mat.transparent = true;
         mat.emissive.copy(ud.originalColor).multiplyScalar(0.3);
       } else {
         /* Non-active muscle: nearly invisible gray */
         mat.color.set(0x2a2a2a);
         mat.opacity = 0.15;
-        mat.transparent = true;
         mat.emissive.set(0x000000);
       }
+      mat.needsUpdate = true;
     }
   }, [activeGroups, highlightedMuscle]);
 
@@ -468,10 +468,7 @@ export default function ExerciseAnatomyModal({
       {/* Bottom sheet */}
       {sheetGroupKey && (
         <>
-          <div
-            className="exo-anatomy-sheet-backdrop"
-            onClick={handleCloseSheet}
-          />
+          <div className="exo-anatomy-sheet-backdrop" />
           <div className="exo-anatomy-sheet">
             <div className="exo-anatomy-sheet-handle" />
             <div className="exo-anatomy-sheet-header">

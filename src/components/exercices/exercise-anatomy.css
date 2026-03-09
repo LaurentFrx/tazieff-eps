@@ -195,6 +195,7 @@
   inset: 0;
   z-index: 58;
   background: rgba(0, 0, 0, 0.5);
+  pointer-events: none;
   animation: exo-anat-fade-in 0.2s ease both;
 }
 
