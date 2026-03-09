@@ -31,7 +31,7 @@ type OrbitControlsRef = React.RefObject<any>;
 
 const FEET_Y = -1.28;
 const MANNEQUIN_SCALE = 1.5;
-const TARGET_Y = FEET_Y + 1.0;
+const TARGET_Y = FEET_Y + 1.5;
 const MIN_ZOOM = 1.0;
 const MAX_ZOOM = 2.5;
 
@@ -232,14 +232,30 @@ function ModalScene({
   const scaleRef = useRef<THREE.Group>(null);
   const orbitRef: OrbitControlsRef = useRef(null);
   const zoomRef = useRef(1);
-  const pinchRef = useRef(0);
+  const panRef = useRef(new THREE.Vector3(0, 0, 0));
   const defaultTarget = useMemo(() => new THREE.Vector3(0, TARGET_Y, 0), []);
-  const { gl, camera, scene } = useThree();
-
-  const focusPointRef = useRef<THREE.Vector3 | null>(null);
   const lerpVec = useRef(new THREE.Vector3());
+  const zeroVec = useRef(new THREE.Vector3(0, 0, 0));
   const raycasterObj = useRef(new THREE.Raycaster());
   const ndcVec = useRef(new THREE.Vector2());
+  const prevPinchRef = useRef<{ dist: number; mx: number; my: number } | null>(null);
+  const { gl, camera, scene } = useThree();
+
+  const FOV_RAD = (60 * Math.PI) / 180;
+
+  /** Unproject screen point onto z=0 world plane. */
+  const screenToWorld = (sx: number, sy: number) => {
+    const el = gl.domElement;
+    const rect = el.getBoundingClientRect();
+    ndcVec.current.set(
+      ((sx - rect.left) / rect.width) * 2 - 1,
+      -((sy - rect.top) / rect.height) * 2 + 1,
+    );
+    raycasterObj.current.setFromCamera(ndcVec.current, camera);
+    const ray = raycasterObj.current.ray;
+    const t = -ray.origin.z / ray.direction.z;
+    return ray.origin.clone().addScaledVector(ray.direction, Math.max(0.001, t));
+  };
 
   const activeGroups = useMemo(() => new Set(groupKeys), [groupKeys]);
 
@@ -250,78 +266,80 @@ function ModalScene({
     }
   }, [defaultTarget]);
 
-  /* Wheel → zoom */
+  /* Wheel → zoom-to-cursor (desktop) */
   useEffect(() => {
     const el = gl.domElement;
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
-      const prev = zoomRef.current;
-      zoomRef.current = clamp(
-        prev * (1 - e.deltaY * 0.001),
-        MIN_ZOOM,
-        MAX_ZOOM,
-      );
-      if (zoomRef.current > 1.05 && !focusPointRef.current) {
-        const rect = el.getBoundingClientRect();
-        ndcVec.current.set(
-          ((e.clientX - rect.left) / rect.width) * 2 - 1,
-          -((e.clientY - rect.top) / rect.height) * 2 + 1,
-        );
-        raycasterObj.current.setFromCamera(ndcVec.current, camera);
-        const hits = raycasterObj.current.intersectObjects(
-          scene.children,
-          true,
-        );
-        if (hits.length > 0) {
-          focusPointRef.current = hits[0].point.clone();
-        }
-      } else if (zoomRef.current <= 1.02) {
-        focusPointRef.current = null;
+      const oldZoom = zoomRef.current;
+      const newZoom = clamp(oldZoom * (1 - e.deltaY * 0.001), MIN_ZOOM, MAX_ZOOM);
+      if (newZoom === oldZoom) return;
+
+      const worldCursor = screenToWorld(e.clientX, e.clientY);
+      const feetPos = new THREE.Vector3(0, FEET_Y, 0);
+      const shift = worldCursor.sub(feetPos).multiplyScalar(newZoom / oldZoom - 1);
+      panRef.current.add(shift);
+
+      zoomRef.current = newZoom;
+      if (newZoom <= 1.02) {
+        panRef.current.set(0, 0, 0);
       }
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
   }, [gl, camera, scene]);
 
-  /* Pinch → zoom + focus */
+  /* Pinch → zoom-to-point + 2-finger pan (mobile) */
   useEffect(() => {
     const el = gl.domElement;
+
     const onTouchStart = (e: TouchEvent) => {
-      if (e.touches.length !== 2) return;
+      if (e.touches.length !== 2) { prevPinchRef.current = null; return; }
       const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
       const my = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-      const rect = el.getBoundingClientRect();
-      ndcVec.current.set(
-        ((mx - rect.left) / rect.width) * 2 - 1,
-        -((my - rect.top) / rect.height) * 2 + 1,
-      );
-      raycasterObj.current.setFromCamera(ndcVec.current, camera);
-      const hits = raycasterObj.current.intersectObjects(
-        scene.children,
-        true,
-      );
-      if (hits.length > 0) {
-        focusPointRef.current = hits[0].point.clone();
-      }
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      prevPinchRef.current = { dist: Math.sqrt(dx * dx + dy * dy), mx, my };
     };
+
     const onTouchMove = (e: TouchEvent) => {
-      if (e.touches.length !== 2) return;
+      if (e.touches.length !== 2 || !prevPinchRef.current) return;
+      e.preventDefault();
+
+      const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const my = (e.touches[0].clientY + e.touches[1].clientY) / 2;
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      if (pinchRef.current > 0) {
-        zoomRef.current = clamp(
-          zoomRef.current * (dist / pinchRef.current),
-          MIN_ZOOM,
-          MAX_ZOOM,
-        );
+      const prev = prevPinchRef.current;
+
+      /* 1. Zoom */
+      const oldZoom = zoomRef.current;
+      const newZoom = clamp(oldZoom * (dist / prev.dist), MIN_ZOOM, MAX_ZOOM);
+
+      /* 2. Zoom-to-point: keep content under midpoint fixed on screen */
+      if (newZoom !== oldZoom) {
+        const worldMid = screenToWorld(mx, my);
+        const feetPos = new THREE.Vector3(0, FEET_Y, 0);
+        const shift = worldMid.sub(feetPos).multiplyScalar(newZoom / oldZoom - 1);
+        panRef.current.add(shift);
       }
-      pinchRef.current = dist;
+      zoomRef.current = newZoom;
+
+      /* 3. Pan: translate orbit target to follow finger midpoint movement */
+      const rect = el.getBoundingClientRect();
+      const visibleH = 2 * camera.position.z * Math.tan(FOV_RAD / 2);
+      const worldPerPx = visibleH / rect.height;
+      panRef.current.x -= (mx - prev.mx) * worldPerPx;
+      panRef.current.y += (my - prev.my) * worldPerPx;
+
+      prevPinchRef.current = { dist, mx, my };
     };
+
     const resetPinch = () => {
-      pinchRef.current = 0;
-      focusPointRef.current = null;
+      prevPinchRef.current = null;
     };
+
     el.addEventListener("touchstart", onTouchStart, { passive: true });
     el.addEventListener("touchmove", onTouchMove, { passive: false });
     el.addEventListener("touchend", resetPinch);
@@ -332,7 +350,7 @@ function ModalScene({
       el.removeEventListener("touchend", resetPinch);
       el.removeEventListener("touchcancel", resetPinch);
     };
-  }, [gl, camera, scene]);
+  }, [gl, camera, scene, FOV_RAD]);
 
   /* Per-frame sync */
   useFrame(() => {
@@ -341,17 +359,18 @@ function ModalScene({
 
     const orbit = orbitRef.current;
     if (orbit) {
-      if (focusPointRef.current && z > 1.05) {
-        const t = Math.min(1, (z - 1) / (MAX_ZOOM - 1));
-        lerpVec.current.lerpVectors(
-          defaultTarget,
-          focusPointRef.current,
-          t * 0.55,
-        );
-        orbit.target.lerp(lerpVec.current, 0.08);
-      } else {
-        orbit.target.lerp(defaultTarget, 0.06);
+      /* Gradually return pan to zero when fully dezoomed */
+      if (z <= 1.02) {
+        panRef.current.lerp(zeroVec.current, 0.12);
       }
+
+      /* Clamp pan so mannequin stays visible — more zoom = more pan allowed */
+      const maxPan = Math.max(0, (z - 1) * 1.8);
+      panRef.current.x = clamp(panRef.current.x, -maxPan, maxPan);
+      panRef.current.y = clamp(panRef.current.y, -maxPan, maxPan);
+
+      lerpVec.current.copy(defaultTarget).add(panRef.current);
+      orbit.target.lerp(lerpVec.current, 0.15);
     }
   });
 
