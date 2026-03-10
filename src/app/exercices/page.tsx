@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
 import { ExerciseListClient } from "@/app/exercices/ExerciseListClient";
 import { fetchLiveExercises } from "@/lib/live/queries";
