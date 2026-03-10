@@ -1,4 +1,5 @@
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
 import { ExerciseListClient } from "@/app/exercices/ExerciseListClient";

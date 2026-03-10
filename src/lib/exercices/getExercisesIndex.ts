@@ -1,5 +1,4 @@
 import "server-only";
-import { unstable_cache } from "next/cache";
 import { getAllExercises } from "@/lib/content/fs";
 import { getImportedExercisesIndex } from "@/lib/exercices/getImportedExercisesIndex";
 import { fetchLiveExercises } from "@/lib/live/queries";
@@ -33,7 +32,7 @@ function mergeExercisesIndex(
   );
 }
 
-async function buildExercisesIndex(locale: Lang): Promise<LiveExerciseListItem[]> {
+export async function getExercisesIndex(locale: Lang): Promise<LiveExerciseListItem[]> {
   const [exercises, liveRows, importedExercises] = await Promise.all([
     getAllExercises(locale),
     fetchLiveExercises(locale),
@@ -41,17 +40,4 @@ async function buildExercisesIndex(locale: Lang): Promise<LiveExerciseListItem[]
   ]);
 
   return mergeExercisesIndex(exercises, liveRows, importedExercises);
-}
-
-const getExercisesIndexCached = unstable_cache(
-  async (locale: Lang) => buildExercisesIndex(locale),
-  ["exercises-index"],
-  { tags: ["exercises"] },
-);
-
-export async function getExercisesIndex(locale: Lang) {
-  if (process.env.NODE_ENV === "development") {
-    return buildExercisesIndex(locale);
-  }
-  return getExercisesIndexCached(locale);
 }

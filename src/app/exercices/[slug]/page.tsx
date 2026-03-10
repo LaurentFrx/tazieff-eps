@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
 import { getExercise, getMethodesForExercice } from "@/lib/content/fs";
 import { getImportedExercisesIndex } from "@/lib/exercices/getImportedExercisesIndex";
@@ -18,7 +18,6 @@ type ExercicePageProps = {
 
 async function revalidateExercises(slug: string) {
   "use server";
-  revalidateTag("exercises", "max");
   revalidatePath("/exercices");
   revalidatePath(`/exercices/${slug}`, "page");
 }
