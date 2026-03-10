@@ -94,9 +94,9 @@ function ModalMannequin({
     silhouetteScene.traverse((child) => {
       if (!(child as THREE.Mesh).isMesh) return;
       (child as THREE.Mesh).material = new THREE.MeshBasicMaterial({
-        color: 0x555555,
+        color: 0x9b7340,
         transparent: true,
-        opacity: 0.12,
+        opacity: 0.25,
         wireframe: true,
         side: THREE.BackSide,
         depthWrite: false,
