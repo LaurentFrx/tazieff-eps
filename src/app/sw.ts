@@ -88,8 +88,9 @@ const serwist = new Serwist({
     {
       matcher: ({ request, url }) =>
         isHtmlRequest(request) && isSameOrigin(url) && isEssentialPage(url.pathname),
-      handler: new StaleWhileRevalidate({
+      handler: new NetworkFirst({
         cacheName: "pages-essential",
+        networkTimeoutSeconds: 3,
       }),
     },
     {
@@ -97,6 +98,7 @@ const serwist = new Serwist({
         isHtmlRequest(request) && isSameOrigin(url) && !isEssentialPage(url.pathname),
       handler: new NetworkFirst({
         cacheName: "pages-fallback",
+        networkTimeoutSeconds: 3,
       }),
     },
   ],
