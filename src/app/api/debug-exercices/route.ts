@@ -1,22 +1,27 @@
 import { NextResponse } from 'next/server';
-import { getExercisesIndex } from '@/lib/exercices/getExercisesIndex';
-import { fetchLiveExercises } from '@/lib/live/queries';
+import fs from 'fs';
+import { readdir } from 'node:fs/promises';
+import path from 'path';
 
 export async function GET() {
-  try {
-    const staticFr = await getExercisesIndex('fr');
-    const liveFr = await fetchLiveExercises('fr').catch(() => []);
-    return NextResponse.json({
-      static: staticFr.length,
-      live: liveFr.length,
-      staticSlugs: staticFr.map(e => e.slug).sort(),
-      liveSlugs: liveFr.map((e: Record<string, unknown>) => e.slug).sort(),
-      liveDrafts: liveFr
-        .filter((e: Record<string, unknown>) => e.status === 'draft')
-        .map((e: Record<string, unknown>) => e.slug),
-    });
-  } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : String(e);
-    return NextResponse.json({ error: message });
-  }
+  const dir = path.join(process.cwd(), 'content/exercices');
+
+  // Method 1: sync
+  const syncFiles = fs.readdirSync(dir).filter(f => f.endsWith('.fr.mdx')).sort();
+
+  // Method 2: async (same as getAllExercises uses)
+  const asyncFiles = (await readdir(dir)).filter(f => f.endsWith('.fr.mdx')).sort();
+
+  // Diff
+  const onlySync = syncFiles.filter(f => !asyncFiles.includes(f));
+  const onlyAsync = asyncFiles.filter(f => !syncFiles.includes(f));
+
+  return NextResponse.json({
+    syncCount: syncFiles.length,
+    asyncCount: asyncFiles.length,
+    identical: syncFiles.length === asyncFiles.length && onlySync.length === 0,
+    onlyInSync: onlySync,
+    onlyInAsync: onlyAsync,
+    asyncSlugs: asyncFiles.map(f => f.replace('.fr.mdx', '')),
+  });
 }
