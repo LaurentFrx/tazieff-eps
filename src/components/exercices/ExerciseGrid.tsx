@@ -1,16 +1,24 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import { ExerciseCard } from "@/components/ExerciseCard";
 import type { ExerciseListItem } from "@/lib/exercices/filters";
 import { toggleFavorite } from "@/lib/favoritesStore";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
+const SESSION_ORDER = ["S1", "S2", "S3", "S4", "S5", "S6"] as const;
+
+function getSession(slug: string): string {
+  const match = slug.match(/^s(\d+)-/);
+  return match ? `S${match[1]}` : "Other";
+}
+
 // ---------------------------------------------------------------------------
 // ViewMode type
 // ---------------------------------------------------------------------------
 
-export type ViewMode = "grid" | "list";
+export type ViewMode = "grid" | "list" | "session";
 
 // ---------------------------------------------------------------------------
 // FavoriteIconButton (internal)
@@ -79,7 +87,22 @@ export function ExerciseGrid({
   onViewModeChange,
 }: ExerciseGridProps) {
   const { t } = useI18n();
-  const isGridView = viewMode === "grid";
+
+  const activeClass = "border-white/20 bg-[color:var(--bg-2)] text-[color:var(--ink)] opacity-100 ring-1 ring-white/30";
+  const inactiveClass = "border-transparent text-[color:var(--muted)] opacity-60 hover:opacity-100";
+
+  const sessionGroups = useMemo(() => {
+    if (viewMode !== "session") return [];
+    const groups = new Map<string, ExerciseListItem[]>();
+    for (const ex of exercises) {
+      const session = getSession(ex.slug);
+      if (!groups.has(session)) groups.set(session, []);
+      groups.get(session)!.push(ex);
+    }
+    return SESSION_ORDER
+      .filter((s) => groups.has(s))
+      .map((s) => ({ session: s, items: groups.get(s)! }));
+  }, [exercises, viewMode]);
 
   return (
     <>
@@ -93,11 +116,9 @@ export function ExerciseGrid({
           <button
             type="button"
             className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent)] ${
-              isGridView
-                ? "border-white/20 bg-[color:var(--bg-2)] text-[color:var(--ink)] opacity-100 ring-1 ring-white/30"
-                : "border-transparent text-[color:var(--muted)] opacity-60 hover:opacity-100"
+              viewMode === "grid" ? activeClass : inactiveClass
             }`}
-            aria-pressed={isGridView}
+            aria-pressed={viewMode === "grid"}
             aria-label={t("exerciseGrid.gridView")}
             title={t("exerciseGrid.gridView")}
             onClick={() => onViewModeChange("grid")}
@@ -112,11 +133,9 @@ export function ExerciseGrid({
           <button
             type="button"
             className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent)] ${
-              !isGridView
-                ? "border-white/20 bg-[color:var(--bg-2)] text-[color:var(--ink)] opacity-100 ring-1 ring-white/30"
-                : "border-transparent text-[color:var(--muted)] opacity-60 hover:opacity-100"
+              viewMode === "list" ? activeClass : inactiveClass
             }`}
-            aria-pressed={!isGridView}
+            aria-pressed={viewMode === "list"}
             aria-label={t("exerciseGrid.listView")}
             title={t("exerciseGrid.listView")}
             onClick={() => onViewModeChange("list")}
@@ -127,70 +146,122 @@ export function ExerciseGrid({
               <rect x="3" y="14" width="14" height="2" rx="1" />
             </svg>
           </button>
+          <button
+            type="button"
+            className={`inline-flex h-9 items-center justify-center rounded-full border px-3 text-xs font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent)] ${
+              viewMode === "session" ? activeClass : inactiveClass
+            }`}
+            aria-pressed={viewMode === "session"}
+            aria-label={t("exerciseGrid.sessionView")}
+            title={t("exerciseGrid.sessionView")}
+            onClick={() => onViewModeChange("session")}
+          >
+            {t("exerciseGrid.sessionView")}
+          </button>
         </div>
       </div>
 
       {/* Exercise cards */}
-      <div
-        className={
-          isGridView
-            ? "grid grid-cols-2 items-start gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 md:gap-3 lg:grid-cols-5 lg:gap-4 xl:grid-cols-6"
-            : "flex flex-col gap-1"
-        }
-      >
-        {exercises.length === 0 ? (
-          <div className="card">
-            <h2>{t("exerciseGrid.emptyTitle")}</h2>
-            <p>{t("exerciseGrid.emptyHint")}</p>
-          </div>
-        ) : isGridView ? (
-          exercises.map((exercise) => (
-            <Link key={exercise.slug} href={`/exercices/${exercise.slug}`}>
-              <article className="card self-start !p-2 !min-h-0 !h-auto">
-                <ExerciseCard
-                  exercise={{
-                    ...exercise,
-                    title: exercise.title?.trim() || t("exerciseGrid.untitledDraft"),
-                  }}
-                  isLive={exercise.isLive}
-                  favoriteAction={
-                    <FavoriteIconButton
-                      slug={exercise.slug}
-                      active={favorites.includes(exercise.slug)}
-                      variant="overlay"
-                    />
-                  }
-                />
-              </article>
-            </Link>
-          ))
-        ) : (
-          exercises.map((exercise) => (
-            <Link
-              key={exercise.slug}
-              href={`/exercices/${exercise.slug}`}
-              className="block"
-            >
-              <article className="rounded-[var(--radius)] border border-[color:var(--border)] bg-[color:var(--card)] px-3 py-2 shadow-sm backdrop-blur">
-                <ExerciseCard
-                  exercise={{
-                    ...exercise,
-                    title: exercise.title?.trim() || t("exerciseGrid.untitledDraft"),
-                  }}
-                  isLive={exercise.isLive}
-                  variant="list"
-                  favoriteAction={
-                    <FavoriteIconButton
-                      slug={exercise.slug}
-                      active={favorites.includes(exercise.slug)}
-                    />
-                  }
-                />
-              </article>
-            </Link>
-          ))
-        )}
-      </div>
+      {exercises.length === 0 ? (
+        <div className="card">
+          <h2>{t("exerciseGrid.emptyTitle")}</h2>
+          <p>{t("exerciseGrid.emptyHint")}</p>
+        </div>
+      ) : viewMode === "session" ? (
+        <div className="flex flex-col gap-6">
+          {sessionGroups.map(({ session, items }) => (
+            <section key={session}>
+              <div className="mb-3 flex items-baseline gap-2">
+                <h2 className="text-base font-bold text-[color:var(--ink)]">{session}</h2>
+                <span className="text-sm text-[color:var(--muted)]">
+                  {t(`exerciseGrid.sessions.${session}`)}
+                </span>
+                <span className="ml-auto text-xs text-[color:var(--muted)]">
+                  {items.length}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 items-start gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 md:gap-3 lg:grid-cols-5 lg:gap-4 xl:grid-cols-6">
+                {items.map((exercise) => (
+                  <Link key={exercise.slug} href={`/exercices/${exercise.slug}`}>
+                    <article className="card self-start !p-2 !min-h-0 !h-auto">
+                      <ExerciseCard
+                        exercise={{
+                          ...exercise,
+                          title: exercise.title?.trim() || t("exerciseGrid.untitledDraft"),
+                        }}
+                        isLive={exercise.isLive}
+                        favoriteAction={
+                          <FavoriteIconButton
+                            slug={exercise.slug}
+                            active={favorites.includes(exercise.slug)}
+                            variant="overlay"
+                          />
+                        }
+                      />
+                    </article>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      ) : (
+        <div
+          className={
+            viewMode === "grid"
+              ? "grid grid-cols-2 items-start gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 md:gap-3 lg:grid-cols-5 lg:gap-4 xl:grid-cols-6"
+              : "flex flex-col gap-1"
+          }
+        >
+          {viewMode === "grid" ? (
+            exercises.map((exercise) => (
+              <Link key={exercise.slug} href={`/exercices/${exercise.slug}`}>
+                <article className="card self-start !p-2 !min-h-0 !h-auto">
+                  <ExerciseCard
+                    exercise={{
+                      ...exercise,
+                      title: exercise.title?.trim() || t("exerciseGrid.untitledDraft"),
+                    }}
+                    isLive={exercise.isLive}
+                    favoriteAction={
+                      <FavoriteIconButton
+                        slug={exercise.slug}
+                        active={favorites.includes(exercise.slug)}
+                        variant="overlay"
+                      />
+                    }
+                  />
+                </article>
+              </Link>
+            ))
+          ) : (
+            exercises.map((exercise) => (
+              <Link
+                key={exercise.slug}
+                href={`/exercices/${exercise.slug}`}
+                className="block"
+              >
+                <article className="rounded-[var(--radius)] border border-[color:var(--border)] bg-[color:var(--card)] px-3 py-2 shadow-sm backdrop-blur">
+                  <ExerciseCard
+                    exercise={{
+                      ...exercise,
+                      title: exercise.title?.trim() || t("exerciseGrid.untitledDraft"),
+                    }}
+                    isLive={exercise.isLive}
+                    variant="list"
+                    favoriteAction={
+                      <FavoriteIconButton
+                        slug={exercise.slug}
+                        active={favorites.includes(exercise.slug)}
+                      />
+                    }
+                  />
+                </article>
+              </Link>
+            ))
+          )}
+        </div>
+      )}
     </>
   );
 }

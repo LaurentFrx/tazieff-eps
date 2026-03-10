@@ -44,7 +44,7 @@ function emitViewMode() {
 }
 
 function normalizeViewMode(value: string | null): ViewMode {
-  return value === "grid" || value === "list" ? value : DEFAULT_VIEW_MODE;
+  return value === "grid" || value === "list" || value === "session" ? value : DEFAULT_VIEW_MODE;
 }
 
 function getViewModeSnapshot(): ViewMode {

@@ -92,11 +92,20 @@ export const messages = {
     exerciseGrid: {
       gridView: "Vue grille",
       listView: "Vue liste",
+      sessionView: "Par session",
       emptyTitle: "Aucun exercice ne correspond",
       emptyHint: "Ajustez vos filtres ou vos mots-clés.",
       untitledDraft: "Brouillon sans titre",
       countSingular: "exercice trouvé",
       countPlural: "exercices trouvés",
+      sessions: {
+        S1: "Gainage statique",
+        S2: "Gainage dynamique & abdominaux",
+        S3: "Haut du corps — poussée & tirage",
+        S4: "Bas du corps — squat, fentes & hanche",
+        S5: "Exercices fonctionnels & composés",
+        S6: "Étirements & récupération",
+      },
     },
     seances: {
       duration: {
@@ -1026,11 +1035,20 @@ export const messages = {
     exerciseGrid: {
       gridView: "Grid view",
       listView: "List view",
+      sessionView: "By session",
       emptyTitle: "No matching exercises",
       emptyHint: "Adjust your filters or keywords.",
       untitledDraft: "Untitled draft",
       countSingular: "exercise found",
       countPlural: "exercises found",
+      sessions: {
+        S1: "Static core",
+        S2: "Dynamic core & abs",
+        S3: "Upper body — push & pull",
+        S4: "Lower body — squat, lunges & hips",
+        S5: "Functional & compound exercises",
+        S6: "Stretching & recovery",
+      },
     },
     seances: {
       duration: {
@@ -1960,11 +1978,20 @@ export const messages = {
     exerciseGrid: {
       gridView: "Vista cuadrícula",
       listView: "Vista lista",
+      sessionView: "Por sesión",
       emptyTitle: "Ningún ejercicio coincide",
       emptyHint: "Ajusta tus filtros o palabras clave.",
       untitledDraft: "Borrador sin título",
       countSingular: "ejercicio encontrado",
       countPlural: "ejercicios encontrados",
+      sessions: {
+        S1: "Core estático",
+        S2: "Core dinámico & abdominales",
+        S3: "Tren superior — empuje & tracción",
+        S4: "Tren inferior — sentadillas, zancadas & cadera",
+        S5: "Ejercicios funcionales & compuestos",
+        S6: "Estiramientos & recuperación",
+      },
     },
     seances: {
       duration: {
