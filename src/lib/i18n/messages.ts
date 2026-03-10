@@ -563,6 +563,11 @@ export const messages = {
         "gain-de-volume": "Gain de volume",
         "gain-de-puissance": "Gain de puissance",
       },
+      objectifs: {
+        endurance: "Endurance",
+        volume: "Volume",
+        puissance: "Puissance",
+      },
       niveaux: {
         seconde: "2nde",
         premiere: "1ère",
@@ -581,6 +586,7 @@ export const messages = {
         intensite: "Intensité",
         recuperation: "Récupération",
         duree: "Durée",
+        tempo: "Tempo",
       },
       related: "Méthodes complémentaires",
       niveau: "Niveau",
@@ -1662,6 +1668,11 @@ export const messages = {
         "gain-de-volume": "Volume gain",
         "gain-de-puissance": "Power gain",
       },
+      objectifs: {
+        endurance: "Endurance",
+        volume: "Volume",
+        puissance: "Power",
+      },
       niveaux: {
         seconde: "Year 10",
         premiere: "Year 11",
@@ -1680,6 +1691,7 @@ export const messages = {
         intensite: "Intensity",
         recuperation: "Rest",
         duree: "Duration",
+        tempo: "Tempo",
       },
       related: "Complementary methods",
       niveau: "Level",
@@ -2419,6 +2431,11 @@ export const messages = {
         "gain-de-volume": "Ganancia de volumen",
         "gain-de-puissance": "Aumento de potencia",
       },
+      objectifs: {
+        endurance: "Resistencia",
+        volume: "Volumen",
+        puissance: "Potencia",
+      },
       niveaux: {
         seconde: "2.º",
         premiere: "1.º",
@@ -2437,6 +2454,7 @@ export const messages = {
         intensite: "Intensidad",
         recuperation: "Descanso",
         duree: "Duración",
+        tempo: "Tempo",
       },
       related: "Métodos complementarios",
       niveau: "Nivel",

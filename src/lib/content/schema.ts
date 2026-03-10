@@ -80,6 +80,32 @@ export const MethodeFrontmatterSchema = z.object({
 });
 export type MethodeFrontmatter = z.infer<typeof MethodeFrontmatterSchema>;
 
+/* ─── V2 Method schema (content/methods/) ─────────────────────────────────── */
+
+export const methodeSchema = z.object({
+  title: z.string(),
+  slug: z.string(),
+  description: z.string(),
+  objectifPrincipal: z.enum(["endurance", "volume", "puissance"]),
+  scores: z.object({
+    endurance: z.number().min(0).max(5),
+    hypertrophie: z.number().min(0).max(5),
+    force: z.number().min(0).max(5),
+    puissance: z.number().min(0).max(5),
+  }),
+  parametres: z.object({
+    series: z.string(),
+    repetitions: z.string(),
+    intensite: z.string(),
+    recuperation: z.string(),
+    tempo: z.string().optional(),
+  }),
+  niveau: z.enum(["debutant", "intermediaire", "avance"]),
+  tags: z.array(z.string()).min(1),
+  exercicesCompatibles: z.array(z.string()).optional(),
+});
+export type Methode = z.infer<typeof methodeSchema>;
+
 export const NiveauLearnSchema = z.enum(["seconde", "premiere", "terminale"]);
 export type NiveauLearn = z.infer<typeof NiveauLearnSchema>;
 
