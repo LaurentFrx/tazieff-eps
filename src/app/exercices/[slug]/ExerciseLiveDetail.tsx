@@ -15,7 +15,7 @@ import {
   subscribeFavorites,
   toggleFavorite,
 } from "@/lib/favoritesStore";
-import s1001 from "../../../../public/images/exos/s1-001.webp";
+import s101 from "../../../../public/images/exos/s1-01.webp";
 import logo from "../../../../public/media/branding/logo-eps.webp";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -715,7 +715,7 @@ export function ExerciseLiveDetail({
 
   const baseHeroImage = merged.frontmatter.media
     ? {
-        "/images/exos/s1-001.webp": s1001,
+        "/images/exos/s1-01.webp": s101,
       }[merged.frontmatter.media]
     : undefined;
 
