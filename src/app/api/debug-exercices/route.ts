@@ -1,21 +1,22 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { getExercisesIndex } from '@/lib/exercices/getExercisesIndex';
+import { fetchLiveExercises } from '@/lib/live/queries';
 
 export async function GET() {
-  const dir = path.join(process.cwd(), 'content/exercices');
   try {
-    const files = fs.readdirSync(dir).filter(f => f.endsWith('.fr.mdx'));
-    const slugs = files.map(f => f.replace('.fr.mdx', '')).sort();
+    const staticFr = await getExercisesIndex('fr');
+    const liveFr = await fetchLiveExercises('fr').catch(() => []);
     return NextResponse.json({
-      total: slugs.length,
-      s6: slugs.filter(s => s.startsWith('s6-')),
-      all: slugs,
-      cwd: process.cwd(),
-      dirExists: fs.existsSync(dir),
+      static: staticFr.length,
+      live: liveFr.length,
+      staticSlugs: staticFr.map(e => e.slug).sort(),
+      liveSlugs: liveFr.map((e: Record<string, unknown>) => e.slug).sort(),
+      liveDrafts: liveFr
+        .filter((e: Record<string, unknown>) => e.status === 'draft')
+        .map((e: Record<string, unknown>) => e.slug),
     });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : String(e);
-    return NextResponse.json({ error: message, cwd: process.cwd() });
+    return NextResponse.json({ error: message });
   }
 }
