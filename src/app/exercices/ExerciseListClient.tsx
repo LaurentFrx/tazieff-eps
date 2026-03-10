@@ -10,6 +10,7 @@ import {
   filterExercises,
   NO_EQUIPMENT_ID,
 } from "@/lib/exercices/filters";
+import type { MuscleGroupId } from "@/lib/exercices/muscleGroups";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useTeacherMode } from "@/hooks/useTeacherMode";
 import { useExercisesLiveSync } from "@/hooks/useExercisesLiveSync";
@@ -123,11 +124,11 @@ export function ExerciseListClient({
   const [query, setQuery] = useState("");
   const [selectedLevels, setSelectedLevels] = useState<Difficulty[]>([]);
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedMuscleGroups, setSelectedMuscleGroups] = useState<MuscleGroupId[]>([]);
   const [selectedThemes, setSelectedThemes] = useState<ThemeOption[]>([]);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [openFilter, setOpenFilter] = useState<
-    "level" | "equipment" | "tags" | "themes" | "favorites" | null
+    "level" | "equipment" | "muscles" | "themes" | "favorites" | null
   >(null);
 
   // View mode
@@ -179,21 +180,13 @@ export function ExerciseListClient({
     return hasNoEquipment ? [NO_EQUIPMENT_ID, ...sorted] : sorted;
   }, [visibleExercises]);
 
-  const tagOptions = useMemo(() => {
-    const tagSet = new Set<string>();
-    visibleExercises.forEach((exercise) => {
-      exercise.tags.forEach((tag) => tagSet.add(tag));
-    });
-    return Array.from(tagSet).sort((a, b) => a.localeCompare(b, "fr"));
-  }, [visibleExercises]);
-
   const filtered = useMemo(
     () =>
       filterExercises(visibleExercises, {
         query,
         levels: selectedLevels,
         equipment: selectedEquipment,
-        tags: selectedTags,
+        muscleGroups: selectedMuscleGroups,
         themes: selectedThemes,
         onlyFavorites,
         favorites,
@@ -205,7 +198,7 @@ export function ExerciseListClient({
       query,
       selectedEquipment,
       selectedLevels,
-      selectedTags,
+      selectedMuscleGroups,
       selectedThemes,
     ],
   );
@@ -231,9 +224,9 @@ export function ExerciseListClient({
     );
   };
 
-  const toggleTag = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag],
+  const toggleMuscleGroup = (group: MuscleGroupId) => {
+    setSelectedMuscleGroups((prev) =>
+      prev.includes(group) ? prev.filter((item) => item !== group) : [...prev, group],
     );
   };
 
@@ -246,7 +239,7 @@ export function ExerciseListClient({
   };
 
   const toggleFilter = (
-    filter: "level" | "equipment" | "tags" | "themes" | "favorites",
+    filter: "level" | "equipment" | "muscles" | "themes" | "favorites",
   ) => {
     setOpenFilter((prev) => (prev === filter ? null : filter));
   };
@@ -255,7 +248,7 @@ export function ExerciseListClient({
     setQuery("");
     setSelectedLevels([]);
     setSelectedEquipment([]);
-    setSelectedTags([]);
+    setSelectedMuscleGroups([]);
     setSelectedThemes([]);
     setOnlyFavorites(false);
     setOpenFilter(null);
@@ -285,10 +278,9 @@ export function ExerciseListClient({
           onToggleEquipment={toggleEquipment}
           onClearEquipment={() => setSelectedEquipment([])}
           equipmentOptions={equipmentOptions}
-          selectedTags={selectedTags}
-          onToggleTag={toggleTag}
-          onClearTags={() => setSelectedTags([])}
-          tagOptions={tagOptions}
+          selectedMuscleGroups={selectedMuscleGroups}
+          onToggleMuscleGroup={toggleMuscleGroup}
+          onClearMuscleGroups={() => setSelectedMuscleGroups([])}
           selectedThemes={selectedThemes}
           onToggleTheme={toggleTheme}
           onClearThemes={() => setSelectedThemes([])}

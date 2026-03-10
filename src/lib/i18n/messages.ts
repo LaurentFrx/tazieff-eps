@@ -75,7 +75,7 @@ export const messages = {
     filters: {
       level: "Niveau",
       equipment: "Matériel",
-      tags: "Tags",
+      muscles: "Muscles",
       themes: "Thèmes",
       favorites: "Favoris",
       all: "Tous",
@@ -88,6 +88,16 @@ export const messages = {
       favoritesOnly: "Favoris uniquement",
       optionCount: "option",
       optionCountPlural: "options",
+      muscleGroups: {
+        abdominaux: "Abdominaux",
+        pectoraux: "Pectoraux",
+        dos: "Dos",
+        epaules: "Épaules",
+        bras: "Bras",
+        fessiers: "Fessiers",
+        cuisses: "Cuisses",
+        mollets: "Mollets",
+      },
     },
     exerciseGrid: {
       gridView: "Vue grille",
@@ -1018,7 +1028,7 @@ export const messages = {
     filters: {
       level: "Level",
       equipment: "Equipment",
-      tags: "Tags",
+      muscles: "Muscles",
       themes: "Themes",
       favorites: "Favorites",
       all: "All",
@@ -1031,6 +1041,16 @@ export const messages = {
       favoritesOnly: "Favorites only",
       optionCount: "option",
       optionCountPlural: "options",
+      muscleGroups: {
+        abdominaux: "Abs",
+        pectoraux: "Chest",
+        dos: "Back",
+        epaules: "Shoulders",
+        bras: "Arms",
+        fessiers: "Glutes",
+        cuisses: "Legs",
+        mollets: "Calves",
+      },
     },
     exerciseGrid: {
       gridView: "Grid view",
@@ -1961,7 +1981,7 @@ export const messages = {
     filters: {
       level: "Nivel",
       equipment: "Material",
-      tags: "Etiquetas",
+      muscles: "Músculos",
       themes: "Temas",
       favorites: "Favoritos",
       all: "Todos",
@@ -1974,6 +1994,16 @@ export const messages = {
       favoritesOnly: "Solo favoritos",
       optionCount: "opción",
       optionCountPlural: "opciones",
+      muscleGroups: {
+        abdominaux: "Abdominales",
+        pectoraux: "Pectorales",
+        dos: "Espalda",
+        epaules: "Hombros",
+        bras: "Brazos",
+        fessiers: "Glúteos",
+        cuisses: "Muslos",
+        mollets: "Pantorrillas",
+      },
     },
     exerciseGrid: {
       gridView: "Vista cuadrícula",

@@ -1,5 +1,7 @@
 import type { Difficulty, ExerciseFrontmatter } from "@/lib/content/schema";
 import type { LiveExerciseListItem, LiveExerciseRow } from "@/lib/live/types";
+import type { MuscleGroupId } from "@/lib/exercices/muscleGroups";
+import { matchesMuscleGroups } from "@/lib/exercices/muscleGroups";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -15,7 +17,7 @@ export type FilterCriteria = {
   query?: string;
   levels?: Difficulty[];
   equipment?: string[];
-  tags?: string[];
+  muscleGroups?: MuscleGroupId[];
   themes?: (1 | 2 | 3)[];
   onlyFavorites?: boolean;
   favorites?: string[];
@@ -87,7 +89,7 @@ export function filterExercises(
     query = "",
     levels = [],
     equipment = [],
-    tags = [],
+    muscleGroups = [],
     themes = [],
     onlyFavorites = false,
     favorites = [],
@@ -128,10 +130,9 @@ export function filterExercises(
       }
     }
 
-    // Tags filter
-    if (tags.length > 0) {
-      const hasTag = tags.some((tag) => exercise.tags.includes(tag));
-      if (!hasTag) {
+    // Muscle groups filter
+    if (muscleGroups.length > 0) {
+      if (!matchesMuscleGroups(exercise.muscles, muscleGroups)) {
         return false;
       }
     }

@@ -323,23 +323,24 @@ describe("filterExercises", () => {
     expect(filterExercises(exercises, { equipment: [] })).toHaveLength(4);
   });
 
-  // --- Tags filter ---
-  it("filters by single tag", () => {
-    const result = filterExercises(exercises, { tags: ["cardio"] });
+  // --- Muscle groups filter ---
+  it("filters by single muscle group", () => {
+    const result = filterExercises(exercises, { muscleGroups: ["cuisses"] });
     expect(result).toHaveLength(1);
-    expect(result[0].slug).toBe("burpees");
+    expect(result[0].slug).toBe("squats");
   });
 
-  it("filters by multiple tags (OR logic)", () => {
+  it("filters by multiple muscle groups (OR logic)", () => {
     const result = filterExercises(exercises, {
-      tags: ["cardio", "core"],
+      muscleGroups: ["cuisses", "pectoraux"],
     });
     expect(result).toHaveLength(2);
   });
 
-  it("matches exercises with at least one matching tag", () => {
-    const result = filterExercises(exercises, { tags: ["renforcement"] });
-    expect(result).toHaveLength(2);
+  it("matches exercises with at least one muscle in group", () => {
+    const result = filterExercises(exercises, { muscleGroups: ["bras"] });
+    expect(result).toHaveLength(1);
+    expect(result[0].slug).toBe("pompes"); // has triceps → bras group
   });
 
   // --- Theme filter ---
@@ -388,10 +389,10 @@ describe("filterExercises", () => {
   });
 
   // --- Combined filters ---
-  it("combines level + tags", () => {
+  it("combines level + muscle groups", () => {
     const result = filterExercises(exercises, {
       levels: ["debutant"],
-      tags: ["renforcement"],
+      muscleGroups: ["pectoraux"],
     });
     expect(result).toHaveLength(1);
     expect(result[0].slug).toBe("pompes");
@@ -418,7 +419,7 @@ describe("filterExercises", () => {
   it("returns empty when combined filters have no intersection", () => {
     const result = filterExercises(exercises, {
       levels: ["avance"],
-      tags: ["core"],
+      muscleGroups: ["cuisses"],
     });
     expect(result).toHaveLength(0);
   });

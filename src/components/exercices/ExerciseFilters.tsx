@@ -3,6 +3,7 @@
 import { useId } from "react";
 import type { Difficulty } from "@/lib/content/schema";
 import { NO_EQUIPMENT_ID } from "@/lib/exercices/filters";
+import { MUSCLE_GROUP_IDS, type MuscleGroupId } from "@/lib/exercices/muscleGroups";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
 // ---------------------------------------------------------------------------
@@ -257,17 +258,16 @@ export type ExerciseFiltersProps = {
   onToggleEquipment: (item: string) => void;
   onClearEquipment: () => void;
   equipmentOptions: string[];
-  selectedTags: string[];
-  onToggleTag: (tag: string) => void;
-  onClearTags: () => void;
-  tagOptions: string[];
+  selectedMuscleGroups: MuscleGroupId[];
+  onToggleMuscleGroup: (group: MuscleGroupId) => void;
+  onClearMuscleGroups: () => void;
   selectedThemes: ThemeOption[];
   onToggleTheme: (theme: ThemeOption) => void;
   onClearThemes: () => void;
   onlyFavorites: boolean;
   onFavoritesChange: (value: boolean) => void;
-  openFilter: "level" | "equipment" | "tags" | "themes" | "favorites" | null;
-  onToggleFilter: (filter: "level" | "equipment" | "tags" | "themes" | "favorites") => void;
+  openFilter: "level" | "equipment" | "muscles" | "themes" | "favorites" | null;
+  onToggleFilter: (filter: "level" | "equipment" | "muscles" | "themes" | "favorites") => void;
   onReset: () => void;
 };
 
@@ -282,10 +282,9 @@ export function ExerciseFilters({
   onToggleEquipment,
   onClearEquipment,
   equipmentOptions,
-  selectedTags,
-  onToggleTag,
-  onClearTags,
-  tagOptions,
+  selectedMuscleGroups,
+  onToggleMuscleGroup,
+  onClearMuscleGroups,
   selectedThemes,
   onToggleTheme,
   onClearThemes,
@@ -348,15 +347,16 @@ export function ExerciseFilters({
           onToggle={() => onToggleFilter("equipment")}
         />
         <MultiSelectMenu
-          label={t("filters.tags")}
-          options={tagOptions}
-          selected={selectedTags}
-          onToggleOption={onToggleTag}
-          onClear={onClearTags}
+          label={t("filters.muscles")}
+          options={MUSCLE_GROUP_IDS as unknown as readonly MuscleGroupId[]}
+          selected={selectedMuscleGroups}
+          onToggleOption={onToggleMuscleGroup}
+          onClear={onClearMuscleGroups}
+          formatLabel={(value) => t(`filters.muscleGroups.${value}`)}
           allLabel={t("filters.all")}
           clearLabel={t("filters.clearAll")}
-          open={openFilter === "tags"}
-          onToggle={() => onToggleFilter("tags")}
+          open={openFilter === "muscles"}
+          onToggle={() => onToggleFilter("muscles")}
         />
         <MultiSelectMenu
           label={t("filters.themes")}
