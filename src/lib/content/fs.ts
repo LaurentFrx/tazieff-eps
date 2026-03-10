@@ -10,11 +10,9 @@ import {
   LearnFrontmatterSchema,
   MethodeFrontmatterSchema,
   SeanceFrontmatterSchema,
-  methodeSchema,
   type BacFrontmatter,
   type ExerciseFrontmatter,
   type LearnFrontmatter,
-  type Methode,
   type MethodeFrontmatter,
   type SeanceFrontmatter,
 } from "@/lib/content/schema";
@@ -271,62 +269,6 @@ export async function getMethodesForExercice(exerciceSlug: string, lang: Lang = 
   const all = await getAllMethodes(lang);
   return all.filter((m) => m.exercices_compatibles.includes(exerciceSlug));
 }
-
-// ─── V2 Methods (content/methods/{slug}/{lang}.mdx) ─────────────────────────
-
-const METHODS_V2_DIR = path.join(CONTENT_ROOT, "methods");
-
-async function listSubdirs(dir: string): Promise<string[]> {
-  let entries: Dirent[] = [];
-  try {
-    entries = await fs.readdir(dir, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-  return entries.filter((e) => e.isDirectory()).map((e) => e.name);
-}
-
-export async function getAllMethods(lang: Lang = "fr"): Promise<Methode[]> {
-  const slugs = await listSubdirs(METHODS_V2_DIR);
-  const items: Methode[] = [];
-
-  for (const slug of slugs) {
-    const result = await getMethodBySlug(slug, lang);
-    if (result) items.push(result.frontmatter);
-  }
-
-  return items.sort((a, b) => a.title.localeCompare(b.title, lang));
-}
-
-export async function getMethodBySlug(
-  slug: string,
-  lang: Lang = "fr",
-): Promise<MdxResult<Methode> | null> {
-  const dir = path.join(METHODS_V2_DIR, slug);
-  const localizedPath = path.join(dir, `${lang}.mdx`);
-
-  try {
-    return await readMdxFile(localizedPath, methodeSchema);
-  } catch (error) {
-    const nodeError = error as NodeJS.ErrnoException;
-    if (nodeError.code === "ENOENT") {
-      if (lang !== "fr") {
-        const fallbackPath = path.join(dir, "fr.mdx");
-        try {
-          return await readMdxFile(fallbackPath, methodeSchema);
-        } catch (fallbackError) {
-          const fallbackNodeError = fallbackError as NodeJS.ErrnoException;
-          if (fallbackNodeError.code === "ENOENT") return null;
-          throw fallbackError;
-        }
-      }
-      return null;
-    }
-    throw error;
-  }
-}
-
-export const methodsIndex = cache((lang: Lang = "fr") => getAllMethods(lang));
 
 // ─── Learn pages (content/learn/{slug}.{lang}.mdx) ───────────────────────────
 

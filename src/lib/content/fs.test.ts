@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getAllMethodes, getMethode, getMethodesForExercice, getAllLearnPages, getLearnPage, getAllMethods, getMethodBySlug } from "./fs";
-import { methodeSchema } from "./schema";
+import { getAllMethodes, getMethode, getMethodesForExercice, getAllLearnPages, getLearnPage } from "./fs";
 
 describe("getAllMethodes()", () => {
   it("returns 19 méthodes", async () => {
@@ -98,86 +97,3 @@ describe("getLearnPage()", () => {
   });
 });
 
-/* ── V2 Methods (content/methods/) ─────────────────────────────────────── */
-
-describe("methodeSchema", () => {
-  it("validates a correct method frontmatter", () => {
-    const valid = {
-      title: "Drop Set",
-      slug: "drop-set",
-      description: "Technique d'intensification",
-      objectifPrincipal: "volume",
-      scores: { endurance: 3, hypertrophie: 5, force: 4, puissance: 4 },
-      parametres: { series: "1", repetitions: "max", intensite: "80%", recuperation: "3 min" },
-      niveau: "intermediaire",
-      tags: ["hypertrophie"],
-    };
-    expect(methodeSchema.parse(valid)).toMatchObject({ slug: "drop-set" });
-  });
-
-  it("rejects invalid objectifPrincipal", () => {
-    const invalid = {
-      title: "Test",
-      slug: "test",
-      description: "desc",
-      objectifPrincipal: "flexibility",
-      scores: { endurance: 1, hypertrophie: 1, force: 1, puissance: 1 },
-      parametres: { series: "1", repetitions: "1", intensite: "1", recuperation: "1" },
-      niveau: "debutant",
-      tags: ["test"],
-    };
-    expect(() => methodeSchema.parse(invalid)).toThrow();
-  });
-
-  it("rejects scores out of range", () => {
-    const invalid = {
-      title: "Test",
-      slug: "test",
-      description: "desc",
-      objectifPrincipal: "endurance",
-      scores: { endurance: 6, hypertrophie: 1, force: 1, puissance: 1 },
-      parametres: { series: "1", repetitions: "1", intensite: "1", recuperation: "1" },
-      niveau: "debutant",
-      tags: ["test"],
-    };
-    expect(() => methodeSchema.parse(invalid)).toThrow();
-  });
-});
-
-describe("getAllMethods()", () => {
-  it("returns at least 1 V2 method (drop-set)", async () => {
-    const methods = await getAllMethods("fr");
-    expect(methods.length).toBeGreaterThanOrEqual(1);
-    expect(methods.some((m) => m.slug === "drop-set")).toBe(true);
-  });
-});
-
-describe("getMethodBySlug()", () => {
-  it("loads drop-set in FR with correct frontmatter", async () => {
-    const result = await getMethodBySlug("drop-set", "fr");
-    expect(result).not.toBeNull();
-    expect(result!.frontmatter.slug).toBe("drop-set");
-    expect(result!.frontmatter.objectifPrincipal).toBe("volume");
-    expect(result!.frontmatter.niveau).toBe("intermediaire");
-    expect(result!.content).toContain("## Principe");
-  });
-
-  it("loads drop-set in EN", async () => {
-    const result = await getMethodBySlug("drop-set", "en");
-    expect(result).not.toBeNull();
-    expect(result!.frontmatter.title).toBe("Drop Set");
-    expect(result!.content).toContain("## Principle");
-  });
-
-  it("falls back to FR when locale file is missing", async () => {
-    // Italian locale doesn't exist, should fall back to FR
-    const result = await getMethodBySlug("drop-set", "it" as any);
-    expect(result).not.toBeNull();
-    expect(result!.frontmatter.slug).toBe("drop-set");
-  });
-
-  it("returns null for nonexistent method slug", async () => {
-    const result = await getMethodBySlug("nonexistent-method-xyz", "fr");
-    expect(result).toBeNull();
-  });
-});
