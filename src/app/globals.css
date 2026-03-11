@@ -741,17 +741,17 @@ p {
   }
 }
 
-@keyframes scroll-text {
+@keyframes marquee {
   0% {
-    transform: translateX(100%);
+    transform: translateX(0%);
   }
   100% {
-    transform: translateX(-100%);
+    transform: translateX(-50%);
   }
 }
 
-.animate-scroll-text {
-  animation: scroll-text 12s linear infinite;
+.animate-marquee {
+  animation: marquee 20s linear infinite;
 }
 
 @media (min-width: 768px) {

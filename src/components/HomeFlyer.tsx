@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import Image from "next/image";
 import flyer from "../../public/media/branding/flyer-eps.webp";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -36,8 +36,6 @@ const ACCROCHE_POOL = [
   "Entraîne-toi malin, progresse vite",
 ];
 
-const INTERVAL_MS = 5000;
-
 // ---------------------------------------------------------------------------
 // Time-based greeting key
 // ---------------------------------------------------------------------------
@@ -69,22 +67,16 @@ function pickRandom(pool: string[], count: number): string[] {
 
 export function HomeFlyer() {
   const { t } = useI18n();
-  const [index, setIndex] = useState(0);
 
-  // Build the 3-phrase list once on mount
-  const phrases = useMemo(() => {
+  // Build the 3-phrase list once on mount, then duplicate for seamless loop
+  const marqueeItems = useMemo(() => {
     const greeting = t(getGreetingKey());
     const [a1, a2] = pickRandom(ACCROCHE_POOL, 2);
-    return [greeting, a1, a2];
+    const phrases = [greeting, a1, a2];
+    // Duplicate for seamless infinite scroll
+    return [...phrases, ...phrases];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setIndex((prev) => (prev + 1) % phrases.length);
-    }, INTERVAL_MS);
-    return () => clearInterval(id);
-  }, [phrases.length]);
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-[0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur">
@@ -95,14 +87,21 @@ export function HomeFlyer() {
         className="h-auto w-full object-contain"
         sizes="(max-width: 768px) 100vw, 1280px"
       />
-      <div className="absolute top-0 left-[20%] right-[20%] py-3 overflow-hidden pointer-events-none">
-        <span
-          key={index}
-          className="inline-block whitespace-nowrap text-base md:text-lg font-bold text-white animate-scroll-text"
+      <div className="absolute top-0 inset-x-0 py-3 overflow-hidden pointer-events-none">
+        <div
+          className="inline-flex animate-marquee"
           style={{ textShadow: "0 1px 4px rgba(0,0,0,0.9), 0 0 12px rgba(0,0,0,0.5)" }}
         >
-          {phrases[index]}
-        </span>
+          {marqueeItems.map((phrase, i) => (
+            <span
+              key={i}
+              className="mx-8 shrink-0 whitespace-nowrap text-base md:text-lg font-bold text-white"
+            >
+              {phrase}
+              <span className="mx-4 text-white/40">·</span>
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );
