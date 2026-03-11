@@ -47,10 +47,18 @@ L'app est l'incarnation numérique native du contenu de Fred — plus accessible
 - Méthodes : `/content/methods/{locale}/*.mdx`
 - Apprendre : `/content/learn/{locale}/*.mdx`
 
-### Médias
+### Convention médias exercices
 
-- Images/vidéos : `/public/images/exos/{slug}.webp` / `.webm`
-- Thumbnails : `thumb-{slug}.webp`, `thumb169-{slug}.webp`, `thumb916-{slug}.webp`
+Fichiers dans `/public/images/exos/` nommés par slug (sX-YY) :
+
+- `thumb-{slug}.webp` — miniature carrée, utilisée en vue GRILLE sur /exercices
+- `thumb169-{slug}.webp` — miniature 16:9, utilisée en vue LISTE sur /exercices
+- `{slug}.webm` / `{slug}.mp4` — vidéo, priorité 1 sur la page détail
+- `{slug}.webp` — image principale, priorité 2 sur la page détail (si pas de vidéo)
+
+Cascade page détail : webm > mp4 > webp
+Pas de fallback entre formats de thumbnail — afficher le placeholder si le fichier attendu n'existe pas.
+Les S6 (étirements) n'ont pas encore d'images — le fallback placeholder doit fonctionner.
 
 ### Hooks principaux
 

@@ -102,7 +102,6 @@ export const messages = {
     exerciseGrid: {
       gridView: "Vue grille",
       listView: "Vue liste",
-      sessionView: "Par session",
       emptyTitle: "Aucun exercice ne correspond",
       emptyHint: "Ajustez vos filtres ou vos mots-clés.",
       untitledDraft: "Brouillon sans titre",
@@ -1055,7 +1054,6 @@ export const messages = {
     exerciseGrid: {
       gridView: "Grid view",
       listView: "List view",
-      sessionView: "By session",
       emptyTitle: "No matching exercises",
       emptyHint: "Adjust your filters or keywords.",
       untitledDraft: "Untitled draft",
@@ -2008,7 +2006,6 @@ export const messages = {
     exerciseGrid: {
       gridView: "Vista cuadrícula",
       listView: "Vista lista",
-      sessionView: "Por sesión",
       emptyTitle: "Ningún ejercicio coincide",
       emptyHint: "Ajusta tus filtros o palabras clave.",
       untitledDraft: "Borrador sin título",

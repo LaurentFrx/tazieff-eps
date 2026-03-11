@@ -14,11 +14,23 @@ function getSession(slug: string): string {
   return match ? `S${match[1]}` : "Other";
 }
 
+function slugSort(a: string, b: string): number {
+  const ma = a.match(/^s(\d+)-(\d+)/);
+  const mb = b.match(/^s(\d+)-(\d+)/);
+  if (!ma && !mb) return a.localeCompare(b);
+  if (!ma) return 1;
+  if (!mb) return -1;
+  const sa = Number(ma[1]);
+  const sb = Number(mb[1]);
+  if (sa !== sb) return sa - sb;
+  return Number(ma[2]) - Number(mb[2]);
+}
+
 // ---------------------------------------------------------------------------
 // ViewMode type
 // ---------------------------------------------------------------------------
 
-export type ViewMode = "grid" | "list" | "session";
+export type ViewMode = "grid" | "list";
 
 // ---------------------------------------------------------------------------
 // FavoriteIconButton (internal)
@@ -70,6 +82,12 @@ function FavoriteIconButton({
 }
 
 // ---------------------------------------------------------------------------
+// Session group type
+// ---------------------------------------------------------------------------
+
+type SessionGroup = { session: string; items: ExerciseListItem[] };
+
+// ---------------------------------------------------------------------------
 // ExerciseGrid — main exported component
 // ---------------------------------------------------------------------------
 
@@ -91,18 +109,19 @@ export function ExerciseGrid({
   const activeClass = "border-white/20 bg-[color:var(--bg-2)] text-[color:var(--ink)] opacity-100 ring-1 ring-white/30";
   const inactiveClass = "border-transparent text-[color:var(--muted)] opacity-60 hover:opacity-100";
 
-  const sessionGroups = useMemo(() => {
-    if (viewMode !== "session") return [];
+  // Sort exercises by session then by number, then group by session
+  const sessionGroups = useMemo((): SessionGroup[] => {
+    const sorted = [...exercises].sort((a, b) => slugSort(a.slug, b.slug));
     const groups = new Map<string, ExerciseListItem[]>();
-    for (const ex of exercises) {
+    for (const ex of sorted) {
       const session = getSession(ex.slug);
       if (!groups.has(session)) groups.set(session, []);
       groups.get(session)!.push(ex);
     }
-    return SESSION_ORDER
-      .filter((s) => groups.has(s))
-      .map((s) => ({ session: s, items: groups.get(s)! }));
-  }, [exercises, viewMode]);
+    const orderedSessions = [...SESSION_ORDER.filter((s) => groups.has(s))];
+    if (groups.has("Other")) orderedSessions.push("Other" as any);
+    return orderedSessions.map((s) => ({ session: s, items: groups.get(s)! }));
+  }, [exercises]);
 
   return (
     <>
@@ -146,120 +165,83 @@ export function ExerciseGrid({
               <rect x="3" y="14" width="14" height="2" rx="1" />
             </svg>
           </button>
-          <button
-            type="button"
-            className={`inline-flex h-9 items-center justify-center rounded-full border px-3 text-xs font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent)] ${
-              viewMode === "session" ? activeClass : inactiveClass
-            }`}
-            aria-pressed={viewMode === "session"}
-            aria-label={t("exerciseGrid.sessionView")}
-            title={t("exerciseGrid.sessionView")}
-            onClick={() => onViewModeChange("session")}
-          >
-            {t("exerciseGrid.sessionView")}
-          </button>
         </div>
       </div>
 
-      {/* Exercise cards */}
+      {/* Exercise cards grouped by session */}
       {exercises.length === 0 ? (
         <div className="card">
           <h2>{t("exerciseGrid.emptyTitle")}</h2>
           <p>{t("exerciseGrid.emptyHint")}</p>
         </div>
-      ) : viewMode === "session" ? (
+      ) : (
         <div className="flex flex-col gap-6">
           {sessionGroups.map(({ session, items }) => (
             <section key={session}>
               <div className="mb-3 flex items-baseline gap-2">
                 <h2 className="text-base font-bold text-[color:var(--ink)]">{session}</h2>
-                <span className="text-sm text-[color:var(--muted)]">
-                  {t(`exerciseGrid.sessions.${session}`)}
-                </span>
+                {session !== "Other" && (
+                  <span className="text-sm text-[color:var(--muted)]">
+                    {t(`exerciseGrid.sessions.${session}`)}
+                  </span>
+                )}
                 <span className="ml-auto text-xs text-[color:var(--muted)]">
                   {items.length}
                 </span>
               </div>
-              <div className="grid grid-cols-2 items-start gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 md:gap-3 lg:grid-cols-5 lg:gap-4 xl:grid-cols-6">
-                {items.map((exercise) => (
-                  <Link key={exercise.slug} href={`/exercices/${exercise.slug}`}>
-                    <article className="card self-start !p-2 !min-h-0 !h-auto">
-                      <ExerciseCard
-                        exercise={{
-                          ...exercise,
-                          title: exercise.title?.trim() || t("exerciseGrid.untitledDraft"),
-                        }}
-                        isLive={exercise.isLive}
-                        favoriteAction={
-                          <FavoriteIconButton
-                            slug={exercise.slug}
-                            active={favorites.includes(exercise.slug)}
-                            variant="overlay"
-                          />
-                        }
-                      />
-                    </article>
-                  </Link>
-                ))}
-              </div>
+              {viewMode === "grid" ? (
+                <div className="grid grid-cols-2 items-start gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 md:gap-3 lg:grid-cols-5 lg:gap-4 xl:grid-cols-6">
+                  {items.map((exercise) => (
+                    <Link key={exercise.slug} href={`/exercices/${exercise.slug}`}>
+                      <article className="card self-start !p-2 !min-h-0 !h-auto">
+                        <ExerciseCard
+                          exercise={{
+                            ...exercise,
+                            title: exercise.title?.trim() || t("exerciseGrid.untitledDraft"),
+                          }}
+                          isLive={exercise.isLive}
+                          favoriteAction={
+                            <FavoriteIconButton
+                              slug={exercise.slug}
+                              active={favorites.includes(exercise.slug)}
+                              variant="overlay"
+                            />
+                          }
+                        />
+                      </article>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-1">
+                  {items.map((exercise) => (
+                    <Link
+                      key={exercise.slug}
+                      href={`/exercices/${exercise.slug}`}
+                      className="block"
+                    >
+                      <article className="rounded-[var(--radius)] border border-[color:var(--border)] bg-[color:var(--card)] px-3 py-2 shadow-sm backdrop-blur">
+                        <ExerciseCard
+                          exercise={{
+                            ...exercise,
+                            title: exercise.title?.trim() || t("exerciseGrid.untitledDraft"),
+                          }}
+                          isLive={exercise.isLive}
+                          variant="list"
+                          favoriteAction={
+                            <FavoriteIconButton
+                              slug={exercise.slug}
+                              active={favorites.includes(exercise.slug)}
+                            />
+                          }
+                        />
+                      </article>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </section>
           ))}
-        </div>
-      ) : (
-        <div
-          className={
-            viewMode === "grid"
-              ? "grid grid-cols-2 items-start gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 md:gap-3 lg:grid-cols-5 lg:gap-4 xl:grid-cols-6"
-              : "flex flex-col gap-1"
-          }
-        >
-          {viewMode === "grid" ? (
-            exercises.map((exercise) => (
-              <Link key={exercise.slug} href={`/exercices/${exercise.slug}`}>
-                <article className="card self-start !p-2 !min-h-0 !h-auto">
-                  <ExerciseCard
-                    exercise={{
-                      ...exercise,
-                      title: exercise.title?.trim() || t("exerciseGrid.untitledDraft"),
-                    }}
-                    isLive={exercise.isLive}
-                    favoriteAction={
-                      <FavoriteIconButton
-                        slug={exercise.slug}
-                        active={favorites.includes(exercise.slug)}
-                        variant="overlay"
-                      />
-                    }
-                  />
-                </article>
-              </Link>
-            ))
-          ) : (
-            exercises.map((exercise) => (
-              <Link
-                key={exercise.slug}
-                href={`/exercices/${exercise.slug}`}
-                className="block"
-              >
-                <article className="rounded-[var(--radius)] border border-[color:var(--border)] bg-[color:var(--card)] px-3 py-2 shadow-sm backdrop-blur">
-                  <ExerciseCard
-                    exercise={{
-                      ...exercise,
-                      title: exercise.title?.trim() || t("exerciseGrid.untitledDraft"),
-                    }}
-                    isLive={exercise.isLive}
-                    variant="list"
-                    favoriteAction={
-                      <FavoriteIconButton
-                        slug={exercise.slug}
-                        active={favorites.includes(exercise.slug)}
-                      />
-                    }
-                  />
-                </article>
-              </Link>
-            ))
-          )}
         </div>
       )}
     </>
