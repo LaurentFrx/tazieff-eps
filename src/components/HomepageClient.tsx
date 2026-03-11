@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useFavorites } from "@/hooks/useFavorites";
+import { SEARCH_INDEX } from "@/lib/search/search-index";
 import { OnboardingBanner } from "@/components/OnboardingBanner";
 import { IlluDumbbell, IlluClipboard, IlluBook, IlluTrophy } from "@/components/illustrations";
 import { HomeFlyer } from "@/components/HomeFlyer";
@@ -159,18 +161,31 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
             {t("pages.home.favoritesTitle")}
           </h2>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 snap-x snap-mandatory scrollbar-none">
-            {favorites.slice(0, 10).map((slug) => (
-              <Link
-                key={slug}
-                href={`/exercices/${slug}`}
-                className="flex-shrink-0 w-[160px] rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3 shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md snap-start"
-              >
-                <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 line-clamp-2">
-                  {slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
-                </span>
-                <span className="text-xs text-orange-500 mt-1 block">★</span>
-              </Link>
-            ))}
+            {favorites.slice(0, 10).map((slug) => {
+              const entry = SEARCH_INDEX.find((e) => e.slug === slug);
+              const title = entry?.title ?? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+              return (
+                <Link
+                  key={slug}
+                  href={`/exercices/${slug}`}
+                  className="flex-shrink-0 w-40 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md snap-start"
+                >
+                  <div className="relative w-full aspect-video bg-zinc-200 dark:bg-zinc-700">
+                    <Image
+                      src={`/images/exos/thumb169-${slug}.webp`}
+                      alt={title}
+                      fill
+                      className="object-cover"
+                      sizes="160px"
+                    />
+                  </div>
+                  <div className="p-2">
+                    <span className="text-xs font-mono text-orange-500 uppercase">{slug}</span>
+                    <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200 line-clamp-2">{title}</p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}
