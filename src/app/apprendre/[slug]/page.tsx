@@ -66,9 +66,6 @@ export default async function LearnSlugPage({ params }: LearnPageProps) {
         backLabel={t("apprendre.backLabel")}
         badges={
           <>
-            <span className="inline-flex items-center rounded-full bg-white/20 text-white px-3 py-1 text-xs font-medium">
-              {t(`apprendre.niveaux.${fm.niveau_minimum}`)}
-            </span>
             {fm.mots_cles.slice(0, 4).map((mot) => (
               <span key={mot} className="inline-flex items-center rounded-full bg-white/20 text-white px-3 py-1 text-xs font-medium">
                 {mot}

@@ -70,9 +70,6 @@ export default async function ApprendrePage() {
                       {page.description}
                     </p>
                   </div>
-                  <span className="pill shrink-0 text-xs">
-                    {t(`apprendre.niveaux.${page.niveau_minimum}`)}
-                  </span>
                 </Link>
               </li>
             ))}
