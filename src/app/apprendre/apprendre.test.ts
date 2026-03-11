@@ -145,13 +145,13 @@ describe("Static learn pages — MDX content", () => {
   });
 });
 
-/* ── Anatomy data (11 muscle groups) ──────────────────────────────── */
+/* ── Anatomy data (12 muscle groups) ──────────────────────────────── */
 
 describe("Anatomy data — MUSCLE_GROUPS", () => {
   const groupKeys = Object.keys(MUSCLE_GROUPS);
 
-  it("defines exactly 11 muscle groups", () => {
-    expect(groupKeys).toHaveLength(11);
+  it("defines exactly 12 muscle groups", () => {
+    expect(groupKeys).toHaveLength(12);
   });
 
   it("each group has id, color, keywords, exerciseSearchTerms", () => {
@@ -168,7 +168,7 @@ describe("Anatomy data — MUSCLE_GROUPS", () => {
     const expected = [
       "dorsaux", "pectoraux", "abdominaux", "deltoides",
       "biceps", "triceps", "flechisseurs", "fessiers",
-      "quadriceps", "ischio_jambiers", "mollets",
+      "quadriceps", "ischio_jambiers", "adducteurs", "mollets",
     ];
     expect(groupKeys.sort()).toEqual(expected.sort());
   });
@@ -231,20 +231,21 @@ describe("Anatomy data — utility functions", () => {
 
 describe("Anatomy — exercise matching coverage", () => {
   const GROUP_MUSCLES: Record<string, string[]> = {
-    dorsaux: ["Grand dorsal", "Trapèzes", "Rhomboïdes"],
-    pectoraux: ["Grand pectoral"],
+    dorsaux: ["Grand dorsal", "Trapèzes", "Rhomboïdes", "Infra-épineux", "Grand rond", "Carré des lombes", "Spinaux"],
+    pectoraux: ["Grand pectoral", "Dentelé antérieur"],
     abdominaux: ["Grand droit", "Obliques", "Transverse"],
     deltoides: ["Deltoïde antérieur", "Deltoïde moyen", "Deltoïde postérieur"],
-    biceps: ["Biceps brachial", "Brachial"],
+    biceps: ["Biceps brachial", "Brachial", "Brachio-radial"],
     triceps: ["Triceps brachial"],
     flechisseurs: ["Psoas-iliaque"],
     fessiers: ["Grand fessier", "Moyen fessier"],
     quadriceps: ["Droit fémoral", "Vastes"],
     ischio_jambiers: ["Biceps fémoral", "Semi-tendineux", "Semi-membraneux"],
+    adducteurs: ["Grand adducteur", "Long adducteur", "Gracile"],
     mollets: ["Gastrocnémiens", "Soléaire"],
   };
 
-  it("GROUP_MUSCLES covers all 11 MUSCLE_GROUPS", () => {
+  it("GROUP_MUSCLES covers all 12 MUSCLE_GROUPS", () => {
     for (const key of Object.keys(MUSCLE_GROUPS)) {
       expect(GROUP_MUSCLES[key], `Missing GROUP_MUSCLES entry for ${key}`).toBeDefined();
       expect(GROUP_MUSCLES[key].length).toBeGreaterThan(0);
@@ -264,6 +265,7 @@ describe("Anatomy — exercise matching coverage", () => {
       fessiers: "Fessiers",
       quadriceps: "Quadriceps",
       ischio_jambiers: "Ischio-jambiers",
+      adducteurs: "Adducteur",
       mollets: "Mollets",
     };
     for (const [key, group] of Object.entries(MUSCLE_GROUPS)) {

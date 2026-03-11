@@ -25,6 +25,9 @@ export const MUSCLE_GROUPS: Record<string, MuscleGroup> = {
       "trapezius",
       "rhomboid",
       "latissimus",
+      "infraspinatus",
+      "supraspinatus",
+      "teres",
     ],
     exerciseSearchTerms: [
       "grand dorsal",
@@ -50,6 +53,8 @@ export const MUSCLE_GROUPS: Record<string, MuscleGroup> = {
       "pectora",
       "portion claviculaire",
       "dentel",
+      "dentele",
+      "dentelé",
     ],
   },
   abdominaux: {
@@ -124,11 +129,15 @@ export const MUSCLE_GROUPS: Record<string, MuscleGroup> = {
     keywords: [
       "semimembranosus",
       "semitendinosus",
-      "adductor",
-      "gracilis",
       "biceps femoris",
     ],
-    exerciseSearchTerms: ["ischio", "leg curl", "jambe", "adducteur"],
+    exerciseSearchTerms: ["ischio", "leg curl"],
+  },
+  adducteurs: {
+    id: "adducteurs",
+    color: "#d946ef",
+    keywords: ["adductor", "gracilis"],
+    exerciseSearchTerms: ["adducteur", "adduction"],
   },
   mollets: {
     id: "mollets",
@@ -147,16 +156,17 @@ export const MUSCLE_GROUPS: Record<string, MuscleGroup> = {
 /* ── Sub-muscles per group (French display names for bottom sheets) ──────── */
 
 export const GROUP_MUSCLES: Record<string, string[]> = {
-  dorsaux: ["Grand dorsal", "Trapèzes", "Rhomboïdes"],
-  pectoraux: ["Grand pectoral"],
+  dorsaux: ["Grand dorsal", "Trapèzes", "Rhomboïdes", "Infra-épineux", "Grand rond", "Carré des lombes", "Spinaux"],
+  pectoraux: ["Grand pectoral", "Dentelé antérieur"],
   abdominaux: ["Grand droit", "Obliques", "Transverse"],
   deltoides: ["Deltoïde antérieur", "Deltoïde moyen", "Deltoïde postérieur"],
-  biceps: ["Biceps brachial", "Brachial"],
+  biceps: ["Biceps brachial", "Brachial", "Brachio-radial"],
   triceps: ["Triceps brachial"],
   flechisseurs: ["Psoas-iliaque"],
   fessiers: ["Grand fessier", "Moyen fessier"],
   quadriceps: ["Droit fémoral", "Vastes"],
   ischio_jambiers: ["Biceps fémoral", "Semi-tendineux", "Semi-membraneux"],
+  adducteurs: ["Grand adducteur", "Long adducteur", "Gracile"],
   mollets: ["Gastrocnémiens", "Soléaire"],
 };
 
@@ -173,6 +183,7 @@ export const GROUP_ANCHORS: Record<string, [number, number, number]> = {
   fessiers: [0.10, 0.68, -0.12],
   quadriceps: [0.12, 0.45, 0.08],
   ischio_jambiers: [-0.12, 0.42, -0.08],
+  adducteurs: [0.10, 0.50, 0.06],
   mollets: [0.08, 0.15, -0.04],
 };
 
@@ -180,8 +191,10 @@ export const GROUP_ANCHORS: Record<string, [number, number, number]> = {
 
 export const POSTERIOR_GROUPS = new Set([
   "dorsaux",
+  "triceps",
   "fessiers",
   "ischio_jambiers",
+  "mollets",
 ]);
 
 /* ── French display names for individual muscles ─────────────────────────── */
@@ -203,6 +216,8 @@ export const MUSCLE_FR_NAMES: Record<string, string> = {
   "rhomboid major": "Rhomboïdes",
   "rhomboid minor": "Rhomboïdes",
   "latissimus dorsi": "Grand dorsal",
+  "quadratus lumborum": "Carré des lombes",
+  "erector spinae": "Spinaux",
   /* Pectoraux */
   "clavicular head of pectoralis major": "Grand pectoral",
   "sternocostal head of pectoralis major": "Grand pectoral",
