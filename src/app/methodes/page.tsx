@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getAllMethodes } from "@/lib/content/fs";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { CategoryBadge } from "@/components/methodes/CategoryBadge";
@@ -19,16 +20,40 @@ const CATEGORY_ORDER: CategorieMethode[] = [
   "gain-de-puissance",
 ];
 
-export default async function MethodesPage() {
+const OBJECTIF_TO_CATEGORY: Record<string, CategorieMethode> = {
+  endurance: "endurance-de-force",
+  volume: "gain-de-volume",
+  puissance: "gain-de-puissance",
+};
+
+export default async function MethodesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ objectif?: string }>;
+}) {
   const lang = await getServerLang();
   const t = getServerT(lang);
   const methodes = await getAllMethodes(lang);
+  const params = await searchParams;
 
-  const grouped = CATEGORY_ORDER.map((cat) => ({
+  const objectifParam = params.objectif ?? null;
+  const activeCategory = objectifParam
+    ? OBJECTIF_TO_CATEGORY[objectifParam] ?? null
+    : null;
+
+  const filteredCategories = activeCategory
+    ? [activeCategory]
+    : CATEGORY_ORDER;
+
+  const grouped = filteredCategories.map((cat) => ({
     categorie: cat,
     label: t(`methodes.categories.${cat}`),
     items: methodes.filter((m) => m.categorie === cat),
   }));
+
+  const displayedCount = activeCategory
+    ? grouped.reduce((sum, g) => sum + g.items.length, 0)
+    : methodes.length;
 
   const scoreLabels = {
     endurance: t("methodes.scores.endurance"),
@@ -40,23 +65,40 @@ export default async function MethodesPage() {
   return (
     <section className="page">
       <SectionHero
-        title={t("methodes.title")}
-        count={methodes.length}
+        title={
+          activeCategory
+            ? t(`methodes.categories.${activeCategory}`)
+            : t("methodes.title")
+        }
+        count={displayedCount}
         subtitle={t("pages.home.heroMethodesSub")}
         gradient="from-blue-600 to-indigo-500"
         illustration={<IlluClipboard />}
       />
 
+      {activeCategory && (
+        <div className="mb-4">
+          <Link
+            href="/methodes"
+            className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            ← {t("methodes.showAll")}
+          </Link>
+        </div>
+      )}
+
       <div className="stack-lg">
         {grouped.map(({ categorie, label, items }) =>
           items.length === 0 ? null : (
             <section key={categorie} id={categorie}>
-              <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-[color:var(--ink)]">
-                <CategoryBadge categorie={categorie} label={label} />
-                <span className="text-xs text-[color:var(--muted)]">
-                  ({items.length})
-                </span>
-              </h2>
+              {!activeCategory && (
+                <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-[color:var(--ink)]">
+                  <CategoryBadge categorie={categorie} label={label} />
+                  <span className="text-xs text-[color:var(--muted)]">
+                    ({items.length})
+                  </span>
+                </h2>
+              )}
               <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {items.map((methode) => (
                   <li key={methode.slug}>

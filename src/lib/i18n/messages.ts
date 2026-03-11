@@ -587,6 +587,7 @@ export const messages = {
       notFound: "Méthode introuvable",
       backLabel: "Retour aux méthodes",
       filterAll: "Toutes",
+      showAll: "Voir toutes les méthodes",
       categories: {
         "endurance-de-force": "Endurance de force",
         "gain-de-volume": "Gain de volume",
@@ -1721,6 +1722,7 @@ export const messages = {
       notFound: "Method not found",
       backLabel: "Back to methods",
       filterAll: "All",
+      showAll: "See all methods",
       categories: {
         "endurance-de-force": "Strength endurance",
         "gain-de-volume": "Volume gain",
@@ -2513,6 +2515,7 @@ export const messages = {
       notFound: "Método no encontrado",
       backLabel: "Volver a los métodos",
       filterAll: "Todos",
+      showAll: "Ver todos los métodos",
       categories: {
         "endurance-de-force": "Resistencia de fuerza",
         "gain-de-volume": "Ganancia de volumen",
