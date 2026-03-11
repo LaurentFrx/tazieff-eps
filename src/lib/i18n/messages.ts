@@ -89,6 +89,7 @@ export const messages = {
       reset: "Réinitialiser",
       clearAll: "Tout effacer",
       noEquipment: "Sans matériel",
+      filterButton: "Filtres",
       themePrefix: "Thème",
       themeName: {
         "1": "Endurance de force",
@@ -1051,6 +1052,7 @@ export const messages = {
       reset: "Reset",
       clearAll: "Clear all",
       noEquipment: "No equipment",
+      filterButton: "Filters",
       themePrefix: "Theme",
       themeName: {
         "1": "Strength endurance",
@@ -2013,6 +2015,7 @@ export const messages = {
       reset: "Restablecer",
       clearAll: "Borrar todo",
       noEquipment: "Sin material",
+      filterButton: "Filtros",
       themePrefix: "Tema",
       themeName: {
         "1": "Resistencia de fuerza",

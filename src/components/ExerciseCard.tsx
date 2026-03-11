@@ -33,6 +33,15 @@ const LEVEL_BADGE: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
+// Slug formatting: "s1-03" → "S1-03"
+// ---------------------------------------------------------------------------
+
+function formatSlug(slug: string): string {
+  const m = slug.match(/^(s\d+-\d+)/i);
+  return m ? m[1].toUpperCase() : slug.toUpperCase();
+}
+
+// ---------------------------------------------------------------------------
 // ExerciseCardImage (internal)
 // ---------------------------------------------------------------------------
 
@@ -104,7 +113,9 @@ export function ExerciseCard({
   const title = exercise.title?.trim() || t("exerciseGrid.untitledDraft");
   const isList = variant === "list";
   const slug = exercise.slug;
-  // Strict convention: no fallback between thumbnail formats — show placeholder if missing
+  const displaySlug = formatSlug(slug);
+
+  // Strict convention: no fallback between thumbnail formats
   const gridCandidates: ImageCandidate[] = [`/images/exos/thumb-${slug}.webp`, logo];
   const listCandidates: ImageCandidate[] = [`/images/exos/thumb169-${slug}.webp`, logo];
   const candidates = isList ? listCandidates : gridCandidates;
@@ -118,8 +129,6 @@ export function ExerciseCard({
     ? "(max-width: 640px) 128px, 144px"
     : "(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 16vw";
 
-  // Sub-info: first muscle + level
-  const firstMuscle = exercise.muscles?.[0] ?? null;
   const level = exercise.level ?? null;
   const levelBadgeColors = level ? LEVEL_BADGE[level] : null;
 
@@ -148,17 +157,15 @@ export function ExerciseCard({
           <h2 className="text-base font-semibold text-[color:var(--ink)] md:text-lg">
             {title}
           </h2>
-          {(firstMuscle || level) && (
-            <p className="mt-0.5 text-sm text-[color:var(--muted)]">
-              {[firstMuscle, level ? t(`difficulty.${level}`) : null]
-                .filter(Boolean)
-                .join(" · ")}
-            </p>
-          )}
+          <p className="mt-0.5 text-xs font-mono text-gray-400 uppercase">
+            {displaySlug}
+          </p>
         </div>
       ) : (
         <p className="line-clamp-2 break-words text-xs font-bold leading-tight text-[color:var(--ink)]">
-          {title}
+          <span className="font-mono font-bold text-orange-400">{displaySlug}</span>
+          {" "}
+          <span>{title}</span>
         </p>
       )}
       {isList && favoriteAction ? (

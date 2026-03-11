@@ -178,14 +178,16 @@ export function ExerciseGrid({
         <div className="flex flex-col gap-6">
           {sessionGroups.map(({ session, items }) => (
             <section key={session}>
-              <div className="mb-3 flex items-baseline gap-2">
-                <h2 className="text-base font-bold text-[color:var(--ink)]">{session}</h2>
-                {session !== "Other" && (
-                  <span className="text-sm text-[color:var(--muted)]">
-                    {t(`exerciseGrid.sessions.${session}`)}
-                  </span>
-                )}
-                <span className="ml-auto text-xs text-[color:var(--muted)]">
+              <div className="my-4 flex items-center gap-2 border-l-4 border-orange-500 pl-3">
+                <h2 className="text-lg font-bold text-[color:var(--ink)] flex items-baseline gap-2">
+                  <span className="font-mono text-orange-400">{session}</span>
+                  {session !== "Other" && (
+                    <span className="text-[color:var(--ink)]">
+                      {t(`exerciseGrid.sessions.${session}`)}
+                    </span>
+                  )}
+                </h2>
+                <span className="ml-auto shrink-0 rounded-full bg-gray-700 text-gray-300 px-2 py-0.5 text-sm font-medium">
                   {items.length}
                 </span>
               </div>

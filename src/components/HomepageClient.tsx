@@ -1,22 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useFavorites } from "@/hooks/useFavorites";
 import { OnboardingBanner } from "@/components/OnboardingBanner";
 import { IlluDumbbell, IlluClipboard, IlluBook, IlluTrophy } from "@/components/illustrations";
 import { HomeFlyer } from "@/components/HomeFlyer";
-
-/* ── Greeting helper ──────────────────────────────────────────────── */
-
-function getGreetingKey(): string {
-  const h = new Date().getHours();
-  if (h >= 6 && h < 12) return "pages.home.greetingMorning";
-  if (h >= 12 && h < 18) return "pages.home.greetingAfternoon";
-  if (h >= 18 && h < 22) return "pages.home.greetingEvening";
-  return "pages.home.greetingNight";
-}
 
 /* ── Outils data ──────────────────────────────────────────────────── */
 
@@ -48,12 +37,6 @@ type Props = {
 export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Props) {
   const { t } = useI18n();
   const { favorites } = useFavorites();
-  const [greeting, setGreeting] = useState("");
-
-  useEffect(() => {
-    setGreeting(t(getGreetingKey()));
-  }, [t]);
-
   const hasFavorites = favorites.length > 0;
 
   return (
@@ -61,21 +44,24 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
       <OnboardingBanner />
 
       {/* ── Flyer hero + greeting ─────────────────────────────────── */}
-      <HomeFlyer greeting={greeting || undefined} />
+      <HomeFlyer />
 
       {/* ── Main navigation cards ─────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
 
-        {/* EXERCICES — full width, featured */}
+        {/* EXERCICES — full width, compact */}
         <Link
           href="/exercices"
-          className="col-span-2 md:col-span-4 group relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 to-amber-400 p-5 min-h-[140px] flex flex-col justify-end shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-orange-500/35"
-          style={{ animationDelay: "0ms" }}
+          className="col-span-2 md:col-span-4 group relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 to-amber-400 px-5 py-4 flex items-center gap-4 shadow-lg shadow-orange-500/25 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-orange-500/35"
         >
           <IlluDumbbell />
-          <span className="text-4xl font-black text-white drop-shadow-sm">{exerciseCount}</span>
-          <span className="text-lg font-bold text-white drop-shadow-sm">{t("pages.home.exercicesLabel")}</span>
-          <span className="text-sm text-white/80">{t("pages.home.exercicesDesc")}</span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-black text-white drop-shadow-sm">{exerciseCount}</span>
+              <span className="text-lg font-bold text-white drop-shadow-sm">{t("pages.home.exercicesLabel")}</span>
+            </div>
+            <span className="text-sm text-white/80">{t("pages.home.exercicesDesc")}</span>
+          </div>
         </Link>
 
         {/* METHODES — half width */}
@@ -102,15 +88,16 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
           <span className="text-xs text-white/80">{t("pages.home.apprendreDesc")}</span>
         </Link>
 
-        {/* BAC — full width, featured */}
+        {/* BAC — full width, compact */}
         <Link
           href="/parcours-bac"
-          className="col-span-2 md:col-span-4 group relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-500 p-5 min-h-[140px] flex flex-col justify-end shadow-lg shadow-violet-600/25 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-violet-600/35"
-          style={{ animationDelay: "225ms" }}
+          className="col-span-2 md:col-span-4 group relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-500 px-5 py-3 flex items-center gap-4 shadow-lg shadow-violet-600/25 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-violet-600/35"
         >
           <IlluTrophy />
-          <span className="text-lg font-bold text-white drop-shadow-sm">{t("pages.home.bacLabel")}</span>
-          <span className="text-sm text-white/80">{t("pages.home.bacDesc")}</span>
+          <div className="flex-1 min-w-0">
+            <span className="text-base font-bold text-white drop-shadow-sm">{t("pages.home.bacLabel")}</span>
+            <span className="block text-xs text-white/80">{t("pages.home.bacDesc")}</span>
+          </div>
         </Link>
       </div>
 
