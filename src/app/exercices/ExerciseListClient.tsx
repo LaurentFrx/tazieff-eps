@@ -127,9 +127,6 @@ export function ExerciseListClient({
   const [selectedMuscleGroups, setSelectedMuscleGroups] = useState<MuscleGroupId[]>([]);
   const [selectedThemes, setSelectedThemes] = useState<ThemeOption[]>([]);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
-  const [openFilter, setOpenFilter] = useState<
-    "level" | "equipment" | "muscles" | "themes" | "favorites" | null
-  >(null);
 
   // View mode
   const viewMode = useSyncExternalStore(
@@ -238,12 +235,6 @@ export function ExerciseListClient({
     );
   };
 
-  const toggleFilter = (
-    filter: "level" | "equipment" | "muscles" | "themes" | "favorites",
-  ) => {
-    setOpenFilter((prev) => (prev === filter ? null : filter));
-  };
-
   const handleReset = () => {
     setQuery("");
     setSelectedLevels([]);
@@ -251,7 +242,6 @@ export function ExerciseListClient({
     setSelectedMuscleGroups([]);
     setSelectedThemes([]);
     setOnlyFavorites(false);
-    setOpenFilter(null);
   };
 
   // ---------------------------------------------------------------------------
@@ -286,8 +276,6 @@ export function ExerciseListClient({
           onClearThemes={() => setSelectedThemes([])}
           onlyFavorites={onlyFavorites}
           onFavoritesChange={setOnlyFavorites}
-          openFilter={openFilter}
-          onToggleFilter={toggleFilter}
           onReset={handleReset}
         />
       </div>

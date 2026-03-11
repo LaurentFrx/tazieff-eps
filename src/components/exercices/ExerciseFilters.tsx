@@ -1,6 +1,5 @@
 "use client";
 
-import { useId } from "react";
 import type { Difficulty } from "@/lib/content/schema";
 import { NO_EQUIPMENT_ID } from "@/lib/exercices/filters";
 import { MUSCLE_GROUP_IDS, type MuscleGroupId } from "@/lib/exercices/muscleGroups";
@@ -10,15 +9,6 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 // Constants
 // ---------------------------------------------------------------------------
 
-const CHIP_VARIANTS = [
-  "bg-blue-500/10 border-blue-400/30 text-blue-100",
-  "bg-emerald-500/10 border-emerald-400/30 text-emerald-100",
-  "bg-violet-500/10 border-violet-400/30 text-violet-100",
-  "bg-amber-500/10 border-amber-400/30 text-amber-100",
-  "bg-cyan-500/10 border-cyan-400/30 text-cyan-100",
-  "bg-rose-500/10 border-rose-400/30 text-rose-100",
-] as const;
-
 const LEVEL_KEYS: Record<Difficulty, string> = {
   debutant: "difficulty.debutant",
   intermediaire: "difficulty.intermediaire",
@@ -26,217 +16,67 @@ const LEVEL_KEYS: Record<Difficulty, string> = {
 };
 
 // ---------------------------------------------------------------------------
-// Generic menu helpers
+// ChipRow — scrollable horizontal chip group
 // ---------------------------------------------------------------------------
 
-type MultiSelectValue = string | number;
-
-function chipVariant(id: MultiSelectValue) {
-  const key = String(id);
-  let hash = 0;
-  for (let index = 0; index < key.length; index += 1) {
-    hash += key.charCodeAt(index);
-  }
-  return CHIP_VARIANTS[hash % CHIP_VARIANTS.length];
-}
-
-function renderSelectedChips<T extends MultiSelectValue>(
-  selected: readonly T[],
-  options: readonly T[],
-  formatLabel?: (value: T) => string,
-  allLabel?: string,
-) {
-  if (selected.length === 0) {
-    return <span className="text-xs text-[color:var(--muted)]">{allLabel}</span>;
-  }
-
-  const selectedSet = new Set(selected);
-  const orderedValues = options.filter((option) => selectedSet.has(option));
-  const values = orderedValues.length > 0 ? orderedValues : selected;
-  const getLabel = (value: T) => (formatLabel ? formatLabel(value) : String(value));
-
-  return values.map((value) => (
-    <span
-      key={`chip-${String(value)}`}
-      className={`rounded-full border px-2 py-0.5 text-[13px] font-medium ${chipVariant(value)}`}
-    >
-      {getLabel(value)}
-    </span>
-  ));
-}
-
-// ---------------------------------------------------------------------------
-// MultiSelectMenu
-// ---------------------------------------------------------------------------
-
-type MultiSelectMenuProps<T extends MultiSelectValue> = {
+type ChipRowProps<T> = {
   label: string;
   options: readonly T[];
   selected: readonly T[];
-  onToggleOption: (value: T) => void;
+  onToggle: (value: T) => void;
   onClear: () => void;
-  formatLabel?: (value: T) => string;
-  allLabel?: string;
-  clearLabel?: string;
-  open: boolean;
-  onToggle: () => void;
+  formatLabel: (value: T) => string;
+  allLabel: string;
 };
 
-function MultiSelectMenu<T extends MultiSelectValue>({
+function ChipRow<T>({
   label,
   options,
   selected,
-  onToggleOption,
+  onToggle,
   onClear,
   formatLabel,
   allLabel,
-  clearLabel,
-  open,
-  onToggle,
-}: MultiSelectMenuProps<T>) {
-  const { t } = useI18n();
-  const ringClass = open ? "ring-2 ring-red-400/60" : "ring-1 ring-white/10";
+}: ChipRowProps<T>) {
+  if (options.length === 0) return null;
 
-  if (options.length === 0) {
-    return null;
-  }
-
-  const resolvedAllLabel = allLabel ?? t("filters.all");
-  const resolvedClearLabel = clearLabel ?? t("filters.clearAll");
-  const optionWord = options.length > 1 ? t("filters.optionCountPlural") : t("filters.optionCount");
+  const isAllSelected = selected.length === 0;
 
   return (
-    <div className="relative">
-      <button
-        type="button"
-        className={`field-input flex items-center justify-between gap-3 ${ringClass}`}
-        onClick={onToggle}
-        aria-expanded={open}
-      >
-        <span className="flex min-w-0 flex-1 flex-col items-start gap-2">
-          <span className="text-sm font-medium">{label}</span>
-          <span className="flex w-full flex-wrap items-center gap-2">
-            {renderSelectedChips(selected, options, formatLabel, resolvedAllLabel)}
-          </span>
-        </span>
-        <span aria-hidden="true">▾</span>
-      </button>
-      {open ? (
-        <div className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-lg">
-          <div className="flex items-center justify-between px-2 pb-2">
-            <span className="text-xs text-[color:var(--muted)]">
-              {options.length} {optionWord}
-            </span>
-            {selected.length > 0 ? (
-              <button type="button" className="chip chip-clear" onClick={onClear}>
-                {resolvedClearLabel}
-              </button>
-            ) : null}
-          </div>
-          <div className="max-h-56 space-y-1 overflow-y-auto">
-            {options.map((option) => {
-              const isActive = selected.includes(option);
-              const labelValue = formatLabel ? formatLabel(option) : String(option);
-
-              return (
-                <label
-                  key={`${label}-${labelValue}`}
-                  className="flex min-h-[36px] items-center gap-3 rounded-xl px-3 py-2 text-sm hover:bg-white/10"
-                >
-                  <input
-                    type="checkbox"
-                    checked={isActive}
-                    onChange={() => onToggleOption(option)}
-                  />
-                  <span>{labelValue}</span>
-                </label>
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// SingleSelectMenu
-// ---------------------------------------------------------------------------
-
-type SingleSelectMenuProps<T> = {
-  label: string;
-  options: readonly T[];
-  selected: T;
-  onSelect: (value: T) => void;
-  formatLabel?: (value: T) => string;
-  open: boolean;
-  onToggle: () => void;
-};
-
-function SingleSelectMenu<T>({
-  label,
-  options,
-  selected,
-  onSelect,
-  formatLabel,
-  open,
-  onToggle,
-}: SingleSelectMenuProps<T>) {
-  const { t } = useI18n();
-  const menuId = useId();
-  const summary = formatLabel ? formatLabel(selected) : String(selected);
-  const ringClass = open ? "ring-2 ring-red-400/60" : "ring-1 ring-white/10";
-
-  if (options.length === 0) {
-    return null;
-  }
-
-  const optionWord = options.length > 1 ? t("filters.optionCountPlural") : t("filters.optionCount");
-
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        className={`field-input flex items-center justify-between gap-3 ${ringClass}`}
-        onClick={onToggle}
-        aria-expanded={open}
-      >
-        <span className="flex min-w-0 flex-col items-start">
-          <span className="text-sm font-medium">{label}</span>
-          <span className="truncate text-xs text-[color:var(--muted)]">{summary}</span>
-        </span>
-        <span aria-hidden="true">▾</span>
-      </button>
-      {open ? (
-        <div className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-lg">
-          <div className="flex items-center justify-between px-2 pb-2">
-            <span className="text-xs text-[color:var(--muted)]">
-              {options.length} {optionWord}
-            </span>
-          </div>
-          <div className="max-h-56 space-y-1 overflow-y-auto">
-            {options.map((option, index) => {
-              const isActive = Object.is(selected, option);
-              const labelValue = formatLabel ? formatLabel(option) : String(option);
-
-              return (
-                <label
-                  key={`${menuId}-${index}`}
-                  className="flex min-h-[36px] items-center gap-3 rounded-xl px-3 py-2 text-sm hover:bg-white/10"
-                >
-                  <input
-                    type="radio"
-                    name={menuId}
-                    checked={isActive}
-                    onChange={() => onSelect(option)}
-                  />
-                  <span>{labelValue}</span>
-                </label>
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
+    <div className="flex flex-col gap-1.5">
+      <span className="text-xs font-semibold text-[color:var(--muted)] uppercase tracking-wide px-1">
+        {label}
+      </span>
+      <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <button
+          type="button"
+          className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition ${
+            isAllSelected
+              ? "bg-[color:var(--accent)] text-white"
+              : "border border-white/15 text-[color:var(--muted)] hover:border-white/30"
+          }`}
+          onClick={onClear}
+        >
+          {allLabel}
+        </button>
+        {options.map((option, i) => {
+          const isActive = selected.includes(option);
+          return (
+            <button
+              key={i}
+              type="button"
+              className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition ${
+                isActive
+                  ? "bg-[color:var(--accent)] text-white"
+                  : "border border-white/15 text-[color:var(--muted)] hover:border-white/30"
+              }`}
+              onClick={() => onToggle(option)}
+            >
+              {formatLabel(option)}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -266,8 +106,6 @@ export type ExerciseFiltersProps = {
   onClearThemes: () => void;
   onlyFavorites: boolean;
   onFavoritesChange: (value: boolean) => void;
-  openFilter: "level" | "equipment" | "muscles" | "themes" | "favorites" | null;
-  onToggleFilter: (filter: "level" | "equipment" | "muscles" | "themes" | "favorites") => void;
   onReset: () => void;
 };
 
@@ -290,15 +128,14 @@ export function ExerciseFilters({
   onClearThemes,
   onlyFavorites,
   onFavoritesChange,
-  openFilter,
-  onToggleFilter,
   onReset,
 }: ExerciseFiltersProps) {
   const { t } = useI18n();
   const themeOptions = [1, 2, 3] as const;
 
   return (
-    <>
+    <div className="flex flex-col gap-3">
+      {/* Search + reset */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-0 basis-full sm:basis-auto">
           <input
@@ -309,7 +146,18 @@ export function ExerciseFilters({
             onChange={(event) => onQueryChange(event.target.value)}
           />
         </div>
-        <div className="chip-row shrink-0">
+        <div className="chip-row shrink-0 flex gap-2">
+          <button
+            type="button"
+            className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition ${
+              onlyFavorites
+                ? "bg-yellow-500 text-white"
+                : "border border-white/15 text-[color:var(--muted)] hover:border-white/30"
+            }`}
+            onClick={() => onFavoritesChange(!onlyFavorites)}
+          >
+            {onlyFavorites ? "★ " : "☆ "}{t("filters.favorites")}
+          </button>
           <button
             type="button"
             className="chip chip-clear px-3 py-2"
@@ -319,67 +167,46 @@ export function ExerciseFilters({
           </button>
         </div>
       </div>
-      <div className="grid gap-2 md:grid-cols-4">
-        <MultiSelectMenu
-          label={t("filters.level")}
-          options={levelOptions}
-          selected={selectedLevels}
-          onToggleOption={onToggleLevel}
-          onClear={onClearLevels}
-          formatLabel={(value) => t(LEVEL_KEYS[value])}
-          allLabel={t("filters.all")}
-          clearLabel={t("filters.clearAll")}
-          open={openFilter === "level"}
-          onToggle={() => onToggleFilter("level")}
-        />
-        <MultiSelectMenu
-          label={t("filters.equipment")}
-          options={equipmentOptions}
-          selected={selectedEquipment}
-          onToggleOption={onToggleEquipment}
-          onClear={onClearEquipment}
-          formatLabel={(value) =>
-            value === NO_EQUIPMENT_ID ? t("filters.noEquipment") : value
-          }
-          allLabel={t("filters.all")}
-          clearLabel={t("filters.clearAll")}
-          open={openFilter === "equipment"}
-          onToggle={() => onToggleFilter("equipment")}
-        />
-        <MultiSelectMenu
-          label={t("filters.muscles")}
-          options={MUSCLE_GROUP_IDS as unknown as readonly MuscleGroupId[]}
-          selected={selectedMuscleGroups}
-          onToggleOption={onToggleMuscleGroup}
-          onClear={onClearMuscleGroups}
-          formatLabel={(value) => t(`filters.muscleGroups.${value}`)}
-          allLabel={t("filters.all")}
-          clearLabel={t("filters.clearAll")}
-          open={openFilter === "muscles"}
-          onToggle={() => onToggleFilter("muscles")}
-        />
-        <MultiSelectMenu
-          label={t("filters.themes")}
-          options={themeOptions}
-          selected={selectedThemes}
-          onToggleOption={onToggleTheme}
-          onClear={onClearThemes}
-          formatLabel={(value) => `${t("filters.themePrefix")} ${value}`}
-          allLabel={t("filters.all")}
-          clearLabel={t("filters.clearAll")}
-          open={openFilter === "themes"}
-          onToggle={() => onToggleFilter("themes")}
-        />
-        <SingleSelectMenu
-          label={t("filters.favorites")}
-          options={[false, true]}
-          selected={onlyFavorites}
-          onSelect={(value) => onFavoritesChange(value)}
-          formatLabel={(value) => (value ? t("filters.favoritesOnly") : t("filters.all"))}
-          open={openFilter === "favorites"}
-          onToggle={() => onToggleFilter("favorites")}
-        />
-      </div>
-    </>
+
+      {/* Chip filter rows */}
+      <ChipRow
+        label={t("filters.level")}
+        options={levelOptions}
+        selected={selectedLevels}
+        onToggle={onToggleLevel}
+        onClear={onClearLevels}
+        formatLabel={(value) => t(LEVEL_KEYS[value])}
+        allLabel={t("filters.all")}
+      />
+      <ChipRow
+        label={t("filters.muscles")}
+        options={MUSCLE_GROUP_IDS as unknown as readonly MuscleGroupId[]}
+        selected={selectedMuscleGroups}
+        onToggle={onToggleMuscleGroup}
+        onClear={onClearMuscleGroups}
+        formatLabel={(value) => t(`filters.muscleGroups.${value}`)}
+        allLabel={t("filters.all")}
+      />
+      <ChipRow
+        label={t("filters.equipment")}
+        options={equipmentOptions}
+        selected={selectedEquipment}
+        onToggle={onToggleEquipment}
+        onClear={onClearEquipment}
+        formatLabel={(value) =>
+          value === NO_EQUIPMENT_ID ? t("filters.noEquipment") : value
+        }
+        allLabel={t("filters.all")}
+      />
+      <ChipRow
+        label={t("filters.themes")}
+        options={themeOptions}
+        selected={selectedThemes}
+        onToggle={onToggleTheme}
+        onClear={onClearThemes}
+        formatLabel={(value) => t(`filters.themeName.${value}`)}
+        allLabel={t("filters.all")}
+      />
+    </div>
   );
 }

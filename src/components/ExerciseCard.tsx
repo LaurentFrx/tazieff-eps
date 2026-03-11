@@ -22,6 +22,20 @@ export type ExerciseCardProps = {
 
 type ImageCandidate = string | StaticImageData;
 
+// ---------------------------------------------------------------------------
+// Level badge colors
+// ---------------------------------------------------------------------------
+
+const LEVEL_BADGE: Record<string, string> = {
+  debutant: "bg-green-100 text-green-700",
+  intermediaire: "bg-yellow-100 text-yellow-700",
+  avance: "bg-red-100 text-red-700",
+};
+
+// ---------------------------------------------------------------------------
+// ExerciseCardImage (internal)
+// ---------------------------------------------------------------------------
+
 type ExerciseCardImageProps = {
   candidates: ImageCandidate[];
   title: string;
@@ -30,6 +44,7 @@ type ExerciseCardImageProps = {
   thumbStyle?: CSSProperties;
   isList: boolean;
   favoriteAction?: ReactNode;
+  levelBadge?: ReactNode;
 };
 
 function ExerciseCardImage({
@@ -40,6 +55,7 @@ function ExerciseCardImage({
   thumbStyle,
   isList,
   favoriteAction,
+  levelBadge,
 }: ExerciseCardImageProps) {
   const [errored, setErrored] = useState(false);
   const imageSrc = errored ? logo : candidates[0];
@@ -65,12 +81,19 @@ function ExerciseCardImage({
       ) : (
         <div className="h-full w-full bg-[color:var(--bg-2)]" />
       )}
+      {!isList && levelBadge ? (
+        <div className="absolute left-1.5 top-1.5 z-10">{levelBadge}</div>
+      ) : null}
       {!isList && favoriteAction ? (
-        <div className="absolute right-2 top-2">{favoriteAction}</div>
+        <div className="absolute right-2 top-2 z-10">{favoriteAction}</div>
       ) : null}
     </div>
   );
 }
+
+// ---------------------------------------------------------------------------
+// ExerciseCard — main exported component
+// ---------------------------------------------------------------------------
 
 export function ExerciseCard({
   exercise,
@@ -95,6 +118,18 @@ export function ExerciseCard({
     ? "(max-width: 640px) 128px, 144px"
     : "(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 16vw";
 
+  // Sub-info: first muscle + level
+  const firstMuscle = exercise.muscles?.[0] ?? null;
+  const level = exercise.level ?? null;
+  const levelBadgeColors = level ? LEVEL_BADGE[level] : null;
+
+  // Level badge for grid overlay
+  const levelBadge = level && levelBadgeColors ? (
+    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold leading-tight ${levelBadgeColors}`}>
+      {t(`difficultyShort.${level}`)}
+    </span>
+  ) : null;
+
   return (
     <div className={isList ? "flex items-center gap-4" : "flex flex-col gap-2"}>
       <ExerciseCardImage
@@ -106,14 +141,20 @@ export function ExerciseCard({
         thumbStyle={thumbStyle}
         isList={isList}
         favoriteAction={favoriteAction}
+        levelBadge={levelBadge}
       />
       {isList ? (
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <h2 className="min-w-0 flex-1 truncate text-base font-semibold text-[color:var(--ink)] md:text-lg">
-              {title}
-            </h2>
-          </div>
+          <h2 className="text-base font-semibold text-[color:var(--ink)] md:text-lg">
+            {title}
+          </h2>
+          {(firstMuscle || level) && (
+            <p className="mt-0.5 text-sm text-[color:var(--muted)]">
+              {[firstMuscle, level ? t(`difficulty.${level}`) : null]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
+          )}
         </div>
       ) : (
         <p className="line-clamp-2 break-words text-xs font-bold leading-tight text-[color:var(--ink)]">

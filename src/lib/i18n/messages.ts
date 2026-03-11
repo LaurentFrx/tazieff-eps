@@ -64,8 +64,13 @@ export const messages = {
       bac: "Parcours BAC",
     },
     difficulty: {
-      debutant: "D\u00e9butant",
+      debutant: "Débutant",
       intermediaire: "Intermédiaire",
+      avance: "Avancé",
+    },
+    difficultyShort: {
+      debutant: "Débutant",
+      intermediaire: "Inter.",
       avance: "Avancé",
     },
     favorites: {
@@ -85,6 +90,11 @@ export const messages = {
       clearAll: "Tout effacer",
       noEquipment: "Sans matériel",
       themePrefix: "Thème",
+      themeName: {
+        "1": "Endurance de force",
+        "2": "Gain de volume",
+        "3": "Gain de puissance",
+      },
       favoritesOnly: "Favoris uniquement",
       optionCount: "option",
       optionCountPlural: "options",
@@ -1020,6 +1030,11 @@ export const messages = {
       intermediaire: "Intermediate",
       avance: "Advanced",
     },
+    difficultyShort: {
+      debutant: "Beginner",
+      intermediaire: "Inter.",
+      avance: "Advanced",
+    },
     favorites: {
       add: "☆ Add to favorites",
       remove: "★ Remove from favorites",
@@ -1037,6 +1052,11 @@ export const messages = {
       clearAll: "Clear all",
       noEquipment: "No equipment",
       themePrefix: "Theme",
+      themeName: {
+        "1": "Strength endurance",
+        "2": "Volume gain",
+        "3": "Power gain",
+      },
       favoritesOnly: "Favorites only",
       optionCount: "option",
       optionCountPlural: "options",
@@ -1972,6 +1992,11 @@ export const messages = {
       intermediaire: "Intermedio",
       avance: "Avanzado",
     },
+    difficultyShort: {
+      debutant: "Princ.",
+      intermediaire: "Inter.",
+      avance: "Avanzado",
+    },
     favorites: {
       add: "☆ Añadir a favoritos",
       remove: "★ Eliminar de favoritos",
@@ -1989,6 +2014,11 @@ export const messages = {
       clearAll: "Borrar todo",
       noEquipment: "Sin material",
       themePrefix: "Tema",
+      themeName: {
+        "1": "Resistencia de fuerza",
+        "2": "Ganancia de volumen",
+        "3": "Ganancia de potencia",
+      },
       favoritesOnly: "Solo favoritos",
       optionCount: "opción",
       optionCountPlural: "opciones",
