@@ -8,7 +8,7 @@ import { CategoryBadge } from "@/components/methodes/CategoryBadge";
 import { ScoresBlock } from "@/components/methodes/ScoreBar";
 import { ParametresTable } from "@/components/methodes/ParametresTable";
 import { checkBalance, type Zone } from "@/lib/exercices/zoneMap";
-import type { CategorieMethode, NiveauMethode, MethodeFrontmatter } from "@/lib/content/schema";
+import type { CategorieMethode, MethodeFrontmatter } from "@/lib/content/schema";
 import type { LiveExerciseListItem } from "@/lib/live/types";
 
 /* ── Types ───────────────────────────────── */
@@ -22,7 +22,6 @@ const OBJECTIF_ACCENT: Record<string, string> = {
 };
 
 type SavedSession = {
-  niveau: NiveauMethode;
   objectif: CategorieMethode;
   selectedMethodes: string[];
   selectedExercices: string[];
@@ -30,17 +29,7 @@ type SavedSession = {
 
 const STORAGE_KEY = "eps_session";
 
-const NIVEAU_ORDINAL: Record<NiveauMethode, number> = {
-  seconde: 1,
-  premiere: 2,
-  terminale: 3,
-};
-
-const MIN_METHODES: Record<NiveauMethode, number> = {
-  seconde: 0,
-  premiere: 1,
-  terminale: 3,
-};
+const MIN_METHODES = 1;
 
 /* ── Props ───────────────────────────────── */
 
@@ -76,7 +65,6 @@ export function SessionGenerator({
   const searchParams = useSearchParams();
 
   const [step, setStep] = useState<Step>(1);
-  const [niveau, setNiveau] = useState<NiveauMethode>("seconde");
   const [objectif, setObjectif] = useState<CategorieMethode | null>(null);
   const [selectedMethodes, setSelectedMethodes] = useState<string[]>([]);
   const [selectedExercices, setSelectedExercices] = useState<string[]>([]);
@@ -88,7 +76,6 @@ export function SessionGenerator({
       if (raw) {
         const saved: SavedSession = JSON.parse(raw);
         if (saved.objectif && saved.selectedMethodes?.length && saved.selectedExercices?.length === 6) {
-          setNiveau(saved.niveau);
           setObjectif(saved.objectif);
           setSelectedMethodes(saved.selectedMethodes);
           setSelectedExercices(saved.selectedExercices);
@@ -112,7 +99,7 @@ export function SessionGenerator({
   function saveSession() {
     if (!objectif) return;
     try {
-      const data: SavedSession = { niveau, objectif, selectedMethodes, selectedExercices };
+      const data: SavedSession = { objectif, selectedMethodes, selectedExercices };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch { /* ignore */ }
   }
@@ -120,11 +107,8 @@ export function SessionGenerator({
   /* ── Filtered data ── */
   const filteredMethodes = useMemo(() => {
     if (!objectif) return [];
-    const ord = NIVEAU_ORDINAL[niveau];
-    return allMethodes.filter(
-      (m) => m.categorie === objectif && NIVEAU_ORDINAL[m.niveau_minimum] <= ord,
-    );
-  }, [allMethodes, objectif, niveau]);
+    return allMethodes.filter((m) => m.categorie === objectif);
+  }, [allMethodes, objectif]);
 
   const { recommended, others } = useMemo(() => {
     const compatSlugs = new Set(
@@ -153,7 +137,7 @@ export function SessionGenerator({
   }, [allExercices, selectedExercices]);
 
   /* ── Helpers ── */
-  const minMethodes = MIN_METHODES[niveau];
+  const minMethodes = MIN_METHODES;
 
   function toggleMethode(slug: string) {
     setSelectedMethodes((prev) =>
@@ -174,12 +158,6 @@ export function SessionGenerator({
     haut: t("maSeance.zoneHaut"),
     milieu: t("maSeance.zoneMilieu"),
     bas: t("maSeance.zoneBas"),
-  };
-
-  const niveauLabels: Record<NiveauMethode, string> = {
-    seconde: t("methodes.niveaux.seconde"),
-    premiere: t("methodes.niveaux.premiere"),
-    terminale: t("methodes.niveaux.terminale"),
   };
 
   /* ── Stepper indicator ── */
@@ -243,29 +221,6 @@ export function SessionGenerator({
       {/* ── STEP 1: Objectif ── */}
       {step === 1 && (
         <div className="flex flex-col gap-4">
-          {/* Niveau selector */}
-          <div className="flex flex-col gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-[color:var(--muted)]">
-              {t("maSeance.niveauLabel")}
-            </span>
-            <div className="segmented">
-              {(["seconde", "premiere", "terminale"] as const).map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => {
-                    setNiveau(n);
-                    setSelectedMethodes([]);
-                    setSelectedExercices([]);
-                  }}
-                  className={`segment-button ${niveau === n ? "is-active" : ""}`}
-                >
-                  {niveauLabels[n]}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Objectif cards */}
           {([
             { cat: "endurance-de-force" as const, titleKey: "maSeance.objectifEndurance", descKey: "maSeance.objectifEnduranceDesc" },
@@ -322,20 +277,15 @@ export function SessionGenerator({
                     : ""
                 }`}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h3 className="text-base font-bold text-[color:var(--ink)]">
-                      {m.titre}
-                    </h3>
-                    {m.description ? (
-                      <p className="mt-1 text-xs text-[color:var(--muted)]">
-                        {m.description}
-                      </p>
-                    ) : null}
-                  </div>
-                  <span className="pill shrink-0 text-xs">
-                    {niveauLabels[m.niveau_minimum]}
-                  </span>
+                <div>
+                  <h3 className="text-base font-bold text-[color:var(--ink)]">
+                    {m.titre}
+                  </h3>
+                  {m.description ? (
+                    <p className="mt-1 text-xs text-[color:var(--muted)]">
+                      {m.description}
+                    </p>
+                  ) : null}
                 </div>
                 <ScoresBlock scores={m.scores} labels={scoreLabels} />
               </button>
@@ -457,8 +407,6 @@ export function SessionGenerator({
             <p>
               {t("maSeance.result.objectifLabel")} : {categoryLabels[objectif] ?? objectif}
               {" — "}
-              {t("maSeance.result.niveauLabel")} : {niveauLabels[niveau]}
-              {" — "}
               {new Date().toLocaleDateString()}
             </p>
           </div>
@@ -473,9 +421,6 @@ export function SessionGenerator({
                 categorie={objectif}
                 label={categoryLabels[objectif] ?? objectif}
               />
-              <span className="pill text-xs">
-                {t("maSeance.result.niveauLabel")} : {niveauLabels[niveau]}
-              </span>
             </div>
           </div>
 

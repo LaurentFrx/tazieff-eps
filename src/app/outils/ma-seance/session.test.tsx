@@ -124,13 +124,6 @@ describe("SessionGenerator", () => {
     expect(screen.getByText("maSeance.stepExercices")).toBeDefined();
   });
 
-  it("shows 3 niveau buttons (seconde, premiere, terminale)", () => {
-    render(<SessionGenerator {...defaultProps} />);
-    expect(screen.getByText("methodes.niveaux.seconde")).toBeDefined();
-    expect(screen.getByText("methodes.niveaux.premiere")).toBeDefined();
-    expect(screen.getByText("methodes.niveaux.terminale")).toBeDefined();
-  });
-
   it("advances to step 2 when objectif is selected", () => {
     render(<SessionGenerator {...defaultProps} />);
     fireEvent.click(screen.getByText("maSeance.objectifEndurance"));
@@ -138,28 +131,19 @@ describe("SessionGenerator", () => {
     expect(screen.getByText("Charge constante")).toBeDefined();
   });
 
-  it("filters methodes by selected objectif", () => {
+  it("shows all methodes for selected objectif regardless of niveau", () => {
     render(<SessionGenerator {...defaultProps} />);
     fireEvent.click(screen.getByText("maSeance.objectifVolume"));
-    // "gain-de-volume" methods: only Pyramide, but Pyramide needs premiere and default is seconde
-    // Default niveau = seconde, pyramide.niveau_minimum = premiere → filtered out
-    expect(screen.queryByText("Pyramide")).toBeNull();
-  });
-
-  it("shows methode when niveau matches", () => {
-    render(<SessionGenerator {...defaultProps} />);
-    // Switch to premiere
-    fireEvent.click(screen.getByText("methodes.niveaux.premiere"));
-    // Select gain-de-volume objectif
-    fireEvent.click(screen.getByText("maSeance.objectifVolume"));
+    // Pyramide (gain-de-volume, niveau_minimum: premiere) should appear without niveau filter
     expect(screen.getByText("Pyramide")).toBeDefined();
   });
 
-  it("advances to step 3 when next is clicked (seconde, min methodes = 0)", () => {
+  it("advances to step 3 when a methode is selected and next is clicked", () => {
     render(<SessionGenerator {...defaultProps} />);
     // Step 1: select endurance
     fireEvent.click(screen.getByText("maSeance.objectifEndurance"));
-    // Step 2: seconde has minMethodes = 0, so can advance without selecting
+    // Step 2: select a method (minMethodes = 1)
+    fireEvent.click(screen.getByText("Charge constante"));
     fireEvent.click(screen.getByText("maSeance.next"));
     // Step 3: exercises list
     expect(screen.getByText("0 / 6 maSeance.exercicesCount")).toBeDefined();
@@ -168,6 +152,7 @@ describe("SessionGenerator", () => {
   it("toggles exercises and shows count", () => {
     render(<SessionGenerator {...defaultProps} />);
     fireEvent.click(screen.getByText("maSeance.objectifEndurance"));
+    fireEvent.click(screen.getByText("Charge constante"));
     fireEvent.click(screen.getByText("maSeance.next"));
     // Select one exercise
     fireEvent.click(screen.getByText("Squat"));
@@ -177,6 +162,7 @@ describe("SessionGenerator", () => {
   it("limits selection to max 6 exercises", () => {
     render(<SessionGenerator {...defaultProps} />);
     fireEvent.click(screen.getByText("maSeance.objectifEndurance"));
+    fireEvent.click(screen.getByText("Charge constante"));
     fireEvent.click(screen.getByText("maSeance.next"));
 
     // Select 6 exercises
@@ -194,6 +180,7 @@ describe("SessionGenerator", () => {
   it("saves session to localStorage when generating", () => {
     render(<SessionGenerator {...defaultProps} />);
     fireEvent.click(screen.getByText("maSeance.objectifEndurance"));
+    fireEvent.click(screen.getByText("Charge constante"));
     fireEvent.click(screen.getByText("maSeance.next"));
 
     // Select 6 exercises
