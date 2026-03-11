@@ -25,17 +25,7 @@ export default async function ApprendrePage() {
       title: t("pages.apprendre.cards.connaissances.title"),
       description: t("pages.apprendre.cards.connaissances.description"),
     },
-    {
-      href: "/outils/calculateur-rm",
-      title: t("pages.apprendre.cards.calculateur.title"),
-      description: t("pages.apprendre.cards.calculateur.description"),
-    },
-    {
-      href: "/outils/timer",
-      title: t("pages.apprendre.cards.timer.title"),
-      description: t("pages.apprendre.cards.timer.description"),
-    },
-    {
+{
       href: "/apprendre/anatomie",
       title: t("pages.apprendre.cards.anatomie.title"),
       description: t("pages.apprendre.cards.anatomie.description"),

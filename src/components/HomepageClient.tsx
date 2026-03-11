@@ -55,9 +55,9 @@ const outils = [
 /* ── Themes data ──────────────────────────────────────────────────── */
 
 const themes = [
-  { href: "/exercices?theme=endurance", labelKey: "pages.home.themeEndurance", descKey: "pages.home.themeEnduranceDesc", gradient: "from-emerald-500 to-green-600", emoji: "💚" },
-  { href: "/exercices?theme=volume",    labelKey: "pages.home.themeVolume",    descKey: "pages.home.themeVolumeDesc",    gradient: "from-blue-500 to-indigo-600",   emoji: "💙" },
-  { href: "/exercices?theme=puissance", labelKey: "pages.home.themePuissance", descKey: "pages.home.themePuissanceDesc", gradient: "from-orange-500 to-red-600",    emoji: "🧡" },
+  { href: "/methodes#endurance-de-force", labelKey: "pages.home.themeEndurance", descKey: "pages.home.themeEnduranceDesc", gradient: "from-emerald-500 to-green-600", emoji: "💚" },
+  { href: "/methodes#gain-de-volume",     labelKey: "pages.home.themeVolume",    descKey: "pages.home.themeVolumeDesc",    gradient: "from-blue-500 to-indigo-600",   emoji: "💙" },
+  { href: "/methodes#gain-de-puissance",  labelKey: "pages.home.themePuissance", descKey: "pages.home.themePuissanceDesc", gradient: "from-orange-500 to-red-600",    emoji: "🧡" },
 ];
 
 /* ── Props ────────────────────────────────────────────────────────── */

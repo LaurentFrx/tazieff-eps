@@ -50,7 +50,7 @@ export default async function MethodesPage() {
       <div className="stack-lg">
         {grouped.map(({ categorie, label, items }) =>
           items.length === 0 ? null : (
-            <section key={categorie}>
+            <section key={categorie} id={categorie}>
               <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-[color:var(--ink)]">
                 <CategoryBadge categorie={categorie} label={label} />
                 <span className="text-xs text-[color:var(--muted)]">
