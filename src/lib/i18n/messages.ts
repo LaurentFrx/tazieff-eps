@@ -8,7 +8,7 @@ export const messages = {
       exercices: "Bibliothèque d'exercices",
       exercicesSubtitle: "EXERCICES & ÉTIREMENTS",
       seances: "Plans de séance",
-      apprendre: "Apprendre",
+      apprendre: "Connaissances",
       bac: "Musculation au BAC",
       back: "Retour",
       home: "Accueil",
@@ -49,7 +49,7 @@ export const messages = {
       home: { label: "Accueil" },
       exos: { label: "Exos", meta: "Mouvements" },
       seances: { label: "Séances", meta: "Plan" },
-      apprendre: { label: "Apprendre", meta: "Savoir" },
+      apprendre: { label: "Connaissances", meta: "Savoir" },
       progres: { label: "Progrès", meta: "Suivi" },
       bac: { label: "Bac", meta: "Épreuve" },
       methodes: { label: "Méthodes", meta: "Entraînement" },
@@ -60,7 +60,7 @@ export const messages = {
     breadcrumbs: {
       exercices: "Exercices",
       methodes: "Méthodes",
-      apprendre: "Apprendre",
+      apprendre: "Connaissances",
       bac: "Parcours BAC",
     },
     difficulty: {
@@ -166,11 +166,11 @@ export const messages = {
       body: "Cette page n'existe pas ou a été déplacée.",
     },
     apprendre: {
-      eyebrow: "Apprendre",
+      eyebrow: "Connaissances",
       toc: "Sommaire",
       incomplete: "À compléter",
       notFound: "Contenu introuvable",
-      backLabel: "Retour à Apprendre",
+      backLabel: "Retour aux Connaissances",
       learnPagesHeading: "Cours th\u00e9oriques",
       prev: "\u2190 Pr\u00e9c\u00e9dent",
       next: "Suivant \u2192",
@@ -452,7 +452,7 @@ export const messages = {
         exercicesDesc: "Explore le catalogue",
         methodesLabel: "Méthodes",
         methodesDesc: "Stratégies d'entraînement",
-        apprendreLabel: "Apprendre",
+        apprendreLabel: "Connaissances",
         apprendreDesc: "Cours et théorie",
         bacLabel: "Mon parcours BAC",
         bacDesc: "Suis ta progression",
@@ -520,8 +520,8 @@ export const messages = {
         },
       },
       apprendre: {
-        eyebrow: "Apprendre",
-        title: "Apprendre l'essentiel",
+        eyebrow: "Connaissances",
+        title: "Connaissances essentielles",
         lede: "Des leçons courtes, faciles à relire avant l'entraînement.",
         cards: {
           parametres: {
@@ -859,7 +859,7 @@ export const messages = {
       noResults: "Aucun résultat trouvé.",
       typeExercice: "Exercices",
       typeMethode: "Méthodes",
-      typeApprendre: "Apprendre",
+      typeApprendre: "Connaissances",
       typeGlossaire: "Glossaire",
     },
     carnet: {
@@ -972,7 +972,7 @@ export const messages = {
       exercices: "Exercise Library",
       exercicesSubtitle: "EXERCISES & STRETCHING",
       seances: "Session Plans",
-      apprendre: "Learn",
+      apprendre: "Knowledge",
       bac: "BAC Strength Training",
       back: "Back",
       home: "Home",
@@ -1013,7 +1013,7 @@ export const messages = {
       home: { label: "Home" },
       exos: { label: "Exercises", meta: "Moves" },
       seances: { label: "Sessions", meta: "Plan" },
-      apprendre: { label: "Learn", meta: "Guide" },
+      apprendre: { label: "Knowledge", meta: "Guide" },
       progres: { label: "Progress", meta: "Track" },
       bac: { label: "Bac", meta: "Exam" },
       methodes: { label: "Methods", meta: "Training" },
@@ -1024,7 +1024,7 @@ export const messages = {
     breadcrumbs: {
       exercices: "Exercises",
       methodes: "Methods",
-      apprendre: "Learn",
+      apprendre: "Knowledge",
       bac: "BAC Path",
     },
     difficulty: {
@@ -1130,11 +1130,11 @@ export const messages = {
       body: "This page does not exist or has been moved.",
     },
     apprendre: {
-      eyebrow: "Learn",
+      eyebrow: "Knowledge",
       toc: "Contents",
       incomplete: "To be completed",
       notFound: "Content not found",
-      backLabel: "Back to Learn",
+      backLabel: "Back to Knowledge",
       learnPagesHeading: "Theory lessons",
       prev: "\u2190 Previous",
       next: "Next \u2192",
@@ -1416,7 +1416,7 @@ export const messages = {
         exercicesDesc: "Browse the catalog",
         methodesLabel: "Methods",
         methodesDesc: "Training strategies",
-        apprendreLabel: "Learn",
+        apprendreLabel: "Knowledge",
         apprendreDesc: "Theory and courses",
         bacLabel: "My BAC pathway",
         bacDesc: "Track your progress",
@@ -1484,8 +1484,8 @@ export const messages = {
         },
       },
       apprendre: {
-        eyebrow: "Learn",
-        title: "Learn the essentials",
+        eyebrow: "Knowledge",
+        title: "Essential knowledge",
         lede: "Short lessons you can scan before training.",
         cards: {
           parametres: {
@@ -1610,7 +1610,7 @@ export const messages = {
       noResults: "No results found.",
       typeExercice: "Exercises",
       typeMethode: "Methods",
-      typeApprendre: "Learn",
+      typeApprendre: "Knowledge",
       typeGlossaire: "Glossary",
     },
     carnet: {
@@ -1936,7 +1936,7 @@ export const messages = {
       exercices: "Biblioteca de ejercicios",
       exercicesSubtitle: "EJERCICIOS Y ESTIRAMIENTOS",
       seances: "Planes de sesión",
-      apprendre: "Aprender",
+      apprendre: "Conocimientos",
       bac: "Musculación BAC",
       back: "Atrás",
       home: "Inicio",
@@ -1977,7 +1977,7 @@ export const messages = {
       home: { label: "Inicio" },
       exos: { label: "Ejercicios", meta: "Movimientos" },
       seances: { label: "Sesiones", meta: "Plan" },
-      apprendre: { label: "Aprender", meta: "Guía" },
+      apprendre: { label: "Conocimientos", meta: "Guía" },
       progres: { label: "Progreso", meta: "Seguimiento" },
       bac: { label: "Bac", meta: "Examen" },
       methodes: { label: "Métodos", meta: "Entren." },
@@ -1988,7 +1988,7 @@ export const messages = {
     breadcrumbs: {
       exercices: "Ejercicios",
       methodes: "Métodos",
-      apprendre: "Aprender",
+      apprendre: "Conocimientos",
       bac: "Recorrido BAC",
     },
     difficulty: {
@@ -2094,11 +2094,11 @@ export const messages = {
       body: "Esta página no existe o ha sido movida.",
     },
     apprendre: {
-      eyebrow: "Aprender",
+      eyebrow: "Conocimientos",
       toc: "Contenidos",
       incomplete: "Por completar",
       notFound: "Contenido no encontrado",
-      backLabel: "Volver a Aprender",
+      backLabel: "Volver a Conocimientos",
       learnPagesHeading: "Lecciones te\u00f3ricas",
       prev: "\u2190 Anterior",
       next: "Siguiente \u2192",
@@ -2380,7 +2380,7 @@ export const messages = {
         exercicesDesc: "Explora el catálogo",
         methodesLabel: "Métodos",
         methodesDesc: "Estrategias de entrenamiento",
-        apprendreLabel: "Aprender",
+        apprendreLabel: "Conocimientos",
         apprendreDesc: "Teoría y cursos",
         bacLabel: "Mi recorrido BAC",
         bacDesc: "Sigue tu progreso",
@@ -2448,8 +2448,8 @@ export const messages = {
         },
       },
       apprendre: {
-        eyebrow: "Aprender",
-        title: "Aprender lo esencial",
+        eyebrow: "Conocimientos",
+        title: "Conocimientos esenciales",
         lede: "Lecciones cortas, fáciles de releer antes del entrenamiento.",
         cards: {
           parametres: {
@@ -2787,7 +2787,7 @@ export const messages = {
       noResults: "Sin resultados.",
       typeExercice: "Ejercicios",
       typeMethode: "Métodos",
-      typeApprendre: "Aprender",
+      typeApprendre: "Conocimientos",
       typeGlossaire: "Glosario",
     },
     carnet: {
