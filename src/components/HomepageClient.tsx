@@ -7,13 +7,47 @@ import { OnboardingBanner } from "@/components/OnboardingBanner";
 import { IlluDumbbell, IlluClipboard, IlluBook, IlluTrophy } from "@/components/illustrations";
 import { HomeFlyer } from "@/components/HomeFlyer";
 
+/* ── Outils SVG icons ────────────────────────────────────────────── */
+
+function IconTimer() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8">
+      <circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3l2 2"/><path d="M19 3l-2 2"/><path d="M12 5V3"/>
+    </svg>
+  );
+}
+
+function IconCalculateur() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8">
+      <rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10.01"/><line x1="12" y1="10" x2="12" y2="10.01"/><line x1="16" y1="10" x2="16" y2="10.01"/><line x1="8" y1="14" x2="8" y2="14.01"/><line x1="12" y1="14" x2="12" y2="14.01"/><line x1="16" y1="14" x2="16" y2="14.01"/><line x1="8" y1="18" x2="16" y2="18"/>
+    </svg>
+  );
+}
+
+function IconMaSeance() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8">
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6"/><path d="M9 16h6"/>
+    </svg>
+  );
+}
+
+function IconCarnet() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15z"/><path d="M8 7h8"/><path d="M8 11h6"/>
+    </svg>
+  );
+}
+
 /* ── Outils data ──────────────────────────────────────────────────── */
 
 const outils = [
-  { href: "/outils/ma-seance",      labelKey: "pages.home.outilMaSeance",    gradient: "from-pink-500 to-rose-500" },
-  { href: "/outils/calculateur-rm", labelKey: "pages.home.outilCalculateur", gradient: "from-cyan-500 to-blue-500" },
-  { href: "/outils/timer",          labelKey: "pages.home.outilTimer",       gradient: "from-amber-500 to-orange-500" },
-  { href: "/outils/carnet",         labelKey: "pages.home.outilCarnet",      gradient: "from-indigo-500 to-violet-500" },
+  { href: "/outils/timer",          labelKey: "pages.home.outilTimer",       gradient: "from-amber-500 to-orange-500",  icon: <IconTimer /> },
+  { href: "/outils/calculateur-rm", labelKey: "pages.home.outilCalculateur", gradient: "from-cyan-500 to-blue-500",     icon: <IconCalculateur /> },
+  { href: "/outils/ma-seance",      labelKey: "pages.home.outilMaSeance",    gradient: "from-pink-500 to-rose-500",     icon: <IconMaSeance /> },
+  { href: "/outils/carnet",         labelKey: "pages.home.outilCarnet",      gradient: "from-indigo-500 to-violet-500", icon: <IconCarnet /> },
 ];
 
 /* ── Themes data ──────────────────────────────────────────────────── */
@@ -101,23 +135,21 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
         </Link>
       </div>
 
-      {/* ── Outils carousel ───────────────────────────────────────── */}
-      <div className="mt-6">
-        <h2 className="text-lg font-extrabold text-zinc-900 dark:text-zinc-100 mb-3">
-          {t("pages.home.outilsTitle")}
-        </h2>
-        <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 snap-x snap-mandatory scrollbar-none md:grid md:grid-cols-4 md:overflow-visible md:mx-0 md:px-0 md:pb-0">
-          {outils.map((o, i) => (
-            <Link
-              key={o.href}
-              href={o.href}
-              className={`flex-shrink-0 w-[140px] md:w-auto rounded-2xl bg-gradient-to-br ${o.gradient} p-4 flex flex-col justify-end min-h-[80px] shadow-md transition-all duration-300 hover:scale-[1.03] snap-start`}
-              style={{ animationDelay: `${300 + i * 60}ms` }}
-            >
-              <span className="text-sm font-bold text-white drop-shadow-sm">{t(o.labelKey)}</span>
-            </Link>
-          ))}
-        </div>
+      {/* ── Outils grid 2×2 ──────────────────────────────────────── */}
+      <div className="mt-6 grid grid-cols-2 gap-3">
+        {outils.map((o, i) => (
+          <Link
+            key={o.href}
+            href={o.href}
+            className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${o.gradient} p-4 min-h-[90px] flex flex-col justify-end shadow-md transition-all duration-300 hover:scale-[1.03]`}
+            style={{ animationDelay: `${300 + i * 60}ms` }}
+          >
+            <div className="absolute top-3 right-3 opacity-20 text-white">
+              {o.icon}
+            </div>
+            <span className="text-base font-bold text-white drop-shadow-sm">{t(o.labelKey)}</span>
+          </Link>
+        ))}
       </div>
 
       {/* ── Favoris (conditional) ─────────────────────────────────── */}
