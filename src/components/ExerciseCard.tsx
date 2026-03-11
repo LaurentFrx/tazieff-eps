@@ -177,23 +177,19 @@ export function ExerciseCard({
   const { t } = useI18n();
   const title = exercise.title?.trim() || t("exerciseGrid.untitledDraft");
   const isList = variant === "list";
-  const gridMedia = exercise.thumbSrc ?? exercise.media ?? exercise.thumb169Src;
-  const listMedia =
-    exercise.thumbListSrc ??
-    exercise.thumb169Src ??
-    exercise.thumb916Src ??
-    exercise.thumbSrc ??
-    exercise.imageSrc ??
-    exercise.media;
-  const aspect = exercise.thumbListAspect ?? "1/1";
-  const is169 = aspect === "16/9";
-  const listCandidates = useMemo(
-    () => buildGridCandidates(listMedia),
-    [listMedia],
-  );
+  const slug = exercise.slug;
+  // Convention: grid uses square thumb, list uses 16:9 thumb
+  const gridMedia = `/images/exos/thumb-${slug}.webp`;
+  const listMedia = `/images/exos/thumb169-${slug}.webp`;
+  const aspect = isList ? "16/9" : "1/1";
+  const is169 = isList;
   const gridCandidates = useMemo(
-    () => buildGridCandidates(gridMedia),
-    [gridMedia],
+    () => [gridMedia, `/images/exos/${slug}.webp`, exercise.media, logo].filter(Boolean) as ImageCandidate[],
+    [gridMedia, slug, exercise.media],
+  );
+  const listCandidates = useMemo(
+    () => [listMedia, `/images/exos/thumb-${slug}.webp`, `/images/exos/${slug}.webp`, exercise.media, logo].filter(Boolean) as ImageCandidate[],
+    [listMedia, slug, exercise.media],
   );
   const candidates = isList ? listCandidates : gridCandidates;
   const candidatesKey = useMemo(

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import NextImage, { type StaticImageData } from "next/image";
+import NextImage from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import DifficultyPill from "@/components/DifficultyPill";
@@ -15,7 +15,6 @@ import {
   subscribeFavorites,
   toggleFavorite,
 } from "@/lib/favoritesStore";
-import s101 from "../../../../public/images/exos/s1-01.webp";
 import logo from "../../../../public/media/branding/logo-eps.webp";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -554,16 +553,9 @@ type HeroRender =
       type: "video";
       src: string;
       alt: string;
-      imageFallback?: string | StaticImageData;
+      imageFallback?: string;
     }
-  | { type?: "image"; src: string; alt: string; width: number; height: number }
-  | { type?: "image"; src: StaticImageData; alt: string };
-
-function isHeroUrl(
-  hero: HeroRender,
-): hero is Extract<HeroRender, { src: string }> {
-  return typeof hero.src === "string";
-}
+  | { type?: "image"; src: string; alt: string; width: number; height: number };
 
 export function ExerciseLiveDetail({
   slug,
@@ -707,19 +699,15 @@ export function ExerciseLiveDetail({
   const displayTitle =
     merged.frontmatter.title?.trim() || t("exerciseGrid.untitledDraft");
 
-  // Dynamic video hero resolution (try .webm for any slug)
+  // Hero media resolution: override > video (.webm/.mp4) > image (.webp)
   const exerciseSlug = merged.frontmatter.slug;
   const videoSrc = exerciseSlug
     ? `/images/exos/${exerciseSlug.toLowerCase()}.webm`
     : undefined;
-
-  const baseHeroImage = merged.frontmatter.media
-    ? {
-        "/images/exos/s1-01.webp": s101,
-      }[merged.frontmatter.media]
-    : undefined;
-
-  const imageFallback = baseHeroImage ?? merged.frontmatter.media;
+  const imageSrc = exerciseSlug
+    ? `/images/exos/${exerciseSlug.toLowerCase()}.webp`
+    : merged.frontmatter.media;
+  const imageFallback = imageSrc ?? merged.frontmatter.media;
 
   const overrideHero = overrideDocView?.heroImage;
   const overrideHeroUrl = overrideHero?.url?.trim() ?? "";
@@ -741,8 +729,8 @@ export function ExerciseLiveDetail({
             alt: displayTitle,
             imageFallback,
           }
-        : baseHeroImage
-          ? { type: "image", src: baseHeroImage, alt: displayTitle }
+        : imageFallback
+          ? { type: "image", src: imageFallback, alt: displayTitle, width: 800, height: 600 }
           : null;
 
   const tagPills: Array<{ label: string; kind?: string }> =
@@ -2562,7 +2550,7 @@ export function ExerciseLiveDetail({
               imageFallback={hero.imageFallback}
               rounded={false}
             />
-          ) : isHeroUrl(hero) ? (
+          ) : (
             <HeroMedia
               type="image"
               src={hero.src}
@@ -2572,8 +2560,6 @@ export function ExerciseLiveDetail({
               priority
               rounded={false}
             />
-          ) : (
-            <HeroMedia type="image" src={hero.src} alt={hero.alt} priority rounded={false} />
           )}
 
           {/* Gradient + titre en overlay au bas */}

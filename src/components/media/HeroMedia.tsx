@@ -99,8 +99,8 @@ export function HeroMedia(props: HeroMediaProps) {
           className="w-full h-auto"
           aria-label={alt}
         >
-          <source src={props.src.replace('.webm', '.mp4')} type="video/mp4" />
           <source src={props.src} type="video/webm" />
+          <source src={props.src.replace('.webm', '.mp4')} type="video/mp4" />
         </video>
 
         {/* Bouton play en overlay */}
