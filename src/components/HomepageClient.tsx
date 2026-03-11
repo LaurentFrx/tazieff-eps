@@ -73,7 +73,9 @@ type Props = {
 export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Props) {
   const { t } = useI18n();
   const { favorites } = useFavorites();
-  const hasFavorites = favorites.length > 0;
+  const validSlugs = new Set(SEARCH_INDEX.filter((e) => e.type === "exercice").map((e) => e.slug));
+  const validFavorites = favorites.filter((slug) => validSlugs.has(slug));
+  const hasFavorites = validFavorites.length > 0;
 
   return (
     <section className="page">
@@ -161,7 +163,7 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
             {t("pages.home.favoritesTitle")}
           </h2>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 snap-x snap-mandatory scrollbar-none">
-            {favorites.slice(0, 10).map((slug) => {
+            {validFavorites.slice(0, 10).map((slug) => {
               const entry = SEARCH_INDEX.find((e) => e.slug === slug);
               const title = entry?.title ?? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
               return (
