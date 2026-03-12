@@ -113,3 +113,17 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
+
+// Purge all runtime caches on activation so stale CSS/JS/HTML is cleared.
+// Serwist manages its own precache cleanup — we only delete runtime caches.
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((names) =>
+      Promise.all(
+        names
+          .filter((name) => !name.includes("precache"))
+          .map((name) => caches.delete(name)),
+      ),
+    ),
+  );
+});

@@ -32,9 +32,20 @@ export function ServiceWorkerRegister() {
     };
     document.addEventListener("visibilitychange", handleVisibility);
 
+    // Auto-reload once when a new SW takes control
+    let refreshing = false;
+    const handleControllerChange = () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
+    };
+    navigator.serviceWorker.addEventListener("controllerchange", handleControllerChange);
+
     return () => {
       clearInterval(interval);
       document.removeEventListener("visibilitychange", handleVisibility);
+      navigator.serviceWorker.removeEventListener("controllerchange", handleControllerChange);
     };
   }, []);
 
