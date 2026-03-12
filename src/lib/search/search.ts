@@ -2,6 +2,9 @@ import { SEARCH_INDEX, type SearchEntry } from "./search-index";
 
 import { normalizeForSearch as normalize } from "@/lib/text/normalize";
 
+/** Pre-normalized search text — computed once at import, not per keystroke. */
+const NORMALIZED_TEXTS = SEARCH_INDEX.map((entry) => normalize(entry.searchText));
+
 export type SearchResultGroup = {
   type: SearchEntry["type"];
   items: SearchEntry[];
@@ -12,8 +15,8 @@ export function search(query: string): SearchResultGroup[] {
   if (q.length < 2) return [];
 
   const tokens = q.split(/\s+/).filter(Boolean);
-  const matches = SEARCH_INDEX.filter((entry) => {
-    const text = normalize(entry.searchText);
+  const matches = SEARCH_INDEX.filter((_, i) => {
+    const text = NORMALIZED_TEXTS[i];
     return tokens.every((token) => text.includes(token));
   });
 
