@@ -98,7 +98,7 @@ export function TopBar() {
           </Link>
 
           {/* ── Center: Desktop nav (hidden mobile) ──────────────── */}
-          <nav className="hidden md:flex items-center gap-1 overflow-x-auto" aria-label={t("nav.mainNavigation")}>
+          <nav className="hidden lg:flex items-center gap-1 overflow-x-auto" aria-label={t("nav.mainNavigation")}>
             {desktopNav.map((item) => {
               const isActive =
                 pathname === item.href ||
@@ -107,10 +107,10 @@ export function TopBar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
+                  className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors whitespace-nowrap ${
                     isActive
                       ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
-                      : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800"
+                      : "text-zinc-700 hover:text-zinc-900 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:text-zinc-100 dark:hover:bg-zinc-800"
                   }`}
                   aria-current={isActive ? "page" : undefined}
                 >
@@ -135,7 +135,7 @@ export function TopBar() {
             {/* Outils — mobile only */}
             <Link
               href="/outils"
-              className="flex items-center justify-center w-10 h-10 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors md:hidden"
+              className="flex items-center justify-center w-10 h-10 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors lg:hidden"
               aria-label={t("nav.outils.label")}
             >
               <IconTools />
