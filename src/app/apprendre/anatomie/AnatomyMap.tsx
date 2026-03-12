@@ -100,7 +100,7 @@ export default function AnatomyMap({ exercises }: Props) {
   }, []);
 
   return (
-    <div className="anatomy-page">
+    <div className="anatomy-page fixed inset-0 z-[60]">
       {/* ── Back button (top left) ────────────────────────────────── */}
       <button
         type="button"
