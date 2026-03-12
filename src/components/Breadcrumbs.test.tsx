@@ -1,13 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 
-// Mock next/link to render a plain <a>
-vi.mock("next/link", () => ({
-  __esModule: true,
-  default: ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
-    <a href={href} className={className}>{children}</a>
-  ),
-}));
+vi.mock("next/link");
 
 import { Breadcrumbs } from "./Breadcrumbs";
 

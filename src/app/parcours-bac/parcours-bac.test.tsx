@@ -1,15 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mock next/link to render a plain <a>
-vi.mock("next/link", () => ({
-  __esModule: true,
-  default: ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
-    <a href={href} className={className}>{children}</a>
-  ),
-}));
-
-// Mock useI18n — return key as-is
+vi.mock("next/link");
 vi.mock("@/lib/i18n/I18nProvider", () => ({
   useI18n: () => ({ t: (key: string) => key }),
 }));
