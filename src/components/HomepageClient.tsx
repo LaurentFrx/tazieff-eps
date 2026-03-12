@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -73,8 +74,17 @@ type Props = {
 export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Props) {
   const { t } = useI18n();
   const { favorites } = useFavorites();
-  const validSlugs = new Set(SEARCH_INDEX.filter((e) => e.type === "exercice").map((e) => e.slug));
-  const validFavorites = favorites.filter((slug) => validSlugs.has(slug));
+
+  const slugMap = useMemo(
+    () => new Map(SEARCH_INDEX.filter((e) => e.type === "exercice").map((e) => [e.slug, e])),
+    [],
+  );
+
+  const validFavorites = useMemo(
+    () => favorites.filter((slug) => slugMap.has(slug)),
+    [favorites, slugMap],
+  );
+
   const hasFavorites = validFavorites.length > 0;
 
   return (
@@ -178,7 +188,7 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
           </h2>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 snap-x snap-mandatory scrollbar-none">
             {validFavorites.slice(0, 10).map((slug) => {
-              const entry = SEARCH_INDEX.find((e) => e.slug === slug);
+              const entry = slugMap.get(slug);
               const title = entry?.title ?? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
               return (
                 <Link
