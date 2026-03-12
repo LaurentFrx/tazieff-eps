@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 type RestTimerProps = {
   durationSec?: number;
@@ -35,7 +35,7 @@ export function RestTimer({ durationSec = 0 }: RestTimerProps) {
     return () => window.clearInterval(timerId);
   }, [running]);
 
-  const label = useMemo(() => formatSeconds(remaining), [remaining]);
+  const label = formatSeconds(remaining);
 
   if (!durationSec) {
     return (
