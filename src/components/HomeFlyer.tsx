@@ -75,8 +75,7 @@ export function HomeFlyer() {
     const phrases = [greeting, a1, a2];
     // Duplicate for seamless infinite scroll
     return [...phrases, ...phrases];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [t]);
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-[0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur">
