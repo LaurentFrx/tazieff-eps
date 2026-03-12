@@ -156,6 +156,20 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
         ))}
       </div>
 
+      {/* ── Share link ────────────────────────────────────────────── */}
+      <div className="mt-3 text-center">
+        <Link
+          href="/partager"
+          className="inline-flex items-center gap-1.5 text-sm text-pink-500 hover:text-pink-600 dark:text-pink-400 dark:hover:text-pink-300 font-medium transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+            <circle cx="13" cy="4.5" r="2.5" /><circle cx="5" cy="10" r="2.5" /><circle cx="13" cy="15.5" r="2.5" />
+            <path d="M7.2 8.8l5.6-3.1M7.2 11.2l5.6 3.1" stroke="currentColor" strokeWidth="1.2" fill="none" />
+          </svg>
+          {t("pages.home.shareApp")}
+        </Link>
+      </div>
+
       {/* ── Favoris (conditional) ─────────────────────────────────── */}
       {hasFavorites && (
         <div className="mt-6">

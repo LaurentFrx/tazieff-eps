@@ -474,6 +474,7 @@ export const messages = {
         heroApprendreSub: "Les fondamentaux de la musculation",
         heroBacSub: "Suis ta progression vers le BAC",
         heroOutilsSub: "Tout pour ta séance",
+        shareApp: "Partager l\u2019app avec un ami",
       },
       exos: {
         eyebrow: "Exos",
@@ -631,6 +632,16 @@ export const messages = {
       },
       compatiblesHeading: "Méthodes compatibles",
       exercicesCompatibles: "Exercices compatibles",
+    },
+    partager: {
+      title: "Partager l\u2019app",
+      scan: "Scanne pour acc\u00e9der \u00e0 muscu-eps.fr",
+      share: "Partager",
+      copyLink: "Copier le lien",
+      copied: "\u2713 Copi\u00e9 !",
+      download: "T\u00e9l\u00e9charger le QR code",
+      hint: "Montre ce QR code \u00e0 tes camarades ou envoie-le par message",
+      shareText: "D\u00e9couvre l\u2019app de musculation pour le BAC EPS !",
     },
     outils: {
       title: "Mes outils",
@@ -1440,6 +1451,7 @@ export const messages = {
         heroApprendreSub: "Strength training fundamentals",
         heroBacSub: "Track your progress toward the BAC",
         heroOutilsSub: "Everything for your session",
+        shareApp: "Share the app with a friend",
       },
       exos: {
         eyebrow: "Exercises",
@@ -1770,6 +1782,16 @@ export const messages = {
       },
       compatiblesHeading: "Compatible methods",
       exercicesCompatibles: "Compatible exercises",
+    },
+    partager: {
+      title: "Share the app",
+      scan: "Scan to access muscu-eps.fr",
+      share: "Share",
+      copyLink: "Copy link",
+      copied: "\u2713 Copied!",
+      download: "Download QR code",
+      hint: "Show this QR code to your classmates or send it by message",
+      shareText: "Discover the strength training app for BAC EPS!",
     },
     outils: {
       title: "My Tools",
@@ -2406,6 +2428,7 @@ export const messages = {
         heroApprendreSub: "Los fundamentos de la musculación",
         heroBacSub: "Sigue tu progreso hacia el BAC",
         heroOutilsSub: "Todo para tu sesión",
+        shareApp: "Compartir la app con un amigo",
       },
       exos: {
         eyebrow: "Ejercicios",
@@ -2563,6 +2586,16 @@ export const messages = {
       },
       compatiblesHeading: "Métodos compatibles",
       exercicesCompatibles: "Ejercicios compatibles",
+    },
+    partager: {
+      title: "Compartir la app",
+      scan: "Escanea para acceder a muscu-eps.fr",
+      share: "Compartir",
+      copyLink: "Copiar el enlace",
+      copied: "\u00a1Copiado!",
+      download: "Descargar el c\u00f3digo QR",
+      hint: "Muestra este c\u00f3digo QR a tus compa\u00f1eros o env\u00edalo por mensaje",
+      shareText: "\u00a1Descubre la app de musculaci\u00f3n para el BAC EPS!",
     },
     outils: {
       title: "Mis herramientas",

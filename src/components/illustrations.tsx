@@ -69,6 +69,20 @@ export function IlluTrophy() {
   );
 }
 
+export function IlluShare() {
+  return (
+    <svg width="90" height="90" viewBox="0 0 90 90" fill="none" className="absolute right-2 bottom-2 opacity-20">
+      <g stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="55" cy="20" r="10" fill="white" fillOpacity="0.15" />
+        <circle cx="25" cy="45" r="10" fill="white" fillOpacity="0.15" />
+        <circle cx="55" cy="70" r="10" fill="white" fillOpacity="0.15" />
+        <line x1="34" y1="40" x2="46" y2="25" />
+        <line x1="34" y1="50" x2="46" y2="65" />
+      </g>
+    </svg>
+  );
+}
+
 export function IlluDashboard() {
   return (
     <svg width="90" height="90" viewBox="0 0 90 90" fill="none" className="absolute right-2 bottom-2 opacity-20">
