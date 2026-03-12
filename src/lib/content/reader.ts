@@ -10,6 +10,7 @@ import type { ReactNode } from "react";
 import { z } from "zod";
 import { mdxComponents } from "@/components/mdx/MDXComponents";
 import { PAGE_PATHS, type PageKey } from "@/lib/content/pageKeys";
+import { formatZodError } from "@/lib/content/zodHelpers";
 
 const CONTENT_ROOT = path.join(process.cwd(), "content");
 
@@ -62,28 +63,6 @@ export type PageMdx = {
   source: string;
 };
 
-function formatZodPath(pathSegments: Array<string | number>) {
-  return pathSegments.reduce((acc, segment) => {
-    if (typeof segment === "number") {
-      return `${acc}[${segment}]`;
-    }
-    return acc ? `${acc}.${segment}` : segment;
-  }, "");
-}
-
-function formatZodError(filename: string, issues: z.ZodIssue[]) {
-  const details = issues
-    .map((issue) => {
-      const cleanedPath = issue.path.map((segment) =>
-        typeof segment === "symbol" ? segment.toString() : segment,
-      ) as Array<string | number>;
-      const field = formatZodPath(cleanedPath) || "frontmatter";
-      return `- ${field}: ${issue.message}`;
-    })
-    .join("\n");
-
-  return `Frontmatter invalide dans ${filename}.\n${details}`;
-}
 
 function parseFrontmatter(
   data: Record<string, unknown>,

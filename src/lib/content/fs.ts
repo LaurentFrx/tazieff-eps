@@ -3,7 +3,8 @@ import type { Dirent } from "node:fs";
 import path from "node:path";
 import { cache } from "react";
 import matter from "gray-matter";
-import type { ZodIssue, ZodSchema } from "zod";
+import type { ZodSchema } from "zod";
+import { formatZodError } from "@/lib/content/zodHelpers";
 import {
   BacFrontmatterSchema,
   ExerciseFrontmatterSchema,
@@ -35,28 +36,6 @@ function getContentDir(type: ContentType) {
   return path.join(CONTENT_ROOT, CONTENT_DIRS[type]);
 }
 
-function formatZodPath(pathSegments: Array<string | number>) {
-  return pathSegments.reduce((acc, segment) => {
-    if (typeof segment === "number") {
-      return `${acc}[${segment}]`;
-    }
-    return acc ? `${acc}.${segment}` : segment;
-  }, "");
-}
-
-function formatZodError(filename: string, issues: ZodIssue[]) {
-  const details = issues
-    .map((issue) => {
-      const cleanedPath = issue.path.map((segment) =>
-        typeof segment === "symbol" ? segment.toString() : segment,
-      ) as Array<string | number>;
-      const field = formatZodPath(cleanedPath) || "frontmatter";
-      return `- ${field}: ${issue.message}`;
-    })
-    .join("\n");
-
-  return `Frontmatter invalide dans ${filename}.\n${details}`;
-}
 
 function normalizeFrontmatter(
   data: Record<string, unknown>,
