@@ -96,13 +96,7 @@ for (const [groupId, muscles] of Object.entries(MUSCLE_GROUP_MAP) as [MuscleGrou
   }
 }
 
-function normalize(value: string): string {
-  return value
-    .toLowerCase()
-    .trim()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-}
+import { normalizeForSearch as normalize } from "@/lib/text/normalize";
 
 /** Return all muscle group IDs that match at least one muscle from the exercise. */
 export function getMuscleGroups(muscles: string[]): MuscleGroupId[] {

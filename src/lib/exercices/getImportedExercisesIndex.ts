@@ -113,12 +113,7 @@ function normalizeStringList(raw?: string[] | string) {
   return splitList(raw);
 }
 
-function normalizeComparable(value: string) {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-}
+import { normalizeForSearch as normalizeComparable } from "@/lib/text/normalize";
 
 function normalizeEquipment(raw?: string) {
   const items = splitList(raw);

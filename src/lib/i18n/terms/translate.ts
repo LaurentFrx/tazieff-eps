@@ -3,13 +3,7 @@ import dictionary from "./dictionary.json";
 
 type Category = keyof typeof dictionary;
 
-function normalizeTerm(term: string): string {
-  return term
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim();
-}
+import { normalizeForSearch as normalizeTerm } from "@/lib/text/normalize";
 
 export function translateTerm(
   term: string,

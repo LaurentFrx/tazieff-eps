@@ -1,12 +1,6 @@
 import { SEARCH_INDEX, type SearchEntry } from "./search-index";
 
-/** Normalize string: lowercase, strip accents */
-function normalize(str: string): string {
-  return str
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-}
+import { normalizeForSearch as normalize } from "@/lib/text/normalize";
 
 export type SearchResultGroup = {
   type: SearchEntry["type"];
