@@ -47,6 +47,9 @@ body {
   min-height: 100dvh;
   font-family: var(--font-body);
   color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   background:
     radial-gradient(680px circle at 8% 0%, var(--accent-soft), transparent 60%),
     radial-gradient(640px circle at 92% 0%, var(--accent-2-soft), transparent 60%),
@@ -756,7 +759,7 @@ p {
 
 @media (min-width: 768px) {
   .app-shell {
-    padding: calc(60px + env(safe-area-inset-top, 0px)) 40px 36px;
+    padding: calc(60px + env(safe-area-inset-top, 0px)) 40px calc(96px + env(safe-area-inset-bottom, 0px));
   }
 
   .block-row {
