@@ -19,6 +19,8 @@ function formatTime(totalSeconds: number) {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
+const CIRCUMFERENCE = 2 * Math.PI * 44;
+
 export function MethodeTimer({ labels }: MethodeTimerProps) {
   const [durationMin, setDurationMin] = useState(10);
   const [remaining, setRemaining] = useState(durationMin * 60);
@@ -58,8 +60,7 @@ export function MethodeTimer({ labels }: MethodeTimerProps) {
   }, [running]);
 
   const progress = 1 - remaining / (durationMin * 60);
-  const circumference = 2 * Math.PI * 44;
-  const strokeDashoffset = circumference * (1 - progress);
+  const strokeDashoffset = CIRCUMFERENCE * (1 - progress);
   const isDone = remaining === 0;
 
   return (
@@ -86,7 +87,7 @@ export function MethodeTimer({ labels }: MethodeTimerProps) {
             stroke="var(--accent)"
             strokeWidth="6"
             strokeLinecap="round"
-            strokeDasharray={circumference}
+            strokeDasharray={CIRCUMFERENCE}
             strokeDashoffset={strokeDashoffset}
             style={{ transition: "stroke-dashoffset 1s linear" }}
           />
