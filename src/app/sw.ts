@@ -35,7 +35,7 @@ const serwist = new Serwist({
     {
       matcher: ({ url }) =>
         isSameOrigin(url) && url.pathname.startsWith("/_next/static/"),
-      handler: new CacheFirst({
+      handler: new StaleWhileRevalidate({
         cacheName: "next-static",
         plugins: [
           new ExpirationPlugin({

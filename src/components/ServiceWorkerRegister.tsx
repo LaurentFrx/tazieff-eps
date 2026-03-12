@@ -13,6 +13,29 @@ export function ServiceWorkerRegister() {
     }
 
     window.serwist?.register();
+
+    // Check for SW updates periodically and when the tab regains focus
+    const checkUpdate = () => {
+      navigator.serviceWorker.getRegistration().then((reg) => {
+        reg?.update().catch(() => {});
+      });
+    };
+
+    // Check every 10 minutes
+    const interval = setInterval(checkUpdate, 10 * 60 * 1000);
+
+    // Check when the user returns to the tab
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        checkUpdate();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, []);
 
   return null;
