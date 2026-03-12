@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { LiveExerciseListItem } from "@/lib/live/types";
 import { MUSCLE_GROUPS, GROUP_MUSCLES, matchesGroup } from "./anatomy-data";
@@ -28,6 +29,7 @@ type LabelInfo = {
 
 export default function AnatomyMap({ exercises }: Props) {
   const { t } = useI18n();
+  const router = useRouter();
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [highlightedMuscle, setHighlightedMuscle] = useState<string | null>(null);
   const [label, setLabel] = useState<LabelInfo | null>(null);
@@ -99,6 +101,18 @@ export default function AnatomyMap({ exercises }: Props) {
 
   return (
     <div className="anatomy-page">
+      {/* ── Back button (top left) ────────────────────────────────── */}
+      <button
+        type="button"
+        className="anatomy-back-btn"
+        onClick={() => router.back()}
+        aria-label={t("anatomy.close")}
+      >
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="anatomy-back-icon">
+          <path d="M12 4l-6 6 6 6" />
+        </svg>
+      </button>
+
       {/* Background (parallax-synced with camera) */}
       <div ref={bgRef} className="anatomy-bg" />
 
