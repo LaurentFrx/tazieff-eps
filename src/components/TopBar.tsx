@@ -2,22 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useTeacherMode } from "@/hooks/useTeacherMode";
 import { SearchModal } from "@/components/SearchModal";
-
-/* ── Desktop nav items ───────────────────────────────────────────── */
-
-const desktopNav = [
-  { href: "/exercices",    labelKey: "nav.exos.label" },
-  { href: "/seances",      labelKey: "nav.seances.label" },
-  { href: "/methodes",     labelKey: "nav.methodes.label" },
-  { href: "/apprendre",    labelKey: "nav.apprendre.label" },
-  { href: "/parcours-bac", labelKey: "nav.bac.label" },
-  { href: "/outils",       labelKey: "nav.outils.label" },
-];
 
 /* ── Inline SVG icons (20×20) ────────────────────────────────────── */
 
@@ -61,7 +49,6 @@ function IconTeacher() {
 /* ── Component ───────────────────────────────────────────────────── */
 
 export function TopBar() {
-  const pathname = usePathname() ?? "";
   const { t } = useI18n();
   const { unlocked: teacherUnlocked } = useTeacherMode();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -97,29 +84,6 @@ export function TopBar() {
             </span>
           </Link>
 
-          {/* ── Center: Desktop nav (hidden mobile) ──────────────── */}
-          <nav className="hidden lg:flex items-center gap-1 overflow-x-auto" aria-label={t("nav.mainNavigation")}>
-            {desktopNav.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                pathname.startsWith(`${item.href}/`);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors whitespace-nowrap ${
-                    isActive
-                      ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
-                      : "text-zinc-700 hover:text-zinc-900 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:text-zinc-100 dark:hover:bg-zinc-800"
-                  }`}
-                  aria-current={isActive ? "page" : undefined}
-                >
-                  {t(item.labelKey)}
-                </Link>
-              );
-            })}
-          </nav>
-
           {/* ── Right: Action icons ───────────────────────────────── */}
           <div className="flex items-center gap-0.5 shrink-0">
             {/* Search */}
@@ -135,7 +99,7 @@ export function TopBar() {
             {/* Outils — mobile only */}
             <Link
               href="/outils"
-              className="flex items-center justify-center w-10 h-10 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors lg:hidden"
+              className="flex items-center justify-center w-10 h-10 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               aria-label={t("nav.outils.label")}
             >
               <IconTools />
