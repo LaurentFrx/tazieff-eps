@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Copy, Edit2, Link2, Plus, Share2, Trash2, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useTeacherMode } from "@/hooks/useTeacherMode";
+import { getEnseignantLabels } from "./labels";
 
 /* ── Types ──────────────────────────────────────────────────────────── */
 
@@ -75,17 +76,7 @@ export function EnseignantDashboard({ methodeNames, exerciceNames }: Props) {
     if (unlocked) setSessions(loadSessions());
   }, [unlocked]);
 
-  const niveauLabels: Record<string, string> = {
-    seconde: t("enseignant.seconde"),
-    premiere: t("enseignant.premiere"),
-    terminale: t("enseignant.terminale"),
-  };
-
-  const objectifLabels: Record<string, string> = {
-    endurance: t("enseignant.objEndurance"),
-    volume: t("enseignant.objVolume"),
-    puissance: t("enseignant.objPuissance"),
-  };
+  const { niveauLabels, objectifLabels } = getEnseignantLabels(t);
 
   /* ── Form helpers ─────────────────────────────────────────────────── */
 

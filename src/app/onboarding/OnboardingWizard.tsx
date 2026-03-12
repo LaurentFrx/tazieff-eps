@@ -13,6 +13,8 @@ type Exercice = { slug: string; title: string; muscles: string[] };
 type Objectif = "endurance" | "volume" | "puissance";
 type Step = 1 | 2 | 3 | 4 | 5;
 
+const MAX_EXERCICES = 6;
+
 const OBJECTIF_CATEGORIES: Record<Objectif, string[]> = {
   endurance: ["endurance-de-force"],
   volume: ["gain-de-volume"],
@@ -70,7 +72,7 @@ export function OnboardingWizard({ methodes, exercices }: Props) {
   const toggleExercice = useCallback((slug: string) => {
     setSelectedExercices((prev) => {
       if (prev.includes(slug)) return prev.filter((s) => s !== slug);
-      if (prev.length >= 6) return prev;
+      if (prev.length >= MAX_EXERCICES) return prev;
       return [...prev, slug];
     });
   }, []);
@@ -217,7 +219,7 @@ export function OnboardingWizard({ methodes, exercices }: Props) {
         <div className="onboarding-step">
           <h2 className="text-xl font-bold text-[color:var(--ink)]">{t("onboarding.chooseExercices")}</h2>
           <p className="text-sm text-[color:var(--muted)] mt-1">
-            {t("onboarding.exerciceHint")} ({selectedExercices.length}/6)
+            {t("onboarding.exerciceHint")} ({selectedExercices.length}/{MAX_EXERCICES})
           </p>
 
           {/* Zone balance indicator */}
@@ -237,7 +239,7 @@ export function OnboardingWizard({ methodes, exercices }: Props) {
           <div className="grid gap-2 mt-4 sm:grid-cols-2">
             {exercices.map((ex) => {
               const selected = selectedExercices.includes(ex.slug);
-              const disabled = !selected && selectedExercices.length >= 6;
+              const disabled = !selected && selectedExercices.length >= MAX_EXERCICES;
               return (
                 <button
                   key={ex.slug}

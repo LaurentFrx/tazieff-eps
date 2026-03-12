@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { getEnseignantLabels } from "../labels";
 
 type DecodedSession = {
   t: string;       // titre
@@ -55,17 +56,7 @@ export function SharedSession() {
     );
   }
 
-  const niveauLabels: Record<string, string> = {
-    seconde: t("enseignant.seconde"),
-    premiere: t("enseignant.premiere"),
-    terminale: t("enseignant.terminale"),
-  };
-
-  const objectifLabels: Record<string, string> = {
-    endurance: t("enseignant.objEndurance"),
-    volume: t("enseignant.objVolume"),
-    puissance: t("enseignant.objPuissance"),
-  };
+  const { niveauLabels, objectifLabels } = getEnseignantLabels(t);
 
   return (
     <section className="page">

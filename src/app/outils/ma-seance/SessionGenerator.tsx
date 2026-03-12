@@ -30,6 +30,7 @@ type SavedSession = {
 const STORAGE_KEY = "eps_session";
 
 const MIN_METHODES = 1;
+const MAX_EXERCICES = 6;
 
 /* ── Props ───────────────────────────────── */
 
@@ -75,7 +76,7 @@ export function SessionGenerator({
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const saved: SavedSession = JSON.parse(raw);
-        if (saved.objectif && saved.selectedMethodes?.length && saved.selectedExercices?.length === 6) {
+        if (saved.objectif && saved.selectedMethodes?.length && saved.selectedExercices?.length === MAX_EXERCICES) {
           setObjectif(saved.objectif);
           setSelectedMethodes(saved.selectedMethodes);
           setSelectedExercices(saved.selectedExercices);
@@ -149,7 +150,7 @@ export function SessionGenerator({
   function toggleExercice(slug: string) {
     setSelectedExercices((prev) => {
       if (prev.includes(slug)) return prev.filter((s) => s !== slug);
-      if (prev.length >= 6) return prev;
+      if (prev.length >= MAX_EXERCICES) return prev;
       return [...prev, slug];
     });
   }
@@ -322,7 +323,7 @@ export function SessionGenerator({
       {step === 3 && (
         <div className="flex flex-col gap-4">
           <p className="text-sm font-semibold text-[color:var(--accent)]">
-            {selectedExercices.length} / 6 {t("maSeance.exercicesCount")}
+            {selectedExercices.length} / {MAX_EXERCICES} {t("maSeance.exercicesCount")}
           </p>
 
           {/* Balance warnings */}
@@ -347,7 +348,7 @@ export function SessionGenerator({
                     key={ex.slug}
                     exercice={ex}
                     selected={selectedExercices.includes(ex.slug)}
-                    disabled={!selectedExercices.includes(ex.slug) && selectedExercices.length >= 6}
+                    disabled={!selectedExercices.includes(ex.slug) && selectedExercices.length >= MAX_EXERCICES}
                     onToggle={() => toggleExercice(ex.slug)}
                   />
                 ))}
@@ -367,7 +368,7 @@ export function SessionGenerator({
                     key={ex.slug}
                     exercice={ex}
                     selected={selectedExercices.includes(ex.slug)}
-                    disabled={!selectedExercices.includes(ex.slug) && selectedExercices.length >= 6}
+                    disabled={!selectedExercices.includes(ex.slug) && selectedExercices.length >= MAX_EXERCICES}
                     onToggle={() => toggleExercice(ex.slug)}
                   />
                 ))}
@@ -385,7 +386,7 @@ export function SessionGenerator({
             </button>
             <button
               type="button"
-              disabled={selectedExercices.length !== 6}
+              disabled={selectedExercices.length !== MAX_EXERCICES}
               onClick={() => {
                 saveSession();
                 setStep("result");
