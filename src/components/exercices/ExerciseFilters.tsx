@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Difficulty } from "@/lib/content/schema";
 import { NO_EQUIPMENT_ID } from "@/lib/exercices/filters";
 import { MUSCLE_GROUP_IDS, type MuscleGroupId } from "@/lib/exercices/muscleGroups";
@@ -124,36 +124,22 @@ export function ExerciseFilters({
 
   // Build active chip labels for the summary bar
   type ActiveChip = { key: string; label: string; remove: () => void };
-  const activeChips: ActiveChip[] = [];
-
-  for (const lv of selectedLevels) {
-    activeChips.push({
-      key: `lv-${lv}`,
-      label: t(LEVEL_KEYS[lv]),
-      remove: () => onToggleLevel(lv),
-    });
-  }
-  for (const mg of selectedMuscleGroups) {
-    activeChips.push({
-      key: `mg-${mg}`,
-      label: t(`filters.muscleGroups.${mg}`),
-      remove: () => onToggleMuscleGroup(mg),
-    });
-  }
-  for (const eq of selectedEquipment) {
-    activeChips.push({
-      key: `eq-${eq}`,
-      label: eq === NO_EQUIPMENT_ID ? t("filters.noEquipment") : eq,
-      remove: () => onToggleEquipment(eq),
-    });
-  }
-  for (const th of selectedThemes) {
-    activeChips.push({
-      key: `th-${th}`,
-      label: t(`filters.themeName.${th}`),
-      remove: () => onToggleTheme(th),
-    });
-  }
+  const activeChips = useMemo<ActiveChip[]>(() => {
+    const chips: ActiveChip[] = [];
+    for (const lv of selectedLevels) {
+      chips.push({ key: `lv-${lv}`, label: t(LEVEL_KEYS[lv]), remove: () => onToggleLevel(lv) });
+    }
+    for (const mg of selectedMuscleGroups) {
+      chips.push({ key: `mg-${mg}`, label: t(`filters.muscleGroups.${mg}`), remove: () => onToggleMuscleGroup(mg) });
+    }
+    for (const eq of selectedEquipment) {
+      chips.push({ key: `eq-${eq}`, label: eq === NO_EQUIPMENT_ID ? t("filters.noEquipment") : eq, remove: () => onToggleEquipment(eq) });
+    }
+    for (const th of selectedThemes) {
+      chips.push({ key: `th-${th}`, label: t(`filters.themeName.${th}`), remove: () => onToggleTheme(th) });
+    }
+    return chips;
+  }, [selectedLevels, selectedMuscleGroups, selectedEquipment, selectedThemes, t, onToggleLevel, onToggleMuscleGroup, onToggleEquipment, onToggleTheme]);
 
   return (
     <div className="flex flex-col gap-2">
