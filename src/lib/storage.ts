@@ -1,6 +1,5 @@
 import {
   getFavoritesSnapshot,
-  setFavorites,
   subscribeFavorites,
   toggleFavorite as toggleFavoriteInStore,
 } from "@/lib/favoritesStore";
@@ -23,30 +22,6 @@ function emit(eventName: string, detail: unknown) {
 }
 
 const THEME_EVENT = "eps:theme";
-
-export function getFavorites(): string[] {
-  return getFavoritesSnapshot();
-}
-
-export function isFavorite(slug: string): boolean {
-  return getFavoritesSnapshot().includes(slug);
-}
-
-export function addFavorite(slug: string) {
-  const list = getFavoritesSnapshot();
-  if (!list.includes(slug)) {
-    setFavorites([...list, slug]);
-  }
-}
-
-export function removeFavorite(slug: string) {
-  const list = getFavoritesSnapshot();
-  if (!list.includes(slug)) {
-    return;
-  }
-
-  setFavorites(list.filter((item) => item !== slug));
-}
 
 export function toggleFavorite(slug: string) {
   toggleFavoriteInStore(slug);
