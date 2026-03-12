@@ -103,6 +103,12 @@ p {
   line-height: 1.6;
 }
 
+/* ── Hide chrome when full-screen immersive pages are mounted ─────────── */
+body:has(.anatomy-page) > * > header,
+body:has(.anatomy-page) > * > nav {
+  display: none !important;
+}
+
 .app-shell {
   position: relative;
   z-index: 1;
