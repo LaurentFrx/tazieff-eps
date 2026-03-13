@@ -204,8 +204,8 @@ function Scene({
       <CameraControls
         ref={controlsRef}
         dollyToCursor
-        smoothTime={0.25}
-        draggingSmoothTime={0.12}
+        smoothTime={0.1}
+        draggingSmoothTime={0.04}
         minPolarAngle={Math.PI * 0.05}
         maxPolarAngle={Math.PI * 0.95}
         minDistance={1.2}
