@@ -47,6 +47,17 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
      over opaque colored muscles but still faintly visible on bare areas
      (head, hands, feet). No glow points — the wireframe alone suffices. */
   useEffect(() => {
+    const glowMat = new THREE.PointsMaterial({
+      color: 0x5c3a1a,
+      size: 0.002,
+      transparent: true,
+      opacity: 0.2,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      sizeAttenuation: true,
+    });
+    const added: THREE.Object3D[] = [];
+
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
@@ -62,8 +73,15 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
         mesh.renderOrder = 1;
         mesh.castShadow = true;
         mesh.customDepthMaterial = new THREE.MeshDepthMaterial();
+
+        const pts = new THREE.Points(mesh.geometry, glowMat.clone());
+        pts.renderOrder = 2;
+        mesh.add(pts);
+        added.push(pts);
       }
     });
+
+    return () => { for (const p of added) p.removeFromParent(); };
   }, [scene, opacity]);
 
   useEffect(() => {

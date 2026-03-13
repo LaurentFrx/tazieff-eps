@@ -266,7 +266,7 @@ function Scene({
         minDistance={0.4}
         maxDistance={5.0}
         dollySpeed={0.5}
-        truckSpeed={1.0}
+        truckSpeed={2.0}
       />
     </>
   );
