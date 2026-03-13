@@ -324,13 +324,15 @@ export default function HologramMannequin({
   onClickMuscle,
   onLongPressMuscle,
   silhouetteOpacity = 0.4,
-}: Props & { silhouetteOpacity?: number }) {
+  ambientIntensity = 0.8,
+  mainLightIntensity = 1.2,
+}: Props & { silhouetteOpacity?: number; ambientIntensity?: number; mainLightIntensity?: number }) {
 
   return (
     <group>
       {/* Lighting */}
-      <ambientLight intensity={0.8} color={0xffeedd} />
-      <directionalLight position={[-3, 4, 1]} intensity={1.2} color={0xfff5e0} />
+      <ambientLight intensity={ambientIntensity} color={0xffeedd} />
+      <directionalLight position={[-3, 4, 1]} intensity={mainLightIntensity} color={0xfff5e0} />
       <directionalLight position={[-2, 1, -1]} intensity={0.5} color={0x88aaff} />
       <directionalLight position={[0, 2, -3]} intensity={0.3} />
 

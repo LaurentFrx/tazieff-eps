@@ -2,6 +2,6 @@
 export const buildInfo = {
   envLabel: "local",
   appVersion: "0.1.0",
-  gitShaShort: "cb6b025",
-  buildTimeIso: "2026-03-13T19:03:51.129Z",
+  gitShaShort: "d75de8e",
+  buildTimeIso: "2026-03-13T19:15:43.814Z",
 } as const;

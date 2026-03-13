@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { CameraControls, useTexture } from "@react-three/drei";
 import {
@@ -22,33 +22,259 @@ type Props = {
   onLongPressMuscle: (frName: string, groupKey: string, x: number, y: number) => void;
 };
 
-/** Mannequin is 50 % larger than the raw GLB model. */
-const MANNEQUIN_SCALE = 1.5;
+/* ── Debug settings ────────────────────────────────────────────────── */
+
+type DebugSettings = {
+  dollySpeed: number;
+  truckSpeed: number;
+  smoothTime: number;
+  minDistance: number;
+  maxDistance: number;
+  rotateSpeed: number;
+  inertiaDecay: number;
+  mannequinScale: number;
+  innerScale: number;
+  bgPositionX: number;
+  bgPositionY: number;
+  bgPositionZ: number;
+  bgWidth: number;
+  bgHeight: number;
+  silhouetteOpacity: number;
+  ambientIntensity: number;
+  mainLightIntensity: number;
+};
+
+const DEFAULT_SETTINGS: DebugSettings = {
+  dollySpeed: 1.5,
+  truckSpeed: 2.0,
+  smoothTime: 0.1,
+  minDistance: 0.4,
+  maxDistance: 5.0,
+  rotateSpeed: 0.006,
+  inertiaDecay: 0.92,
+  mannequinScale: 0.4,
+  innerScale: 1.5,
+  bgPositionX: 0,
+  bgPositionY: 1.2,
+  bgPositionZ: -1.5,
+  bgWidth: 12,
+  bgHeight: 9,
+  silhouetteOpacity: 0.12,
+  ambientIntensity: 0.8,
+  mainLightIntensity: 1.2,
+};
+
 /** Double-tap detection threshold (ms). */
 const DOUBLE_TAP_MS = 300;
 /** Max distance (px²) to still count as a tap, not a drag. */
 const TAP_THRESHOLD_SQ = 25;
 /** Max duration (ms) for a single tap gesture. */
 const TAP_MAX_DURATION = 200;
-/** Turntable: radians per pixel of horizontal drag. */
-const ROTATE_SPEED = 0.006;
-/** Turntable inertia decay per frame (0 = instant stop, 1 = never). */
-const INERTIA_DECAY = 0.92;
 /** Angular velocity threshold below which inertia stops. */
 const INERTIA_EPSILON = 0.0001;
 
 /* ── Background plane — fixed in scene, follows camera zoom/pan ──── */
 
-function BackgroundPlane() {
+function BackgroundPlane({ x, y, z, width, height }: {
+  x: number; y: number; z: number; width: number; height: number;
+}) {
   const texture = useTexture("/media/anatomy-bg.webp");
   texture.wrapS = ClampToEdgeWrapping;
   texture.wrapT = ClampToEdgeWrapping;
 
   return (
-    <mesh position={[0, 1.2, -1.5]} renderOrder={-2}>
-      <planeGeometry args={[12, 9]} />
+    <mesh position={[x, y, z]} renderOrder={-2}>
+      <planeGeometry args={[width, height]} />
       <meshBasicMaterial map={texture} depthWrite={false} />
     </mesh>
+  );
+}
+
+/* ── Slider definitions for debug panel ────────────────────────────── */
+
+type SliderDef = { key: keyof DebugSettings; label: string; min: number; max: number; step: number };
+
+const SLIDER_GROUPS: { title: string; sliders: SliderDef[] }[] = [
+  {
+    title: "CAMÉRA",
+    sliders: [
+      { key: "dollySpeed", label: "dollySpeed", min: 0.1, max: 3.0, step: 0.1 },
+      { key: "truckSpeed", label: "truckSpeed", min: 0.5, max: 5.0, step: 0.1 },
+      { key: "smoothTime", label: "smoothTime", min: 0.01, max: 0.5, step: 0.01 },
+      { key: "minDistance", label: "minDistance", min: 0.1, max: 2.0, step: 0.1 },
+      { key: "maxDistance", label: "maxDistance", min: 3.0, max: 10.0, step: 0.5 },
+    ],
+  },
+  {
+    title: "TURNTABLE",
+    sliders: [
+      { key: "rotateSpeed", label: "rotateSpeed", min: 0.001, max: 0.02, step: 0.001 },
+      { key: "inertiaDecay", label: "inertiaDecay", min: 0.8, max: 0.99, step: 0.01 },
+    ],
+  },
+  {
+    title: "MANNEQUIN",
+    sliders: [
+      { key: "mannequinScale", label: "mannequinScale", min: 0.2, max: 1.0, step: 0.05 },
+      { key: "innerScale", label: "innerScale", min: 0.5, max: 3.0, step: 0.1 },
+    ],
+  },
+  {
+    title: "FOND",
+    sliders: [
+      { key: "bgPositionX", label: "bgPositionX", min: -5, max: 5, step: 0.1 },
+      { key: "bgPositionY", label: "bgPositionY", min: -3, max: 5, step: 0.1 },
+      { key: "bgPositionZ", label: "bgPositionZ", min: -5, max: 0, step: 0.1 },
+      { key: "bgWidth", label: "bgWidth", min: 3, max: 30, step: 0.5 },
+      { key: "bgHeight", label: "bgHeight", min: 2, max: 20, step: 0.5 },
+    ],
+  },
+  {
+    title: "WIREFRAME",
+    sliders: [
+      { key: "silhouetteOpacity", label: "silhouetteOpacity", min: 0, max: 0.5, step: 0.01 },
+    ],
+  },
+  {
+    title: "ÉCLAIRAGE",
+    sliders: [
+      { key: "ambientIntensity", label: "ambientIntensity", min: 0, max: 2.0, step: 0.1 },
+      { key: "mainLightIntensity", label: "mainLightIntensity", min: 0, max: 3.0, step: 0.1 },
+    ],
+  },
+];
+
+function decimals(step: number) {
+  return step < 0.01 ? 3 : step < 1 ? 2 : 1;
+}
+
+/* ── Settings Panel (HTML overlay) ─────────────────────────────────── */
+
+function SettingsPanel({
+  settings,
+  onChange,
+}: {
+  settings: DebugSettings;
+  onChange: (s: DebugSettings) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(JSON.stringify(settings, null, 2));
+  }, [settings]);
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        style={{
+          position: "fixed",
+          bottom: 16,
+          left: 16,
+          zIndex: 100,
+          background: "rgba(0,0,0,0.7)",
+          color: "#fff",
+          border: "1px solid rgba(255,255,255,0.2)",
+          borderRadius: 8,
+          padding: "8px 12px",
+          fontSize: 11,
+          cursor: "pointer",
+          fontFamily: "monospace",
+        }}
+      >
+        Debug
+      </button>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        bottom: 16,
+        left: 16,
+        zIndex: 100,
+        background: "rgba(0,0,0,0.88)",
+        color: "#fff",
+        border: "1px solid rgba(255,255,255,0.2)",
+        borderRadius: 10,
+        padding: 12,
+        fontFamily: "monospace",
+        fontSize: 10,
+        maxHeight: "calc(100vh - 32px)",
+        overflowY: "auto",
+        width: 280,
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <span style={{ fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+          Debug Settings
+        </span>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          style={{ background: "none", border: "none", color: "#fff", cursor: "pointer", fontSize: 14 }}
+        >
+          ✕
+        </button>
+      </div>
+
+      {SLIDER_GROUPS.map((group) => (
+        <div key={group.title} style={{ marginBottom: 8 }}>
+          <div style={{
+            color: "rgba(0,212,255,0.6)",
+            fontSize: 9,
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+            marginBottom: 4,
+          }}>
+            {group.title}
+          </div>
+          {group.sliders.map((s) => (
+            <div key={s.key} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
+              <label style={{ flex: "0 0 120px", fontSize: 9, color: "rgba(255,255,255,0.7)" }}>
+                {s.label}
+              </label>
+              <input
+                type="range"
+                min={s.min}
+                max={s.max}
+                step={s.step}
+                value={settings[s.key]}
+                onChange={(e) => onChange({ ...settings, [s.key]: parseFloat(e.target.value) })}
+                style={{ flex: 1, accentColor: "#00D4FF" }}
+              />
+              <span style={{ flex: "0 0 40px", textAlign: "right", fontSize: 9, color: "#00D4FF" }}>
+                {settings[s.key].toFixed(decimals(s.step))}
+              </span>
+            </div>
+          ))}
+        </div>
+      ))}
+
+      <button
+        type="button"
+        onClick={handleCopy}
+        style={{
+          width: "100%",
+          padding: "6px 0",
+          background: "rgba(0,212,255,0.15)",
+          border: "1px solid rgba(0,212,255,0.3)",
+          borderRadius: 6,
+          color: "#00D4FF",
+          fontSize: 10,
+          cursor: "pointer",
+          fontFamily: "monospace",
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+        }}
+      >
+        Copier valeurs
+      </button>
+    </div>
   );
 }
 
@@ -60,7 +286,8 @@ function Scene({
   onHoverMuscle,
   onClickMuscle,
   onLongPressMuscle,
-}: Props) {
+  settings,
+}: Props & { settings: DebugSettings }) {
   const mannequinGroupRef = useRef<Group>(null);
   const turntableRef = useRef<Group>(null);
   const lightRef = useRef<DirectionalLight>(null);
@@ -77,6 +304,10 @@ function Scene({
   const lastTapTime = useRef(0);
   const pointerStart = useRef({ x: 0, y: 0, time: 0 });
 
+  /* Keep settings in a ref for event handlers & useFrame */
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
+
   const { gl } = useThree();
 
   /* Disable CameraControls single-finger rotation — turntable handles it */
@@ -87,6 +318,17 @@ function Scene({
     controls.touches.one = 0;         // ACTION.NONE
     // Keep defaults: right-click=TRUCK, wheel=DOLLY, two-finger=DOLLY_TRUCK
   }, []);
+
+  /* Update CameraControls imperatively when settings change */
+  useEffect(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+    controls.dollySpeed = settings.dollySpeed;
+    controls.truckSpeed = settings.truckSpeed;
+    controls.smoothTime = settings.smoothTime;
+    controls.minDistance = settings.minDistance;
+    controls.maxDistance = settings.maxDistance;
+  }, [settings.dollySpeed, settings.truckSpeed, settings.smoothTime, settings.minDistance, settings.maxDistance]);
 
   /* Add shadow-light target to scene graph */
   useEffect(() => {
@@ -142,8 +384,9 @@ function Scene({
     const onPointerMove = (e: PointerEvent) => {
       if (!isDragging.current || activePointers.current.size !== 1) return;
       const dx = e.clientX - lastPointerX.current;
-      rotationY.current += dx * ROTATE_SPEED;
-      angularVelocity.current = dx * ROTATE_SPEED;
+      const speed = settingsRef.current.rotateSpeed;
+      rotationY.current += dx * speed;
+      angularVelocity.current = dx * speed;
       lastPointerX.current = e.clientX;
     };
 
@@ -192,9 +435,10 @@ function Scene({
 
   /* Apply turntable rotation + inertia each frame */
   useFrame(() => {
+    const decay = settingsRef.current.inertiaDecay;
     if (!isDragging.current && Math.abs(angularVelocity.current) > INERTIA_EPSILON) {
       rotationY.current += angularVelocity.current;
-      angularVelocity.current *= INERTIA_DECAY;
+      angularVelocity.current *= decay;
     } else if (!isDragging.current) {
       angularVelocity.current = 0;
     }
@@ -207,7 +451,13 @@ function Scene({
   return (
     <>
       {/* Background plane — fixed in scene, does NOT rotate */}
-      <BackgroundPlane />
+      <BackgroundPlane
+        x={settings.bgPositionX}
+        y={settings.bgPositionY}
+        z={settings.bgPositionZ}
+        width={settings.bgWidth}
+        height={settings.bgHeight}
+      />
 
       <group>
         {/* Fixed directional light for shadow */}
@@ -235,15 +485,17 @@ function Scene({
         </mesh>
 
         {/* Turntable — rotates mannequin on Y axis */}
-        <group ref={turntableRef} scale={[0.4, 0.4, 0.4]}>
+        <group ref={turntableRef} scale={settings.mannequinScale}>
           <group ref={mannequinGroupRef}>
-            <group scale={MANNEQUIN_SCALE} position={[0, 0, -0.15]}>
+            <group scale={settings.innerScale} position={[0, 0, -0.15]}>
               <HologramMannequin
                 selectedGroup={selectedGroup}
                 highlightedMuscle={highlightedMuscle}
                 hoveredMuscle={null}
                 wireframe={false}
-                silhouetteOpacity={0.12}
+                silhouetteOpacity={settings.silhouetteOpacity}
+                ambientIntensity={settings.ambientIntensity}
+                mainLightIntensity={settings.mainLightIntensity}
                 onHoverMuscle={onHoverMuscle}
                 onClickMuscle={onClickMuscle}
                 onLongPressMuscle={onLongPressMuscle}
@@ -257,22 +509,22 @@ function Scene({
       <CameraControls
         ref={controlsRef}
         dollyToCursor
-        smoothTime={0.1}
+        smoothTime={settings.smoothTime}
         draggingSmoothTime={0.04}
         minPolarAngle={Math.PI / 2}
         maxPolarAngle={Math.PI / 2}
         minAzimuthAngle={0}
         maxAzimuthAngle={0}
-        minDistance={0.4}
-        maxDistance={5.0}
-        dollySpeed={0.5}
-        truckSpeed={2.0}
+        minDistance={settings.minDistance}
+        maxDistance={settings.maxDistance}
+        dollySpeed={settings.dollySpeed}
+        truckSpeed={settings.truckSpeed}
       />
     </>
   );
 }
 
-/* ── Exported canvas ─────────────────────────────────────────────────── */
+/* ── Exported canvas ─────────────────────────────────────────────── */
 
 export default function AnatomyCanvas({
   selectedGroup,
@@ -281,19 +533,32 @@ export default function AnatomyCanvas({
   onClickMuscle,
   onLongPressMuscle,
 }: Props) {
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [showDebug, setShowDebug] = useState(false);
+
+  useEffect(() => {
+    const show = typeof window !== "undefined"
+      && new URLSearchParams(window.location.search).has("debug");
+    setShowDebug(show);
+  }, []);
+
   return (
-    <Canvas
-      shadows={{ type: PCFSoftShadowMap }}
-      camera={{ position: [0, 0, 4.5], fov: 60, near: 0.01, far: 100 }}
-      gl={{ antialias: true, stencil: true }}
-    >
-      <Scene
-        selectedGroup={selectedGroup}
-        highlightedMuscle={highlightedMuscle}
-        onHoverMuscle={onHoverMuscle}
-        onClickMuscle={onClickMuscle}
-        onLongPressMuscle={onLongPressMuscle}
-      />
-    </Canvas>
+    <>
+      <Canvas
+        shadows={{ type: PCFSoftShadowMap }}
+        camera={{ position: [0, 0, 4.5], fov: 60, near: 0.01, far: 100 }}
+        gl={{ antialias: true, stencil: true }}
+      >
+        <Scene
+          selectedGroup={selectedGroup}
+          highlightedMuscle={highlightedMuscle}
+          onHoverMuscle={onHoverMuscle}
+          onClickMuscle={onClickMuscle}
+          onLongPressMuscle={onLongPressMuscle}
+          settings={settings}
+        />
+      </Canvas>
+      {showDebug && <SettingsPanel settings={settings} onChange={setSettings} />}
+    </>
   );
 }
