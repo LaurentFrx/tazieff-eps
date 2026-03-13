@@ -235,7 +235,7 @@ function Scene({
         </mesh>
 
         {/* Turntable — rotates mannequin on Y axis */}
-        <group ref={turntableRef} scale={[0.6, 0.6, 0.6]}>
+        <group ref={turntableRef} scale={[0.4, 0.4, 0.4]}>
           <group ref={mannequinGroupRef}>
             <group scale={MANNEQUIN_SCALE} position={[0, 0, -0.15]}>
               <HologramMannequin
