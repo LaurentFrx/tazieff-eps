@@ -49,6 +49,13 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       sizeAttenuation: true,
+      /* Stencil: only draw where no muscle wrote (stencil ≠ 1) */
+      stencilWrite: false,
+      stencilRef: 1,
+      stencilFunc: THREE.NotEqualStencilFunc,
+      stencilFail: THREE.KeepStencilOp,
+      stencilZFail: THREE.KeepStencilOp,
+      stencilZPass: THREE.KeepStencilOp,
     });
     const added: THREE.Object3D[] = [];
 
@@ -66,10 +73,17 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
           polygonOffset: true,
           polygonOffsetFactor: 2,
           polygonOffsetUnits: 2,
+          /* Stencil: only draw where no muscle wrote (stencil ≠ 1) */
+          stencilWrite: false,
+          stencilRef: 1,
+          stencilFunc: THREE.NotEqualStencilFunc,
+          stencilFail: THREE.KeepStencilOp,
+          stencilZFail: THREE.KeepStencilOp,
+          stencilZPass: THREE.KeepStencilOp,
         });
-        /* Render AFTER muscles (renderOrder 0) so that muscle depth
-           blocks wireframe fragments — wireframe only draws where
-           no muscle surface exists (head, hands, feet). */
+        /* Render AFTER muscles (renderOrder 0) so stencil buffer
+           is already populated — wireframe only draws on head,
+           hands, feet (areas with no muscle surface). */
         mesh.renderOrder = 1;
 
         /* Cast solid silhouette shadow (BasicDepthPacking for PCFSoftShadowMap) */
@@ -138,6 +152,11 @@ function MusclesModel({
           transparent: true,
           opacity: 1.0,
           side: THREE.DoubleSide,
+          /* Stencil: mark muscle pixels so wireframe is masked */
+          stencilWrite: true,
+          stencilRef: 1,
+          stencilFunc: THREE.AlwaysStencilFunc,
+          stencilZPass: THREE.ReplaceStencilOp,
         });
         const frName = getFrenchName(rawName);
         const side = getSide(rawName);

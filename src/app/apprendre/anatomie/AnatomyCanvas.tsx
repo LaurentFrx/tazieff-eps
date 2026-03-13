@@ -21,8 +21,6 @@ type Props = {
   onLongPressMuscle: (frName: string, groupKey: string, x: number, y: number) => void;
 };
 
-/** Y-offset so mannequin feet sit at shadow line on background image. */
-const FEET_Y = -1.28;
 /** Mannequin is 50 % larger than the raw GLB model. */
 const MANNEQUIN_SCALE = 1.5;
 /** Double-tap detection threshold (ms). */
@@ -60,7 +58,7 @@ function Scene({
     }
   }, []);
 
-  /* Center camera on mannequin bounding box at mount */
+  /* Center camera on mannequin bounding box at mount + anchor feet to ground */
   useEffect(() => {
     const controls = controlsRef.current;
     const mannequin = mannequinGroupRef.current;
@@ -69,11 +67,17 @@ function Scene({
     // Wait a frame for geometry to be ready
     const id = requestAnimationFrame(() => {
       const box = new Box3().setFromObject(mannequin);
+
+      // Anchor feet to y=0 (ground level of HDRI environment)
+      mannequin.position.y -= box.min.y;
+
+      // Recompute box after repositioning
+      box.setFromObject(mannequin);
       const center = box.getCenter(new Vector3());
       const size = box.getSize(new Vector3());
 
-      // Target = mannequin center
-      controls.setTarget(center.x, center.y, center.z, false);
+      // Target at chest height (center.y) for natural portrait framing
+      controls.setTarget(0, center.y, 0, false);
 
       // Distance: fit ~80% viewport height
       const distance = Math.max(size.y * 1.2, size.x * 2);
@@ -133,7 +137,7 @@ function Scene({
         />
       </Suspense>
 
-      <group position={[0, FEET_Y, 0]}>
+      <group>
         {/* Fixed directional light for shadow */}
         <directionalLight
           ref={lightRef}
@@ -179,10 +183,10 @@ function Scene({
         dollyToCursor
         smoothTime={0.1}
         draggingSmoothTime={0.04}
-        minPolarAngle={Math.PI * 0.05}
-        maxPolarAngle={Math.PI * 0.95}
-        minDistance={1.2}
-        maxDistance={8}
+        minPolarAngle={Math.PI * 0.35}
+        maxPolarAngle={Math.PI * 0.55}
+        minDistance={2.0}
+        maxDistance={5.0}
         dollySpeed={0.5}
         truckSpeed={1.0}
       />
