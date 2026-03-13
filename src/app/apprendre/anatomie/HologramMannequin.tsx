@@ -62,15 +62,16 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
           wireframe: true,
           side: THREE.BackSide,
           depthWrite: false,
-          depthTest: false,
+          depthTest: true,
+          polygonOffset: true,
+          polygonOffsetFactor: 1,
+          polygonOffsetUnits: 1,
         });
-        mesh.renderOrder = -2;
+        mesh.renderOrder = 0;
 
-        /* Cast solid silhouette shadow */
+        /* Cast solid silhouette shadow (BasicDepthPacking for PCFSoftShadowMap) */
         mesh.castShadow = true;
-        mesh.customDepthMaterial = new THREE.MeshDepthMaterial({
-          depthPacking: THREE.RGBADepthPacking,
-        });
+        mesh.customDepthMaterial = new THREE.MeshDepthMaterial();
 
         /* Micro-diode glow at wireframe vertices */
         const pts = new THREE.Points(mesh.geometry, glowMat.clone());
@@ -146,6 +147,7 @@ function MusclesModel({
           originalColor: color.clone(),
         } as MuscleUserData;
         mesh.renderOrder = 1;
+        mesh.castShadow = true;
         meshes.push(mesh);
       }
     });

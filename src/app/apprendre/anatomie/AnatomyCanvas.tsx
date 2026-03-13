@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import type { RefObject } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { CameraControls } from "@react-three/drei";
+import { Suspense, useEffect, useRef } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
+import { CameraControls, useTexture } from "@react-three/drei";
 import {
+  BackSide,
   Box3,
   PCFSoftShadowMap,
   Vector3,
@@ -20,15 +20,10 @@ type Props = {
   onHoverMuscle: (frName: string | null, groupKey: string | null) => void;
   onClickMuscle: (frName: string | null, groupKey: string | null, x: number, y: number) => void;
   onLongPressMuscle: (frName: string, groupKey: string, x: number, y: number) => void;
-  bgRef: RefObject<HTMLDivElement | null>;
 };
 
 /** Y-offset so mannequin feet sit at shadow line on background image. */
 const FEET_Y = -1.28;
-/** Background base zoom + offset (%) — negative X = left, negative Y = up. */
-const BASE_BG_SCALE = 1.25;
-const BG_OFFSET_X = -6;
-const BG_OFFSET_Y = -22;
 /** Mannequin is 50 % larger than the raw GLB model. */
 const MANNEQUIN_SCALE = 1.5;
 /** Double-tap detection threshold (ms). */
@@ -38,7 +33,24 @@ const TAP_THRESHOLD_SQ = 25;
 /** Max duration (ms) for a single tap gesture. */
 const TAP_MAX_DURATION = 200;
 
-/* ── Inner scene: CameraControls + background sync ───────────────────── */
+/* ── Skybox — background image mapped inside a sphere ───────────────── */
+
+function Skybox() {
+  const texture = useTexture("/media/anatomy-bg.webp");
+  return (
+    <mesh renderOrder={-1}>
+      <sphereGeometry args={[100, 64, 32]} />
+      <meshBasicMaterial
+        map={texture}
+        side={BackSide}
+        depthWrite={false}
+        depthTest={false}
+      />
+    </mesh>
+  );
+}
+
+/* ── Inner scene: CameraControls + skybox ────────────────────────────── */
 
 function Scene({
   selectedGroup,
@@ -46,10 +58,8 @@ function Scene({
   onHoverMuscle,
   onClickMuscle,
   onLongPressMuscle,
-  bgRef,
 }: Props) {
   const mannequinGroupRef = useRef<Group>(null);
-  const shadowRef = useRef<Group>(null);
   const lightRef = useRef<DirectionalLight>(null);
   const controlsRef = useRef<CameraControlsImpl>(null);
 
@@ -62,14 +72,13 @@ function Scene({
   /* Add shadow-light target to scene graph (required for Three.js shadows) */
   useEffect(() => {
     const light = lightRef.current;
-    const parent = shadowRef.current;
-    if (light && parent) {
-      parent.add(light.target);
+    if (light?.parent) {
+      light.parent.add(light.target);
       light.target.position.set(0, 0.5, 0);
     }
   }, []);
 
-  /* Phase 3 — Center camera on mannequin bounding box at mount */
+  /* Center camera on mannequin bounding box at mount */
   useEffect(() => {
     const controls = controlsRef.current;
     const mannequin = mannequinGroupRef.current;
@@ -95,7 +104,7 @@ function Scene({
     return () => cancelAnimationFrame(id);
   }, []);
 
-  /* Phase 4 — Double-tap to reset */
+  /* Double-tap to reset */
   useEffect(() => {
     const el = gl.domElement;
 
@@ -129,55 +138,30 @@ function Scene({
     };
   }, [gl]);
 
-  /* Per-frame sync: background parallax + shadow counter-rotation */
-  useFrame(({ camera: cam }) => {
-    /* Sync background position with camera truck offset */
-    if (bgRef.current && controlsRef.current) {
-      const target = controlsRef.current.getTarget(new Vector3());
-      // How far camera target has moved from default center
-      const box = mannequinGroupRef.current
-        ? new Box3().setFromObject(mannequinGroupRef.current).getCenter(new Vector3())
-        : new Vector3(0, FEET_Y + 1.5, 0);
-      const panX = target.x - box.x;
-      const panY = target.y - box.y;
-
-      const distance = controlsRef.current.distance;
-      const zoomFactor = 4.5 / Math.max(distance, 0.01);  // initial distance ~4.5
-
-      const bgX = BG_OFFSET_X - panX * 12;
-      const bgY = BG_OFFSET_Y + panY * 12;
-      bgRef.current.style.transform =
-        `translate(${bgX.toFixed(2)}%, ${bgY.toFixed(2)}%) scale(${(BASE_BG_SCALE * zoomFactor).toFixed(4)})`;
-    }
-
-    /* Counter-rotate shadow so it stays fixed relative to the static background */
-    if (shadowRef.current) {
-      shadowRef.current.rotation.y = Math.atan2(cam.position.x, cam.position.z);
-    }
-  });
-
   return (
     <>
+      <Suspense fallback={null}>
+        <Skybox />
+      </Suspense>
+
       <group position={[0, FEET_Y, 0]}>
-        {/* Sun light — counter-rotates with camera so shadow matches static background */}
-        <group ref={shadowRef}>
-          <directionalLight
-            ref={lightRef}
-            position={[-3, 6, -2]}
-            intensity={0.6}
-            castShadow
-            shadow-mapSize-width={2048}
-            shadow-mapSize-height={2048}
-            shadow-camera-left={-5}
-            shadow-camera-right={5}
-            shadow-camera-top={6}
-            shadow-camera-bottom={-2}
-            shadow-camera-near={0.5}
-            shadow-camera-far={20}
-            shadow-bias={-0.003}
-            shadow-radius={4}
-          />
-        </group>
+        {/* Fixed directional light for shadow */}
+        <directionalLight
+          ref={lightRef}
+          position={[-3, 6, -2]}
+          intensity={0.6}
+          castShadow
+          shadow-mapSize-width={2048}
+          shadow-mapSize-height={2048}
+          shadow-camera-left={-5}
+          shadow-camera-right={5}
+          shadow-camera-top={6}
+          shadow-camera-bottom={-2}
+          shadow-camera-near={0.5}
+          shadow-camera-far={20}
+          shadow-bias={-0.003}
+          shadow-radius={4}
+        />
 
         {/* Ground plane receives the mannequin silhouette shadow */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} receiveShadow renderOrder={-1}>
@@ -225,14 +209,12 @@ export default function AnatomyCanvas({
   onHoverMuscle,
   onClickMuscle,
   onLongPressMuscle,
-  bgRef,
 }: Props) {
   return (
     <Canvas
       shadows={{ type: PCFSoftShadowMap }}
       camera={{ position: [0, 0, 4.5], fov: 60, near: 0.01, far: 100 }}
-      style={{ background: "transparent" }}
-      gl={{ antialias: true, alpha: true }}
+      gl={{ antialias: true }}
     >
       <Scene
         selectedGroup={selectedGroup}
@@ -240,7 +222,6 @@ export default function AnatomyCanvas({
         onHoverMuscle={onHoverMuscle}
         onClickMuscle={onClickMuscle}
         onLongPressMuscle={onLongPressMuscle}
-        bgRef={bgRef}
       />
     </Canvas>
   );

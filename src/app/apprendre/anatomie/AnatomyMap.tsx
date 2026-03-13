@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -35,7 +35,6 @@ export default function AnatomyMap({ exercises }: Props) {
   const [label, setLabel] = useState<LabelInfo | null>(null);
   const [sheetGroupKey, setSheetGroupKey] = useState<string | null>(null);
   const [legendOpen, setLegendOpen] = useState(false);
-  const bgRef = useRef<HTMLDivElement>(null);
 
   /* ── Exercises matching sheet group ──────────────────────────────────── */
   const sheetExercises = useMemo(() => {
@@ -113,9 +112,6 @@ export default function AnatomyMap({ exercises }: Props) {
         </svg>
       </button>
 
-      {/* Background (parallax-synced with camera) */}
-      <div ref={bgRef} className="anatomy-bg" />
-
       <div className="anatomy-layout">
         {/* ── 3D Canvas (full viewport) ──────────────────────────────── */}
         <div className="anatomy-canvas-wrap">
@@ -125,7 +121,6 @@ export default function AnatomyMap({ exercises }: Props) {
             onHoverMuscle={handleHoverMuscle}
             onClickMuscle={handleClickMuscle}
             onLongPressMuscle={handleLongPressMuscle}
-            bgRef={bgRef}
           />
 
           {/* HUD overlay */}
