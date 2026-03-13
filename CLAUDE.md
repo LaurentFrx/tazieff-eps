@@ -273,7 +273,30 @@ content/
 
 ---
 
-## 11. Démarrage de session CC
+## 11. Mannequin anatomique 3D (/apprendre/anatomie)
+
+### Règles visuelles (non négociables)
+- Tous les matériaux : `side = THREE.FrontSide` (jamais DoubleSide)
+- Le wireframe ne doit JAMAIS recouvrir un muscle coloré visible (stencil buffer : surfaces écrivent stencil=1, wireframe ne se dessine que là où stencil ≠ 1)
+- `stencilWrite` doit être `true` sur TOUS les matériaux (muscles, wireframe, glow) — Three.js utilise ce flag pour activer `gl.STENCIL_TEST`. Les matériaux wireframe/glow utilisent `KeepStencilOp` partout pour ne pas modifier le buffer.
+- Les highlights sont ADDITIFS : aucun muscle ne doit s'assombrir quand un autre est sélectionné
+- Les glow points aux vertices doivent être discrets (opacity ≤ 0.3, size ≤ 0.003)
+
+### Architecture contrôles
+- Mode TURNTABLE : le mannequin tourne sur lui-même (rotation Y)
+- La caméra NE TOURNE PAS autour du mannequin
+- La caméra gère uniquement zoom (dollyToCursor) et pan
+- Le fond est un plan 3D FIXE (sibling, pas enfant du turntable)
+- Fond, ombre et mannequin sont dans le même espace 3D
+
+### Contraintes caméra
+- minPolarAngle / maxPolarAngle : vue à hauteur humaine
+- minAzimuthAngle = maxAzimuthAngle = 0 (pas de rotation caméra)
+- dollyToCursor : zoom vers le point sous les doigts
+
+---
+
+## 12. Démarrage de session CC
 
 À chaque nouvelle session Claude Code, exécuter dans cet ordre :
 

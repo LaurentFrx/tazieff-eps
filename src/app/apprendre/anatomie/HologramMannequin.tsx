@@ -43,14 +43,16 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
   useEffect(() => {
     const glowMat = new THREE.PointsMaterial({
       color: 0x5c3a1a,
-      size: 0.006,
+      size: 0.002,
       transparent: true,
-      opacity: 0.15,
+      opacity: 0.08,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       sizeAttenuation: true,
-      /* Stencil: only draw where no muscle wrote (stencil ≠ 1) */
-      stencilWrite: false,
+      /* Stencil: only draw where no muscle wrote (stencil ≠ 1)
+         stencilWrite must be true for Three.js to enable GL_STENCIL_TEST;
+         all ops are KeepStencilOp so the buffer is not modified. */
+      stencilWrite: true,
       stencilRef: 1,
       stencilFunc: THREE.NotEqualStencilFunc,
       stencilFail: THREE.KeepStencilOp,
@@ -67,14 +69,16 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
           transparent: true,
           opacity,
           wireframe: true,
-          side: THREE.BackSide,
+          side: THREE.FrontSide,
           depthWrite: false,
           depthTest: true,
           polygonOffset: true,
           polygonOffsetFactor: 2,
           polygonOffsetUnits: 2,
-          /* Stencil: only draw where no muscle wrote (stencil ≠ 1) */
-          stencilWrite: false,
+          /* Stencil: only draw where no muscle wrote (stencil ≠ 1)
+             stencilWrite must be true for Three.js to enable GL_STENCIL_TEST;
+             all ops are KeepStencilOp so the buffer is not modified. */
+          stencilWrite: true,
           stencilRef: 1,
           stencilFunc: THREE.NotEqualStencilFunc,
           stencilFail: THREE.KeepStencilOp,
@@ -151,7 +155,7 @@ function MusclesModel({
           shininess: 30,
           transparent: true,
           opacity: 1.0,
-          side: THREE.DoubleSide,
+          side: THREE.FrontSide,
           /* Stencil: mark muscle pixels so wireframe is masked */
           stencilWrite: true,
           stencilRef: 1,
