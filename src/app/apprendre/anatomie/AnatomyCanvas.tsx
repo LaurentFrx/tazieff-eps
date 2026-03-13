@@ -1,18 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import { useGesture } from "@use-gesture/react";
+import { CameraControls } from "@react-three/drei";
 import {
+  Box3,
   PCFSoftShadowMap,
-  Raycaster,
-  Vector2,
   Vector3,
   type DirectionalLight,
   type Group,
 } from "three";
+import type CameraControlsImpl from "camera-controls";
 import HologramMannequin from "./HologramMannequin";
 
 type Props = {
@@ -26,27 +25,22 @@ type Props = {
 
 /** Y-offset so mannequin feet sit at shadow line on background image. */
 const FEET_Y = -1.28;
-const MIN_ZOOM = 1.0;
-const MAX_ZOOM = 2.5;
 /** Background base zoom + offset (%) — negative X = left, negative Y = up. */
 const BASE_BG_SCALE = 1.25;
 const BG_OFFSET_X = -6;
 const BG_OFFSET_Y = -22;
 /** Mannequin is 50 % larger than the raw GLB model. */
 const MANNEQUIN_SCALE = 1.5;
-/** Orbit / zoom target — mannequin vertical center (head-to-feet midpoint). */
-const TARGET_Y = FEET_Y + 1.5;
+/** Double-tap detection threshold (ms). */
+const DOUBLE_TAP_MS = 300;
+/** Max distance (px²) to still count as a tap, not a drag. */
+const TAP_THRESHOLD_SQ = 25;
+/** Max duration (ms) for a single tap gesture. */
+const TAP_MAX_DURATION = 200;
 
-const clamp = (v: number, lo: number, hi: number) =>
-  Math.max(lo, Math.min(hi, v));
+/* ── Inner scene: CameraControls + background sync ───────────────────── */
 
-/* eslint-disable @typescript-eslint/no-explicit-any -- drei OrbitControls ref has no exported instance type */
-type OrbitControlsRef = React.RefObject<any>;
-/* eslint-enable @typescript-eslint/no-explicit-any */
-
-/* ── Inner scene: custom zoom + dolly-to-cursor ────────────────────────── */
-
-function ZoomableScene({
+function Scene({
   selectedGroup,
   highlightedMuscle,
   onHoverMuscle,
@@ -54,37 +48,16 @@ function ZoomableScene({
   onLongPressMuscle,
   bgRef,
 }: Props) {
-  const scaleRef = useRef<Group>(null);
+  const mannequinGroupRef = useRef<Group>(null);
   const shadowRef = useRef<Group>(null);
   const lightRef = useRef<DirectionalLight>(null);
-  const orbitRef: OrbitControlsRef = useRef(null);
+  const controlsRef = useRef<CameraControlsImpl>(null);
 
-  /* Zoom + pan state */
-  const zoomRef = useRef(1);
-  const panRef = useRef(new Vector3(0, 0, 0));  // offset from defaultTarget
-  const defaultTarget = useMemo(() => new Vector3(0, TARGET_Y, 0), []);
-  const lerpVec = useRef(new Vector3());
-  const zeroVec = useRef(new Vector3(0, 0, 0));
-  const raycasterObj = useRef(new Raycaster());
-  const ndcVec = useRef(new Vector2());
+  /* Double-tap state */
+  const lastTapTime = useRef(0);
+  const pointerStart = useRef({ x: 0, y: 0, time: 0 });
 
-  const { gl, camera } = useThree();
-
-  const FOV_RAD = (60 * Math.PI) / 180;
-
-  /** Unproject screen point onto z=0 world plane (mannequin plane). */
-  const screenToWorld = (sx: number, sy: number) => {
-    const el = gl.domElement;
-    const rect = el.getBoundingClientRect();
-    ndcVec.current.set(
-      ((sx - rect.left) / rect.width) * 2 - 1,
-      -((sy - rect.top) / rect.height) * 2 + 1,
-    );
-    raycasterObj.current.setFromCamera(ndcVec.current, camera);
-    const ray = raycasterObj.current.ray;
-    const t = -ray.origin.z / ray.direction.z;
-    return ray.origin.clone().addScaledVector(ray.direction, Math.max(0.001, t));
-  };
+  const { gl } = useThree();
 
   /* Add shadow-light target to scene graph (required for Three.js shadows) */
   useEffect(() => {
@@ -96,109 +69,87 @@ function ZoomableScene({
     }
   }, []);
 
-  /* Set initial orbit target */
+  /* Phase 3 — Center camera on mannequin bounding box at mount */
   useEffect(() => {
-    if (orbitRef.current) {
-      orbitRef.current.target.copy(defaultTarget);
-    }
-  }, [defaultTarget]);
+    const controls = controlsRef.current;
+    const mannequin = mannequinGroupRef.current;
+    if (!controls || !mannequin) return;
 
-  /* Prevent browser gesture handling on iOS */
+    // Wait a frame for geometry to be ready
+    const id = requestAnimationFrame(() => {
+      const box = new Box3().setFromObject(mannequin);
+      const center = box.getCenter(new Vector3());
+      const size = box.getSize(new Vector3());
+
+      // Target = mannequin center
+      controls.setTarget(center.x, center.y, center.z, false);
+
+      // Distance: fit ~80% viewport height
+      const distance = Math.max(size.y * 1.2, size.x * 2);
+      controls.dollyTo(distance, false);
+
+      // Save as reset position
+      controls.saveState();
+    });
+
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  /* Phase 4 — Double-tap to reset */
   useEffect(() => {
-    gl.domElement.style.touchAction = "none";
+    const el = gl.domElement;
+
+    const onPointerDown = (e: PointerEvent) => {
+      pointerStart.current = { x: e.clientX, y: e.clientY, time: Date.now() };
+    };
+
+    const onPointerUp = (e: PointerEvent) => {
+      const dx = e.clientX - pointerStart.current.x;
+      const dy = e.clientY - pointerStart.current.y;
+      const duration = Date.now() - pointerStart.current.time;
+
+      // Only count as tap if short movement and short duration
+      if (dx * dx + dy * dy > TAP_THRESHOLD_SQ || duration > TAP_MAX_DURATION) return;
+
+      const now = Date.now();
+      if (now - lastTapTime.current < DOUBLE_TAP_MS) {
+        // Double-tap detected → animated reset
+        controlsRef.current?.reset(true);
+        lastTapTime.current = 0;
+      } else {
+        lastTapTime.current = now;
+      }
+    };
+
+    el.addEventListener("pointerdown", onPointerDown);
+    el.addEventListener("pointerup", onPointerUp);
+    return () => {
+      el.removeEventListener("pointerdown", onPointerDown);
+      el.removeEventListener("pointerup", onPointerUp);
+    };
   }, [gl]);
 
-  /* Pinch zoom + pan & wheel zoom via @use-gesture (pointer events) */
-  useGesture(
-    {
-      onPinch: ({ da: [dist], origin: [ox, oy], first, memo }) => {
-        if (first || !memo) {
-          return { prevDist: dist, lastOx: ox, lastOy: oy };
-        }
-
-        /* Ratio-based zoom */
-        if (memo.prevDist > 0 && dist > 0) {
-          const oldZoom = zoomRef.current;
-          const newZoom = clamp(
-            oldZoom * (dist / memo.prevDist),
-            MIN_ZOOM,
-            MAX_ZOOM,
-          );
-          if (newZoom !== oldZoom) {
-            const worldMid = screenToWorld(ox, oy);
-            const feetPos = new Vector3(0, FEET_Y, 0);
-            const shift = worldMid
-              .sub(feetPos)
-              .multiplyScalar(newZoom / oldZoom - 1);
-            panRef.current.add(shift);
-          }
-          zoomRef.current = newZoom;
-        }
-
-        /* Pan from finger midpoint movement */
-        const rect = gl.domElement.getBoundingClientRect();
-        const visibleH = 2 * camera.position.z * Math.tan(FOV_RAD / 2);
-        const worldPerPx = visibleH / rect.height;
-        panRef.current.x -= (ox - memo.lastOx) * worldPerPx;
-        panRef.current.y += (oy - memo.lastOy) * worldPerPx;
-
-        return { prevDist: dist, lastOx: ox, lastOy: oy };
-      },
-      onWheel: ({ event, delta: [, dy] }) => {
-        event.preventDefault();
-        const e = event as WheelEvent;
-        const oldZoom = zoomRef.current;
-        const newZoom = clamp(
-          oldZoom * (1 - dy * 0.001),
-          MIN_ZOOM,
-          MAX_ZOOM,
-        );
-        if (newZoom === oldZoom) return;
-
-        const worldCursor = screenToWorld(e.clientX, e.clientY);
-        const feetPos = new Vector3(0, FEET_Y, 0);
-        const shift = worldCursor
-          .sub(feetPos)
-          .multiplyScalar(newZoom / oldZoom - 1);
-        panRef.current.add(shift);
-        zoomRef.current = newZoom;
-        if (newZoom <= 1.02) panRef.current.set(0, 0, 0);
-      },
-    },
-    {
-      target: gl.domElement,
-      eventOptions: { passive: false },
-    },
-  );
-
-  /* Per-frame sync: scale, orbit target, background, shadow */
+  /* Per-frame sync: background parallax + shadow counter-rotation */
   useFrame(({ camera: cam }) => {
-    const z = zoomRef.current;
-    scaleRef.current?.scale.setScalar(z);
+    /* Sync background position with camera truck offset */
+    if (bgRef.current && controlsRef.current) {
+      const target = controlsRef.current.getTarget(new Vector3());
+      // How far camera target has moved from default center
+      const box = mannequinGroupRef.current
+        ? new Box3().setFromObject(mannequinGroupRef.current).getCenter(new Vector3())
+        : new Vector3(0, FEET_Y + 1.5, 0);
+      const panX = target.x - box.x;
+      const panY = target.y - box.y;
 
-    const orbit = orbitRef.current;
-    if (orbit) {
-      /* Gradually return pan to zero when fully dezoomed */
-      if (z <= 1.02) {
-        panRef.current.lerp(zeroVec.current, 0.12);
-      }
+      const distance = controlsRef.current.distance;
+      const zoomFactor = 4.5 / Math.max(distance, 0.01);  // initial distance ~4.5
 
-      /* Clamp pan so mannequin stays visible — more zoom = more pan allowed */
-      const maxPan = Math.max(0, (z - 1) * 1.8);
-      panRef.current.x = clamp(panRef.current.x, -maxPan, maxPan);
-      panRef.current.y = clamp(panRef.current.y, -maxPan, maxPan);
-
-      lerpVec.current.copy(defaultTarget).add(panRef.current);
-      orbit.target.lerp(lerpVec.current, 0.15);
-    }
-
-    if (bgRef.current) {
-      /* Sync background position with pan offset */
-      const bgX = BG_OFFSET_X - panRef.current.x * 12;
-      const bgY = BG_OFFSET_Y + panRef.current.y * 12;
+      const bgX = BG_OFFSET_X - panX * 12;
+      const bgY = BG_OFFSET_Y + panY * 12;
       bgRef.current.style.transform =
-        `translate(${bgX.toFixed(2)}%, ${bgY.toFixed(2)}%) scale(${(BASE_BG_SCALE * z).toFixed(4)})`;
+        `translate(${bgX.toFixed(2)}%, ${bgY.toFixed(2)}%) scale(${(BASE_BG_SCALE * zoomFactor).toFixed(4)})`;
     }
+
     /* Counter-rotate shadow so it stays fixed relative to the static background */
     if (shadowRef.current) {
       shadowRef.current.rotation.y = Math.atan2(cam.position.x, cam.position.z);
@@ -234,7 +185,7 @@ function ZoomableScene({
           <shadowMaterial transparent opacity={0.35} depthWrite={false} />
         </mesh>
 
-        <group ref={scaleRef}>
+        <group ref={mannequinGroupRef}>
           <group scale={MANNEQUIN_SCALE} position={[0, 0, -0.15]}>
             <HologramMannequin
               selectedGroup={selectedGroup}
@@ -250,16 +201,17 @@ function ZoomableScene({
         </group>
       </group>
 
-      <OrbitControls
-        ref={orbitRef}
-        enablePan={false}
-        enableZoom={false}
-        enableDamping
-        dampingFactor={0.08}
-        minPolarAngle={Math.PI / 2}
-        maxPolarAngle={Math.PI / 2}
-        autoRotate={!selectedGroup}
-        autoRotateSpeed={0.4}
+      <CameraControls
+        ref={controlsRef}
+        dollyToCursor
+        smoothTime={0.25}
+        draggingSmoothTime={0.12}
+        minPolarAngle={Math.PI * 0.05}
+        maxPolarAngle={Math.PI * 0.95}
+        minDistance={1.2}
+        maxDistance={8}
+        dollySpeed={0.5}
+        truckSpeed={1.0}
       />
     </>
   );
@@ -282,7 +234,7 @@ export default function AnatomyCanvas({
       style={{ background: "transparent" }}
       gl={{ antialias: true, alpha: true }}
     >
-      <ZoomableScene
+      <Scene
         selectedGroup={selectedGroup}
         highlightedMuscle={highlightedMuscle}
         onHoverMuscle={onHoverMuscle}
