@@ -51,15 +51,6 @@
   height: 18px;
 }
 
-/* ── Background (building entrance photo) ──────────────────────────────── */
-
-.anatomy-bg {
-  position: absolute;
-  inset: 0;
-  background: #0a0a14 url("/media/anatomy-bg.webp") center center / cover no-repeat;
-  z-index: 0;
-}
-
 /* ── Layout — full viewport ─────────────────────────────────────────────── */
 
 .anatomy-layout {

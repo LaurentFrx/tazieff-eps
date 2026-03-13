@@ -112,7 +112,6 @@ export default function AnatomyMap({ exercises }: Props) {
         </svg>
       </button>
 
-      <div className="anatomy-bg" />
       <div className="anatomy-layout">
         {/* ── 3D Canvas (full viewport) ──────────────────────────────── */}
         <div className="anatomy-canvas-wrap">

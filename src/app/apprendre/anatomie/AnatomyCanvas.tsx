@@ -2,9 +2,10 @@
 
 import { useEffect, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { CameraControls } from "@react-three/drei";
+import { CameraControls, useTexture } from "@react-three/drei";
 import {
   Box3,
+  ClampToEdgeWrapping,
   PCFSoftShadowMap,
   Vector3,
   type DirectionalLight,
@@ -35,6 +36,21 @@ const ROTATE_SPEED = 0.006;
 const INERTIA_DECAY = 0.92;
 /** Angular velocity threshold below which inertia stops. */
 const INERTIA_EPSILON = 0.0001;
+
+/* ── Background plane — fixed in scene, follows camera zoom/pan ──── */
+
+function BackgroundPlane() {
+  const texture = useTexture("/media/anatomy-bg.webp");
+  texture.wrapS = ClampToEdgeWrapping;
+  texture.wrapT = ClampToEdgeWrapping;
+
+  return (
+    <mesh position={[0, 1, -8]} renderOrder={-2}>
+      <planeGeometry args={[20, 15]} />
+      <meshBasicMaterial map={texture} depthWrite={false} />
+    </mesh>
+  );
+}
 
 /* ── Inner scene: turntable + CameraControls (dolly/truck only) ──── */
 
@@ -190,6 +206,9 @@ function Scene({
 
   return (
     <>
+      {/* Background plane — fixed in scene, does NOT rotate */}
+      <BackgroundPlane />
+
       <group>
         {/* Fixed directional light for shadow */}
         <directionalLight
@@ -266,8 +285,7 @@ export default function AnatomyCanvas({
     <Canvas
       shadows={{ type: PCFSoftShadowMap }}
       camera={{ position: [0, 0, 4.5], fov: 60, near: 0.01, far: 100 }}
-      style={{ background: "transparent" }}
-      gl={{ antialias: true, alpha: true }}
+      gl={{ antialias: true }}
     >
       <Scene
         selectedGroup={selectedGroup}
