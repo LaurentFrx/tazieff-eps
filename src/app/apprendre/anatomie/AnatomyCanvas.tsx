@@ -45,8 +45,8 @@ function BackgroundPlane() {
   texture.wrapT = ClampToEdgeWrapping;
 
   return (
-    <mesh position={[0, 1, -8]} renderOrder={-2}>
-      <planeGeometry args={[20, 15]} />
+    <mesh position={[0, 0.8, -1.5]} renderOrder={-2}>
+      <planeGeometry args={[5, 3.75]} />
       <meshBasicMaterial map={texture} depthWrite={false} />
     </mesh>
   );
