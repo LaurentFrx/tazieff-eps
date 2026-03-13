@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { getAllExercises } from "@/lib/content/fs";
 import { getImportedExercisesIndex } from "@/lib/exercices/getImportedExercisesIndex";
 import { fetchLiveExercises } from "@/lib/live/queries";
@@ -32,7 +33,7 @@ function mergeExercisesIndex(
   );
 }
 
-export async function getExercisesIndex(locale: Lang): Promise<LiveExerciseListItem[]> {
+export const getExercisesIndex = cache(async (locale: Lang): Promise<LiveExerciseListItem[]> => {
   const [exercises, liveRows, importedExercises] = await Promise.all([
     getAllExercises(locale),
     fetchLiveExercises(locale),
@@ -40,4 +41,4 @@ export async function getExercisesIndex(locale: Lang): Promise<LiveExerciseListI
   ]);
 
   return mergeExercisesIndex(exercises, liveRows, importedExercises);
-}
+});

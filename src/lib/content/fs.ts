@@ -133,7 +133,7 @@ async function readBySlug<T>(
   }
 }
 
-export async function getAllExercises(lang: Lang = "fr"): Promise<ExerciseFrontmatter[]> {
+export const getAllExercises = cache(async (lang: Lang = "fr"): Promise<ExerciseFrontmatter[]> => {
   const dir = getContentDir("exercices");
   const files = await listMdxFiles(dir, lang);
   const items = await Promise.all(
@@ -145,12 +145,12 @@ export async function getAllExercises(lang: Lang = "fr"): Promise<ExerciseFrontm
   );
 
   return items.sort((a, b) => a.title.localeCompare(b.title, lang));
-}
+});
 
-export async function getExercise(
+export const getExercise = cache(async (
   slug: string,
   lang: Lang = "fr",
-): Promise<MdxResult<ExerciseFrontmatter> | null> {
+): Promise<MdxResult<ExerciseFrontmatter> | null> => {
   const direct = await readBySlug("exercices", slug, ExerciseFrontmatterSchema, lang);
   if (direct) {
     return direct;
@@ -167,9 +167,9 @@ export async function getExercise(
   }
 
   return null;
-}
+});
 
-export async function getAllSeances(lang: Lang = "fr"): Promise<SeanceFrontmatter[]> {
+export const getAllSeances = cache(async (lang: Lang = "fr"): Promise<SeanceFrontmatter[]> => {
   const dir = getContentDir("seances");
   const files = await listMdxFiles(dir, lang);
   const items = await Promise.all(
@@ -181,21 +181,21 @@ export async function getAllSeances(lang: Lang = "fr"): Promise<SeanceFrontmatte
   );
 
   return items.sort((a, b) => a.title.localeCompare(b.title, lang));
-}
+});
 
-export async function getSeance(
+export const getSeance = cache(async (
   slug: string,
   lang: Lang = "fr",
-): Promise<MdxResult<SeanceFrontmatter> | null> {
+): Promise<MdxResult<SeanceFrontmatter> | null> => {
   return readBySlug("seances", slug, SeanceFrontmatterSchema, lang);
-}
+});
 
-export const exercisesIndex = cache(async (lang: Lang = "fr") => getAllExercises(lang));
-export const seancesIndex = cache(async (lang: Lang = "fr") => getAllSeances(lang));
+export const exercisesIndex = getAllExercises;
+export const seancesIndex = getAllSeances;
 
 const METHODS_DIR = path.join(CONTENT_ROOT, "methodes");
 
-export async function getAllMethodes(lang: Lang = "fr"): Promise<MethodeFrontmatter[]> {
+export const getAllMethodes = cache(async (lang: Lang = "fr"): Promise<MethodeFrontmatter[]> => {
   const files = await listMdxFiles(METHODS_DIR, lang);
   const items = await Promise.all(
     files.map(async (file) => {
@@ -210,14 +210,14 @@ export async function getAllMethodes(lang: Lang = "fr"): Promise<MethodeFrontmat
     if (b.ordre !== undefined) return 1;
     return a.titre.localeCompare(b.titre, lang);
   });
-}
+});
 
 type MethodeMdxResult = {
   frontmatter: MethodeFrontmatter;
   content: string;
 };
 
-export async function getMethode(slug: string, lang: Lang = "fr"): Promise<MethodeMdxResult | null> {
+export const getMethode = cache(async (slug: string, lang: Lang = "fr"): Promise<MethodeMdxResult | null> => {
   const localizedPath = path.join(METHODS_DIR, `${slug}.${lang}.mdx`);
   try {
     return await readMdxFile(localizedPath, MethodeFrontmatterSchema);
@@ -240,9 +240,7 @@ export async function getMethode(slug: string, lang: Lang = "fr"): Promise<Metho
     }
     throw error;
   }
-}
-
-export const methodesIndex = cache((lang: Lang = "fr") => getAllMethodes(lang));
+});
 
 export async function getMethodesForExercice(exerciceSlug: string, lang: Lang = "fr"): Promise<MethodeFrontmatter[]> {
   const all = await getAllMethodes(lang);
@@ -253,7 +251,7 @@ export async function getMethodesForExercice(exerciceSlug: string, lang: Lang = 
 
 const LEARN_DIR = path.join(CONTENT_ROOT, "learn");
 
-export async function getAllLearnPages(lang: Lang = "fr"): Promise<LearnFrontmatter[]> {
+export const getAllLearnPages = cache(async (lang: Lang = "fr"): Promise<LearnFrontmatter[]> => {
   const files = await listMdxFiles(LEARN_DIR, lang);
   const items = await Promise.all(
     files.map(async (file) => {
@@ -263,17 +261,17 @@ export async function getAllLearnPages(lang: Lang = "fr"): Promise<LearnFrontmat
     }),
   );
   return items.sort((a, b) => a.ordre - b.ordre);
-}
+});
 
 type LearnMdxResult = {
   frontmatter: LearnFrontmatter;
   content: string;
 };
 
-export async function getLearnPage(
+export const getLearnPage = cache(async (
   slug: string,
   lang: Lang = "fr",
-): Promise<LearnMdxResult | null> {
+): Promise<LearnMdxResult | null> => {
   const localizedPath = path.join(LEARN_DIR, `${slug}.${lang}.mdx`);
   try {
     return await readMdxFile(localizedPath, LearnFrontmatterSchema);
@@ -292,15 +290,13 @@ export async function getLearnPage(
     }
     throw error;
   }
-}
-
-export const learnIndex = cache((lang: Lang = "fr") => getAllLearnPages(lang));
+});
 
 // ─── BAC pages (content/bac/{slug}.{lang}.mdx) ───────────────────────────────
 
 const BAC_DIR = path.join(CONTENT_ROOT, "bac");
 
-export async function getAllBacPages(lang: Lang = "fr"): Promise<BacFrontmatter[]> {
+export const getAllBacPages = cache(async (lang: Lang = "fr"): Promise<BacFrontmatter[]> => {
   const files = await listMdxFiles(BAC_DIR, lang);
   const items = await Promise.all(
     files.map(async (file) => {
@@ -310,17 +306,17 @@ export async function getAllBacPages(lang: Lang = "fr"): Promise<BacFrontmatter[
     }),
   );
   return items.sort((a, b) => a.ordre - b.ordre);
-}
+});
 
 type BacMdxResult = {
   frontmatter: BacFrontmatter;
   content: string;
 };
 
-export async function getBacPage(
+export const getBacPage = cache(async (
   slug: string,
   lang: Lang = "fr",
-): Promise<BacMdxResult | null> {
+): Promise<BacMdxResult | null> => {
   const localizedPath = path.join(BAC_DIR, `${slug}.${lang}.mdx`);
   try {
     return await readMdxFile(localizedPath, BacFrontmatterSchema);
@@ -339,6 +335,4 @@ export async function getBacPage(
     }
     throw error;
   }
-}
-
-export const bacIndex = cache((lang: Lang = "fr") => getAllBacPages(lang));
+});
