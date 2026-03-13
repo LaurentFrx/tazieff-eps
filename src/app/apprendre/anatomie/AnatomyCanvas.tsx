@@ -25,6 +25,7 @@ type Props = {
 /* ── Debug settings ────────────────────────────────────────────────── */
 
 type DebugSettings = {
+  cameraZoom: number;
   dollySpeed: number;
   truckSpeed: number;
   smoothTime: number;
@@ -45,6 +46,7 @@ type DebugSettings = {
 };
 
 const DEFAULT_SETTINGS: DebugSettings = {
+  cameraZoom: 250,
   dollySpeed: 1.5,
   truckSpeed: 2.0,
   smoothTime: 0.1,
@@ -98,6 +100,7 @@ const SLIDER_GROUPS: { title: string; sliders: SliderDef[] }[] = [
   {
     title: "CAMÉRA",
     sliders: [
+      { key: "cameraZoom", label: "cameraZoom", min: 100, max: 500, step: 10 },
       { key: "dollySpeed", label: "dollySpeed", min: 0.1, max: 3.0, step: 0.1 },
       { key: "truckSpeed", label: "truckSpeed", min: 0.5, max: 5.0, step: 0.1 },
       { key: "smoothTime", label: "smoothTime", min: 0.01, max: 0.5, step: 0.01 },
@@ -308,7 +311,7 @@ function Scene({
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
 
-  const { gl } = useThree();
+  const { gl, camera } = useThree();
 
   /* Disable CameraControls single-finger rotation — turntable handles it */
   useEffect(() => {
@@ -318,6 +321,12 @@ function Scene({
     controls.touches.one = 0;         // ACTION.NONE
     // Keep defaults: right-click=TRUCK, wheel=DOLLY, two-finger=DOLLY_TRUCK
   }, []);
+
+  /* Sync camera zoom from debug settings */
+  useEffect(() => {
+    camera.zoom = settings.cameraZoom;
+    camera.updateProjectionMatrix();
+  }, [camera, settings.cameraZoom]);
 
   /* Update CameraControls imperatively when settings change */
   useEffect(() => {
@@ -352,11 +361,9 @@ function Scene({
       // Recompute after repositioning
       box.setFromObject(mannequin);
       const center = box.getCenter(new Vector3());
-      const size = box.getSize(new Vector3());
-      const distance = Math.max(size.y * 1.2, size.x * 2);
 
-      // Camera at chest height looking straight ahead (horizontal view)
-      controls.setLookAt(0, center.y, distance, 0, center.y, 0, false);
+      // Orthographic: position camera in front, looking at center
+      controls.setLookAt(0, center.y, 5, 0, center.y, 0, false);
       controls.saveState();
     });
 
@@ -545,8 +552,9 @@ export default function AnatomyCanvas({
   return (
     <>
       <Canvas
+        orthographic
         shadows={{ type: PCFSoftShadowMap }}
-        camera={{ position: [0, 0, 4.5], fov: 60, near: 0.01, far: 100 }}
+        camera={{ position: [0, 0.8, 5], zoom: 250, near: 0.01, far: 100 }}
         gl={{ antialias: true, stencil: true }}
       >
         <Scene
