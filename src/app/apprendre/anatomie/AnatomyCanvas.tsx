@@ -46,7 +46,7 @@ function BackgroundPlane() {
 
   return (
     <mesh position={[0, 0.8, -1.5]} renderOrder={-2}>
-      <planeGeometry args={[5, 3.75]} />
+      <planeGeometry args={[20, 15]} />
       <meshBasicMaterial map={texture} depthWrite={false} />
     </mesh>
   );
@@ -243,7 +243,7 @@ function Scene({
                 highlightedMuscle={highlightedMuscle}
                 hoveredMuscle={null}
                 wireframe={false}
-                silhouetteOpacity={0.08}
+                silhouetteOpacity={0.12}
                 onHoverMuscle={onHoverMuscle}
                 onClickMuscle={onClickMuscle}
                 onLongPressMuscle={onLongPressMuscle}
@@ -285,7 +285,7 @@ export default function AnatomyCanvas({
     <Canvas
       shadows={{ type: PCFSoftShadowMap }}
       camera={{ position: [0, 0, 4.5], fov: 60, near: 0.01, far: 100 }}
-      gl={{ antialias: true }}
+      gl={{ antialias: true, stencil: true }}
     >
       <Scene
         selectedGroup={selectedGroup}

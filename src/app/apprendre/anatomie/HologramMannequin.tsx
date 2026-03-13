@@ -58,8 +58,14 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
           side: THREE.FrontSide,
           depthWrite: false,
           depthTest: true,
+          stencilWrite: false,
+          stencilRef: 1,
+          stencilFunc: THREE.NotEqualStencilFunc,
+          stencilFail: THREE.KeepStencilOp,
+          stencilZFail: THREE.KeepStencilOp,
+          stencilZPass: THREE.KeepStencilOp,
         });
-        mesh.renderOrder = 1;
+        mesh.renderOrder = 2;
         mesh.castShadow = true;
         mesh.customDepthMaterial = new THREE.MeshDepthMaterial();
       }
@@ -131,6 +137,12 @@ function MusclesModel({
         /* Render BEFORE wireframe — muscles write to depth buffer,
            blocking wireframe fragments behind them. */
         mesh.renderOrder = 0;
+        mesh.material.stencilWrite = true;
+        mesh.material.stencilRef = 1;
+        mesh.material.stencilFunc = THREE.AlwaysStencilFunc;
+        mesh.material.stencilZPass = THREE.ReplaceStencilOp;
+        mesh.material.stencilFail = THREE.KeepStencilOp;
+        mesh.material.stencilZFail = THREE.KeepStencilOp;
         mesh.castShadow = true;
         meshes.push(mesh);
       }
