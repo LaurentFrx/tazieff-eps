@@ -40,27 +40,13 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
   const { scene } = useGLTF("/models/silhouette.glb");
   const groupRef = useRef<THREE.Group>(null);
 
+  /* Apply wireframe material to silhouette meshes.
+     The silhouette envelope is geometrically larger than the muscle meshes,
+     so stencil-based masking cannot work reliably (different topology/pixel coverage).
+     Instead, the wireframe uses very low opacity (0.08) so it's imperceptible
+     over opaque colored muscles but still faintly visible on bare areas
+     (head, hands, feet). No glow points — the wireframe alone suffices. */
   useEffect(() => {
-    const glowMat = new THREE.PointsMaterial({
-      color: 0x5c3a1a,
-      size: 0.002,
-      transparent: true,
-      opacity: 0.08,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      sizeAttenuation: true,
-      /* Stencil: only draw where no muscle wrote (stencil ≠ 1)
-         stencilWrite must be true for Three.js to enable GL_STENCIL_TEST;
-         all ops are KeepStencilOp so the buffer is not modified. */
-      stencilWrite: true,
-      stencilRef: 1,
-      stencilFunc: THREE.NotEqualStencilFunc,
-      stencilFail: THREE.KeepStencilOp,
-      stencilZFail: THREE.KeepStencilOp,
-      stencilZPass: THREE.KeepStencilOp,
-    });
-    const added: THREE.Object3D[] = [];
-
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
@@ -72,37 +58,12 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
           side: THREE.FrontSide,
           depthWrite: false,
           depthTest: true,
-          polygonOffset: true,
-          polygonOffsetFactor: 2,
-          polygonOffsetUnits: 2,
-          /* Stencil: only draw where no muscle wrote (stencil ≠ 1)
-             stencilWrite must be true for Three.js to enable GL_STENCIL_TEST;
-             all ops are KeepStencilOp so the buffer is not modified. */
-          stencilWrite: true,
-          stencilRef: 1,
-          stencilFunc: THREE.NotEqualStencilFunc,
-          stencilFail: THREE.KeepStencilOp,
-          stencilZFail: THREE.KeepStencilOp,
-          stencilZPass: THREE.KeepStencilOp,
         });
-        /* Render AFTER muscles (renderOrder 0) so stencil buffer
-           is already populated — wireframe only draws on head,
-           hands, feet (areas with no muscle surface). */
         mesh.renderOrder = 1;
-
-        /* Cast solid silhouette shadow (BasicDepthPacking for PCFSoftShadowMap) */
         mesh.castShadow = true;
         mesh.customDepthMaterial = new THREE.MeshDepthMaterial();
-
-        /* Micro-diode glow at wireframe vertices */
-        const pts = new THREE.Points(mesh.geometry, glowMat.clone());
-        pts.renderOrder = 2;
-        mesh.add(pts);
-        added.push(pts);
       }
     });
-
-    return () => { for (const p of added) p.removeFromParent(); };
   }, [scene, opacity]);
 
   useEffect(() => {
@@ -156,11 +117,6 @@ function MusclesModel({
           transparent: true,
           opacity: 1.0,
           side: THREE.FrontSide,
-          /* Stencil: mark muscle pixels so wireframe is masked */
-          stencilWrite: true,
-          stencilRef: 1,
-          stencilFunc: THREE.AlwaysStencilFunc,
-          stencilZPass: THREE.ReplaceStencilOp,
         });
         const frName = getFrenchName(rawName);
         const side = getSide(rawName);

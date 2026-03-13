@@ -277,10 +277,9 @@ content/
 
 ### Règles visuelles (non négociables)
 - Tous les matériaux : `side = THREE.FrontSide` (jamais DoubleSide)
-- Le wireframe ne doit JAMAIS recouvrir un muscle coloré visible (stencil buffer : surfaces écrivent stencil=1, wireframe ne se dessine que là où stencil ≠ 1)
-- `stencilWrite` doit être `true` sur TOUS les matériaux (muscles, wireframe, glow) — Three.js utilise ce flag pour activer `gl.STENCIL_TEST`. Les matériaux wireframe/glow utilisent `KeepStencilOp` partout pour ne pas modifier le buffer.
+- Le wireframe (silhouette.glb) utilise une opacité très faible (0.08) pour ne pas masquer les muscles colorés. Le stencil buffer ne fonctionne PAS entre silhouette.glb et muscles.glb car les deux modèles ont des topologies différentes (l'enveloppe silhouette est géométriquement plus grande que les muscles, ses fragments ne coïncident pas pixel-à-pixel). NE PAS réessayer le stencil.
+- Pas de glow points (Points/PointsMaterial) — le wireframe seul suffit
 - Les highlights sont ADDITIFS : aucun muscle ne doit s'assombrir quand un autre est sélectionné
-- Les glow points aux vertices doivent être discrets (opacity ≤ 0.3, size ≤ 0.003)
 
 ### Architecture contrôles
 - Mode TURNTABLE : le mannequin tourne sur lui-même (rotation Y)

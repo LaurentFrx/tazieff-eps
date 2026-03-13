@@ -243,7 +243,7 @@ function Scene({
                 highlightedMuscle={highlightedMuscle}
                 hoveredMuscle={null}
                 wireframe={false}
-                silhouetteOpacity={0.36}
+                silhouetteOpacity={0.08}
                 onHoverMuscle={onHoverMuscle}
                 onClickMuscle={onClickMuscle}
                 onLongPressMuscle={onLongPressMuscle}
