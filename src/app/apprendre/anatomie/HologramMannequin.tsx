@@ -64,10 +64,13 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
           depthWrite: false,
           depthTest: true,
           polygonOffset: true,
-          polygonOffsetFactor: 1,
-          polygonOffsetUnits: 1,
+          polygonOffsetFactor: 2,
+          polygonOffsetUnits: 2,
         });
-        mesh.renderOrder = 0;
+        /* Render AFTER muscles (renderOrder 0) so that muscle depth
+           blocks wireframe fragments — wireframe only draws where
+           no muscle surface exists (head, hands, feet). */
+        mesh.renderOrder = 1;
 
         /* Cast solid silhouette shadow (BasicDepthPacking for PCFSoftShadowMap) */
         mesh.castShadow = true;
@@ -75,7 +78,7 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
 
         /* Micro-diode glow at wireframe vertices */
         const pts = new THREE.Points(mesh.geometry, glowMat.clone());
-        pts.renderOrder = -1;
+        pts.renderOrder = 2;
         mesh.add(pts);
         added.push(pts);
       }
@@ -146,7 +149,9 @@ function MusclesModel({
           baseFrName: frName,
           originalColor: color.clone(),
         } as MuscleUserData;
-        mesh.renderOrder = 1;
+        /* Render BEFORE wireframe — muscles write to depth buffer,
+           blocking wireframe fragments behind them. */
+        mesh.renderOrder = 0;
         mesh.castShadow = true;
         meshes.push(mesh);
       }
@@ -329,11 +334,10 @@ export default function HologramMannequin({
 
   return (
     <group>
-      {/* Lighting — outdoor-style to match building photo */}
-      <ambientLight intensity={0.8} color={0xffeedd} />
-      <directionalLight position={[-3, 4, 1]} intensity={1.2} color={0xfff5e0} />
-      <directionalLight position={[-2, 1, -1]} intensity={0.5} color={0x88aaff} />
-      <directionalLight position={[0, 2, -3]} intensity={0.3} />
+      {/* Lighting — reduced since HDRI provides IBL */}
+      <ambientLight intensity={0.3} color={0xffeedd} />
+      <directionalLight position={[-3, 4, 1]} intensity={1.0} color={0xfff5e0} />
+      <directionalLight position={[-2, 1, -1]} intensity={0.3} color={0x88aaff} />
 
       <SilhouetteBody opacity={silhouetteOpacity} />
       <MusclesModel

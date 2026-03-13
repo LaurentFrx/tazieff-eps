@@ -2,9 +2,8 @@
 
 import { Suspense, useEffect, useRef } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import { CameraControls, useTexture } from "@react-three/drei";
+import { CameraControls, Environment } from "@react-three/drei";
 import {
-  BackSide,
   Box3,
   PCFSoftShadowMap,
   Vector3,
@@ -33,24 +32,7 @@ const TAP_THRESHOLD_SQ = 25;
 /** Max duration (ms) for a single tap gesture. */
 const TAP_MAX_DURATION = 200;
 
-/* ── Skybox — background image mapped inside a sphere ───────────────── */
-
-function Skybox() {
-  const texture = useTexture("/media/anatomy-bg.webp");
-  return (
-    <mesh renderOrder={-1}>
-      <sphereGeometry args={[100, 64, 32]} />
-      <meshBasicMaterial
-        map={texture}
-        side={BackSide}
-        depthWrite={false}
-        depthTest={false}
-      />
-    </mesh>
-  );
-}
-
-/* ── Inner scene: CameraControls + skybox ────────────────────────────── */
+/* ── Inner scene: CameraControls + HDRI environment ──────────────────── */
 
 function Scene({
   selectedGroup,
@@ -140,8 +122,15 @@ function Scene({
 
   return (
     <>
+      {/* HDRI environment — 360° background + subtle IBL reflections */}
       <Suspense fallback={null}>
-        <Skybox />
+        <Environment
+          files="/hdri/anatomy-env.hdr"
+          background
+          backgroundBlurriness={0.02}
+          backgroundIntensity={0.8}
+          environmentIntensity={0.3}
+        />
       </Suspense>
 
       <group position={[0, FEET_Y, 0]}>
