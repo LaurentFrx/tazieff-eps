@@ -181,6 +181,9 @@ function MusclesModel({
         mat.opacity = 1;
         mat.emissive.set(0x000000);
       }
+
+      // Stencil: block wireframe ONLY where muscle is opaque enough
+      mat.stencilWrite = mat.opacity > 0.5;
     }
   }, [selectedGroup, highlightedMuscle, wireframe]);
   /* eslint-enable react-hooks/immutability */
