@@ -46,7 +46,7 @@ function BackgroundPlane() {
 
   return (
     <mesh position={[0, 0.8, -1.5]} renderOrder={-2}>
-      <planeGeometry args={[20, 15]} />
+      <planeGeometry args={[5, 3.75]} />
       <meshBasicMaterial map={texture} depthWrite={false} />
     </mesh>
   );
@@ -263,7 +263,7 @@ function Scene({
         maxPolarAngle={Math.PI / 2}
         minAzimuthAngle={0}
         maxAzimuthAngle={0}
-        minDistance={0.5}
+        minDistance={0.4}
         maxDistance={5.0}
         dollySpeed={0.5}
         truckSpeed={1.0}
