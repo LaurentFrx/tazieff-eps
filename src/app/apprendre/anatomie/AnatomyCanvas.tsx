@@ -125,7 +125,7 @@ function Scene({
       {/* HDRI environment — 360° background + subtle IBL reflections */}
       <Suspense fallback={null}>
         <Environment
-          files="/hdri/anatomy-env.hdr"
+          files="/hdri/wrestling_gym_4k.hdr"
           background
           backgroundBlurriness={0.02}
           backgroundIntensity={0.8}
