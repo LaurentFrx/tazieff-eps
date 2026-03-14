@@ -100,10 +100,10 @@ const SLIDER_GROUPS: { title: string; sliders: SliderDef[] }[] = [
   {
     title: "CAMÉRA",
     sliders: [
-      { key: "cameraZoom", label: "cameraZoom", min: 100, max: 500, step: 10 },
-      { key: "dollySpeed", label: "dollySpeed", min: 0.1, max: 3.0, step: 0.1 },
-      { key: "truckSpeed", label: "truckSpeed", min: 0.5, max: 5.0, step: 0.1 },
-      { key: "smoothTime", label: "smoothTime", min: 0.01, max: 0.5, step: 0.01 },
+      { key: "cameraZoom", label: "cameraZoom (Taille écran)", min: 100, max: 500, step: 10 },
+      { key: "dollySpeed", label: "dollySpeed (Vitesse zoom)", min: 0.1, max: 3.0, step: 0.1 },
+      { key: "truckSpeed", label: "truckSpeed (Vitesse déplacement)", min: 0.5, max: 5.0, step: 0.1 },
+      { key: "smoothTime", label: "smoothTime (Inertie)", min: 0.01, max: 0.5, step: 0.01 },
       { key: "minDistance", label: "minDistance", min: 0.1, max: 2.0, step: 0.1 },
       { key: "maxDistance", label: "maxDistance", min: 3.0, max: 10.0, step: 0.5 },
     ],
@@ -111,38 +111,38 @@ const SLIDER_GROUPS: { title: string; sliders: SliderDef[] }[] = [
   {
     title: "TURNTABLE",
     sliders: [
-      { key: "rotateSpeed", label: "rotateSpeed", min: 0.001, max: 0.02, step: 0.001 },
-      { key: "inertiaDecay", label: "inertiaDecay", min: 0.8, max: 0.99, step: 0.01 },
+      { key: "rotateSpeed", label: "rotateSpeed (Sensibilité rotation)", min: 0.001, max: 0.02, step: 0.001 },
+      { key: "inertiaDecay", label: "inertiaDecay (Durée inertie rotation)", min: 0.8, max: 0.99, step: 0.01 },
     ],
   },
   {
     title: "MANNEQUIN",
     sliders: [
-      { key: "mannequinScale", label: "mannequinScale", min: 0.2, max: 1.0, step: 0.05 },
-      { key: "innerScale", label: "innerScale", min: 0.5, max: 3.0, step: 0.1 },
+      { key: "mannequinScale", label: "mannequinScale (Taille modèle)", min: 0.2, max: 1.0, step: 0.05 },
+      { key: "innerScale", label: "innerScale (Taille interne)", min: 0.5, max: 3.0, step: 0.1 },
     ],
   },
   {
     title: "FOND",
     sliders: [
-      { key: "bgPositionX", label: "bgPositionX", min: -5, max: 5, step: 0.1 },
-      { key: "bgPositionY", label: "bgPositionY", min: -3, max: 5, step: 0.1 },
-      { key: "bgPositionZ", label: "bgPositionZ", min: -5, max: 0, step: 0.1 },
-      { key: "bgWidth", label: "bgWidth", min: 3, max: 30, step: 0.5 },
-      { key: "bgHeight", label: "bgHeight", min: 2, max: 20, step: 0.5 },
+      { key: "bgPositionX", label: "bgPositionX (Fond ←→)", min: -5, max: 5, step: 0.1 },
+      { key: "bgPositionY", label: "bgPositionY (Fond ↑↓)", min: -3, max: 5, step: 0.1 },
+      { key: "bgPositionZ", label: "bgPositionZ (Fond profondeur)", min: -5, max: 0, step: 0.1 },
+      { key: "bgWidth", label: "bgWidth (Largeur fond)", min: 3, max: 30, step: 0.5 },
+      { key: "bgHeight", label: "bgHeight (Hauteur fond)", min: 2, max: 20, step: 0.5 },
     ],
   },
   {
     title: "WIREFRAME",
     sliders: [
-      { key: "silhouetteOpacity", label: "silhouetteOpacity", min: 0, max: 0.5, step: 0.01 },
+      { key: "silhouetteOpacity", label: "silhouetteOpacity (Maillage)", min: 0, max: 0.5, step: 0.01 },
     ],
   },
   {
     title: "ÉCLAIRAGE",
     sliders: [
-      { key: "ambientIntensity", label: "ambientIntensity", min: 0, max: 2.0, step: 0.1 },
-      { key: "mainLightIntensity", label: "mainLightIntensity", min: 0, max: 3.0, step: 0.1 },
+      { key: "ambientIntensity", label: "ambientIntensity (Lumière ambiante)", min: 0, max: 2.0, step: 0.1 },
+      { key: "mainLightIntensity", label: "mainLightIntensity (Lumière principale)", min: 0, max: 3.0, step: 0.1 },
     ],
   },
 ];
@@ -207,7 +207,7 @@ function SettingsPanel({
         fontSize: 10,
         maxHeight: "calc(100vh - 32px)",
         overflowY: "auto",
-        width: 280,
+        width: 340,
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
       }}
@@ -237,10 +237,15 @@ function SettingsPanel({
             {group.title}
           </div>
           {group.sliders.map((s) => (
-            <div key={s.key} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
-              <label style={{ flex: "0 0 120px", fontSize: 9, color: "rgba(255,255,255,0.7)" }}>
-                {s.label}
-              </label>
+            <div key={s.key} style={{ marginBottom: 4 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 1 }}>
+                <label style={{ fontSize: 9, color: "rgba(255,255,255,0.7)" }}>
+                  {s.label}
+                </label>
+                <span style={{ fontSize: 9, color: "#00D4FF", fontWeight: 600 }}>
+                  {settings[s.key].toFixed(2)}
+                </span>
+              </div>
               <input
                 type="range"
                 min={s.min}
@@ -248,11 +253,8 @@ function SettingsPanel({
                 step={s.step}
                 value={settings[s.key]}
                 onChange={(e) => onChange({ ...settings, [s.key]: parseFloat(e.target.value) })}
-                style={{ flex: 1, accentColor: "#00D4FF" }}
+                style={{ width: "100%", accentColor: "#00D4FF" }}
               />
-              <span style={{ flex: "0 0 40px", textAlign: "right", fontSize: 9, color: "#00D4FF" }}>
-                {settings[s.key].toFixed(decimals(s.step))}
-              </span>
             </div>
           ))}
         </div>
