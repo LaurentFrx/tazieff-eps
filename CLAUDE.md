@@ -277,7 +277,8 @@ content/
 
 ### Règles visuelles (non négociables)
 - Tous les matériaux : `side = THREE.FrontSide` (jamais DoubleSide)
-- Le wireframe (silhouette.glb) utilise une opacité très faible (0.08) pour ne pas masquer les muscles colorés. Le stencil buffer ne fonctionne PAS entre silhouette.glb et muscles.glb car les deux modèles ont des topologies différentes (l'enveloppe silhouette est géométriquement plus grande que les muscles, ses fragments ne coïncident pas pixel-à-pixel). NE PAS réessayer le stencil.
+- JAMAIS de face interne visible sur aucun matériau (wireframe, points, muscles). Si un GLB contient des meshes avec normales inversées (face interne), les masquer avec `mesh.visible = false`. Détection automatique via `dot(normal, position - centroid)` : négatif = inner → hidden.
+- Le wireframe (silhouette.glb) utilise une opacité très faible (0.12) pour ne pas masquer les muscles colorés. Le stencil buffer dynamique (`mat.stencilWrite = mat.opacity > 0.5`) masque le wireframe uniquement sur les muscles opaques.
 - Pas de glow points (Points/PointsMaterial) — le wireframe seul suffit
 - Les highlights sont ADDITIFS : aucun muscle ne doit s'assombrir quand un autre est sélectionné
 

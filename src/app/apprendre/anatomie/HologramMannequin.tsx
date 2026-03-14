@@ -40,16 +40,57 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
   const { scene } = useGLTF("/models/silhouette.glb");
   const groupRef = useRef<THREE.Group>(null);
 
-  /* Apply wireframe material to silhouette meshes.
-     The silhouette envelope is geometrically larger than the muscle meshes,
-     so stencil-based masking cannot work reliably (different topology/pixel coverage).
-     Instead, the wireframe uses very low opacity (0.08) so it's imperceptible
-     over opaque colored muscles but still faintly visible on bare areas
-     (head, hands, feet). No glow points — the wireframe alone suffices. */
+  /* Detect inner/outer meshes and apply wireframe material.
+     Inner meshes (normals pointing inward) are hidden to avoid
+     the double-wireframe effect. Only outer shell is rendered. */
   useEffect(() => {
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
+
+        // Recompute normals for reliable orientation detection
+        mesh.geometry.computeVertexNormals();
+
+        const positions = mesh.geometry.getAttribute("position");
+        const normals = mesh.geometry.getAttribute("normal");
+
+        if (positions && normals) {
+          // Compute centroid
+          let cx = 0, cy = 0, cz = 0;
+          for (let i = 0; i < positions.count; i++) {
+            cx += positions.getX(i);
+            cy += positions.getY(i);
+            cz += positions.getZ(i);
+          }
+          cx /= positions.count;
+          cy /= positions.count;
+          cz /= positions.count;
+
+          // Average dot(normal, position - centroid): positive = outward, negative = inward
+          let dotSum = 0;
+          for (let i = 0; i < positions.count; i++) {
+            const dx = positions.getX(i) - cx;
+            const dy = positions.getY(i) - cy;
+            const dz = positions.getZ(i) - cz;
+            const nx = normals.getX(i);
+            const ny = normals.getY(i);
+            const nz = normals.getZ(i);
+            dotSum += dx * nx + dy * ny + dz * nz;
+          }
+          const avgDot = dotSum / positions.count;
+          const isInner = avgDot < 0;
+
+          console.log(
+            `[Silhouette] mesh="${mesh.name}" vertices=${positions.count} avgDot=${avgDot.toFixed(3)} → ${isInner ? "INNER (hidden)" : "OUTER"}`,
+          );
+
+          // Hide inner meshes (normals pointing inward = internal face)
+          if (isInner) {
+            mesh.visible = false;
+            return;
+          }
+        }
+
         mesh.material = new THREE.MeshBasicMaterial({
           color: 0x9b7340,
           transparent: true,
@@ -70,11 +111,12 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
         mesh.customDepthMaterial = new THREE.MeshDepthMaterial();
       }
     });
-  }, [scene, opacity]);
+  }, [scene]);
 
+  /* Update opacity on visible meshes when slider changes */
   useEffect(() => {
     scene.traverse((child) => {
-      if ((child as THREE.Mesh).isMesh) {
+      if ((child as THREE.Mesh).isMesh && child.visible) {
         const mat = (child as THREE.Mesh).material as THREE.MeshBasicMaterial;
         mat.opacity = opacity;
       }
