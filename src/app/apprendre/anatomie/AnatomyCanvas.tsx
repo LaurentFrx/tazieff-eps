@@ -354,9 +354,8 @@ function Scene({
   }, []);
 
   /* Sync camera zoom from debug settings */
-  // eslint-disable-next-line react-hooks/immutability -- Three.js camera is mutable
   useEffect(() => {
-    camera.zoom = settings.cameraZoom;
+    camera.zoom = settings.cameraZoom; // eslint-disable-line react-hooks/immutability -- Three.js camera is mutable
     camera.updateProjectionMatrix();
   }, [camera, settings.cameraZoom]);
 
