@@ -201,6 +201,43 @@
   flex-shrink: 0;
 }
 
+/* ── Skeleton toggle button (top right, left of legend) ────────────────── */
+
+.anatomy-skeleton-btn {
+  position: fixed;
+  top: calc(16px + env(safe-area-inset-top, 0px));
+  right: calc(64px + env(safe-area-inset-right, 0px));
+  z-index: 18;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 20, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.anatomy-skeleton-btn:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.anatomy-skeleton-dot {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--holo-blue);
+}
+
 /* ── Legend button (top right) ──────────────────────────────────────────── */
 
 .anatomy-legend-btn {

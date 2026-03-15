@@ -49,9 +49,11 @@ function ModalMannequin({
   highlightedMuscle: string | null;
 }) {
   const { scene: musclesOrig } = useGLTF("/models/muscles.glb");
-  const { scene: silhouetteOrig } = useGLTF("/models/silhouette.glb");
+  const { scene: musclesExtraOrig } = useGLTF("/models/muscles_manquants.glb");
+  const { scene: silhouetteOrig } = useGLTF("/models/silhouette_fixed.glb");
 
   const musclesScene = useMemo(() => musclesOrig.clone(true), [musclesOrig]);
+  const musclesExtraScene = useMemo(() => musclesExtraOrig.clone(true), [musclesExtraOrig]);
   const silhouetteScene = useMemo(
     () => silhouetteOrig.clone(true),
     [silhouetteOrig],
@@ -65,15 +67,11 @@ function ModalMannequin({
   /* Initial material setup */
   useEffect(() => {
     const entries: typeof meshesRef.current = [];
-    musclesScene.traverse((child) => {
-      if (!(child as THREE.Mesh).isMesh) return;
-      const mesh = child as THREE.Mesh;
+    const initMuscle = (mesh: THREE.Mesh) => {
       const rawName = mesh.name || mesh.parent?.name || "unknown";
       const groupKey = getGroupForNode(rawName);
       const frName = getFrenchName(rawName);
-      const side = getSide(rawName);
       const baseFrName = frName;
-      const _displayName = side ? `${frName} (${side})` : frName;
 
       const color = new THREE.Color(
         groupKey ? MUSCLE_GROUPS[groupKey].color : 0x888888,
@@ -88,6 +86,12 @@ function ModalMannequin({
       });
       mesh.renderOrder = 1;
       entries.push({ mesh, groupKey, baseFrName });
+    };
+    musclesScene.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) initMuscle(child as THREE.Mesh);
+    });
+    musclesExtraScene.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) initMuscle(child as THREE.Mesh);
     });
     meshesRef.current = entries;
 
@@ -104,7 +108,7 @@ function ModalMannequin({
       });
       (child as THREE.Mesh).renderOrder = -2;
     });
-  }, [musclesScene, silhouetteScene]);
+  }, [musclesScene, musclesExtraScene, silhouetteScene]);
 
   /* Track highlighted name for useFrame pulse */
   const highlightedRef = useRef<string | null>(null);
@@ -163,6 +167,7 @@ function ModalMannequin({
       <directionalLight position={[0, 2, -3]} intensity={0.3} />
       <primitive object={silhouetteScene} />
       <primitive object={musclesScene} />
+      <primitive object={musclesExtraScene} />
     </group>
   );
 }

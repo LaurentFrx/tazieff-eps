@@ -37,7 +37,7 @@ useGLTF.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/"
 /* ─── Silhouette body (wireframe) ────────────────────────────────────────── */
 
 function SilhouetteBody({ opacity }: { opacity: number }) {
-  const { scene } = useGLTF("/models/silhouette.glb");
+  const { scene } = useGLTF("/models/silhouette_fixed.glb");
   const groupRef = useRef<THREE.Group>(null);
 
   /* Detect inner/outer meshes and apply wireframe material.
@@ -141,6 +141,7 @@ function MusclesModel({
   onLongPressMuscle,
 }: Omit<Props, "hoveredMuscle">) {
   const { scene } = useGLTF("/models/muscles.glb");
+  const { scene: sceneExtra } = useGLTF("/models/muscles_manquants.glb");
   const { gl } = useThree();
   const canvasElRef = useRef(gl.domElement);
   const meshesRef = useRef<THREE.Mesh[]>([]);
@@ -149,48 +150,51 @@ function MusclesModel({
   // Initialize muscle materials and userData on load
   useEffect(() => {
     const meshes: THREE.Mesh[] = [];
+    const initMesh = (mesh: THREE.Mesh) => {
+      const rawName =
+        mesh.name || (mesh.parent ? mesh.parent.name : "unknown");
+      const groupKey = getGroupForNode(rawName);
+      const color = new THREE.Color(
+        groupKey ? MUSCLE_GROUPS[groupKey].color : 0x888888,
+      );
+      mesh.material = new THREE.MeshPhongMaterial({
+        color,
+        emissive: new THREE.Color(0x000000),
+        shininess: 30,
+        transparent: true,
+        opacity: 1.0,
+        side: THREE.FrontSide,
+      });
+      const frName = getFrenchName(rawName);
+      const side = getSide(rawName);
+      const displayName = side ? `${frName} (${side})` : frName;
+      mesh.userData = {
+        groupKey,
+        rawName,
+        frName: displayName,
+        baseFrName: frName,
+        originalColor: color.clone(),
+      } as MuscleUserData;
+      /* Render BEFORE wireframe — muscles write to depth buffer,
+         blocking wireframe fragments behind them. */
+      mesh.renderOrder = 0;
+      mesh.material.stencilWrite = true;
+      mesh.material.stencilRef = 1;
+      mesh.material.stencilFunc = THREE.AlwaysStencilFunc;
+      mesh.material.stencilZPass = THREE.ReplaceStencilOp;
+      mesh.material.stencilFail = THREE.KeepStencilOp;
+      mesh.material.stencilZFail = THREE.KeepStencilOp;
+      mesh.castShadow = true;
+      meshes.push(mesh);
+    };
     scene.traverse((child) => {
-      if ((child as THREE.Mesh).isMesh) {
-        const mesh = child as THREE.Mesh;
-        const rawName =
-          mesh.name || (mesh.parent ? mesh.parent.name : "unknown");
-        const groupKey = getGroupForNode(rawName);
-        const color = new THREE.Color(
-          groupKey ? MUSCLE_GROUPS[groupKey].color : 0x888888,
-        );
-        mesh.material = new THREE.MeshPhongMaterial({
-          color,
-          emissive: new THREE.Color(0x000000),
-          shininess: 30,
-          transparent: true,
-          opacity: 1.0,
-          side: THREE.FrontSide,
-        });
-        const frName = getFrenchName(rawName);
-        const side = getSide(rawName);
-        const displayName = side ? `${frName} (${side})` : frName;
-        mesh.userData = {
-          groupKey,
-          rawName,
-          frName: displayName,
-          baseFrName: frName,
-          originalColor: color.clone(),
-        } as MuscleUserData;
-        /* Render BEFORE wireframe — muscles write to depth buffer,
-           blocking wireframe fragments behind them. */
-        mesh.renderOrder = 0;
-        mesh.material.stencilWrite = true;
-        mesh.material.stencilRef = 1;
-        mesh.material.stencilFunc = THREE.AlwaysStencilFunc;
-        mesh.material.stencilZPass = THREE.ReplaceStencilOp;
-        mesh.material.stencilFail = THREE.KeepStencilOp;
-        mesh.material.stencilZFail = THREE.KeepStencilOp;
-        mesh.castShadow = true;
-        meshes.push(mesh);
-      }
+      if ((child as THREE.Mesh).isMesh) initMesh(child as THREE.Mesh);
+    });
+    sceneExtra.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) initMesh(child as THREE.Mesh);
     });
     meshesRef.current = meshes;
-  }, [scene]);
+  }, [scene, sceneExtra]);
 
   // Update materials when selection/highlight/wireframe changes
   /* eslint-disable react-hooks/immutability -- Three.js materials are mutable by design */
@@ -353,6 +357,48 @@ function MusclesModel({
     };
   }, [onClickMuscle, onLongPressMuscle]);
 
+  return (
+    <>
+      <primitive object={scene} />
+      <primitive object={sceneExtra} />
+    </>
+  );
+}
+
+/* ─── Skeleton layer ────────────────────────────────────────────────────── */
+
+function SkeletonBody({ opacity }: { opacity: number }) {
+  const { scene } = useGLTF("/models/squelette.glb");
+
+  useEffect(() => {
+    scene.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
+        mesh.material = new THREE.MeshPhongMaterial({
+          color: 0xe8dcc8,
+          emissive: new THREE.Color(0x222211),
+          shininess: 20,
+          transparent: true,
+          opacity,
+          side: THREE.FrontSide,
+          depthWrite: true,
+          depthTest: true,
+        });
+        mesh.renderOrder = -1;
+        mesh.castShadow = false;
+      }
+    });
+  }, [scene]);
+
+  useEffect(() => {
+    scene.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh && child.visible) {
+        const mat = (child as THREE.Mesh).material as THREE.MeshPhongMaterial;
+        mat.opacity = opacity;
+      }
+    });
+  }, [scene, opacity]);
+
   return <primitive object={scene} />;
 }
 
@@ -365,10 +411,18 @@ export default function HologramMannequin({
   onHoverMuscle,
   onClickMuscle,
   onLongPressMuscle,
+  showSkeleton = false,
+  skeletonOpacity = 0.4,
   silhouetteOpacity = 0.4,
   ambientIntensity = 0.8,
   mainLightIntensity = 1.2,
-}: Props & { silhouetteOpacity?: number; ambientIntensity?: number; mainLightIntensity?: number }) {
+}: Props & {
+  showSkeleton?: boolean;
+  skeletonOpacity?: number;
+  silhouetteOpacity?: number;
+  ambientIntensity?: number;
+  mainLightIntensity?: number;
+}) {
 
   return (
     <group>
@@ -378,6 +432,7 @@ export default function HologramMannequin({
       <directionalLight position={[-2, 1, -1]} intensity={0.5} color={0x88aaff} />
       <directionalLight position={[0, 2, -3]} intensity={0.3} />
 
+      {showSkeleton && <SkeletonBody opacity={skeletonOpacity} />}
       <SilhouetteBody opacity={silhouetteOpacity} />
       <MusclesModel
         selectedGroup={selectedGroup}

@@ -28,6 +28,9 @@ export const MUSCLE_GROUPS: Record<string, MuscleGroup> = {
       "infraspinatus",
       "supraspinatus",
       "teres",
+      "subscapularis",
+      "levator scapulae",
+      "sternocleidomastoid",
     ],
     exerciseSearchTerms: [
       "grand dorsal",
@@ -86,7 +89,7 @@ export const MUSCLE_GROUPS: Record<string, MuscleGroup> = {
   biceps: {
     id: "biceps",
     color: "#38bdf8",
-    keywords: ["biceps brachii", "brachialis", "coracobrachialis", "brachioradialis"],
+    keywords: ["biceps brachii", "brachialis", "coracobrachialis", "brachioradialis", "extensor digitorum", "flexor carpi"],
     exerciseSearchTerms: ["biceps", "brachial", "curl", "avant-bras"],
   },
   triceps: {
@@ -111,7 +114,7 @@ export const MUSCLE_GROUPS: Record<string, MuscleGroup> = {
   fessiers: {
     id: "fessiers",
     color: "#ec4899",
-    keywords: ["gluteus"],
+    keywords: ["gluteus", "tensor fasciae", "piriformis"],
     exerciseSearchTerms: [
       "fessier",
       "abducteur",
@@ -130,6 +133,7 @@ export const MUSCLE_GROUPS: Record<string, MuscleGroup> = {
       "semimembranosus",
       "semitendinosus",
       "biceps femoris",
+      "popliteus",
     ],
     exerciseSearchTerms: ["ischio", "leg curl"],
   },
@@ -142,7 +146,7 @@ export const MUSCLE_GROUPS: Record<string, MuscleGroup> = {
   mollets: {
     id: "mollets",
     color: "#f472b6",
-    keywords: ["gastrocnemius", "soleus"],
+    keywords: ["gastrocnemius", "soleus", "tibialis", "fibularis"],
     exerciseSearchTerms: [
       "mollet",
       "gastrocnemien",
@@ -156,18 +160,18 @@ export const MUSCLE_GROUPS: Record<string, MuscleGroup> = {
 /* ── Sub-muscles per group (French display names for bottom sheets) ──────── */
 
 export const GROUP_MUSCLES: Record<string, string[]> = {
-  dorsaux: ["Grand dorsal", "Trapèzes", "Rhomboïdes", "Infra-épineux", "Grand rond", "Carré des lombes", "Spinaux"],
+  dorsaux: ["Grand dorsal", "Trapèzes", "Rhomboïdes", "Infra-épineux", "Grand rond", "Petit rond", "Subscapulaire", "Élévateur de la scapula", "Sterno-cléido-mastoïdien", "Carré des lombes", "Spinaux"],
   pectoraux: ["Grand pectoral", "Dentelé antérieur"],
   abdominaux: ["Grand droit", "Obliques", "Transverse"],
   deltoides: ["Deltoïde antérieur", "Deltoïde moyen", "Deltoïde postérieur"],
-  biceps: ["Biceps brachial", "Brachial", "Brachio-radial"],
+  biceps: ["Biceps brachial", "Brachial", "Brachio-radial", "Extenseur des doigts", "Fléchisseur radial du carpe", "Fléchisseur ulnaire du carpe"],
   triceps: ["Triceps brachial"],
   flechisseurs: ["Psoas-iliaque"],
-  fessiers: ["Grand fessier", "Moyen fessier"],
+  fessiers: ["Grand fessier", "Moyen fessier", "Tenseur du fascia lata", "Piriforme"],
   quadriceps: ["Droit fémoral", "Vastes"],
-  ischio_jambiers: ["Biceps fémoral", "Semi-tendineux", "Semi-membraneux"],
+  ischio_jambiers: ["Biceps fémoral", "Semi-tendineux", "Semi-membraneux", "Poplité"],
   adducteurs: ["Grand adducteur", "Long adducteur", "Gracile"],
-  mollets: ["Gastrocnémiens", "Soléaire"],
+  mollets: ["Gastrocnémiens", "Soléaire", "Tibial antérieur", "Long fibulaire", "Court fibulaire"],
 };
 
 /* ── 3D anchor positions per group (model space, before MANNEQUIN_SCALE) ── */
@@ -218,6 +222,9 @@ export const MUSCLE_FR_NAMES: Record<string, string> = {
   "latissimus dorsi": "Grand dorsal",
   "quadratus lumborum": "Carré des lombes",
   "erector spinae": "Spinaux",
+  "subscapularis": "Subscapulaire",
+  "levator scapulae": "Élévateur de la scapula",
+  "sternocleidomastoid": "Sterno-cléido-mastoïdien",
   /* Pectoraux */
   "clavicular head of pectoralis major": "Grand pectoral",
   "sternocostal head of pectoralis major": "Grand pectoral",
@@ -253,6 +260,8 @@ export const MUSCLE_FR_NAMES: Record<string, string> = {
   "gluteus medius": "Moyen fessier",
   "gluteus maximus": "Grand fessier",
   "gluteus minimus": "Petit fessier",
+  "tensor fasciae latae": "Tenseur du fascia lata",
+  "piriformis": "Piriforme",
   /* Quadriceps */
   "rectus femoris": "Droit fémoral",
   "vastus lateralis": "Vastes",
@@ -268,10 +277,20 @@ export const MUSCLE_FR_NAMES: Record<string, string> = {
   "short head of biceps femoris": "Biceps fémoral",
   semimembranosus: "Semi-membraneux",
   semitendinosus: "Semi-tendineux",
+  "popliteus": "Poplité",
   /* Mollets */
   "lateral head of gastrocnemius": "Gastrocnémiens",
   "medial head of gastrocnemius": "Gastrocnémiens",
   soleus: "Soléaire",
+  "tibialis anterior": "Tibial antérieur",
+  "fibularis longus": "Long fibulaire",
+  "fibularis brevis": "Court fibulaire",
+  /* Avant-bras */
+  "extensor digitorum": "Extenseur des doigts",
+  "flexor carpi radialis": "Fléchisseur radial du carpe",
+  "humeral head of flexor carpi ulnaris": "Fléchisseur ulnaire du carpe",
+  "ulnar head of flexor carpi ulnaris": "Fléchisseur ulnaire du carpe",
+  "teres minor": "Petit rond",
 };
 
 /* ── Normalize GLB mesh/node name to a clean base for lookup ─────────────── */

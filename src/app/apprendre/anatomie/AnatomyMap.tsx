@@ -35,6 +35,7 @@ export default function AnatomyMap({ exercises }: Props) {
   const [label, setLabel] = useState<LabelInfo | null>(null);
   const [sheetGroupKey, setSheetGroupKey] = useState<string | null>(null);
   const [legendOpen, setLegendOpen] = useState(false);
+  const [showSkeleton, setShowSkeleton] = useState(false);
 
   /* ── Exercises matching sheet group ──────────────────────────────────── */
   const sheetExercises = useMemo(() => {
@@ -118,6 +119,7 @@ export default function AnatomyMap({ exercises }: Props) {
           <AnatomyCanvas
             selectedGroup={selectedGroup}
             highlightedMuscle={highlightedMuscle}
+            showSkeleton={showSkeleton}
             onHoverMuscle={handleHoverMuscle}
             onClickMuscle={handleClickMuscle}
             onLongPressMuscle={handleLongPressMuscle}
@@ -174,6 +176,23 @@ export default function AnatomyMap({ exercises }: Props) {
           </div>
         </div>
       )}
+
+      {/* ── Skeleton toggle button ──────────────────────────────────────── */}
+      <button
+        type="button"
+        className="anatomy-skeleton-btn"
+        onClick={() => setShowSkeleton((s) => !s)}
+        aria-label={t("anatomy.toggleSkeleton")}
+      >
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="anatomy-legend-icon">
+          <circle cx="10" cy="4" r="2.5" />
+          <line x1="10" y1="6.5" x2="10" y2="14" />
+          <line x1="6" y1="9" x2="14" y2="9" />
+          <line x1="10" y1="14" x2="7" y2="18" />
+          <line x1="10" y1="14" x2="13" y2="18" />
+        </svg>
+        {showSkeleton && <span className="anatomy-skeleton-dot" />}
+      </button>
 
       {/* ── Legend button (top right) ───────────────────────────────────── */}
       <button

@@ -17,6 +17,7 @@ import HologramMannequin from "./HologramMannequin";
 type Props = {
   selectedGroup: string | null;
   highlightedMuscle: string | null;
+  showSkeleton?: boolean;
   onHoverMuscle: (frName: string | null, groupKey: string | null) => void;
   onClickMuscle: (frName: string | null, groupKey: string | null, x: number, y: number) => void;
   onLongPressMuscle: (frName: string, groupKey: string, x: number, y: number) => void;
@@ -288,6 +289,7 @@ function SettingsPanel({
 function Scene({
   selectedGroup,
   highlightedMuscle,
+  showSkeleton,
   onHoverMuscle,
   onClickMuscle,
   onLongPressMuscle,
@@ -502,6 +504,8 @@ function Scene({
                 highlightedMuscle={highlightedMuscle}
                 hoveredMuscle={null}
                 wireframe={false}
+                showSkeleton={showSkeleton}
+                skeletonOpacity={0.4}
                 silhouetteOpacity={settings.silhouetteOpacity}
                 ambientIntensity={settings.ambientIntensity}
                 mainLightIntensity={settings.mainLightIntensity}
@@ -538,6 +542,7 @@ function Scene({
 export default function AnatomyCanvas({
   selectedGroup,
   highlightedMuscle,
+  showSkeleton,
   onHoverMuscle,
   onClickMuscle,
   onLongPressMuscle,
@@ -562,6 +567,7 @@ export default function AnatomyCanvas({
         <Scene
           selectedGroup={selectedGroup}
           highlightedMuscle={highlightedMuscle}
+          showSkeleton={showSkeleton}
           onHoverMuscle={onHoverMuscle}
           onClickMuscle={onClickMuscle}
           onLongPressMuscle={onLongPressMuscle}

@@ -821,6 +821,7 @@ export const messages = {
       wireframe: "Fil de fer",
       reset: "Réinit.",
       close: "Fermer",
+      toggleSkeleton: "Afficher/masquer le squelette",
       groups: {
         dorsaux: "Dorsaux",
         pectoraux: "Pectoraux",
@@ -1575,6 +1576,7 @@ export const messages = {
       wireframe: "Wireframe",
       reset: "Reset",
       close: "Close",
+      toggleSkeleton: "Show/hide skeleton",
       groups: {
         dorsaux: "Back",
         pectoraux: "Pectorals",
@@ -2775,6 +2777,7 @@ export const messages = {
       wireframe: "Alambre",
       reset: "Reiniciar",
       close: "Cerrar",
+      toggleSkeleton: "Mostrar/ocultar esqueleto",
       groups: {
         dorsaux: "Dorsales",
         pectoraux: "Pectorales",
