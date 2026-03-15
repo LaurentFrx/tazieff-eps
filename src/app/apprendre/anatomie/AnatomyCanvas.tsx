@@ -55,7 +55,7 @@ const DEFAULT_SETTINGS: DebugSettings = {
   maxDistance: 5.0,
   rotateSpeed: 0.006,
   inertiaDecay: 0.92,
-  mannequinScale: 0.4,
+  mannequinScale: 1.0,
   innerScale: 1.5,
   bgPositionX: -0.60,
   bgPositionY: 2.30,
