@@ -113,7 +113,7 @@ function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
         mesh.castShadow = true;
         mesh.customDepthMaterial = new THREE.MeshDepthMaterial();
 
-        // Luminous vertex points
+        // Luminous vertex points — sibling with same transform
         const pts = new THREE.Points(
           mesh.geometry,
           new THREE.PointsMaterial({
@@ -123,13 +123,24 @@ function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
             opacity: pointOpacity,
             sizeAttenuation: true,
             depthWrite: false,
-            depthTest: true,
+            depthTest: false,
           }),
         );
         pts.renderOrder = 1;
         pts.raycast = () => {}; // exclude from raycasting
-        mesh.add(pts);
+        // Copy local transform so points align with mesh in parent space
+        pts.position.copy(mesh.position);
+        pts.rotation.copy(mesh.rotation);
+        pts.scale.copy(mesh.scale);
+        if (mesh.parent) {
+          mesh.parent.add(pts);
+        }
         createdPoints.push(pts);
+
+        console.log(
+          `[Points] mesh="${mesh.name}" vertices=${mesh.geometry.getAttribute("position")?.count}`,
+          `size=${pointSize} opacity=${pointOpacity} depthTest=false`,
+        );
       }
     });
     pointsRef.current = createdPoints;
