@@ -88,8 +88,12 @@ function BackgroundPlane({ x, y, z, width, height }: {
   x: number; y: number; z: number; width: number; height: number;
 }) {
   const texture = useTexture("/media/anatomy-bg.webp");
-  texture.wrapS = ClampToEdgeWrapping;
-  texture.wrapT = ClampToEdgeWrapping;
+
+  useEffect(() => {
+    texture.wrapS = ClampToEdgeWrapping;
+    texture.wrapT = ClampToEdgeWrapping;
+    texture.needsUpdate = true;
+  }, [texture]);
 
   return (
     <mesh position={[x, y, z]} renderOrder={-2}>
@@ -161,10 +165,6 @@ const SLIDER_GROUPS: { title: string; sliders: SliderDef[]; colors?: ColorDef[] 
     ],
   },
 ];
-
-function decimals(step: number) {
-  return step < 0.01 ? 3 : step < 1 ? 2 : 1;
-}
 
 /* ── Settings Panel (HTML overlay) ─────────────────────────────────── */
 
@@ -359,6 +359,7 @@ function Scene({
   }, []);
 
   /* Sync camera zoom from debug settings */
+  // eslint-disable-next-line react-hooks/immutability -- Three.js camera is mutable
   useEffect(() => {
     camera.zoom = settings.cameraZoom;
     camera.updateProjectionMatrix();
@@ -583,13 +584,10 @@ export default function AnatomyCanvas({
   onLongPressMuscle,
 }: Props) {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
-  const [showDebug, setShowDebug] = useState(false);
-
-  useEffect(() => {
-    const show = typeof window !== "undefined"
-      && new URLSearchParams(window.location.search).has("debug");
-    setShowDebug(show);
-  }, []);
+  const [showDebug] = useState(
+    () => typeof window !== "undefined"
+      && new URLSearchParams(window.location.search).has("debug"),
+  );
 
   return (
     <>
