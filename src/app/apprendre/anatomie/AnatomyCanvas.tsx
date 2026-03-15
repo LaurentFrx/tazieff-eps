@@ -57,9 +57,9 @@ const DEFAULT_SETTINGS: DebugSettings = {
   inertiaDecay: 0.92,
   mannequinScale: 0.4,
   innerScale: 1.5,
-  bgPositionX: 0,
-  bgPositionY: 1.2,
-  bgPositionZ: -1.5,
+  bgPositionX: -0.60,
+  bgPositionY: 2.30,
+  bgPositionZ: 0.00,
   bgWidth: 12,
   bgHeight: 9,
   silhouetteOpacity: 0.12,
@@ -126,9 +126,6 @@ const SLIDER_GROUPS: { title: string; sliders: SliderDef[] }[] = [
   {
     title: "FOND",
     sliders: [
-      { key: "bgPositionX", label: "bgPositionX (Fond ←→)", min: -5, max: 5, step: 0.1 },
-      { key: "bgPositionY", label: "bgPositionY (Fond ↑↓)", min: -3, max: 5, step: 0.1 },
-      { key: "bgPositionZ", label: "bgPositionZ (Fond profondeur)", min: -5, max: 0, step: 0.1 },
       { key: "bgWidth", label: "bgWidth (Largeur fond)", min: 3, max: 30, step: 0.5 },
       { key: "bgHeight", label: "bgHeight (Hauteur fond)", min: 2, max: 20, step: 0.5 },
     ],
