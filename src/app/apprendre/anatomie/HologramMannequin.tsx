@@ -44,13 +44,12 @@ function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
 }) {
   const { scene } = useGLTF("/models/silhouette_fixed.glb");
   const groupRef = useRef<THREE.Group>(null);
-  const pointsRef = useRef<THREE.Points[]>([]);
+  const mergedPointsRef = useRef<THREE.Points | null>(null);
 
-  /* Detect inner/outer meshes and apply wireframe material + vertex points.
-     Inner meshes (normals pointing inward) are hidden to avoid
-     the double-wireframe effect. Only outer shell is rendered. */
+  /* Detect inner/outer meshes, apply wireframe material, and build merged vertex points. */
   useEffect(() => {
-    const createdPoints: THREE.Points[] = [];
+    const outerMeshes: THREE.Mesh[] = [];
+
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
@@ -113,36 +112,74 @@ function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
         mesh.castShadow = true;
         mesh.customDepthMaterial = new THREE.MeshDepthMaterial();
 
-        // Luminous vertex points — child of mesh (inherits full transform chain)
-        const pts = new THREE.Points(
-          mesh.geometry,
-          new THREE.PointsMaterial({
-            color: new THREE.Color(pointColor),
-            size: pointSize,
-            transparent: true,
-            opacity: pointOpacity,
-            sizeAttenuation: true,
-            depthWrite: false,
-            depthTest: false,
-          }),
-        );
-        pts.renderOrder = 1;
-        pts.raycast = () => {}; // exclude from raycasting
-        // Identity local transform — geometry is already in mesh-local space
-        pts.position.set(0, 0, 0);
-        pts.rotation.set(0, 0, 0);
-        pts.scale.set(1, 1, 1);
-        mesh.add(pts);
-        createdPoints.push(pts);
+        outerMeshes.push(mesh);
       }
     });
-    pointsRef.current = createdPoints;
-    return () => {
-      for (const p of createdPoints) {
-        p.parent?.remove(p);
-        (p.material as THREE.PointsMaterial).dispose();
+
+    /* Build a single merged Points from all outer mesh vertices in scene-local space.
+       Each vertex is transformed by its mesh's matrixWorld (relative to scene root)
+       so the Points object can sit at the scene root with identity transform. */
+    scene.updateMatrixWorld(true);
+    const allCoords: number[] = [];
+    const v = new THREE.Vector3();
+
+    for (const mesh of outerMeshes) {
+      const pos = mesh.geometry.getAttribute("position");
+      const idx = mesh.geometry.getIndex();
+      const worldMat = mesh.matrixWorld;
+
+      if (idx) {
+        // Indexed geometry: only emit vertices actually referenced by triangles
+        const seen = new Set<number>();
+        for (let i = 0; i < idx.count; i++) {
+          const vi = idx.getX(i);
+          if (seen.has(vi)) continue;
+          seen.add(vi);
+          v.set(pos.getX(vi), pos.getY(vi), pos.getZ(vi));
+          v.applyMatrix4(worldMat);
+          allCoords.push(v.x, v.y, v.z);
+        }
+      } else {
+        for (let i = 0; i < pos.count; i++) {
+          v.set(pos.getX(i), pos.getY(i), pos.getZ(i));
+          v.applyMatrix4(worldMat);
+          allCoords.push(v.x, v.y, v.z);
+        }
       }
-      pointsRef.current = [];
+    }
+
+    const mergedGeo = new THREE.BufferGeometry();
+    mergedGeo.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(allCoords, 3),
+    );
+
+    const pts = new THREE.Points(
+      mergedGeo,
+      new THREE.PointsMaterial({
+        color: new THREE.Color(pointColor),
+        size: pointSize,
+        transparent: true,
+        opacity: pointOpacity,
+        sizeAttenuation: true,
+        depthWrite: false,
+        depthTest: false,
+      }),
+    );
+    pts.renderOrder = 1;
+    pts.raycast = () => {};
+    pts.frustumCulled = false;
+
+    /* Add to groupRef (parent of <primitive object={scene} />) with identity transform.
+       Since vertices are already in scene-local space, alignment is guaranteed. */
+    groupRef.current?.add(pts);
+    mergedPointsRef.current = pts;
+
+    return () => {
+      pts.parent?.remove(pts);
+      mergedGeo.dispose();
+      (pts.material as THREE.PointsMaterial).dispose();
+      mergedPointsRef.current = null;
     };
   }, [scene]);
 
@@ -156,15 +193,15 @@ function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
     });
   }, [scene, opacity]);
 
-  /* Update point materials in real time when sliders change */
+  /* Update point material in real time when sliders change */
   useEffect(() => {
-    for (const pts of pointsRef.current) {
-      const mat = pts.material as THREE.PointsMaterial;
-      mat.size = pointSize;
-      mat.opacity = pointOpacity;
-      mat.color.set(pointColor);
-      mat.needsUpdate = true;
-    }
+    const pts = mergedPointsRef.current;
+    if (!pts) return;
+    const mat = pts.material as THREE.PointsMaterial;
+    mat.size = pointSize;
+    mat.opacity = pointOpacity;
+    mat.color.set(pointColor);
+    mat.needsUpdate = true;
   }, [pointSize, pointOpacity, pointColor]);
 
   return (
