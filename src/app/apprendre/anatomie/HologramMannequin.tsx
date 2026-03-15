@@ -170,6 +170,7 @@ function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
       mat.size = pointSize;
       mat.opacity = pointOpacity;
       mat.color.set(pointColor);
+      mat.needsUpdate = true;
     }
   }, [pointSize, pointOpacity, pointColor]);
 
