@@ -205,15 +205,15 @@ export const POSTERIOR_GROUPS = new Set([
 
 export const MUSCLE_FR_NAMES: Record<string, string> = {
   /* Dorsaux */
-  "iliocostalis lumborum": "Ilio-costal des lombes",
-  "iliocostalis thoracis": "Ilio-costal du thorax",
-  "iliocostalis colli": "Ilio-costal du cou",
-  "longissimus thoracis": "Longissimus du thorax",
-  "longissimus capitis": "Longissimus de la tête",
-  "longissimus colli": "Longissimus du cou",
-  "spinalis capitis": "Épineux de la tête",
-  "spinalis colli": "Épineux du cou",
-  "spinalis thoracis": "Épineux du thorax",
+  "iliocostalis lumborum": "Spinaux",
+  "iliocostalis thoracis": "Spinaux",
+  "iliocostalis colli": "Spinaux",
+  "longissimus thoracis": "Spinaux",
+  "longissimus capitis": "Spinaux",
+  "longissimus colli": "Spinaux",
+  "spinalis capitis": "Spinaux",
+  "spinalis colli": "Spinaux",
+  "spinalis thoracis": "Spinaux",
   "ascending part of trapezius": "Trapèzes",
   "descending part of trapezius": "Trapèzes",
   "transverse part of trapezius": "Trapèzes",
@@ -366,6 +366,8 @@ export function getGroupForNode(raw: string): string | null {
  */
 export const LAYERED_GROUPS: Record<string, string[]> = {
   abdominaux: ["Obliques", "Grand droit", "Transverse"],
+  deltoides: ["Deltoïde antérieur", "Deltoïde moyen", "Deltoïde postérieur", "Supra-épineux", "Infra-épineux", "Grand rond", "Petit rond", "Subscapulaire"],
+  dorsaux: ["Trapèzes", "Grand dorsal", "Rhomboïdes", "Spinaux"],
 };
 
 export function isLayeredGroup(groupKey: string): boolean {
