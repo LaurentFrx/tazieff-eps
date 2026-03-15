@@ -36,6 +36,39 @@ useGLTF.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/"
 
 /* ─── Silhouette body (wireframe) ────────────────────────────────────────── */
 
+/* ─── Shared ShaderMaterial for vertex points (gl_PointSize in pixels) ───── */
+
+function makePointsShaderMaterial(color: string, size: number, opacity: number) {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uColor: { value: new THREE.Color(color) },
+      uSize: { value: size },
+      uOpacity: { value: opacity },
+    },
+    vertexShader: /* glsl */ `
+      uniform float uSize;
+      void main() {
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = uSize;
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      uniform vec3 uColor;
+      uniform float uOpacity;
+      void main() {
+        float d = length(gl_PointCoord - vec2(0.5));
+        if (d > 0.5) discard;
+        float alpha = uOpacity * (1.0 - smoothstep(0.3, 0.5, d));
+        gl_FragColor = vec4(uColor, alpha);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false,
+    blending: THREE.AdditiveBlending,
+  });
+}
+
 function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
   opacity: number;
   pointSize: number;
@@ -44,11 +77,14 @@ function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
 }) {
   const { scene } = useGLTF("/models/silhouette_fixed.glb");
   const groupRef = useRef<THREE.Group>(null);
-  const mergedPointsRef = useRef<THREE.Points | null>(null);
+  const pointMatRef = useRef<THREE.ShaderMaterial | null>(null);
+  const pointsObjsRef = useRef<THREE.Points[]>([]);
 
-  /* Detect inner/outer meshes, apply wireframe material, and build merged vertex points. */
+  /* Detect inner/outer meshes, apply wireframe material, add GL_POINTS pass. */
   useEffect(() => {
-    const outerMeshes: THREE.Mesh[] = [];
+    const pointsMat = makePointsShaderMaterial(pointColor, pointSize, pointOpacity);
+    pointMatRef.current = pointsMat;
+    const createdPoints: THREE.Points[] = [];
 
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
@@ -112,74 +148,25 @@ function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
         mesh.castShadow = true;
         mesh.customDepthMaterial = new THREE.MeshDepthMaterial();
 
-        outerMeshes.push(mesh);
+        // GL_POINTS pass — child of mesh, identity transform.
+        // Same geometry + same modelViewMatrix = exact vertex alignment.
+        const pts = new THREE.Points(mesh.geometry, pointsMat);
+        pts.renderOrder = 1;
+        pts.raycast = () => {};
+        mesh.add(pts);
+        createdPoints.push(pts);
       }
     });
 
-    /* Build a single merged Points from all outer mesh vertices in scene-local space.
-       Each vertex is transformed by its mesh's matrixWorld (relative to scene root)
-       so the Points object can sit at the scene root with identity transform. */
-    scene.updateMatrixWorld(true);
-    const allCoords: number[] = [];
-    const v = new THREE.Vector3();
-
-    for (const mesh of outerMeshes) {
-      const pos = mesh.geometry.getAttribute("position");
-      const idx = mesh.geometry.getIndex();
-      const worldMat = mesh.matrixWorld;
-
-      if (idx) {
-        // Indexed geometry: only emit vertices actually referenced by triangles
-        const seen = new Set<number>();
-        for (let i = 0; i < idx.count; i++) {
-          const vi = idx.getX(i);
-          if (seen.has(vi)) continue;
-          seen.add(vi);
-          v.set(pos.getX(vi), pos.getY(vi), pos.getZ(vi));
-          v.applyMatrix4(worldMat);
-          allCoords.push(v.x, v.y, v.z);
-        }
-      } else {
-        for (let i = 0; i < pos.count; i++) {
-          v.set(pos.getX(i), pos.getY(i), pos.getZ(i));
-          v.applyMatrix4(worldMat);
-          allCoords.push(v.x, v.y, v.z);
-        }
-      }
-    }
-
-    const mergedGeo = new THREE.BufferGeometry();
-    mergedGeo.setAttribute(
-      "position",
-      new THREE.Float32BufferAttribute(allCoords, 3),
-    );
-
-    const pts = new THREE.Points(
-      mergedGeo,
-      new THREE.PointsMaterial({
-        color: new THREE.Color(pointColor),
-        size: pointSize,
-        transparent: true,
-        opacity: pointOpacity,
-        sizeAttenuation: true,
-        depthWrite: false,
-        depthTest: false,
-      }),
-    );
-    pts.renderOrder = 1;
-    pts.raycast = () => {};
-    pts.frustumCulled = false;
-
-    /* Add to groupRef (parent of <primitive object={scene} />) with identity transform.
-       Since vertices are already in scene-local space, alignment is guaranteed. */
-    groupRef.current?.add(pts);
-    mergedPointsRef.current = pts;
+    pointsObjsRef.current = createdPoints;
 
     return () => {
-      pts.parent?.remove(pts);
-      mergedGeo.dispose();
-      (pts.material as THREE.PointsMaterial).dispose();
-      mergedPointsRef.current = null;
+      for (const p of createdPoints) {
+        p.parent?.remove(p);
+      }
+      pointsMat.dispose();
+      pointMatRef.current = null;
+      pointsObjsRef.current = [];
     };
   }, [scene]);
 
@@ -193,15 +180,13 @@ function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
     });
   }, [scene, opacity]);
 
-  /* Update point material in real time when sliders change */
+  /* Update point shader uniforms in real time when sliders change */
   useEffect(() => {
-    const pts = mergedPointsRef.current;
-    if (!pts) return;
-    const mat = pts.material as THREE.PointsMaterial;
-    mat.size = pointSize;
-    mat.opacity = pointOpacity;
-    mat.color.set(pointColor);
-    mat.needsUpdate = true;
+    const mat = pointMatRef.current;
+    if (!mat) return;
+    mat.uniforms.uSize.value = pointSize;
+    mat.uniforms.uOpacity.value = pointOpacity;
+    mat.uniforms.uColor.value.set(pointColor);
   }, [pointSize, pointOpacity, pointColor]);
 
   return (
@@ -501,7 +486,7 @@ export default function HologramMannequin({
   showSkeleton = false,
   skeletonOpacity = 0.4,
   silhouetteOpacity = 0.4,
-  pointSize = 0.008,
+  pointSize = 3.0,
   pointOpacity = 0.6,
   pointColor = "#00ffff",
   ambientIntensity = 0.8,

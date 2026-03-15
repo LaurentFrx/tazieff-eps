@@ -64,7 +64,7 @@ const DEFAULT_SETTINGS: DebugSettings = {
   bgWidth: 9.0,
   bgHeight: 6.0,
   wireframeOpacity: 0.15,
-  pointSize: 0.008,
+  pointSize: 3.0,
   pointOpacity: 0.6,
   pointColor: "#00ffff",
   ambientIntensity: 0.8,
@@ -145,7 +145,7 @@ const SLIDER_GROUPS: { title: string; sliders: SliderDef[]; colors?: ColorDef[] 
   {
     title: "POINTS",
     sliders: [
-      { key: "pointSize", label: "pointSize (Points taille)", min: 0.001, max: 0.05, step: 0.001 },
+      { key: "pointSize", label: "pointSize (Points taille px)", min: 0.5, max: 10, step: 0.5 },
       { key: "pointOpacity", label: "pointOpacity (Points intensité)", min: 0, max: 1.0, step: 0.01 },
     ],
     colors: [
