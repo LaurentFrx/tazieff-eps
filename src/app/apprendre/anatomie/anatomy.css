@@ -201,6 +201,60 @@
   flex-shrink: 0;
 }
 
+/* ── Sub-menu (layered group muscle picker) ──────────────────────────── */
+
+.anatomy-submenu {
+  position: fixed;
+  z-index: 15;
+  pointer-events: auto;
+  background: rgba(2, 8, 20, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 212, 255, 0.35);
+  border-radius: 10px;
+  padding: 8px 4px;
+  transform: translate(-50%, -100%);
+  animation: label-in 0.15s ease both;
+  min-width: 180px;
+}
+
+.anatomy-submenu-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 6px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(0, 212, 255, 0.6);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.12);
+  margin-bottom: 2px;
+}
+
+.anatomy-submenu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-family: var(--font-mono), "Space Mono", monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.anatomy-submenu-item:hover,
+.anatomy-submenu-item:active {
+  background: rgba(0, 212, 255, 0.1);
+}
+
 /* ── Skeleton toggle button (top right, left of legend) ────────────────── */
 
 .anatomy-skeleton-btn {
@@ -509,7 +563,8 @@
   .anatomy-label,
   .anatomy-sheet,
   .anatomy-legend,
-  .anatomy-backdrop {
+  .anatomy-backdrop,
+  .anatomy-submenu {
     transition: none;
     animation: none;
   }

@@ -354,6 +354,28 @@ export function getGroupForNode(raw: string): string | null {
   return null;
 }
 
+/* ── Layered groups (overlapping muscles — generic sub-menu system) ──────── */
+
+/**
+ * Groups where muscles physically overlap in the 3D model, making deeper
+ * layers unreachable by raycast. Values are the French display names
+ * (matching GROUP_MUSCLES entries) ordered superficial → deep.
+ *
+ * Adding an entry here automatically enables the sub-menu picker UI;
+ * no component code changes needed.
+ */
+export const LAYERED_GROUPS: Record<string, string[]> = {
+  abdominaux: ["Obliques", "Grand droit", "Transverse"],
+};
+
+export function isLayeredGroup(groupKey: string): boolean {
+  return groupKey in LAYERED_GROUPS;
+}
+
+export function getLayeredMuscles(groupKey: string): string[] | null {
+  return LAYERED_GROUPS[groupKey] ?? null;
+}
+
 /* ── Check if an exercise muscle tag matches a group ─────────────────────── */
 
 export function matchesGroup(

@@ -5,7 +5,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
-import { MUSCLE_GROUPS, getGroupForNode, getFrenchName, getSide } from "./anatomy-data";
+import { MUSCLE_GROUPS, getGroupForNode, getFrenchName, getSide, isLayeredGroup } from "./anatomy-data";
 
 /* ─── Types ──────────────────────────────────────────────────────────────── */
 
@@ -209,8 +209,14 @@ function MusclesModel({
           mat.opacity = 1;
           mat.emissive.copy(ud.originalColor).multiplyScalar(0.8);
         } else if (selectedGroup && ud.groupKey === selectedGroup) {
-          mat.opacity = 0.4;
-          mat.emissive.set(0x000000);
+          if (isLayeredGroup(selectedGroup)) {
+            // Layered group: semi-transparent so deeper muscles show through
+            mat.opacity = 0.25;
+            mat.emissive.copy(ud.originalColor).multiplyScalar(0.2);
+          } else {
+            mat.opacity = 0.4;
+            mat.emissive.set(0x000000);
+          }
         } else {
           mat.opacity = 0.05;
           mat.emissive.set(0x000000);
