@@ -41,7 +41,10 @@ type DebugSettings = {
   bgPositionZ: number;
   bgWidth: number;
   bgHeight: number;
-  silhouetteOpacity: number;
+  wireframeOpacity: number;
+  pointSize: number;
+  pointOpacity: number;
+  pointColor: string;
   ambientIntensity: number;
   mainLightIntensity: number;
 };
@@ -62,7 +65,10 @@ const DEFAULT_SETTINGS: DebugSettings = {
   bgPositionZ: 0.00,
   bgWidth: 9.0,
   bgHeight: 6.0,
-  silhouetteOpacity: 0.12,
+  wireframeOpacity: 0.15,
+  pointSize: 0.008,
+  pointOpacity: 0.6,
+  pointColor: "#00ffff",
   ambientIntensity: 0.8,
   mainLightIntensity: 1.2,
 };
@@ -96,8 +102,9 @@ function BackgroundPlane({ x, y, z, width, height }: {
 /* ── Slider definitions for debug panel ────────────────────────────── */
 
 type SliderDef = { key: keyof DebugSettings; label: string; min: number; max: number; step: number };
+type ColorDef = { key: keyof DebugSettings; label: string };
 
-const SLIDER_GROUPS: { title: string; sliders: SliderDef[] }[] = [
+const SLIDER_GROUPS: { title: string; sliders: SliderDef[]; colors?: ColorDef[] }[] = [
   {
     title: "CAMÉRA",
     sliders: [
@@ -133,7 +140,17 @@ const SLIDER_GROUPS: { title: string; sliders: SliderDef[] }[] = [
   {
     title: "WIREFRAME",
     sliders: [
-      { key: "silhouetteOpacity", label: "silhouetteOpacity (Maillage)", min: 0, max: 0.5, step: 0.01 },
+      { key: "wireframeOpacity", label: "wireframeOpacity (Wireframe opacité)", min: 0, max: 1.0, step: 0.01 },
+    ],
+  },
+  {
+    title: "POINTS",
+    sliders: [
+      { key: "pointSize", label: "pointSize (Points taille)", min: 0.001, max: 0.05, step: 0.001 },
+      { key: "pointOpacity", label: "pointOpacity (Points intensité)", min: 0, max: 1.0, step: 0.01 },
+    ],
+    colors: [
+      { key: "pointColor", label: "pointColor (Points couleur)" },
     ],
   },
   {
@@ -241,7 +258,7 @@ function SettingsPanel({
                   {s.label}
                 </label>
                 <span style={{ fontSize: 9, color: "#00D4FF", fontWeight: 600 }}>
-                  {settings[s.key].toFixed(2)}
+                  {(settings[s.key] as number).toFixed(2)}
                 </span>
               </div>
               <input
@@ -249,9 +266,27 @@ function SettingsPanel({
                 min={s.min}
                 max={s.max}
                 step={s.step}
-                value={settings[s.key]}
+                value={settings[s.key] as number}
                 onChange={(e) => onChange({ ...settings, [s.key]: parseFloat(e.target.value) })}
                 style={{ width: "100%", accentColor: "#00D4FF" }}
+              />
+            </div>
+          ))}
+          {group.colors?.map((c) => (
+            <div key={c.key} style={{ marginBottom: 4 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 1 }}>
+                <label style={{ fontSize: 9, color: "rgba(255,255,255,0.7)" }}>
+                  {c.label}
+                </label>
+                <span style={{ fontSize: 9, color: "#00D4FF", fontWeight: 600 }}>
+                  {settings[c.key]}
+                </span>
+              </div>
+              <input
+                type="color"
+                value={settings[c.key] as string}
+                onChange={(e) => onChange({ ...settings, [c.key]: e.target.value })}
+                style={{ width: "100%", height: 24, cursor: "pointer", border: "none", background: "transparent" }}
               />
             </div>
           ))}
@@ -503,7 +538,10 @@ function Scene({
                 wireframe={false}
                 showSkeleton={showSkeleton}
                 skeletonOpacity={0.4}
-                silhouetteOpacity={settings.silhouetteOpacity}
+                silhouetteOpacity={settings.wireframeOpacity}
+                pointSize={settings.pointSize}
+                pointOpacity={settings.pointOpacity}
+                pointColor={settings.pointColor}
                 ambientIntensity={settings.ambientIntensity}
                 mainLightIntensity={settings.mainLightIntensity}
                 onHoverMuscle={onHoverMuscle}

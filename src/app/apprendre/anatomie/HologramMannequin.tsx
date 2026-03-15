@@ -36,14 +36,21 @@ useGLTF.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/"
 
 /* ─── Silhouette body (wireframe) ────────────────────────────────────────── */
 
-function SilhouetteBody({ opacity }: { opacity: number }) {
+function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
+  opacity: number;
+  pointSize: number;
+  pointOpacity: number;
+  pointColor: string;
+}) {
   const { scene } = useGLTF("/models/silhouette_fixed.glb");
   const groupRef = useRef<THREE.Group>(null);
+  const pointsRef = useRef<THREE.Points[]>([]);
 
-  /* Detect inner/outer meshes and apply wireframe material.
+  /* Detect inner/outer meshes and apply wireframe material + vertex points.
      Inner meshes (normals pointing inward) are hidden to avoid
      the double-wireframe effect. Only outer shell is rendered. */
   useEffect(() => {
+    const createdPoints: THREE.Points[] = [];
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
@@ -80,10 +87,6 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
           const avgDot = dotSum / positions.count;
           const isInner = avgDot < 0;
 
-          console.log(
-            `[Silhouette] mesh="${mesh.name}" vertices=${positions.count} avgDot=${avgDot.toFixed(3)} → ${isInner ? "INNER (hidden)" : "OUTER"}`,
-          );
-
           // Hide inner meshes (normals pointing inward = internal face)
           if (isInner) {
             mesh.visible = false;
@@ -109,11 +112,37 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
         mesh.renderOrder = 2;
         mesh.castShadow = true;
         mesh.customDepthMaterial = new THREE.MeshDepthMaterial();
+
+        // Luminous vertex points
+        const pts = new THREE.Points(
+          mesh.geometry,
+          new THREE.PointsMaterial({
+            color: new THREE.Color(pointColor),
+            size: pointSize,
+            transparent: true,
+            opacity: pointOpacity,
+            sizeAttenuation: true,
+            depthWrite: false,
+            depthTest: true,
+          }),
+        );
+        pts.renderOrder = 1;
+        pts.raycast = () => {}; // exclude from raycasting
+        mesh.parent?.add(pts);
+        createdPoints.push(pts);
       }
     });
+    pointsRef.current = createdPoints;
+    return () => {
+      for (const p of createdPoints) {
+        p.parent?.remove(p);
+        (p.material as THREE.PointsMaterial).dispose();
+      }
+      pointsRef.current = [];
+    };
   }, [scene]);
 
-  /* Update opacity on visible meshes when slider changes */
+  /* Update wireframe opacity on visible meshes when slider changes */
   useEffect(() => {
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh && child.visible) {
@@ -122,6 +151,16 @@ function SilhouetteBody({ opacity }: { opacity: number }) {
       }
     });
   }, [scene, opacity]);
+
+  /* Update point materials in real time when sliders change */
+  useEffect(() => {
+    for (const pts of pointsRef.current) {
+      const mat = pts.material as THREE.PointsMaterial;
+      mat.size = pointSize;
+      mat.opacity = pointOpacity;
+      mat.color.set(pointColor);
+    }
+  }, [pointSize, pointOpacity, pointColor]);
 
   return (
     <group ref={groupRef}>
@@ -420,12 +459,18 @@ export default function HologramMannequin({
   showSkeleton = false,
   skeletonOpacity = 0.4,
   silhouetteOpacity = 0.4,
+  pointSize = 0.008,
+  pointOpacity = 0.6,
+  pointColor = "#00ffff",
   ambientIntensity = 0.8,
   mainLightIntensity = 1.2,
 }: Props & {
   showSkeleton?: boolean;
   skeletonOpacity?: number;
   silhouetteOpacity?: number;
+  pointSize?: number;
+  pointOpacity?: number;
+  pointColor?: string;
   ambientIntensity?: number;
   mainLightIntensity?: number;
 }) {
@@ -439,7 +484,12 @@ export default function HologramMannequin({
       <directionalLight position={[0, 2, -3]} intensity={0.3} />
 
       {showSkeleton && <SkeletonBody opacity={skeletonOpacity} />}
-      <SilhouetteBody opacity={silhouetteOpacity} />
+      <SilhouetteBody
+        opacity={silhouetteOpacity}
+        pointSize={pointSize}
+        pointOpacity={pointOpacity}
+        pointColor={pointColor}
+      />
       <MusclesModel
         selectedGroup={selectedGroup}
         highlightedMuscle={highlightedMuscle}
