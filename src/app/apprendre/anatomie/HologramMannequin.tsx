@@ -128,7 +128,7 @@ function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
         );
         pts.renderOrder = 1;
         pts.raycast = () => {}; // exclude from raycasting
-        mesh.parent?.add(pts);
+        mesh.add(pts);
         createdPoints.push(pts);
       }
     });
