@@ -85,13 +85,10 @@ const INERTIA_EPSILON = 0.0001;
 function BackgroundPlane({ x, y, z, width, height }: {
   x: number; y: number; z: number; width: number; height: number;
 }) {
-  const texture = useTexture("/media/anatomy-bg.webp");
-
-  useEffect(() => {
-    texture.wrapS = ClampToEdgeWrapping;
-    texture.wrapT = ClampToEdgeWrapping;
-    texture.needsUpdate = true;
-  }, [texture]);
+  const texture = useTexture("/media/anatomy-bg.webp", (tex) => {
+    tex.wrapS = ClampToEdgeWrapping;
+    tex.wrapT = ClampToEdgeWrapping;
+  });
 
   return (
     <mesh position={[x, y, z]} renderOrder={-2}>
