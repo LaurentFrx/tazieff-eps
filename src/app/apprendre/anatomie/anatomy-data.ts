@@ -358,16 +358,36 @@ export function getGroupForNode(raw: string): string | null {
 
 /**
  * Groups where muscles physically overlap in the 3D model, making deeper
- * layers unreachable by raycast. Values are the French display names
- * (matching GROUP_MUSCLES entries) ordered superficial → deep.
+ * layers unreachable by raycast. Each entry has a French display name
+ * and a distinct highlight color for visual differentiation.
  *
  * Adding an entry here automatically enables the sub-menu picker UI;
  * no component code changes needed.
  */
-export const LAYERED_GROUPS: Record<string, string[]> = {
-  abdominaux: ["Obliques", "Grand droit", "Transverse"],
-  deltoides: ["Deltoïde antérieur", "Deltoïde moyen", "Deltoïde postérieur", "Supra-épineux", "Infra-épineux", "Grand rond", "Petit rond", "Subscapulaire"],
-  dorsaux: ["Trapèzes", "Grand dorsal", "Rhomboïdes", "Spinaux"],
+export type LayeredMuscle = { name: string; color: string };
+
+export const LAYERED_GROUPS: Record<string, LayeredMuscle[]> = {
+  abdominaux: [
+    { name: "Obliques", color: "#E8433E" },
+    { name: "Grand droit", color: "#FF6B35" },
+    { name: "Transverse", color: "#FFB347" },
+  ],
+  deltoides: [
+    { name: "Deltoïde antérieur", color: "#2ECC71" },
+    { name: "Deltoïde moyen", color: "#2ECC71" },
+    { name: "Deltoïde postérieur", color: "#2ECC71" },
+    { name: "Supra-épineux", color: "#27AE60" },
+    { name: "Infra-épineux", color: "#1ABC9C" },
+    { name: "Grand rond", color: "#16A085" },
+    { name: "Petit rond", color: "#45B39D" },
+    { name: "Subscapulaire", color: "#52BE80" },
+  ],
+  dorsaux: [
+    { name: "Trapèzes", color: "#3498DB" },
+    { name: "Grand dorsal", color: "#2980B9" },
+    { name: "Rhomboïdes", color: "#5DADE2" },
+    { name: "Spinaux", color: "#85C1E9" },
+  ],
 };
 
 export function isLayeredGroup(groupKey: string): boolean {
@@ -375,7 +395,14 @@ export function isLayeredGroup(groupKey: string): boolean {
 }
 
 export function getLayeredMuscles(groupKey: string): string[] | null {
-  return LAYERED_GROUPS[groupKey] ?? null;
+  const entries = LAYERED_GROUPS[groupKey];
+  return entries ? entries.map((e) => e.name) : null;
+}
+
+export function getSubMuscleColor(groupKey: string, muscleName: string): string | null {
+  const entries = LAYERED_GROUPS[groupKey];
+  if (!entries) return null;
+  return entries.find((e) => e.name === muscleName)?.color ?? null;
 }
 
 /* ── Check if an exercise muscle tag matches a group ─────────────────────── */

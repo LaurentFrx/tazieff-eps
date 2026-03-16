@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { LiveExerciseListItem } from "@/lib/live/types";
-import { MUSCLE_GROUPS, GROUP_MUSCLES, matchesGroup, getLayeredMuscles } from "./anatomy-data";
+import { MUSCLE_GROUPS, GROUP_MUSCLES, LAYERED_GROUPS, matchesGroup, getLayeredMuscles, getSubMuscleColor, isLayeredGroup } from "./anatomy-data";
 import "./anatomy.css";
 
 const AnatomyCanvas = dynamic(() => import("./AnatomyCanvas"), {
@@ -238,6 +238,10 @@ export default function AnatomyMap({ exercises }: Props) {
               className="anatomy-submenu-item"
               onClick={() => handleSubmuscleSelect(muscle)}
             >
+              <span
+                className="anatomy-group-dot"
+                style={{ background: getSubMuscleColor(layeredSubmenu.groupKey, muscle) ?? MUSCLE_GROUPS[layeredSubmenu.groupKey]?.color }}
+              />
               {muscle}
             </button>
           ))}
@@ -304,15 +308,22 @@ export default function AnatomyMap({ exercises }: Props) {
           <div className="anatomy-side-panel">
             <div className="anatomy-side-panel-title">{t("anatomy.systemTitle")}</div>
             {Object.entries(MUSCLE_GROUPS).map(([key, group]) => (
-              <button
-                key={key}
-                type="button"
-                className={`anatomy-legend-item${selectedGroup === key ? " anatomy-legend-item--active" : ""}`}
-                onClick={() => handleLegendSelect(key)}
-              >
-                <span className="anatomy-group-dot" style={{ background: group.color }} />
-                {t(`anatomy.groups.${key}`)}
-              </button>
+              <div key={key}>
+                <button
+                  type="button"
+                  className={`anatomy-legend-item${selectedGroup === key ? " anatomy-legend-item--active" : ""}`}
+                  onClick={() => handleLegendSelect(key)}
+                >
+                  <span className="anatomy-group-dot" style={{ background: group.color }} />
+                  {t(`anatomy.groups.${key}`)}
+                </button>
+                {isLayeredGroup(key) && LAYERED_GROUPS[key].map((sub) => (
+                  <div key={sub.name} className="anatomy-legend-sub">
+                    <span className="anatomy-group-dot" style={{ background: sub.color }} />
+                    {sub.name}
+                  </div>
+                ))}
+              </div>
             ))}
           </div>
         </>
@@ -348,7 +359,15 @@ export default function AnatomyMap({ exercises }: Props) {
 
             <div className="anatomy-sheet-muscles">
               {(GROUP_MUSCLES[sheetGroupKey] ?? []).map((m) => (
-                <span key={m} className="anatomy-sheet-muscle">{m}</span>
+                <span key={m} className="anatomy-sheet-muscle">
+                  {isLayeredGroup(sheetGroupKey) && (
+                    <span
+                      className="anatomy-group-dot"
+                      style={{ background: getSubMuscleColor(sheetGroupKey, m) ?? MUSCLE_GROUPS[sheetGroupKey]?.color }}
+                    />
+                  )}
+                  {m}
+                </span>
               ))}
             </div>
 

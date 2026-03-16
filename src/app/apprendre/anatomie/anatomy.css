@@ -372,6 +372,17 @@
   color: #fff;
 }
 
+.anatomy-legend-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 8px 3px 24px;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: var(--font-mono), "Space Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
 /* ── Backdrop (for sheet + legend) ─────────────────────────────────────── */
 
 .anatomy-backdrop {
