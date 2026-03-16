@@ -89,12 +89,16 @@ export default function AnatomyMap({ exercises }: Props) {
   const handleSubmuscleSelect = useCallback(
     (muscleName: string) => {
       if (!layeredSubmenu) return;
-      const { groupKey, x, y } = layeredSubmenu;
-      setHighlightedMuscle(muscleName);
-      setLayeredSubmenu(null);
-      setLabel({ name: muscleName, groupKey, x, y });
+      // Toggle: tap same muscle again → deselect back to group view
+      if (highlightedMuscle === muscleName) {
+        setHighlightedMuscle(null);
+        setLabel(null);
+      } else {
+        setHighlightedMuscle(muscleName);
+        setLabel(null);
+      }
     },
-    [layeredSubmenu],
+    [layeredSubmenu, highlightedMuscle],
   );
 
   /* ── Long press / dblclick → bottom sheet ───────────────────────────── */
@@ -168,21 +172,21 @@ export default function AnatomyMap({ exercises }: Props) {
             <div className="anatomy-hud-top">
               {selectedGroup && (
                 <div className="anatomy-hud">
-                  {`// ${t(`anatomy.groups.${selectedGroup}`)}`}
+                  {t(`anatomy.groups.${selectedGroup}`)}
                 </div>
               )}
             </div>
             <div className="anatomy-hud-bottom">
-              <div className="anatomy-hud">
-                {selectedGroup
-                  ? t("anatomy.scanActive")
-                  : `${Object.keys(MUSCLE_GROUPS).length} ${t("anatomy.groups_word")}`}
-              </div>
+              {!selectedGroup && (
+                <div className="anatomy-hud">
+                  {`${Object.keys(MUSCLE_GROUPS).length} ${t("anatomy.groups_word")}`}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Desktop hover tooltip */}
-          {tooltip && !label && (
+          {/* Desktop hover tooltip — hidden when layered submenu is open */}
+          {tooltip && !label && !layeredSubmenu && (
             <div className="anatomy-tooltip">
               <div className="anatomy-tooltip-name">{tooltip.name}</div>
               {tooltip.group && (
@@ -215,37 +219,32 @@ export default function AnatomyMap({ exercises }: Props) {
         </div>
       )}
 
-      {/* ── Layered group sub-menu (e.g. abdominaux) ───────────────────── */}
+      {/* ── Layered group bottom bar (e.g. abdominaux) ──────────────────── */}
       {layeredSubmenu && (
-        <div
-          className="anatomy-submenu"
-          style={{
-            left: `clamp(16px, ${layeredSubmenu.x}px, calc(100vw - 200px))`,
-            top: `clamp(16px, ${layeredSubmenu.y - 16}px, calc(100vh - 240px))`,
-          }}
-        >
-          <div className="anatomy-submenu-header">
-            <span
-              className="anatomy-group-dot"
-              style={{ background: MUSCLE_GROUPS[layeredSubmenu.groupKey]?.color }}
-            />
-            {t(`anatomy.groups.${layeredSubmenu.groupKey}`)}
+        <>
+          <div className="anatomy-submenu-backdrop" onClick={() => { setLayeredSubmenu(null); setSelectedGroup(null); setHighlightedMuscle(null); }} />
+          <div className="anatomy-submenu">
+            <div className="anatomy-submenu-header">
+              {t(`anatomy.groups.${layeredSubmenu.groupKey}`)}
+            </div>
+            <div className="anatomy-submenu-chips">
+              {layeredSubmenu.muscles.map((muscle) => (
+                <button
+                  key={muscle}
+                  type="button"
+                  className={`anatomy-submenu-chip${highlightedMuscle === muscle ? " anatomy-submenu-chip--active" : ""}`}
+                  onClick={() => handleSubmuscleSelect(muscle)}
+                >
+                  <span
+                    className="anatomy-group-dot"
+                    style={{ background: getSubMuscleColor(layeredSubmenu.groupKey, muscle) ?? MUSCLE_GROUPS[layeredSubmenu.groupKey]?.color }}
+                  />
+                  {muscle}
+                </button>
+              ))}
+            </div>
           </div>
-          {layeredSubmenu.muscles.map((muscle) => (
-            <button
-              key={muscle}
-              type="button"
-              className="anatomy-submenu-item"
-              onClick={() => handleSubmuscleSelect(muscle)}
-            >
-              <span
-                className="anatomy-group-dot"
-                style={{ background: getSubMuscleColor(layeredSubmenu.groupKey, muscle) ?? MUSCLE_GROUPS[layeredSubmenu.groupKey]?.color }}
-              />
-              {muscle}
-            </button>
-          ))}
-        </div>
+        </>
       )}
 
       {/* ── Layer toolbar (top right): [🦴] [◇] [💪] [☰] ───────────────── */}

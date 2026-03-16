@@ -239,7 +239,8 @@ function MusclesModel({
       });
       const frName = getFrenchName(rawName);
       const side = getSide(rawName);
-      const displayName = side ? `${frName} (${side})` : frName;
+      const sideFull = side === "D" ? "droit" : side === "G" ? "gauche" : "";
+      const displayName = sideFull ? `${frName} ${sideFull}` : frName;
       mesh.userData = {
         groupKey,
         rawName,
