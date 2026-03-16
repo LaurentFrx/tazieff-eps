@@ -10,7 +10,7 @@
 
 **Tazieff EPS** est la seule PWA pédagogique moderne dédiée à la musculation en EPS au lycée en France.
 
-- **App prod** : https://guide-musculation.vercel.app
+- **App prod** : https://muscu-eps.fr
 - **Repo** : github.com/LaurentFrx/tazieff-eps (branche `main` uniquement)
 - **Public cible** : lycéens de 15-18 ans (2nde → Terminale) en option musculation BAC EPS
 - **Usage réel** : consulté sur smartphone EN SALLE DE SPORT, entre deux séries d'exercices (5-15 secondes d'attention)
@@ -23,14 +23,22 @@ L'app est l'incarnation numérique native du contenu de Fred — plus accessible
 ## 2. Stack technique
 
 - **Framework** : Next.js 16.1.4, React 19.2.3, TypeScript
-- **Styling** : Tailwind CSS
+- **Styling** : Tailwind CSS v4
 - **Contenu** : MDX (exercices, méthodes, apprendre)
 - **Base de données** : Supabase (exercices live enseignant)
-- **Tests** : Vitest 4.0.18 + jsdom — 267+ tests
+- **Tests** : Vitest 4.0.18 + jsdom — 316+ tests
 - **PWA** : Serwist (service worker)
 - **Déploiement** : Vercel (auto-deploy depuis `main`)
 - **i18n** : Tri-lingue (FR/EN/ES) avec dictionnaire fitness dédié
 - **Node** : 20.9+
+
+### Gotchas techniques
+
+- **Tailwind v4 dark mode** : Le dark mode nécessite `@custom-variant dark (&:where(.dark, .dark *))` dans le CSS. Sans cette ligne, Tailwind utilise `prefers-color-scheme` au lieu de la classe `.dark` gérée par next-themes. Ne jamais la supprimer.
+- **force-dynamic sur /exercices** : La page `/exercices` exporte `export const dynamic = 'force-dynamic'` pour contourner un bug `unstable_cache` sur Vercel. Ne pas le supprimer.
+- **Service worker (Serwist)** : `/_next/static/` utilise la stratégie `StaleWhileRevalidate` (pas `CacheFirst`) + mécanisme d'auto-purge avec reload automatique.
+- **React.cache()** : Les 11 fonctions de fetch dans `src/lib/content/fs.ts` sont wrappées avec `React.cache()` pour la déduplication.
+- **Cookie i18n** : La locale est stockée dans le cookie `eps_lang`. Pas de routing URL par locale.
 
 ---
 
@@ -38,7 +46,7 @@ L'app est l'incarnation numérique native du contenu de Fred — plus accessible
 
 ### Sources d'exercices (priorité de merge)
 
-1. **MDX natifs** (`/content/exercises/{locale}/*.mdx`) — source de vérité
+1. **MDX natifs** (`content/exercices/{slug}.{locale}.mdx` — ex: `s1-01.fr.mdx`) — source de vérité
 2. **Supabase live** — exercices créés par l'enseignant en temps réel
 3. **Import v2** — legacy, migration progressive
 
@@ -210,7 +218,7 @@ npx tsc --noEmit               # Type-check sans build
 - Phase 0 : Refonte navigation (BottomTabBar, SectionHero, design Sport Vibrant)
 - Refonte UX complète : 5 onglets, homepage colorée, SVG partagés
 - Dictionnaire fitness i18n validé (0 erreur DeepL)
-- 272 tests passants, 28 routes, 325+ MDX
+- 316+ tests passants, 28 routes, 240 fichiers exercices MDX (80 slugs × 3 locales)
 - Phase 1 — Méthodes d'entraînement : 19 fiches MDX trilingues, page /methodes, liens croisés exercice ↔ méthode ↔ muscle
 - Phase 2 — Contenu théorique : RM/RIR/RPE (MDX + calculateur + glossaire), anatomie (MDX + contractions + carte 3D), sécurité (6 principes), programmes hebdo (3 programmes MDX)
 - Phase 4 — Parcours BAC : démarche spiralaire, évaluations 2nde/1ère/Term (4 compétences × 3 niveaux + checklists), épreuve du BAC (barème 20pts + stratégie)
@@ -266,7 +274,7 @@ src/
 │   └── i18n/                   # Dictionnaires, config locale
 ├── hooks/                      # useFavorites, useTeacherMode, etc.
 content/
-├── exercises/{locale}/*.mdx
+├── exercices/*.{locale}.mdx      # s1-01.fr.mdx, s1-01.en.mdx, s1-01.es.mdx
 ├── methods/{locale}/*.mdx
 └── learn/{locale}/*.mdx
 ```
@@ -281,6 +289,7 @@ content/
 - Le wireframe (silhouette.glb) utilise une opacité très faible (0.12) pour ne pas masquer les muscles colorés. Le stencil buffer dynamique (`mat.stencilWrite = mat.opacity > 0.5`) masque le wireframe uniquement sur les muscles opaques.
 - Pas de glow points (Points/PointsMaterial) — le wireframe seul suffit
 - Les highlights sont ADDITIFS : aucun muscle ne doit s'assombrir quand un autre est sélectionné
+- **Caméra orthographique obligatoire** quand un objet 3D est affiché sur un fond image fixe — élimine le parallaxe impossible à corriger
 
 ### Architecture contrôles
 - Mode TURNTABLE : le mannequin tourne sur lui-même (rotation Y)
@@ -307,3 +316,31 @@ npm test
 ```
 
 Si des tests échouent AVANT toute modification, signaler le problème à Laurent avant de continuer.
+
+---
+
+## 13. Infrastructure
+
+- **Vercel project** : `prj_cWdRfdVUhDZ0cv7GZAawqhix9Vri`
+- **Vercel team** : `team_2EJTVTvIhKlLrSFTEnvRGKcu`
+- **Supabase project** : `zefkltkiigxkjcrdesrk`
+- **Table `live_exercises`** : colonnes `slug`, `locale`, `data_json` (JSONB), `updated_at`
+- Accès titre : `data_json->>'title'`
+- **Domaine OVH** : `muscu-eps.fr` → Vercel (conserver NS, SPF, MX pour Zimbra)
+
+---
+
+## 14. Plugins Claude Code installés
+
+- **typescript-lsp** : LSP TypeScript pour diagnostics et navigation en temps réel
+- **ralph-loop** : Boucles itératives autonomes pour tâches mécaniques (correction batch, audit)
+- **commit-commands** : Raccourcis git (`/commit`, `/push`, `/commit-push-pr`)
+
+---
+
+## 15. Pièges connus
+
+- **Phantom fix** : CC rapporte une correction mais rien ne change visuellement. Toujours auditer le fichier réel modifié et vérifier qu'il n'y a pas de style overridé ailleurs.
+- **DeepL fitness ES** : `entrenamiento` (jamais `formación`). `repeticiones` (jamais `reiteraciones`). `press de banca`, `peso muerto` — ne pas faire confiance à DeepL pour la terminologie fitness.
+- **Layout desktop/mobile** : Après toute modification UI, toujours vérifier le rendu sur mobile (375px), tablette (768px) et desktop (1280px).
+- **Dark mode Tailwind v4** : Si des classes `dark:` ne fonctionnent pas, vérifier la présence de `@custom-variant dark` dans le CSS.
