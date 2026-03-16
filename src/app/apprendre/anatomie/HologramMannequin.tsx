@@ -150,14 +150,14 @@ function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
           stencilZFail: THREE.KeepStencilOp,
           stencilZPass: THREE.KeepStencilOp,
         });
-        mesh.renderOrder = 1;
+        mesh.renderOrder = 2;
         mesh.castShadow = true;
         mesh.customDepthMaterial = new THREE.MeshDepthMaterial();
 
         // GL_POINTS pass — child of mesh, identity transform.
         // Same geometry + same modelViewMatrix = exact vertex alignment.
         const pts = new THREE.Points(mesh.geometry, pointsMat);
-        pts.renderOrder = 1;
+        pts.renderOrder = 2;
         pts.raycast = () => {};
         mesh.add(pts);
         createdPoints.push(pts);
@@ -248,7 +248,7 @@ function MusclesModel({
         originalColor: color.clone(),
       } as MuscleUserData;
       /* Render BEFORE wireframe — muscles write stencil=1 to mask wireframe. */
-      mesh.renderOrder = 2;
+      mesh.renderOrder = 1;
       mesh.material.stencilWrite = true;
       mesh.material.stencilRef = 1;
       mesh.material.stencilFunc = THREE.AlwaysStencilFunc;
@@ -467,7 +467,7 @@ function SkeletonBody() {
           stencilFail: THREE.KeepStencilOp,
           stencilZFail: THREE.KeepStencilOp,
         });
-        mesh.renderOrder = 2;
+        mesh.renderOrder = 1;
         mesh.castShadow = false;
       }
     });
