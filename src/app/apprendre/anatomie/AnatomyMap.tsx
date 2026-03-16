@@ -221,30 +221,35 @@ export default function AnatomyMap({ exercises }: Props) {
 
       {/* ── Layered group bottom bar (e.g. abdominaux) ──────────────────── */}
       {layeredSubmenu && (
-        <>
-          <div className="anatomy-submenu-backdrop" onClick={() => { setLayeredSubmenu(null); setSelectedGroup(null); setHighlightedMuscle(null); }} />
-          <div className="anatomy-submenu">
-            <div className="anatomy-submenu-header">
-              {t(`anatomy.groups.${layeredSubmenu.groupKey}`)}
-            </div>
-            <div className="anatomy-submenu-chips">
-              {layeredSubmenu.muscles.map((muscle) => (
-                <button
-                  key={muscle}
-                  type="button"
-                  className={`anatomy-submenu-chip${highlightedMuscle === muscle ? " anatomy-submenu-chip--active" : ""}`}
-                  onClick={() => handleSubmuscleSelect(muscle)}
-                >
-                  <span
-                    className="anatomy-group-dot"
-                    style={{ background: getSubMuscleColor(layeredSubmenu.groupKey, muscle) ?? MUSCLE_GROUPS[layeredSubmenu.groupKey]?.color }}
-                  />
-                  {muscle}
-                </button>
-              ))}
-            </div>
+        <div className="anatomy-submenu">
+          <div className="anatomy-submenu-header">
+            <span>{t(`anatomy.groups.${layeredSubmenu.groupKey}`)}</span>
+            <button
+              type="button"
+              className="anatomy-submenu-close"
+              onClick={() => { setLayeredSubmenu(null); setSelectedGroup(null); setHighlightedMuscle(null); }}
+              aria-label={t("anatomy.close")}
+            >
+              ✕
+            </button>
           </div>
-        </>
+          <div className="anatomy-submenu-chips">
+            {layeredSubmenu.muscles.map((muscle) => (
+              <button
+                key={muscle}
+                type="button"
+                className={`anatomy-submenu-chip${highlightedMuscle === muscle ? " anatomy-submenu-chip--active" : ""}`}
+                onClick={() => handleSubmuscleSelect(muscle)}
+              >
+                <span
+                  className="anatomy-group-dot"
+                  style={{ background: getSubMuscleColor(layeredSubmenu.groupKey, muscle) ?? MUSCLE_GROUPS[layeredSubmenu.groupKey]?.color }}
+                />
+                {muscle}
+              </button>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* ── Layer toolbar (top right): [🦴] [◇] [💪] [☰] ───────────────── */}

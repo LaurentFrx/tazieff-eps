@@ -276,10 +276,12 @@ function MusclesModel({
       const mat = mesh.material as THREE.MeshPhongMaterial;
       mat.wireframe = wireframe;
 
+      // Default: visible
+      mesh.visible = true;
+
       if (highlightedMuscle) {
         if (ud.baseFrName === highlightedMuscle) {
           mat.opacity = 1;
-          // Use per-sub-muscle color for layered groups
           if (selectedGroup && isLayeredGroup(selectedGroup)) {
             const sc = getSubMuscleColor(selectedGroup, ud.baseFrName);
             if (sc) {
@@ -293,28 +295,26 @@ function MusclesModel({
             mat.emissive.copy(ud.originalColor).multiplyScalar(0.8);
           }
         } else if (selectedGroup && ud.groupKey === selectedGroup) {
+          // Same group, different sub-muscle → dimmed with own color
           if (isLayeredGroup(selectedGroup)) {
-            // Layered: show others with their own sub-muscle color, dimmed
             const sc = getSubMuscleColor(selectedGroup, ud.baseFrName);
             if (sc) {
               const c = new THREE.Color(sc);
               mat.color.copy(c);
               mat.emissive.copy(c).multiplyScalar(0.15);
             }
-            mat.opacity = 0.25;
+            mat.opacity = 0.4;
           } else {
             mat.opacity = 0.4;
             mat.emissive.set(0x000000);
           }
         } else {
-          mat.color.copy(ud.originalColor);
-          mat.opacity = 0.05;
-          mat.emissive.set(0x000000);
+          // Outside selected group → invisible
+          mesh.visible = false;
         }
       } else if (selectedGroup) {
         if (ud.groupKey === selectedGroup) {
           mat.opacity = 1;
-          // Per-sub-muscle color for layered groups
           if (isLayeredGroup(selectedGroup)) {
             const sc = getSubMuscleColor(selectedGroup, ud.baseFrName);
             if (sc) {
@@ -328,19 +328,18 @@ function MusclesModel({
             mat.emissive.copy(ud.originalColor).multiplyScalar(0.8);
           }
         } else {
-          mat.color.copy(ud.originalColor);
-          mat.opacity = 0.07;
-          mat.emissive.set(0x000000);
+          // Outside selected group → invisible
+          mesh.visible = false;
         }
       } else {
-        // Default: restore original group color
+        // No selection: restore original group color
         mat.color.copy(ud.originalColor);
         mat.opacity = 1;
         mat.emissive.set(0x000000);
       }
 
-      // Stencil: block wireframe ONLY where muscle is opaque enough
-      mat.stencilWrite = mat.opacity > 0.5;
+      // Stencil: block wireframe ONLY where muscle is visible and opaque
+      mat.stencilWrite = mesh.visible && mat.opacity > 0.5;
     }
   }, [selectedGroup, highlightedMuscle, wireframe]);
   /* eslint-enable react-hooks/immutability */

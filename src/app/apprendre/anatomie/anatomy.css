@@ -203,12 +203,6 @@
 
 /* ── Sub-menu bottom bar (layered group muscle picker) ────────────────── */
 
-.anatomy-submenu-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 14;
-}
-
 .anatomy-submenu {
   position: fixed;
   bottom: 0;
@@ -216,6 +210,7 @@
   right: 0;
   z-index: 15;
   pointer-events: auto;
+  touch-action: none;
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -231,12 +226,29 @@
 }
 
 .anatomy-submenu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   font-family: var(--font-mono), "Space Mono", monospace;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: rgba(0, 212, 255, 0.6);
   margin-bottom: 8px;
+}
+
+.anatomy-submenu-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+  min-height: 32px;
+  min-width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .anatomy-submenu-chips {
