@@ -66,7 +66,7 @@ const DEFAULT_SETTINGS: DebugSettings = {
   wireframeOpacity: 0.15,
   pointSize: 3.0,
   pointOpacity: 0.6,
-  pointColor: "#00ffff",
+  pointColor: "#d4a54a",
   ambientIntensity: 0.8,
   mainLightIntensity: 1.2,
 };
