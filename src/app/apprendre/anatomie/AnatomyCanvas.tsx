@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { CameraControls, useTexture } from "@react-three/drei";
+import { CameraControls, ContactShadows, useTexture } from "@react-three/drei";
 import {
   Box3,
   ClampToEdgeWrapping,
-  PCFSoftShadowMap,
   Vector3,
   type DirectionalLight,
   type Group,
@@ -374,15 +373,6 @@ function Scene({
     controls.maxDistance = settings.maxDistance;
   }, [settings.dollySpeed, settings.truckSpeed, settings.smoothTime, settings.minDistance, settings.maxDistance]);
 
-  /* Add shadow-light target to scene graph */
-  useEffect(() => {
-    const light = lightRef.current;
-    if (light?.parent) {
-      light.parent.add(light.target);
-      light.target.position.set(0, 0.5, 0);
-    }
-  }, []);
-
   /* Center camera on mannequin + anchor feet to ground */
   useEffect(() => {
     const controls = controlsRef.current;
@@ -502,29 +492,23 @@ function Scene({
       />
 
       <group>
-        {/* Fixed directional light for shadow */}
+        {/* Fixed directional light (no shadow map — ContactShadows handles it) */}
         <directionalLight
           ref={lightRef}
           position={[-3, 6, -2]}
           intensity={0.6}
-          castShadow
-          shadow-mapSize-width={2048}
-          shadow-mapSize-height={2048}
-          shadow-camera-left={-5}
-          shadow-camera-right={5}
-          shadow-camera-top={6}
-          shadow-camera-bottom={-2}
-          shadow-camera-near={0.5}
-          shadow-camera-far={20}
-          shadow-bias={-0.003}
-          shadow-radius={4}
         />
 
-        {/* Ground plane receives the mannequin silhouette shadow */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} receiveShadow renderOrder={-1}>
-          <planeGeometry args={[20, 20]} />
-          <shadowMaterial transparent opacity={0.35} depthWrite={false} />
-        </mesh>
+        {/* Contact shadow at foot level — independent FBO, no stencil interaction */}
+        <ContactShadows
+          position={[0, 0, 0]}
+          opacity={0.4}
+          scale={10}
+          blur={2}
+          far={4}
+          resolution={256}
+          renderOrder={0}
+        />
 
         {/* Turntable — rotates mannequin on Y axis */}
         <group ref={turntableRef} scale={settings.mannequinScale}>
@@ -594,7 +578,7 @@ export default function AnatomyCanvas({
     <>
       <Canvas
         orthographic
-        shadows={{ type: PCFSoftShadowMap }}
+        shadows
         camera={{ position: [0, 0.8, 5], zoom: 250, near: 0.01, far: 100 }}
         gl={{ antialias: true, stencil: true }}
       >
