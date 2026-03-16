@@ -538,7 +538,6 @@ function Scene({
                 showSkeleton={showSkeleton}
                 showWireframe={showWireframe}
                 showMuscles={showMuscles}
-                skeletonOpacity={0.4}
                 silhouetteOpacity={settings.wireframeOpacity}
                 pointSize={settings.pointSize}
                 pointOpacity={settings.pointOpacity}

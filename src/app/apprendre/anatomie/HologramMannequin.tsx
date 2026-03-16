@@ -444,7 +444,7 @@ function MusclesModel({
 
 /* ─── Skeleton layer ────────────────────────────────────────────────────── */
 
-function SkeletonBody({ opacity }: { opacity: number }) {
+function SkeletonBody() {
   const { scene } = useGLTF("/models/squelette.glb");
 
   useEffect(() => {
@@ -455,8 +455,8 @@ function SkeletonBody({ opacity }: { opacity: number }) {
           color: 0xe8dcc8,
           emissive: new THREE.Color(0x222211),
           shininess: 20,
-          transparent: true,
-          opacity,
+          transparent: false,
+          opacity: 1.0,
           side: THREE.FrontSide,
           depthWrite: true,
           depthTest: true,
@@ -473,15 +473,6 @@ function SkeletonBody({ opacity }: { opacity: number }) {
     });
   }, [scene]);
 
-  useEffect(() => {
-    scene.traverse((child) => {
-      if ((child as THREE.Mesh).isMesh && child.visible) {
-        const mat = (child as THREE.Mesh).material as THREE.MeshPhongMaterial;
-        mat.opacity = opacity;
-      }
-    });
-  }, [scene, opacity]);
-
   return <primitive object={scene} />;
 }
 
@@ -497,7 +488,6 @@ export default function HologramMannequin({
   showSkeleton = false,
   showWireframe = true,
   showMuscles = true,
-  skeletonOpacity = 0.4,
   silhouetteOpacity = 0.4,
   pointSize = 3.0,
   pointOpacity = 0.6,
@@ -508,7 +498,6 @@ export default function HologramMannequin({
   showSkeleton?: boolean;
   showWireframe?: boolean;
   showMuscles?: boolean;
-  skeletonOpacity?: number;
   silhouetteOpacity?: number;
   pointSize?: number;
   pointOpacity?: number;
@@ -525,7 +514,7 @@ export default function HologramMannequin({
       <directionalLight position={[-2, 1, -1]} intensity={0.5} color={0x88aaff} />
       <directionalLight position={[0, 2, -3]} intensity={0.3} />
 
-      {showSkeleton && <SkeletonBody opacity={skeletonOpacity} />}
+      {showSkeleton && <SkeletonBody />}
       {showWireframe && (
         <SilhouetteBody
           opacity={silhouetteOpacity}
