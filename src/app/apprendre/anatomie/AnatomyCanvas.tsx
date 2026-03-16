@@ -16,6 +16,8 @@ type Props = {
   selectedGroup: string | null;
   highlightedMuscle: string | null;
   showSkeleton?: boolean;
+  showWireframe?: boolean;
+  showMuscles?: boolean;
   onHoverMuscle: (frName: string | null, groupKey: string | null) => void;
   onClickMuscle: (frName: string | null, groupKey: string | null, x: number, y: number) => void;
   onLongPressMuscle: (frName: string, groupKey: string, x: number, y: number) => void;
@@ -317,6 +319,8 @@ function Scene({
   selectedGroup,
   highlightedMuscle,
   showSkeleton,
+  showWireframe,
+  showMuscles,
   onHoverMuscle,
   onClickMuscle,
   onLongPressMuscle,
@@ -532,6 +536,8 @@ function Scene({
                 hoveredMuscle={null}
                 wireframe={false}
                 showSkeleton={showSkeleton}
+                showWireframe={showWireframe}
+                showMuscles={showMuscles}
                 skeletonOpacity={0.4}
                 silhouetteOpacity={settings.wireframeOpacity}
                 pointSize={settings.pointSize}
@@ -573,6 +579,8 @@ export default function AnatomyCanvas({
   selectedGroup,
   highlightedMuscle,
   showSkeleton,
+  showWireframe,
+  showMuscles,
   onHoverMuscle,
   onClickMuscle,
   onLongPressMuscle,
@@ -595,6 +603,8 @@ export default function AnatomyCanvas({
           selectedGroup={selectedGroup}
           highlightedMuscle={highlightedMuscle}
           showSkeleton={showSkeleton}
+          showWireframe={showWireframe}
+          showMuscles={showMuscles}
           onHoverMuscle={onHoverMuscle}
           onClickMuscle={onClickMuscle}
           onLongPressMuscle={onLongPressMuscle}

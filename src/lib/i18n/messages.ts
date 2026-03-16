@@ -822,6 +822,8 @@ export const messages = {
       reset: "Réinit.",
       close: "Fermer",
       toggleSkeleton: "Afficher/masquer le squelette",
+      toggleWireframe: "Afficher/masquer le wireframe",
+      toggleMuscles: "Afficher/masquer les muscles",
       groups: {
         dorsaux: "Dorsaux",
         pectoraux: "Pectoraux",
@@ -1577,6 +1579,8 @@ export const messages = {
       reset: "Reset",
       close: "Close",
       toggleSkeleton: "Show/hide skeleton",
+      toggleWireframe: "Show/hide wireframe",
+      toggleMuscles: "Show/hide muscles",
       groups: {
         dorsaux: "Back",
         pectoraux: "Pectorals",
@@ -2778,6 +2782,8 @@ export const messages = {
       reset: "Reiniciar",
       close: "Cerrar",
       toggleSkeleton: "Mostrar/ocultar esqueleto",
+      toggleWireframe: "Mostrar/ocultar wireframe",
+      toggleMuscles: "Mostrar/ocultar músculos",
       groups: {
         dorsaux: "Dorsales",
         pectoraux: "Pectorales",

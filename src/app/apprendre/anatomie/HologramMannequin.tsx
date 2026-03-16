@@ -495,6 +495,8 @@ export default function HologramMannequin({
   onClickMuscle,
   onLongPressMuscle,
   showSkeleton = false,
+  showWireframe = true,
+  showMuscles = true,
   skeletonOpacity = 0.4,
   silhouetteOpacity = 0.4,
   pointSize = 3.0,
@@ -504,6 +506,8 @@ export default function HologramMannequin({
   mainLightIntensity = 1.2,
 }: Props & {
   showSkeleton?: boolean;
+  showWireframe?: boolean;
+  showMuscles?: boolean;
   skeletonOpacity?: number;
   silhouetteOpacity?: number;
   pointSize?: number;
@@ -522,20 +526,24 @@ export default function HologramMannequin({
       <directionalLight position={[0, 2, -3]} intensity={0.3} />
 
       {showSkeleton && <SkeletonBody opacity={skeletonOpacity} />}
-      <SilhouetteBody
-        opacity={silhouetteOpacity}
-        pointSize={pointSize}
-        pointOpacity={pointOpacity}
-        pointColor={pointColor}
-      />
-      <MusclesModel
-        selectedGroup={selectedGroup}
-        highlightedMuscle={highlightedMuscle}
-        wireframe={wireframe}
-        onHoverMuscle={onHoverMuscle}
-        onClickMuscle={onClickMuscle}
-        onLongPressMuscle={onLongPressMuscle}
-      />
+      {showWireframe && (
+        <SilhouetteBody
+          opacity={silhouetteOpacity}
+          pointSize={pointSize}
+          pointOpacity={pointOpacity}
+          pointColor={pointColor}
+        />
+      )}
+      {showMuscles && (
+        <MusclesModel
+          selectedGroup={selectedGroup}
+          highlightedMuscle={highlightedMuscle}
+          wireframe={wireframe}
+          onHoverMuscle={onHoverMuscle}
+          onClickMuscle={onClickMuscle}
+          onLongPressMuscle={onLongPressMuscle}
+        />
+      )}
     </group>
   );
 }

@@ -255,13 +255,19 @@
   background: rgba(0, 212, 255, 0.1);
 }
 
-/* ── Skeleton toggle button (top right, left of legend) ────────────────── */
+/* ── Layer toolbar (top right) ──────────────────────────────────────────── */
 
-.anatomy-skeleton-btn {
+.anatomy-toolbar {
   position: fixed;
   top: calc(16px + env(safe-area-inset-top, 0px));
-  right: calc(64px + env(safe-area-inset-right, 0px));
+  right: calc(16px + env(safe-area-inset-right, 0px));
   z-index: 18;
+  display: flex;
+  gap: 8px;
+}
+
+.anatomy-toolbar-btn {
+  position: relative;
   width: 40px;
   height: 40px;
   display: flex;
@@ -272,17 +278,23 @@
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 10px;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
   transition: border-color 0.2s, color 0.2s;
 }
 
-.anatomy-skeleton-btn:hover {
+.anatomy-toolbar-btn:hover {
   border-color: rgba(255, 255, 255, 0.3);
-  color: #fff;
+  color: rgba(255, 255, 255, 0.85);
 }
 
-.anatomy-skeleton-dot {
+.anatomy-toolbar-btn--active {
+  border-color: rgba(0, 212, 255, 0.5);
+  color: var(--holo-blue);
+}
+
+.anatomy-toolbar-btn--active::after {
+  content: "";
   position: absolute;
   bottom: 4px;
   right: 4px;
@@ -292,59 +304,38 @@
   background: var(--holo-blue);
 }
 
-/* ── Legend button (top right) ──────────────────────────────────────────── */
-
-.anatomy-legend-btn {
-  position: fixed;
-  top: calc(16px + env(safe-area-inset-top, 0px));
-  right: calc(16px + env(safe-area-inset-right, 0px));
-  z-index: 18;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(10, 10, 20, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-  color: rgba(255, 255, 255, 0.75);
-  cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
-}
-
-.anatomy-legend-btn:hover {
-  border-color: rgba(255, 255, 255, 0.3);
-  color: #fff;
-}
-
-.anatomy-legend-icon {
+.anatomy-toolbar-icon {
   width: 18px;
   height: 18px;
 }
 
-/* ── Legend overlay ─────────────────────────────────────────────────────── */
+/* ── Side panel (muscle index) ─────────────────────────────────────────── */
 
-.anatomy-legend {
+.anatomy-side-panel {
   position: fixed;
-  top: calc(64px + env(safe-area-inset-top, 0px));
-  right: calc(16px + env(safe-area-inset-right, 0px));
+  top: 0;
+  right: 0;
+  bottom: 0;
   z-index: 30;
-  background: rgba(2, 8, 20, 0.95);
+  width: 250px;
+  background: rgba(2, 8, 20, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 212, 255, 0.2);
-  border-radius: 12px;
-  padding: 12px;
+  border-left: 1px solid rgba(0, 212, 255, 0.2);
+  padding: calc(72px + env(safe-area-inset-top, 0px)) 12px calc(16px + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 200px;
-  animation: label-in 0.15s ease both;
+  overflow-y: auto;
+  animation: slide-in-right 0.2s ease both;
 }
 
-.anatomy-legend-title {
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+.anatomy-side-panel-title {
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -562,7 +553,7 @@
 @media (prefers-reduced-motion: reduce) {
   .anatomy-label,
   .anatomy-sheet,
-  .anatomy-legend,
+  .anatomy-side-panel,
   .anatomy-backdrop,
   .anatomy-submenu {
     transition: none;

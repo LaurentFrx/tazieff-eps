@@ -36,6 +36,8 @@ export default function AnatomyMap({ exercises }: Props) {
   const [sheetGroupKey, setSheetGroupKey] = useState<string | null>(null);
   const [legendOpen, setLegendOpen] = useState(false);
   const [showSkeleton, setShowSkeleton] = useState(false);
+  const [showWireframe, setShowWireframe] = useState(true);
+  const [showMuscles, setShowMuscles] = useState(true);
   const [layeredSubmenu, setLayeredSubmenu] = useState<{
     groupKey: string;
     muscles: string[];
@@ -154,6 +156,8 @@ export default function AnatomyMap({ exercises }: Props) {
             selectedGroup={selectedGroup}
             highlightedMuscle={highlightedMuscle}
             showSkeleton={showSkeleton}
+            showWireframe={showWireframe}
+            showMuscles={showMuscles}
             onHoverMuscle={handleHoverMuscle}
             onClickMuscle={handleClickMuscle}
             onLongPressMuscle={handleLongPressMuscle}
@@ -162,11 +166,11 @@ export default function AnatomyMap({ exercises }: Props) {
           {/* HUD overlay */}
           <div className="anatomy-hud-overlay">
             <div className="anatomy-hud-top">
-              <div className="anatomy-hud">
-                {selectedGroup
-                  ? `// ${t(`anatomy.groups.${selectedGroup}`)}`
-                  : t("anatomy.dataReady")}
-              </div>
+              {selectedGroup && (
+                <div className="anatomy-hud">
+                  {`// ${t(`anatomy.groups.${selectedGroup}`)}`}
+                </div>
+              )}
             </div>
             <div className="anatomy-hud-bottom">
               <div className="anatomy-hud">
@@ -240,43 +244,65 @@ export default function AnatomyMap({ exercises }: Props) {
         </div>
       )}
 
-      {/* ── Skeleton toggle button ──────────────────────────────────────── */}
-      <button
-        type="button"
-        className="anatomy-skeleton-btn"
-        onClick={() => setShowSkeleton((s) => !s)}
-        aria-label={t("anatomy.toggleSkeleton")}
-      >
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="anatomy-legend-icon">
-          <circle cx="10" cy="4" r="2.5" />
-          <line x1="10" y1="6.5" x2="10" y2="14" />
-          <line x1="6" y1="9" x2="14" y2="9" />
-          <line x1="10" y1="14" x2="7" y2="18" />
-          <line x1="10" y1="14" x2="13" y2="18" />
-        </svg>
-        {showSkeleton && <span className="anatomy-skeleton-dot" />}
-      </button>
+      {/* ── Layer toolbar (top right): [🦴] [◇] [💪] [☰] ───────────────── */}
+      <div className="anatomy-toolbar">
+        <button
+          type="button"
+          className={`anatomy-toolbar-btn${showSkeleton ? " anatomy-toolbar-btn--active" : ""}`}
+          onClick={() => setShowSkeleton((s) => !s)}
+          aria-label={t("anatomy.toggleSkeleton")}
+        >
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="anatomy-toolbar-icon">
+            <circle cx="10" cy="4" r="2.5" />
+            <line x1="10" y1="6.5" x2="10" y2="14" />
+            <line x1="6" y1="9" x2="14" y2="9" />
+            <line x1="10" y1="14" x2="7" y2="18" />
+            <line x1="10" y1="14" x2="13" y2="18" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          className={`anatomy-toolbar-btn${showWireframe ? " anatomy-toolbar-btn--active" : ""}`}
+          onClick={() => setShowWireframe((s) => !s)}
+          aria-label={t("anatomy.toggleWireframe")}
+        >
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="anatomy-toolbar-icon">
+            <path d="M10 2L18 10L10 18L2 10Z" />
+            <line x1="10" y1="2" x2="10" y2="18" strokeWidth="1" />
+            <line x1="2" y1="10" x2="18" y2="10" strokeWidth="1" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          className={`anatomy-toolbar-btn${showMuscles ? " anatomy-toolbar-btn--active" : ""}`}
+          onClick={() => setShowMuscles((s) => !s)}
+          aria-label={t("anatomy.toggleMuscles")}
+        >
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="anatomy-toolbar-icon">
+            <path d="M7 16C5 14 4 11 5 8C6 5 8 4 10 4C12 4 14 5 15 8C16 11 15 14 13 16" />
+            <path d="M8 10C9 8 11 8 12 10" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          className={`anatomy-toolbar-btn${legendOpen ? " anatomy-toolbar-btn--active" : ""}`}
+          onClick={() => setLegendOpen((o) => !o)}
+          aria-label={t("anatomy.openMenu")}
+        >
+          <svg viewBox="0 0 20 20" fill="currentColor" className="anatomy-toolbar-icon">
+            <rect x="3" y="4" width="14" height="2" rx="1" />
+            <rect x="3" y="9" width="14" height="2" rx="1" />
+            <rect x="3" y="14" width="14" height="2" rx="1" />
+          </svg>
+        </button>
+      </div>
 
-      {/* ── Legend button (top right) ───────────────────────────────────── */}
-      <button
-        type="button"
-        className="anatomy-legend-btn"
-        onClick={() => setLegendOpen((o) => !o)}
-        aria-label={t("anatomy.openMenu")}
-      >
-        <svg viewBox="0 0 20 20" fill="currentColor" className="anatomy-legend-icon">
-          <rect x="3" y="4" width="14" height="2" rx="1" />
-          <rect x="3" y="9" width="14" height="2" rx="1" />
-          <rect x="3" y="14" width="14" height="2" rx="1" />
-        </svg>
-      </button>
-
-      {/* ── Legend overlay ──────────────────────────────────────────────── */}
+      {/* ── Side panel (muscle index) ────────────────────────────────────── */}
       {legendOpen && (
         <>
           <div className="anatomy-backdrop" onClick={() => setLegendOpen(false)} />
-          <div className="anatomy-legend">
-            <div className="anatomy-legend-title">{t("anatomy.systemTitle")}</div>
+          <div className="anatomy-side-panel">
+            <div className="anatomy-side-panel-title">{t("anatomy.systemTitle")}</div>
             {Object.entries(MUSCLE_GROUPS).map(([key, group]) => (
               <button
                 key={key}
