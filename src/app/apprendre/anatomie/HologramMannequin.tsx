@@ -64,8 +64,14 @@ function makePointsShaderMaterial(color: string, size: number, opacity: number) 
     `,
     transparent: true,
     depthWrite: false,
-    depthTest: false,
+    depthTest: true,
     blending: THREE.AdditiveBlending,
+    stencilWrite: false,
+    stencilRef: 0,
+    stencilFunc: THREE.EqualStencilFunc,
+    stencilFail: THREE.KeepStencilOp,
+    stencilZFail: THREE.KeepStencilOp,
+    stencilZPass: THREE.KeepStencilOp,
   });
 }
 
@@ -138,13 +144,13 @@ function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
           depthWrite: false,
           depthTest: true,
           stencilWrite: false,
-          stencilRef: 1,
-          stencilFunc: THREE.NotEqualStencilFunc,
+          stencilRef: 0,
+          stencilFunc: THREE.EqualStencilFunc,
           stencilFail: THREE.KeepStencilOp,
           stencilZFail: THREE.KeepStencilOp,
           stencilZPass: THREE.KeepStencilOp,
         });
-        mesh.renderOrder = 2;
+        mesh.renderOrder = 1;
         mesh.castShadow = true;
         mesh.customDepthMaterial = new THREE.MeshDepthMaterial();
 
@@ -241,9 +247,8 @@ function MusclesModel({
         baseFrName: frName,
         originalColor: color.clone(),
       } as MuscleUserData;
-      /* Render BEFORE wireframe — muscles write to depth buffer,
-         blocking wireframe fragments behind them. */
-      mesh.renderOrder = 0;
+      /* Render BEFORE wireframe — muscles write stencil=1 to mask wireframe. */
+      mesh.renderOrder = 2;
       mesh.material.stencilWrite = true;
       mesh.material.stencilRef = 1;
       mesh.material.stencilFunc = THREE.AlwaysStencilFunc;
@@ -455,8 +460,14 @@ function SkeletonBody({ opacity }: { opacity: number }) {
           side: THREE.FrontSide,
           depthWrite: true,
           depthTest: true,
+          stencilWrite: true,
+          stencilRef: 1,
+          stencilFunc: THREE.AlwaysStencilFunc,
+          stencilZPass: THREE.ReplaceStencilOp,
+          stencilFail: THREE.KeepStencilOp,
+          stencilZFail: THREE.KeepStencilOp,
         });
-        mesh.renderOrder = -1;
+        mesh.renderOrder = 2;
         mesh.castShadow = false;
       }
     });
