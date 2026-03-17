@@ -100,33 +100,7 @@ function BackgroundPlane({ x, y, z, width, height }: {
   );
 }
 
-/* ── Blob shadow — ShaderMaterial radial gradient on CircleGeometry ── */
-
-const blobShadowMaterial = new THREE.ShaderMaterial({
-  transparent: true,
-  depthWrite: false,
-  depthTest: true,
-  side: THREE.DoubleSide,
-  uniforms: {
-    uOpacity: { value: 0.35 },
-  },
-  vertexShader: /* glsl */ `
-    varying vec2 vUv;
-    void main() {
-      vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `,
-  fragmentShader: /* glsl */ `
-    uniform float uOpacity;
-    varying vec2 vUv;
-    void main() {
-      float d = distance(vUv, vec2(0.5));
-      float alpha = uOpacity * smoothstep(0.5, 0.1, d);
-      gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);
-    }
-  `,
-});
+/* ── Shadow at feet — simple dark ellipse ─────────────────────────── */
 
 /* ── Slider definitions for debug panel ────────────────────────────── */
 
@@ -534,16 +508,24 @@ function Scene({
           intensity={0.6}
         />
 
-        {/* Blob shadow at foot level — radial gradient, no stencil interaction */}
+        {/* Shadow at foot level — positioned after centering */}
         <mesh
           ref={shadowRef}
           rotation={[-Math.PI / 2, 0, 0]}
-          position={[0, 0.01, 0]}
+          position={[0, 0.05, 0]}
+          scale={[1, 0.6, 1]}
           renderOrder={0}
           raycast={() => {}}
         >
-          <circleGeometry args={[1.2, 32]} />
-          <primitive object={blobShadowMaterial} attach="material" />
+          <circleGeometry args={[0.8, 32]} />
+          <meshBasicMaterial
+            color="#000000"
+            transparent
+            opacity={0.3}
+            depthWrite={false}
+            depthTest={false}
+            side={THREE.DoubleSide}
+          />
         </mesh>
 
         {/* Turntable — rotates mannequin on Y axis */}
