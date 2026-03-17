@@ -151,8 +151,6 @@ function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
           stencilZPass: THREE.KeepStencilOp,
         });
         mesh.renderOrder = 2;
-        mesh.castShadow = true;
-        mesh.customDepthMaterial = new THREE.MeshDepthMaterial();
 
         // GL_POINTS pass — child of mesh, identity transform.
         // Same geometry + same modelViewMatrix = exact vertex alignment.
@@ -256,7 +254,6 @@ function MusclesModel({
       mesh.material.stencilZPass = THREE.ReplaceStencilOp;
       mesh.material.stencilFail = THREE.KeepStencilOp;
       mesh.material.stencilZFail = THREE.KeepStencilOp;
-      mesh.castShadow = true;
       meshes.push(mesh);
     };
     scene.traverse((child) => {
@@ -506,7 +503,6 @@ function SkeletonBody() {
           stencilZFail: THREE.KeepStencilOp,
         });
         mesh.renderOrder = 1;
-        mesh.castShadow = false;
       }
     });
   }, [scene]);

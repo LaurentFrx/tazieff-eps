@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { CameraControls, useTexture } from "@react-three/drei";
-import * as THREE from "three";
 import {
   Box3,
   ClampToEdgeWrapping,
@@ -329,7 +328,6 @@ function Scene({
   const mannequinGroupRef = useRef<Group>(null);
   const turntableRef = useRef<Group>(null);
   const lightRef = useRef<DirectionalLight>(null);
-  const shadowLightRef = useRef<DirectionalLight>(null);
   const controlsRef = useRef<CameraControlsImpl>(null);
 
   /* Turntable state */
@@ -388,13 +386,6 @@ function Scene({
       // Recompute after repositioning
       box.setFromObject(mannequin);
       const center = box.getCenter(new Vector3());
-
-      // Shadow light targets the feet (origin after centering)
-      if (shadowLightRef.current?.parent) {
-        shadowLightRef.current.target.position.set(0, 0, 0);
-        shadowLightRef.current.parent.add(shadowLightRef.current.target);
-        shadowLightRef.current.target.updateMatrixWorld();
-      }
 
       // Orthographic: position camera in front, looking at center
       controls.setLookAt(0, center.y, 5, 0, center.y, 0, false);
@@ -508,40 +499,9 @@ function Scene({
           intensity={0.6}
         />
 
-        {/* Shadow-casting light: left-above-behind → shadow at ~110° from vertical */}
-        <directionalLight
-          ref={shadowLightRef}
-          position={[-4, 1.5, -2]}
-          intensity={0.05}
-          castShadow
-          shadow-mapSize-width={2048}
-          shadow-mapSize-height={2048}
-          shadow-camera-far={15}
-          shadow-camera-left={-4}
-          shadow-camera-right={4}
-          shadow-camera-top={5}
-          shadow-camera-bottom={-2}
-          shadow-bias={-0.001}
-          shadow-normalBias={0.05}
-        />
-
         {/* Turntable — rotates mannequin on Y axis */}
         <group ref={turntableRef} scale={settings.mannequinScale}>
           <group ref={mannequinGroupRef}>
-            {/* Shadow receiver — inside mannequin group, at inner group Z */}
-            <mesh
-              position={[0, 1.0, -0.15]}
-              receiveShadow
-              renderOrder={-1}
-              raycast={() => {}}
-            >
-              <planeGeometry args={[8, 5]} />
-              <shadowMaterial
-                opacity={0.3}
-                transparent
-                depthWrite={false}
-              />
-            </mesh>
             <group scale={settings.innerScale} position={[0, 0, -0.15]}>
               <HologramMannequin
                 selectedGroup={selectedGroup}
@@ -607,7 +567,6 @@ export default function AnatomyCanvas({
     <>
       <Canvas
         orthographic
-        shadows
         camera={{ position: [0, 0.8, 5], zoom: 250, near: 0.01, far: 100 }}
         gl={{ antialias: true, stencil: true }}
       >
