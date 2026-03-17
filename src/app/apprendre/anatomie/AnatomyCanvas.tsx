@@ -100,41 +100,40 @@ function BackgroundPlane({ x, y, z, width, height }: {
   );
 }
 
-/* ── Blob shadow — radial gradient on horizontal plane ────────────── */
+/* ── Blob shadow — ShaderMaterial radial gradient on CircleGeometry ── */
 
 function BlobShadow({ y = -0.01, opacity = 0.35, radius = 1.2 }: {
   y?: number; opacity?: number; radius?: number;
 }) {
-  const texture = useMemo(() => {
-    const size = 128;
-    const canvas = document.createElement("canvas");
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext("2d")!;
-    const gradient = ctx.createRadialGradient(
-      size / 2, size / 2, 0,
-      size / 2, size / 2, size / 2,
-    );
-    gradient.addColorStop(0, "rgba(0,0,0,1)");
-    gradient.addColorStop(0.5, "rgba(0,0,0,0.6)");
-    gradient.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, size, size);
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.needsUpdate = true;
-    return tex;
-  }, []);
+  const material = useMemo(() => new THREE.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    depthTest: true,
+    uniforms: {
+      uOpacity: { value: opacity },
+    },
+    vertexShader: /* glsl */ `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      uniform float uOpacity;
+      varying vec2 vUv;
+      void main() {
+        float d = distance(vUv, vec2(0.5));
+        float alpha = uOpacity * smoothstep(0.5, 0.1, d);
+        gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);
+      }
+    `,
+  }), [opacity]);
 
   return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, y, 0]} renderOrder={0}>
-      <planeGeometry args={[radius * 2, radius * 2]} />
-      <meshBasicMaterial
-        map={texture}
-        transparent
-        opacity={opacity}
-        depthWrite={false}
-        depthTest={true}
-      />
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, y, 0]} renderOrder={0} raycast={() => {}}>
+      <circleGeometry args={[radius, 32]} />
+      <primitive object={material} attach="material" />
     </mesh>
   );
 }
