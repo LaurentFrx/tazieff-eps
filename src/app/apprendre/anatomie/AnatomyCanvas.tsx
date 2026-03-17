@@ -502,15 +502,15 @@ function Scene({
 
         {/* Shadow — vertical plane offset right (sun from left) */}
         <mesh
-          position={[0.25, 0.2, 0.01]}
+          position={[0.35, 0.12, 0.01]}
           renderOrder={-1}
           raycast={() => {}}
         >
-          <planeGeometry args={[1.2, 0.5]} />
+          <planeGeometry args={[1.6, 0.45]} />
           <meshBasicMaterial
             color="#000000"
             transparent
-            opacity={0.3}
+            opacity={0.5}
             depthWrite={false}
             depthTest={false}
             side={THREE.DoubleSide}
