@@ -396,20 +396,6 @@ function Scene({
         shadowRef.current.position.y = 0.02;
       }
 
-      // DIAGNOSTIC — remove after shadow works
-      console.log("[SHADOW DIAG] mannequin bounds:", {
-        minY: box.min.y.toFixed(3),
-        maxY: box.max.y.toFixed(3),
-        centerY: center.y.toFixed(3),
-        height: (box.max.y - box.min.y).toFixed(3),
-      });
-      console.log("[SHADOW DIAG] shadow ref:", {
-        exists: !!shadowRef.current,
-        position: shadowRef.current?.position.toArray(),
-        visible: shadowRef.current?.visible,
-        parent: shadowRef.current?.parent?.type,
-      });
-
       // Orthographic: position camera in front, looking at center
       controls.setLookAt(0, center.y, 5, 0, center.y, 0, false);
       controls.saveState();
@@ -514,12 +500,6 @@ function Scene({
         height={settings.bgHeight}
       />
 
-      {/* DIAGNOSTIC: red cube at scene center — REMOVE after shadow works */}
-      <mesh position={[0, 1, 0]}>
-        <boxGeometry args={[0.3, 0.3, 0.3]} />
-        <meshBasicMaterial color="red" />
-      </mesh>
-
       <group>
         {/* Fixed directional light */}
         <directionalLight
@@ -528,20 +508,20 @@ function Scene({
           intensity={0.6}
         />
 
-        {/* Shadow at foot level */}
+        {/* Shadow ellipse at foot level — dark warm tint for contrast on wood deck */}
         <mesh
           ref={shadowRef}
           rotation={[-Math.PI / 2, 0, 0]}
-          position={[0, 0.05, 0]}
-          scale={[1, 0.6, 1]}
+          position={[0.1, 0.02, 0.05]}
+          scale={[1.3, 0.7, 1]}
           renderOrder={0}
           raycast={() => {}}
         >
-          <circleGeometry args={[0.8, 32]} />
+          <circleGeometry args={[0.7, 32]} />
           <meshBasicMaterial
-            color="#000000"
+            color="#0a0505"
             transparent
-            opacity={0.3}
+            opacity={0.55}
             depthWrite={false}
             depthTest={false}
             side={THREE.DoubleSide}
