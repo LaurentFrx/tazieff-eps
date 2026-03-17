@@ -329,6 +329,8 @@ function Scene({
   const mannequinGroupRef = useRef<Group>(null);
   const turntableRef = useRef<Group>(null);
   const lightRef = useRef<DirectionalLight>(null);
+  const shadowLightRef = useRef<DirectionalLight>(null);
+  const shadowReceiverRef = useRef<THREE.Mesh>(null);
   const controlsRef = useRef<CameraControlsImpl>(null);
 
   /* Turntable state */
@@ -387,6 +389,19 @@ function Scene({
       // Recompute after repositioning
       box.setFromObject(mannequin);
       const center = box.getCenter(new Vector3());
+
+      // Center shadow receiver on mannequin
+      if (shadowReceiverRef.current) {
+        shadowReceiverRef.current.position.set(0, center.y, 0.3);
+      }
+      // Point shadow light at mannequin center
+      if (shadowLightRef.current) {
+        shadowLightRef.current.target.position.set(0, center.y, 0);
+        if (shadowLightRef.current.parent) {
+          shadowLightRef.current.parent.add(shadowLightRef.current.target);
+        }
+        shadowLightRef.current.target.updateMatrixWorld();
+      }
 
       // Orthographic: position camera in front, looking at center
       controls.setLookAt(0, center.y, 5, 0, center.y, 0, false);
@@ -502,6 +517,7 @@ function Scene({
 
         {/* Shadow-casting light: behind-left-above, projects shadow forward-right-down */}
         <directionalLight
+          ref={shadowLightRef}
           position={[-2, 6, -3]}
           intensity={0.05}
           castShadow
@@ -516,9 +532,10 @@ function Scene({
           shadow-normalBias={0.02}
         />
 
-        {/* Shadow receiver — vertical plane facing camera, centered on mannequin */}
+        {/* Shadow receiver — vertical plane facing camera, centered dynamically */}
         <mesh
-          position={[0.2, 0.8, 0.3]}
+          ref={shadowReceiverRef}
+          position={[0, 1.0, 0.3]}
           receiveShadow
           renderOrder={-1}
           raycast={() => {}}
