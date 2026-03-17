@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { CameraControls, useTexture } from "@react-three/drei";
+import { CameraControls, useGLTF, useTexture } from "@react-three/drei";
+import * as THREE from "three";
 import {
   Box3,
   ClampToEdgeWrapping,
@@ -80,6 +81,98 @@ const TAP_THRESHOLD_SQ = 25;
 const TAP_MAX_DURATION = 200;
 /** Angular velocity threshold below which inertia stops. */
 const INERTIA_EPSILON = 0.0001;
+
+/* ── Planar projected shadow — geometric flatten onto ground plane ── */
+
+const SHADOW_MAT = new THREE.MeshBasicMaterial({
+  color: 0x000000,
+  transparent: true,
+  opacity: 0.25,
+  depthWrite: false,
+  depthTest: true,
+  side: THREE.DoubleSide,
+  stencilWrite: false,
+});
+
+/** Build a 4x4 matrix that projects geometry onto a plane along a light direction. */
+function makePlanarShadowMatrix(groundY: number, lightDir: THREE.Vector3): THREE.Matrix4 {
+  // Standard planar shadow: project onto Y=groundY along lightDir
+  const d = lightDir.clone().normalize();
+  const m = new THREE.Matrix4();
+  // Shadow matrix for plane Y = groundY, directional light
+  m.set(
+    d.y,    -d.x,  0,      0,
+    0,       0,    0,      0,
+    0,      -d.z,  d.y,    0,
+    0,       groundY * (1 - d.y),  0,  d.y,
+  );
+  // Hmm, let me use the standard formula properly
+  // Plane: dot(N, P) + D = 0 where N=(0,1,0), D=-groundY
+  // Light direction L = (lx, ly, lz, 0) for directional
+  const lx = d.x, ly = d.y, lz = d.z;
+  const nx = 0, ny = 1, nz = 0, D = -groundY;
+  const dot = nx * lx + ny * ly + nz * lz;
+  m.set(
+    dot - lx * nx, -ly * nx,      -lz * nx,      0,
+    -lx * ny,      dot - ly * ny,  -lz * ny,      0,
+    -lx * nz,      -ly * nz,       dot - lz * nz, 0,
+    -lx * D,       -ly * D,        -lz * D,       dot,
+  );
+  return m;
+}
+
+function PlanarShadow({ mannequinGroupRef }: { mannequinGroupRef: React.RefObject<Group | null> }) {
+  const groupRef = useRef<THREE.Group>(null);
+  const { scene: silhouetteScene } = useGLTF("/models/silhouette_fixed.glb");
+  const { scene: musclesScene } = useGLTF("/models/muscles.glb");
+  const { scene: musclesExtraScene } = useGLTF("/models/muscles_manquants.glb");
+
+  useEffect(() => {
+    const shadowGroup = groupRef.current;
+    const mannequin = mannequinGroupRef.current;
+    if (!shadowGroup || !mannequin) return;
+
+    // Wait for mannequin centering to complete
+    const timer = setTimeout(() => {
+      // Compute ground Y from mannequin bounding box
+      const box = new THREE.Box3().setFromObject(mannequin);
+      const groundY = box.min.y;
+
+      // Light direction: from upper-left-behind (sun)
+      const lightDir = new THREE.Vector3(-0.4, 1.0, -0.3).normalize();
+      const shadowMatrix = makePlanarShadowMatrix(groundY, lightDir);
+
+      // Clear previous clones
+      while (shadowGroup.children.length > 0) {
+        shadowGroup.remove(shadowGroup.children[0]);
+      }
+
+      // Clone visible meshes from all GLB scenes
+      const sources = [silhouetteScene, musclesScene, musclesExtraScene];
+      for (const src of sources) {
+        src.traverse((child) => {
+          if ((child as THREE.Mesh).isMesh && child.visible) {
+            const mesh = child as THREE.Mesh;
+            const clone = new THREE.Mesh(mesh.geometry, SHADOW_MAT);
+            // Copy the world transform of the original mesh
+            clone.matrixAutoUpdate = false;
+            mesh.updateWorldMatrix(true, false);
+            clone.matrix.copy(mesh.matrixWorld);
+            // Apply the shadow projection on top
+            clone.matrix.premultiply(shadowMatrix);
+            clone.renderOrder = -1;
+            clone.raycast = () => {};
+            shadowGroup.add(clone);
+          }
+        });
+      }
+    }, 200); // Small delay to ensure centering has run
+
+    return () => clearTimeout(timer);
+  }, [silhouetteScene, musclesScene, musclesExtraScene, mannequinGroupRef]);
+
+  return <group ref={groupRef} />;
+}
 
 /* ── Background plane — fixed in scene, follows camera zoom/pan ──── */
 
@@ -501,6 +594,7 @@ function Scene({
 
         {/* Turntable — rotates mannequin on Y axis */}
         <group ref={turntableRef} scale={settings.mannequinScale}>
+          <PlanarShadow mannequinGroupRef={mannequinGroupRef} />
           <group ref={mannequinGroupRef}>
             <group scale={settings.innerScale} position={[0, 0, -0.15]}>
               <HologramMannequin
