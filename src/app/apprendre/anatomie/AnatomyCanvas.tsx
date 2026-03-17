@@ -500,31 +500,32 @@ function Scene({
           intensity={0.6}
         />
 
-        {/* Shadow-casting light: behind-left-above mannequin, projects shadow forward onto receiver */}
+        {/* Shadow-casting light: behind-left-above, projects shadow forward-right-down */}
         <directionalLight
-          position={[-2, 4, -3]}
-          intensity={0.001}
+          position={[-2, 6, -3]}
+          intensity={0.05}
           castShadow
-          shadow-mapSize-width={1024}
-          shadow-mapSize-height={1024}
-          shadow-camera-far={10}
-          shadow-camera-left={-2}
-          shadow-camera-right={2}
-          shadow-camera-top={4}
+          shadow-mapSize-width={2048}
+          shadow-mapSize-height={2048}
+          shadow-camera-far={15}
+          shadow-camera-left={-3}
+          shadow-camera-right={3}
+          shadow-camera-top={5}
           shadow-camera-bottom={-1}
           shadow-bias={-0.002}
+          shadow-normalBias={0.02}
         />
 
-        {/* Shadow receiver — vertical plane facing camera, at feet level */}
+        {/* Shadow receiver — vertical plane facing camera, centered on mannequin */}
         <mesh
-          position={[0.15, 0.9, 0.4]}
+          position={[0.2, 0.8, 0.3]}
           receiveShadow
           renderOrder={-1}
           raycast={() => {}}
         >
-          <planeGeometry args={[3, 3]} />
+          <planeGeometry args={[6, 4]} />
           <shadowMaterial
-            opacity={0.35}
+            opacity={0.3}
             transparent
             depthWrite={false}
           />
