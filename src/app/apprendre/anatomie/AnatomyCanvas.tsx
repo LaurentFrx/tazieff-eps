@@ -525,24 +525,23 @@ function Scene({
           shadow-normalBias={0.05}
         />
 
-        {/* Shadow receiver — at mannequin Z for zero projection offset */}
-        <mesh
-          position={[0, 0.8, -0.14]}
-          receiveShadow
-          renderOrder={-1}
-          raycast={() => {}}
-        >
-          <planeGeometry args={[8, 5]} />
-          <shadowMaterial
-            opacity={0.3}
-            transparent
-            depthWrite={false}
-          />
-        </mesh>
-
         {/* Turntable — rotates mannequin on Y axis */}
         <group ref={turntableRef} scale={settings.mannequinScale}>
           <group ref={mannequinGroupRef}>
+            {/* Shadow receiver — inside mannequin group, at inner group Z */}
+            <mesh
+              position={[0, 1.0, -0.15]}
+              receiveShadow
+              renderOrder={-1}
+              raycast={() => {}}
+            >
+              <planeGeometry args={[8, 5]} />
+              <shadowMaterial
+                opacity={0.3}
+                transparent
+                depthWrite={false}
+              />
+            </mesh>
             <group scale={settings.innerScale} position={[0, 0, -0.15]}>
               <HologramMannequin
                 selectedGroup={selectedGroup}
