@@ -501,12 +501,14 @@ function Scene({
 
         {/* Contact shadow at foot level — independent FBO, no stencil interaction */}
         <ContactShadows
-          position={[0, 0, 0]}
+          position={[0, -0.01, 0]}
           opacity={0.4}
           scale={10}
-          blur={2}
+          blur={2.5}
           far={4}
           resolution={256}
+          frames={Infinity}
+          color="#000000"
           renderOrder={0}
         />
 
@@ -578,7 +580,6 @@ export default function AnatomyCanvas({
     <>
       <Canvas
         orthographic
-        shadows
         camera={{ position: [0, 0.8, 5], zoom: 250, near: 0.01, far: 100 }}
         gl={{ antialias: true, stencil: true }}
       >
