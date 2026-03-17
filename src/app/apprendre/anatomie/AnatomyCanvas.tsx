@@ -500,13 +500,13 @@ function Scene({
           intensity={0.6}
         />
 
-        {/* Shadow — vertical plane facing camera, gradient ellipse, offset right (sun from left) */}
+        {/* Shadow — vertical plane, offset right (sun from left), gradient ellipse */}
         <mesh
-          position={[0.35, 0.1, 0.01]}
+          position={[0.3, 0.15, 0.01]}
           renderOrder={-1}
           raycast={() => {}}
         >
-          <planeGeometry args={[1.8, 1.0]} />
+          <planeGeometry args={[1.4, 0.6]} />
           <shaderMaterial
             transparent
             depthWrite={false}
@@ -522,11 +522,10 @@ function Scene({
             fragmentShader={`
               varying vec2 vUv;
               void main() {
-                // Ellipse center shifted left+up (shadow anchored at feet, extends right+down)
-                vec2 center = vec2(0.35, 0.65);
-                vec2 d = (vUv - center) / vec2(0.35, 0.55);
+                vec2 center = vec2(0.5, 0.5);
+                vec2 d = (vUv - center) / vec2(0.5, 0.5);
                 float dist = length(d);
-                float alpha = 0.30 * smoothstep(1.0, 0.2, dist);
+                float alpha = 0.45 * smoothstep(1.0, 0.0, dist);
                 gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);
               }
             `}
