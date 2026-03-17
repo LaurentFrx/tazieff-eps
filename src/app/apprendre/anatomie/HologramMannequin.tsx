@@ -351,7 +351,12 @@ function MusclesModel({
   useFrame(({ camera, pointer }) => {
     mouse.copy(pointer);
     raycaster.setFromCamera(mouse, camera);
-    const hits = raycaster.intersectObjects(meshesRef.current, false);
+
+    // When a group is active, only raycast against that group's meshes
+    const targets = selectedGroup
+      ? meshesRef.current.filter((m) => (m.userData as MuscleUserData).groupKey === selectedGroup)
+      : meshesRef.current;
+    const hits = raycaster.intersectObjects(targets, false);
 
     if (hits.length > 0) {
       const mesh = hits[0].object as THREE.Mesh;
