@@ -330,7 +330,6 @@ function Scene({
   const turntableRef = useRef<Group>(null);
   const lightRef = useRef<DirectionalLight>(null);
   const shadowLightRef = useRef<DirectionalLight>(null);
-  const shadowReceiverRef = useRef<THREE.Mesh>(null);
   const controlsRef = useRef<CameraControlsImpl>(null);
 
   /* Turntable state */
@@ -390,16 +389,10 @@ function Scene({
       box.setFromObject(mannequin);
       const center = box.getCenter(new Vector3());
 
-      // Center shadow receiver on mannequin
-      if (shadowReceiverRef.current) {
-        shadowReceiverRef.current.position.set(0, center.y, 0.3);
-      }
-      // Point shadow light at mannequin center
-      if (shadowLightRef.current) {
-        shadowLightRef.current.target.position.set(0, center.y, 0);
-        if (shadowLightRef.current.parent) {
-          shadowLightRef.current.parent.add(shadowLightRef.current.target);
-        }
+      // Shadow light targets the feet (origin after centering)
+      if (shadowLightRef.current?.parent) {
+        shadowLightRef.current.target.position.set(0, 0, 0);
+        shadowLightRef.current.parent.add(shadowLightRef.current.target);
         shadowLightRef.current.target.updateMatrixWorld();
       }
 
@@ -515,32 +508,31 @@ function Scene({
           intensity={0.6}
         />
 
-        {/* Shadow-casting light: behind-left-above, projects shadow forward-right-down */}
+        {/* Shadow-casting light: left-above-behind → shadow at ~110° from vertical */}
         <directionalLight
           ref={shadowLightRef}
-          position={[-2, 6, -3]}
+          position={[-4, 1.5, -2]}
           intensity={0.05}
           castShadow
           shadow-mapSize-width={2048}
           shadow-mapSize-height={2048}
           shadow-camera-far={15}
-          shadow-camera-left={-3}
-          shadow-camera-right={3}
+          shadow-camera-left={-4}
+          shadow-camera-right={4}
           shadow-camera-top={5}
-          shadow-camera-bottom={-1}
-          shadow-bias={-0.002}
-          shadow-normalBias={0.02}
+          shadow-camera-bottom={-2}
+          shadow-bias={-0.001}
+          shadow-normalBias={0.05}
         />
 
-        {/* Shadow receiver — vertical plane facing camera, centered dynamically */}
+        {/* Shadow receiver — vertical plane facing camera */}
         <mesh
-          ref={shadowReceiverRef}
-          position={[0, 1.0, 0.3]}
+          position={[0, 0.8, 0.3]}
           receiveShadow
           renderOrder={-1}
           raycast={() => {}}
         >
-          <planeGeometry args={[6, 4]} />
+          <planeGeometry args={[8, 5]} />
           <shadowMaterial
             opacity={0.3}
             transparent
