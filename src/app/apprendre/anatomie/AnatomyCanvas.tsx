@@ -100,8 +100,6 @@ function BackgroundPlane({ x, y, z, width, height }: {
   );
 }
 
-/* ── Shadow at feet — simple dark ellipse ─────────────────────────── */
-
 /* ── Slider definitions for debug panel ────────────────────────────── */
 
 type SliderDef = { key: keyof DebugSettings; label: string; min: number; max: number; step: number };
@@ -377,7 +375,6 @@ function Scene({
   }, [settings.dollySpeed, settings.truckSpeed, settings.smoothTime, settings.minDistance, settings.maxDistance]);
 
   /* Center camera on mannequin + anchor feet to ground */
-  const shadowRef = useRef<THREE.Mesh>(null);
   useEffect(() => {
     const controls = controlsRef.current;
     const mannequin = mannequinGroupRef.current;
@@ -390,17 +387,6 @@ function Scene({
       // Recompute after repositioning
       box.setFromObject(mannequin);
       const center = box.getCenter(new Vector3());
-
-      // Position shadow at feet level (box.min.y is now 0 after centering)
-      if (shadowRef.current) {
-        shadowRef.current.position.set(0, 0.005, 0);
-        const wp = new Vector3();
-        shadowRef.current.getWorldPosition(wp);
-        console.log("[SHADOW] feet Y after centering:", box.min.y.toFixed(3));
-        console.log("[SHADOW] shadow world pos:", wp.toArray().map(v => v.toFixed(3)));
-        console.log("[SHADOW] shadow visible:", shadowRef.current.visible);
-        console.log("[SHADOW] shadow parent type:", shadowRef.current.parent?.type);
-      }
 
       // Orthographic: position camera in front, looking at center
       controls.setLookAt(0, center.y, 5, 0, center.y, 0, false);
@@ -514,18 +500,20 @@ function Scene({
           intensity={0.6}
         />
 
-        {/* Shadow — flat box, NO rotation (naturally horizontal) */}
+        {/* Shadow ellipse — vertical plane facing camera, positioned at feet */}
         <mesh
-          ref={shadowRef}
-          position={[0, 0.005, 0]}
-          renderOrder={0}
+          position={[0, 0.35, 0.01]}
+          renderOrder={-1}
           raycast={() => {}}
         >
-          <boxGeometry args={[1.5, 0.001, 1.0]} />
+          <planeGeometry args={[1.6, 0.7]} />
           <meshBasicMaterial
-            color="red"
-            depthTest={false}
+            color="#000000"
+            transparent
+            opacity={0.25}
             depthWrite={false}
+            depthTest={false}
+            side={THREE.DoubleSide}
           />
         </mesh>
 
