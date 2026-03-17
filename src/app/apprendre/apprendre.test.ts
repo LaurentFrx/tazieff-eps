@@ -166,9 +166,9 @@ describe("Anatomy data — MUSCLE_GROUPS", () => {
 
   it("expected groups are present", () => {
     const expected = [
-      "dorsaux", "pectoraux", "abdominaux", "deltoides",
-      "biceps", "triceps", "flechisseurs", "fessiers",
-      "quadriceps", "ischio_jambiers", "adducteurs", "mollets",
+      "pectoraux", "epaules", "bras_anterieurs", "triceps",
+      "abdominaux", "dos", "fessiers", "cuisses_avant",
+      "cuisses_arriere", "adducteurs", "mollets", "flechisseurs",
     ];
     expect(groupKeys.sort()).toEqual(expected.sort());
   });
@@ -208,22 +208,22 @@ describe("Anatomy data — utility functions", () => {
   });
 
   it("getGroupForNode finds correct group", () => {
-    expect(getGroupForNode("latissimus_dorsi")).toBe("dorsaux");
+    expect(getGroupForNode("latissimus_dorsi")).toBe("dos");
     expect(getGroupForNode("pectoralis_major")).toBe("pectoraux");
-    expect(getGroupForNode("biceps brachii")).toBe("biceps");
+    expect(getGroupForNode("biceps brachii")).toBe("bras_anterieurs");
     expect(getGroupForNode("gluteus_maximus")).toBe("fessiers");
     expect(getGroupForNode("unknown_bone")).toBeNull();
   });
 
   it("matchesGroup matches exercise muscle tags", () => {
-    const dorsaux = MUSCLE_GROUPS.dorsaux;
-    expect(matchesGroup(dorsaux, "Grand dorsal")).toBe(true);
-    expect(matchesGroup(dorsaux, "Trapèze supérieur")).toBe(true);
-    expect(matchesGroup(dorsaux, "Biceps brachial")).toBe(false);
+    const dos = MUSCLE_GROUPS.dos;
+    expect(matchesGroup(dos, "Grand dorsal")).toBe(true);
+    expect(matchesGroup(dos, "Trapèze supérieur")).toBe(true);
+    expect(matchesGroup(dos, "Biceps brachial")).toBe(false);
 
-    const quadriceps = MUSCLE_GROUPS.quadriceps;
-    expect(matchesGroup(quadriceps, "Quadriceps")).toBe(true);
-    expect(matchesGroup(quadriceps, "Mollets")).toBe(false);
+    const cuisses_avant = MUSCLE_GROUPS.cuisses_avant;
+    expect(matchesGroup(cuisses_avant, "Quadriceps")).toBe(true);
+    expect(matchesGroup(cuisses_avant, "Mollets")).toBe(false);
   });
 });
 
@@ -231,18 +231,18 @@ describe("Anatomy data — utility functions", () => {
 
 describe("Anatomy — exercise matching coverage", () => {
   const GROUP_MUSCLES: Record<string, string[]> = {
-    dorsaux: ["Grand dorsal", "Trapèzes", "Rhomboïdes", "Infra-épineux", "Grand rond", "Carré des lombes", "Spinaux"],
     pectoraux: ["Grand pectoral", "Dentelé antérieur"],
-    abdominaux: ["Grand droit", "Obliques", "Transverse"],
-    deltoides: ["Deltoïde antérieur", "Deltoïde moyen", "Deltoïde postérieur"],
-    biceps: ["Biceps brachial", "Brachial", "Brachio-radial"],
+    epaules: ["Deltoïde antérieur", "Deltoïde moyen", "Deltoïde postérieur", "Infra-épineux", "Grand rond"],
+    bras_anterieurs: ["Biceps brachial", "Brachial", "Brachio-radial"],
     triceps: ["Triceps brachial"],
-    flechisseurs: ["Psoas-iliaque"],
+    abdominaux: ["Grand droit", "Oblique externe", "Transverse"],
+    dos: ["Trapèzes", "Grand dorsal", "Rhomboïdes", "Spinaux", "Carré des lombes"],
     fessiers: ["Grand fessier", "Moyen fessier"],
-    quadriceps: ["Droit fémoral", "Vastes"],
-    ischio_jambiers: ["Biceps fémoral", "Semi-tendineux", "Semi-membraneux"],
+    cuisses_avant: ["Droit fémoral", "Vaste latéral", "Vaste médial", "Couturier"],
+    cuisses_arriere: ["Biceps fémoral", "Semi-tendineux", "Semi-membraneux"],
     adducteurs: ["Grand adducteur", "Long adducteur", "Gracile"],
     mollets: ["Gastrocnémiens", "Soléaire"],
+    flechisseurs: ["Psoas-iliaque"],
   };
 
   it("GROUP_MUSCLES covers all 12 MUSCLE_GROUPS", () => {

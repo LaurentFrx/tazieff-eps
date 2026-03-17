@@ -7,15 +7,15 @@ import {
 /* ── Pure utility tests ────────────────────────────────────────────────── */
 
 describe("getExerciseMuscleGroups", () => {
-  it("maps pectoraux + triceps + deltoides", () => {
+  it("maps pectoraux + triceps + epaules", () => {
     const result = getExerciseMuscleGroups([
       "Pectoraux",
       "triceps",
-      "deltoides anterieurs",
+      "deltoïde antérieur",
     ]);
     expect(result).toContain("pectoraux");
     expect(result).toContain("triceps");
-    expect(result).toContain("deltoides");
+    expect(result).toContain("epaules");
   });
 
   it("maps abdos variants to abdominaux group", () => {
@@ -36,14 +36,14 @@ describe("getExerciseMuscleGroups", () => {
     expect(getExerciseMuscleGroups([])).toHaveLength(0);
   });
 
-  it("maps dorsaux-related terms", () => {
+  it("maps dos-related terms", () => {
     const result = getExerciseMuscleGroups(["Grand dorsal", "Trapèzes"]);
-    expect(result).toContain("dorsaux");
+    expect(result).toContain("dos");
   });
 
-  it("maps ischio-jambiers", () => {
+  it("maps ischio-jambiers to cuisses_arriere", () => {
     const result = getExerciseMuscleGroups(["Ischio-jambiers"]);
-    expect(result).toContain("ischio_jambiers");
+    expect(result).toContain("cuisses_arriere");
   });
 
   it("deduplicates groups from multiple matching muscles", () => {
@@ -61,7 +61,7 @@ describe("getExerciseMuscleGroups", () => {
 describe("isPosteriorDominant", () => {
   it("returns true for mostly dorsal groups", () => {
     expect(
-      isPosteriorDominant(["dorsaux", "ischio_jambiers", "fessiers"]),
+      isPosteriorDominant(["dos", "cuisses_arriere", "fessiers"]),
     ).toBe(true);
   });
 
@@ -70,7 +70,7 @@ describe("isPosteriorDominant", () => {
   });
 
   it("returns false for 50/50 split", () => {
-    expect(isPosteriorDominant(["dorsaux", "pectoraux"])).toBe(false);
+    expect(isPosteriorDominant(["dos", "pectoraux"])).toBe(false);
   });
 
   it("returns false for empty array", () => {
@@ -79,7 +79,7 @@ describe("isPosteriorDominant", () => {
 
   it("returns true when majority is posterior", () => {
     expect(
-      isPosteriorDominant(["dorsaux", "fessiers", "quadriceps"]),
+      isPosteriorDominant(["dos", "fessiers", "cuisses_avant"]),
     ).toBe(true);
   });
 });
