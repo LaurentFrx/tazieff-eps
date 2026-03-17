@@ -391,10 +391,24 @@ function Scene({
       box.setFromObject(mannequin);
       const center = box.getCenter(new Vector3());
 
-      // Position shadow at feet level (y=0) in turntable space
+      // Position shadow at feet level in turntable space
       if (shadowRef.current) {
-        shadowRef.current.position.y = 0.01;
+        shadowRef.current.position.y = 0.02;
       }
+
+      // DIAGNOSTIC — remove after shadow works
+      console.log("[SHADOW DIAG] mannequin bounds:", {
+        minY: box.min.y.toFixed(3),
+        maxY: box.max.y.toFixed(3),
+        centerY: center.y.toFixed(3),
+        height: (box.max.y - box.min.y).toFixed(3),
+      });
+      console.log("[SHADOW DIAG] shadow ref:", {
+        exists: !!shadowRef.current,
+        position: shadowRef.current?.position.toArray(),
+        visible: shadowRef.current?.visible,
+        parent: shadowRef.current?.parent?.type,
+      });
 
       // Orthographic: position camera in front, looking at center
       controls.setLookAt(0, center.y, 5, 0, center.y, 0, false);
@@ -500,15 +514,21 @@ function Scene({
         height={settings.bgHeight}
       />
 
+      {/* DIAGNOSTIC: red cube at scene center — REMOVE after shadow works */}
+      <mesh position={[0, 1, 0]}>
+        <boxGeometry args={[0.3, 0.3, 0.3]} />
+        <meshBasicMaterial color="red" />
+      </mesh>
+
       <group>
-        {/* Fixed directional light (no shadow map — ContactShadows handles it) */}
+        {/* Fixed directional light */}
         <directionalLight
           ref={lightRef}
           position={[-3, 6, -2]}
           intensity={0.6}
         />
 
-        {/* Shadow at foot level — positioned after centering */}
+        {/* Shadow at foot level */}
         <mesh
           ref={shadowRef}
           rotation={[-Math.PI / 2, 0, 0]}
