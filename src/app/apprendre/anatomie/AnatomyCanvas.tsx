@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { CameraControls, ContactShadows, useTexture } from "@react-three/drei";
+import { CameraControls, useTexture } from "@react-three/drei";
+import * as THREE from "three";
 import {
   Box3,
   ClampToEdgeWrapping,
@@ -95,6 +96,45 @@ function BackgroundPlane({ x, y, z, width, height }: {
     <mesh position={[x, y, z]} renderOrder={-2}>
       <planeGeometry args={[width, height]} />
       <meshBasicMaterial map={texture} depthWrite={false} />
+    </mesh>
+  );
+}
+
+/* ── Blob shadow — radial gradient on horizontal plane ────────────── */
+
+function BlobShadow({ y = -0.01, opacity = 0.35, radius = 1.2 }: {
+  y?: number; opacity?: number; radius?: number;
+}) {
+  const texture = useMemo(() => {
+    const size = 128;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d")!;
+    const gradient = ctx.createRadialGradient(
+      size / 2, size / 2, 0,
+      size / 2, size / 2, size / 2,
+    );
+    gradient.addColorStop(0, "rgba(0,0,0,1)");
+    gradient.addColorStop(0.5, "rgba(0,0,0,0.6)");
+    gradient.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size, size);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.needsUpdate = true;
+    return tex;
+  }, []);
+
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, y, 0]} renderOrder={0}>
+      <planeGeometry args={[radius * 2, radius * 2]} />
+      <meshBasicMaterial
+        map={texture}
+        transparent
+        opacity={opacity}
+        depthWrite={false}
+        depthTest={true}
+      />
     </mesh>
   );
 }
@@ -499,18 +539,8 @@ function Scene({
           intensity={0.6}
         />
 
-        {/* Contact shadow at foot level — independent FBO, no stencil interaction */}
-        <ContactShadows
-          position={[0, -0.01, 0]}
-          opacity={0.4}
-          scale={10}
-          blur={2.5}
-          far={4}
-          resolution={256}
-          frames={Infinity}
-          color="#000000"
-          renderOrder={0}
-        />
+        {/* Blob shadow at foot level — radial gradient, no stencil interaction */}
+        <BlobShadow y={-0.01} opacity={0.35} radius={1.2} />
 
         {/* Turntable — rotates mannequin on Y axis */}
         <group ref={turntableRef} scale={settings.mannequinScale}>
