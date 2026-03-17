@@ -391,9 +391,15 @@ function Scene({
       box.setFromObject(mannequin);
       const center = box.getCenter(new Vector3());
 
-      // Position shadow at feet level in turntable space
+      // Position shadow at feet level (box.min.y is now 0 after centering)
       if (shadowRef.current) {
-        shadowRef.current.position.y = 0.02;
+        shadowRef.current.position.set(0, 0.005, 0);
+        const wp = new Vector3();
+        shadowRef.current.getWorldPosition(wp);
+        console.log("[SHADOW] feet Y after centering:", box.min.y.toFixed(3));
+        console.log("[SHADOW] shadow world pos:", wp.toArray().map(v => v.toFixed(3)));
+        console.log("[SHADOW] shadow visible:", shadowRef.current.visible);
+        console.log("[SHADOW] shadow parent type:", shadowRef.current.parent?.type);
       }
 
       // Orthographic: position camera in front, looking at center
@@ -508,23 +514,18 @@ function Scene({
           intensity={0.6}
         />
 
-        {/* Shadow ellipse at foot level — dark warm tint for contrast on wood deck */}
+        {/* Shadow — flat box, NO rotation (naturally horizontal) */}
         <mesh
           ref={shadowRef}
-          rotation={[-Math.PI / 2, 0, 0]}
-          position={[0.1, 0.02, 0.05]}
-          scale={[1.3, 0.7, 1]}
+          position={[0, 0.005, 0]}
           renderOrder={0}
           raycast={() => {}}
         >
-          <circleGeometry args={[0.7, 32]} />
+          <boxGeometry args={[1.5, 0.001, 1.0]} />
           <meshBasicMaterial
-            color="#0a0505"
-            transparent
-            opacity={0.55}
-            depthWrite={false}
+            color="red"
             depthTest={false}
-            side={THREE.DoubleSide}
+            depthWrite={false}
           />
         </mesh>
 
