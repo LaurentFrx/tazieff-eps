@@ -493,27 +493,40 @@ function Scene({
       />
 
       <group>
-        {/* Fixed directional light */}
+        {/* Ambient fill light */}
         <directionalLight
           ref={lightRef}
           position={[-3, 6, -2]}
           intensity={0.6}
         />
 
-        {/* Shadow — vertical plane offset right (sun from left) */}
+        {/* Shadow-casting light: behind-left-above mannequin, projects shadow forward onto receiver */}
+        <directionalLight
+          position={[-2, 4, -3]}
+          intensity={0.001}
+          castShadow
+          shadow-mapSize-width={1024}
+          shadow-mapSize-height={1024}
+          shadow-camera-far={10}
+          shadow-camera-left={-2}
+          shadow-camera-right={2}
+          shadow-camera-top={4}
+          shadow-camera-bottom={-1}
+          shadow-bias={-0.002}
+        />
+
+        {/* Shadow receiver — vertical plane facing camera, at feet level */}
         <mesh
-          position={[0.35, 0.12, 0.01]}
+          position={[0.15, 0.9, 0.4]}
+          receiveShadow
           renderOrder={-1}
           raycast={() => {}}
         >
-          <planeGeometry args={[1.6, 0.45]} />
-          <meshBasicMaterial
-            color="#000000"
+          <planeGeometry args={[3, 3]} />
+          <shadowMaterial
+            opacity={0.35}
             transparent
-            opacity={0.5}
             depthWrite={false}
-            depthTest={false}
-            side={THREE.DoubleSide}
           />
         </mesh>
 
@@ -585,6 +598,7 @@ export default function AnatomyCanvas({
     <>
       <Canvas
         orthographic
+        shadows
         camera={{ position: [0, 0.8, 5], zoom: 250, near: 0.01, far: 100 }}
         gl={{ antialias: true, stencil: true }}
       >
