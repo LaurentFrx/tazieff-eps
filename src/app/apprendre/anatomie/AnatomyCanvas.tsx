@@ -87,7 +87,17 @@ const INERTIA_EPSILON = 0.0001;
 const SHADOW_MAT = new THREE.MeshBasicMaterial({
   color: 0x000000,
   transparent: true,
-  opacity: 0.25,
+  opacity: 0.35,
+  depthWrite: false,
+  depthTest: true,
+  side: THREE.DoubleSide,
+  stencilWrite: false,
+});
+
+const PENUMBRA_MAT = new THREE.MeshBasicMaterial({
+  color: 0x000000,
+  transparent: true,
+  opacity: 0.12,
   depthWrite: false,
   depthTest: true,
   side: THREE.DoubleSide,
@@ -138,8 +148,8 @@ function PlanarShadow({ mannequinGroupRef }: { mannequinGroupRef: React.RefObjec
       const box = new THREE.Box3().setFromObject(mannequin);
       const groundY = box.min.y;
 
-      // Light direction: from upper-left-behind (sun)
-      const lightDir = new THREE.Vector3(-0.4, 1.0, -0.3).normalize();
+      // Light direction: sun at ~45° elevation, upper-left-behind
+      const lightDir = new THREE.Vector3(-0.5, 0.7, -0.4).normalize();
       const shadowMatrix = makePlanarShadowMatrix(groundY, lightDir);
 
       // Clear previous clones
@@ -147,25 +157,36 @@ function PlanarShadow({ mannequinGroupRef }: { mannequinGroupRef: React.RefObjec
         shadowGroup.remove(shadowGroup.children[0]);
       }
 
-      // Clone visible meshes from all GLB scenes
-      const sources = [silhouetteScene, musclesScene, musclesExtraScene];
-      for (const src of sources) {
-        src.traverse((child) => {
-          if ((child as THREE.Mesh).isMesh && child.visible) {
-            const mesh = child as THREE.Mesh;
-            const clone = new THREE.Mesh(mesh.geometry, SHADOW_MAT);
-            // Copy the world transform of the original mesh
-            clone.matrixAutoUpdate = false;
-            mesh.updateWorldMatrix(true, false);
-            clone.matrix.copy(mesh.matrixWorld);
-            // Apply the shadow projection on top
-            clone.matrix.premultiply(shadowMatrix);
-            clone.renderOrder = -1;
-            clone.raycast = () => {};
-            shadowGroup.add(clone);
-          }
-        });
-      }
+      // Helper: clone all visible meshes with a given material into a sub-group
+      const cloneInto = (parent: THREE.Group, mat: THREE.Material) => {
+        const sources = [silhouetteScene, musclesScene, musclesExtraScene];
+        for (const src of sources) {
+          src.traverse((child) => {
+            if ((child as THREE.Mesh).isMesh && child.visible) {
+              const mesh = child as THREE.Mesh;
+              const clone = new THREE.Mesh(mesh.geometry, mat);
+              clone.matrixAutoUpdate = false;
+              mesh.updateWorldMatrix(true, false);
+              clone.matrix.copy(mesh.matrixWorld);
+              clone.matrix.premultiply(shadowMatrix);
+              clone.renderOrder = -1;
+              clone.raycast = () => {};
+              parent.add(clone);
+            }
+          });
+        }
+      };
+
+      // Main shadow layer
+      const mainGroup = new THREE.Group();
+      cloneInto(mainGroup, SHADOW_MAT);
+      shadowGroup.add(mainGroup);
+
+      // Penumbra layer (slightly larger, more transparent)
+      const penumbraGroup = new THREE.Group();
+      cloneInto(penumbraGroup, PENUMBRA_MAT);
+      penumbraGroup.scale.set(1.06, 1.0, 1.06);
+      shadowGroup.add(penumbraGroup);
     }, 200); // Small delay to ensure centering has run
 
     return () => clearTimeout(timer);
