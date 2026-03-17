@@ -500,35 +500,20 @@ function Scene({
           intensity={0.6}
         />
 
-        {/* Shadow — vertical plane, offset right (sun from left), gradient ellipse */}
+        {/* Shadow — vertical plane offset right (sun from left) */}
         <mesh
-          position={[0.3, 0.15, 0.01]}
+          position={[0.25, 0.2, 0.01]}
           renderOrder={-1}
           raycast={() => {}}
         >
-          <planeGeometry args={[1.4, 0.6]} />
-          <shaderMaterial
+          <planeGeometry args={[1.2, 0.5]} />
+          <meshBasicMaterial
+            color="#000000"
             transparent
+            opacity={0.3}
             depthWrite={false}
             depthTest={false}
             side={THREE.DoubleSide}
-            vertexShader={`
-              varying vec2 vUv;
-              void main() {
-                vUv = uv;
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-              }
-            `}
-            fragmentShader={`
-              varying vec2 vUv;
-              void main() {
-                vec2 center = vec2(0.5, 0.5);
-                vec2 d = (vUv - center) / vec2(0.5, 0.5);
-                float dist = length(d);
-                float alpha = 0.45 * smoothstep(1.0, 0.0, dist);
-                gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);
-              }
-            `}
           />
         </mesh>
 
