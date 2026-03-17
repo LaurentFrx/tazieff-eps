@@ -77,31 +77,6 @@
   touch-action: none;
 }
 
-/* ── HUD overlay on canvas ──────────────────────────────────────────────── */
-
-.anatomy-hud-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 16px;
-  z-index: 2;
-}
-
-.anatomy-hud-top { text-align: center; }
-.anatomy-hud-bottom { text-align: center; }
-
-.anatomy-hud {
-  font-family: var(--font-mono), "Space Mono", monospace;
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: rgba(255, 255, 255, 0.7);
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
-}
-
 /* ── Loading placeholder ────────────────────────────────────────────────── */
 
 .anatomy-loading {
@@ -115,81 +90,6 @@
   letter-spacing: 0.15em;
   color: rgba(255, 255, 255, 0.7);
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-}
-
-/* ── Desktop hover tooltip ─────────────────────────────────────────────── */
-
-.anatomy-tooltip {
-  position: absolute;
-  bottom: 60px;
-  left: 50%;
-  transform: translateX(-50%);
-  pointer-events: none;
-  background: rgba(2, 8, 20, 0.92);
-  border: 1px solid rgba(0, 212, 255, 0.3);
-  border-radius: 6px;
-  padding: 8px 14px;
-  z-index: 10;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.anatomy-tooltip-name {
-  font-size: 12px;
-  font-weight: 700;
-  color: #fff;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.anatomy-tooltip-group {
-  font-size: 9px;
-  color: rgba(0, 212, 255, 0.6);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-top: 2px;
-}
-
-/* ── Floating label (tap on muscle) ────────────────────────────────────── */
-
-.anatomy-label {
-  position: fixed;
-  z-index: 15;
-  pointer-events: none;
-  background: rgba(2, 8, 20, 0.88);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 212, 255, 0.3);
-  border-radius: 8px;
-  padding: 8px 12px;
-  transform: translate(-50%, -100%);
-  animation: label-in 0.15s ease both;
-}
-
-@keyframes label-in {
-  from { opacity: 0; transform: translate(-50%, -100%) scale(0.92); }
-  to   { opacity: 1; transform: translate(-50%, -100%) scale(1); }
-}
-
-.anatomy-label-name {
-  font-size: 13px;
-  font-weight: 700;
-  color: #fff;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-}
-
-.anatomy-label-group {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--holo-blue);
-  margin-top: 2px;
-  white-space: nowrap;
 }
 
 /* ── Shared: group color dot ───────────────────────────────────────────── */
@@ -289,6 +189,37 @@
 .anatomy-submenu-chip--active {
   border-color: rgba(0, 212, 255, 0.5);
   background: rgba(0, 212, 255, 0.15);
+}
+
+/* ── Sub-menu detail (selected sub-muscle name + exercise link) ────────── */
+
+.anatomy-submenu-detail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.anatomy-submenu-detail-name {
+  font-family: var(--font-mono), "Space Mono", monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.anatomy-submenu-detail-link {
+  display: inline-block;
+  font-family: var(--font-mono), "Space Mono", monospace;
+  font-size: 13px;
+  color: var(--holo-blue, #00d4ff);
+  text-decoration: none;
+  white-space: nowrap;
+  pointer-events: auto;
 }
 
 /* ── Layer toolbar (top right) ──────────────────────────────────────────── */

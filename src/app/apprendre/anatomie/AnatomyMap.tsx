@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { LiveExerciseListItem } from "@/lib/live/types";
-import { MUSCLE_GROUPS, GROUP_MUSCLES, LAYERED_GROUPS, matchesGroup, getLayeredMuscles, getSubMuscleColor, isLayeredGroup } from "./anatomy-data";
+import { MUSCLE_GROUPS, LAYERED_GROUPS, matchesGroup, getLayeredMuscles, getSubMuscleColor, isLayeredGroup } from "./anatomy-data";
 import "./anatomy.css";
 
 const AnatomyCanvas = dynamic(() => import("./AnatomyCanvas"), {
@@ -18,13 +18,6 @@ type Props = {
   exercises: LiveExerciseListItem[];
 };
 
-type LabelInfo = {
-  name: string;
-  groupKey: string;
-  x: number;
-  y: number;
-};
-
 /* ─── Main component ──────────────────────────────────────────────────── */
 
 export default function AnatomyMap({ exercises }: Props) {
@@ -32,101 +25,80 @@ export default function AnatomyMap({ exercises }: Props) {
   const router = useRouter();
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [highlightedMuscle, setHighlightedMuscle] = useState<string | null>(null);
-  const [label, setLabel] = useState<LabelInfo | null>(null);
-  const [sheetGroupKey, setSheetGroupKey] = useState<string | null>(null);
   const [legendOpen, setLegendOpen] = useState(false);
   const [showSkeleton, setShowSkeleton] = useState(false);
   const [showWireframe, setShowWireframe] = useState(true);
   const [showMuscles, setShowMuscles] = useState(true);
-  const [layeredSubmenu, setLayeredSubmenu] = useState<{
-    groupKey: string;
-    muscles: string[];
-    x: number;
-    y: number;
-  } | null>(null);
 
-  /* ── Exercises matching sheet group ──────────────────────────────────── */
-  const sheetExercises = useMemo(() => {
-    if (!sheetGroupKey) return [];
-    const group = MUSCLE_GROUPS[sheetGroupKey];
-    if (!group) return [];
+  /* ── Exercise count for selected group ─────────────────────────────── */
+  const groupExerciseCount = useMemo(() => {
+    if (!selectedGroup) return 0;
+    const group = MUSCLE_GROUPS[selectedGroup];
+    if (!group) return 0;
     return exercises.filter((ex) =>
       ex.muscles.some((m) => matchesGroup(group, m)),
-    );
-  }, [sheetGroupKey, exercises]);
+    ).length;
+  }, [selectedGroup, exercises]);
 
-  /* ── Tap on muscle → floating label (or sub-menu for layered groups) ── */
-  const handleClickMuscle = useCallback(
-    (frName: string | null, groupKey: string | null, x: number, y: number) => {
-      if (!frName || !groupKey) {
-        setLabel(null);
-        setSelectedGroup(null);
-        setHighlightedMuscle(null);
-        setLayeredSubmenu(null);
-        return;
-      }
-
-      const layers = getLayeredMuscles(groupKey);
-      if (layers) {
-        // Layered group: highlight whole group + show sub-menu picker
-        setSelectedGroup(groupKey);
-        setHighlightedMuscle(null);
-        setLabel(null);
-        setLayeredSubmenu({ groupKey, muscles: layers, x, y });
-        return;
-      }
-
-      // Non-layered: existing behavior
-      setLayeredSubmenu(null);
-      setLabel({ name: frName, groupKey, x, y });
-      setSelectedGroup(groupKey);
-      setHighlightedMuscle(frName);
-    },
-    [],
+  /* ── Layered muscles for the selected group (null if non-layered) ─── */
+  const layeredMuscles = useMemo(
+    () => (selectedGroup ? getLayeredMuscles(selectedGroup) : null),
+    [selectedGroup],
   );
 
-  /* ── Sub-muscle selection from layered group sub-menu ─────────────── */
-  const handleSubmuscleSelect = useCallback(
+  /* ── Clear all selection ───────────────────────────────────────────── */
+  const clearSelection = useCallback(() => {
+    setSelectedGroup(null);
+    setHighlightedMuscle(null);
+  }, []);
+
+  /* ── Tap on muscle → select group ──────────────────────────────────── */
+  const handleClickMuscle = useCallback(
+    (frName: string | null, groupKey: string | null, _x: number, _y: number) => {
+      if (!frName || !groupKey) {
+        clearSelection();
+        return;
+      }
+      // If tapping a muscle in the already-selected group, highlight it
+      if (groupKey === selectedGroup && layeredMuscles) {
+        if (highlightedMuscle === frName) {
+          setHighlightedMuscle(null);
+        } else {
+          setHighlightedMuscle(frName);
+        }
+        return;
+      }
+      // Select the group
+      setSelectedGroup(groupKey);
+      setHighlightedMuscle(null);
+    },
+    [selectedGroup, layeredMuscles, highlightedMuscle, clearSelection],
+  );
+
+  /* ── Sub-muscle chip toggle ────────────────────────────────────────── */
+  const handleChipSelect = useCallback(
     (muscleName: string) => {
-      if (!layeredSubmenu) return;
-      // Toggle: tap same muscle again → deselect back to group view
       if (highlightedMuscle === muscleName) {
         setHighlightedMuscle(null);
-        setLabel(null);
       } else {
         setHighlightedMuscle(muscleName);
-        setLabel(null);
       }
     },
-    [layeredSubmenu, highlightedMuscle],
+    [highlightedMuscle],
   );
 
-  /* ── Long press / dblclick → bottom sheet ───────────────────────────── */
+  /* ── Long press → same as tap (no separate behavior) ───────────────── */
   const handleLongPressMuscle = useCallback(
     (frName: string, groupKey: string, _x: number, _y: number) => {
-      setLabel({ name: frName, groupKey, x: _x, y: _y });
       setSelectedGroup(groupKey);
       setHighlightedMuscle(frName);
-      setSheetGroupKey(groupKey);
-      setLayeredSubmenu(null);
     },
     [],
   );
 
-  /* ── Hover (desktop tooltip) ────────────────────────────────────────── */
-  const [tooltip, setTooltip] = useState<{
-    name: string;
-    group: string | null;
-  } | null>(null);
-
+  /* ── Hover (no-op — hover tooltip removed) ─────────────────────────── */
   const handleHoverMuscle = useCallback(
-    (frName: string | null, groupKey: string | null) => {
-      if (frName) {
-        setTooltip({ name: frName, group: groupKey ? MUSCLE_GROUPS[groupKey]?.id : null });
-      } else {
-        setTooltip(null);
-      }
-    },
+    (_frName: string | null, _groupKey: string | null) => {},
     [],
   );
 
@@ -134,8 +106,6 @@ export default function AnatomyMap({ exercises }: Props) {
   const handleLegendSelect = useCallback((key: string) => {
     setSelectedGroup((prev) => (prev === key ? null : key));
     setHighlightedMuscle(null);
-    setLabel(null);
-    setLayeredSubmenu(null);
     setLegendOpen(false);
   }, []);
 
@@ -166,89 +136,57 @@ export default function AnatomyMap({ exercises }: Props) {
             onClickMuscle={handleClickMuscle}
             onLongPressMuscle={handleLongPressMuscle}
           />
-
-          {/* HUD overlay */}
-          <div className="anatomy-hud-overlay">
-            <div className="anatomy-hud-top">
-              {selectedGroup && (
-                <div className="anatomy-hud">
-                  {t(`anatomy.groups.${selectedGroup}`)}
-                </div>
-              )}
-            </div>
-            <div className="anatomy-hud-bottom">
-              {!selectedGroup && (
-                <div className="anatomy-hud">
-                  {`${Object.keys(MUSCLE_GROUPS).length} ${t("anatomy.groups_word")}`}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Desktop hover tooltip — hidden when layered submenu is open */}
-          {tooltip && !label && !layeredSubmenu && (
-            <div className="anatomy-tooltip">
-              <div className="anatomy-tooltip-name">{tooltip.name}</div>
-              {tooltip.group && (
-                <div className="anatomy-tooltip-group">
-                  {t(`anatomy.groups.${tooltip.group}`)}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
-      {/* ── Floating label (tap on muscle) ─────────────────────────────── */}
-      {label && !layeredSubmenu && (
-        <div
-          className="anatomy-label"
-          style={{
-            left: `clamp(16px, ${label.x}px, calc(100vw - 200px))`,
-            top: `clamp(16px, ${label.y - 16}px, calc(100vh - 80px))`,
-          }}
-        >
-          <div className="anatomy-label-name">{label.name}</div>
-          <div className="anatomy-label-group">
-            <span
-              className="anatomy-group-dot"
-              style={{ background: MUSCLE_GROUPS[label.groupKey]?.color }}
-            />
-            {t(`anatomy.groups.${label.groupKey}`)}
-          </div>
-        </div>
-      )}
-
-      {/* ── Layered group bottom bar (e.g. abdominaux) ──────────────────── */}
-      {layeredSubmenu && (
+      {/* ── Bottom sheet (unified — group + chips + exercise link) ────── */}
+      {selectedGroup && (
         <div className="anatomy-submenu">
           <div className="anatomy-submenu-header">
-            <span>{t(`anatomy.groups.${layeredSubmenu.groupKey}`)}</span>
+            <span>{t(`anatomy.groups.${selectedGroup}`)}</span>
             <button
               type="button"
               className="anatomy-submenu-close"
-              onClick={() => { setLayeredSubmenu(null); setSelectedGroup(null); setHighlightedMuscle(null); }}
+              onClick={clearSelection}
               aria-label={t("anatomy.close")}
             >
               ✕
             </button>
           </div>
-          <div className="anatomy-submenu-chips">
-            {layeredSubmenu.muscles.map((muscle) => (
-              <button
-                key={muscle}
-                type="button"
-                className={`anatomy-submenu-chip${highlightedMuscle === muscle ? " anatomy-submenu-chip--active" : ""}`}
-                onClick={() => handleSubmuscleSelect(muscle)}
-              >
-                <span
-                  className="anatomy-group-dot"
-                  style={{ background: getSubMuscleColor(layeredSubmenu.groupKey, muscle) ?? MUSCLE_GROUPS[layeredSubmenu.groupKey]?.color }}
-                />
-                {muscle}
-              </button>
-            ))}
-          </div>
+          {layeredMuscles && (
+            <div className="anatomy-submenu-chips">
+              {layeredMuscles.map((muscle) => (
+                <button
+                  key={muscle}
+                  type="button"
+                  className={`anatomy-submenu-chip${highlightedMuscle === muscle ? " anatomy-submenu-chip--active" : ""}`}
+                  style={highlightedMuscle === muscle ? { borderColor: getSubMuscleColor(selectedGroup, muscle) ?? undefined } : undefined}
+                  onClick={() => handleChipSelect(muscle)}
+                >
+                  <span
+                    className="anatomy-group-dot"
+                    style={{ background: getSubMuscleColor(selectedGroup, muscle) ?? MUSCLE_GROUPS[selectedGroup]?.color }}
+                  />
+                  {muscle}
+                </button>
+              ))}
+            </div>
+          )}
+          {highlightedMuscle && (
+            <div className="anatomy-submenu-detail">
+              <span className="anatomy-submenu-detail-name">{highlightedMuscle}</span>
+              {groupExerciseCount > 0 && (
+                <Link href="/exercices" className="anatomy-submenu-detail-link">
+                  {`${groupExerciseCount} ${groupExerciseCount === 1 ? t("anatomy.exerciseCount") : t("anatomy.exerciseCountPlural")} \u2192`}
+                </Link>
+              )}
+            </div>
+          )}
+          {!highlightedMuscle && !layeredMuscles && groupExerciseCount > 0 && (
+            <Link href="/exercices" className="anatomy-submenu-detail-link" style={{ marginTop: 4 }}>
+              {`${groupExerciseCount} ${groupExerciseCount === 1 ? t("anatomy.exerciseCount") : t("anatomy.exerciseCountPlural")} \u2192`}
+            </Link>
+          )}
         </div>
       )}
 
@@ -329,78 +267,6 @@ export default function AnatomyMap({ exercises }: Props) {
                 ))}
               </div>
             ))}
-          </div>
-        </>
-      )}
-
-      {/* ── Bottom sheet (long press / dblclick detail) ─────────────────── */}
-      {sheetGroupKey && (
-        <>
-          <div className="anatomy-backdrop" onClick={() => setSheetGroupKey(null)} />
-          <div className="anatomy-sheet">
-            <div className="anatomy-sheet-handle" />
-            <div className="anatomy-sheet-header">
-              <span
-                className="anatomy-group-dot"
-                style={{ background: MUSCLE_GROUPS[sheetGroupKey]?.color }}
-              />
-              <span className="anatomy-sheet-title">
-                {t(`anatomy.groups.${sheetGroupKey}`)}
-              </span>
-              <button
-                type="button"
-                className="anatomy-sheet-close"
-                onClick={() => setSheetGroupKey(null)}
-                aria-label={t("anatomy.close")}
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="anatomy-sheet-desc">
-              {t(`anatomy.groupInfo.${sheetGroupKey}`)}
-            </div>
-
-            <div className="anatomy-sheet-muscles">
-              {(GROUP_MUSCLES[sheetGroupKey] ?? []).map((m) => (
-                <span key={m} className="anatomy-sheet-muscle">
-                  {isLayeredGroup(sheetGroupKey) && (
-                    <span
-                      className="anatomy-group-dot"
-                      style={{ background: getSubMuscleColor(sheetGroupKey, m) ?? MUSCLE_GROUPS[sheetGroupKey]?.color }}
-                    />
-                  )}
-                  {m}
-                </span>
-              ))}
-            </div>
-
-            {sheetExercises.length > 0 ? (
-              <div className="anatomy-sheet-exercises">
-                <div className="anatomy-sheet-exercises-title">
-                  {sheetExercises.length}{" "}
-                  {sheetExercises.length === 1
-                    ? t("anatomy.exerciseCount")
-                    : t("anatomy.exerciseCountPlural")}
-                </div>
-                {sheetExercises.map((ex) => (
-                  <Link
-                    key={ex.slug}
-                    href={`/exercices/${ex.slug}`}
-                    className="anatomy-sheet-exercise"
-                  >
-                    <span className="anatomy-sheet-exercise-title">{ex.title}</span>
-                    {ex.level ? (
-                      <span className="anatomy-sheet-exercise-level">
-                        {t(`difficulty.${ex.level}`)}
-                      </span>
-                    ) : null}
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="anatomy-sheet-empty">{t("anatomy.noExercise")}</div>
-            )}
           </div>
         </>
       )}
