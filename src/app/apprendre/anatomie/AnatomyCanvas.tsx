@@ -525,9 +525,9 @@ function Scene({
           shadow-normalBias={0.05}
         />
 
-        {/* Shadow receiver — vertical plane close to mannequin to minimize offset */}
+        {/* Shadow receiver — at mannequin Z for zero projection offset */}
         <mesh
-          position={[0, 0.8, 0.05]}
+          position={[0, 0.8, -0.14]}
           receiveShadow
           renderOrder={-1}
           raycast={() => {}}
