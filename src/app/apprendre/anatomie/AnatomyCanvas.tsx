@@ -102,41 +102,31 @@ function BackgroundPlane({ x, y, z, width, height }: {
 
 /* ── Blob shadow — ShaderMaterial radial gradient on CircleGeometry ── */
 
-function BlobShadow({ y = -0.01, opacity = 0.35, radius = 1.2 }: {
-  y?: number; opacity?: number; radius?: number;
-}) {
-  const material = useMemo(() => new THREE.ShaderMaterial({
-    transparent: true,
-    depthWrite: false,
-    depthTest: true,
-    uniforms: {
-      uOpacity: { value: opacity },
-    },
-    vertexShader: /* glsl */ `
-      varying vec2 vUv;
-      void main() {
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: /* glsl */ `
-      uniform float uOpacity;
-      varying vec2 vUv;
-      void main() {
-        float d = distance(vUv, vec2(0.5));
-        float alpha = uOpacity * smoothstep(0.5, 0.1, d);
-        gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);
-      }
-    `,
-  }), [opacity]);
-
-  return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, y, 0]} renderOrder={0} raycast={() => {}}>
-      <circleGeometry args={[radius, 32]} />
-      <primitive object={material} attach="material" />
-    </mesh>
-  );
-}
+const blobShadowMaterial = new THREE.ShaderMaterial({
+  transparent: true,
+  depthWrite: false,
+  depthTest: true,
+  side: THREE.DoubleSide,
+  uniforms: {
+    uOpacity: { value: 0.35 },
+  },
+  vertexShader: /* glsl */ `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: /* glsl */ `
+    uniform float uOpacity;
+    varying vec2 vUv;
+    void main() {
+      float d = distance(vUv, vec2(0.5));
+      float alpha = uOpacity * smoothstep(0.5, 0.1, d);
+      gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);
+    }
+  `,
+});
 
 /* ── Slider definitions for debug panel ────────────────────────────── */
 
@@ -413,6 +403,7 @@ function Scene({
   }, [settings.dollySpeed, settings.truckSpeed, settings.smoothTime, settings.minDistance, settings.maxDistance]);
 
   /* Center camera on mannequin + anchor feet to ground */
+  const shadowRef = useRef<THREE.Mesh>(null);
   useEffect(() => {
     const controls = controlsRef.current;
     const mannequin = mannequinGroupRef.current;
@@ -425,6 +416,11 @@ function Scene({
       // Recompute after repositioning
       box.setFromObject(mannequin);
       const center = box.getCenter(new Vector3());
+
+      // Position shadow at feet level (y=0) in turntable space
+      if (shadowRef.current) {
+        shadowRef.current.position.y = 0.01;
+      }
 
       // Orthographic: position camera in front, looking at center
       controls.setLookAt(0, center.y, 5, 0, center.y, 0, false);
@@ -539,7 +535,16 @@ function Scene({
         />
 
         {/* Blob shadow at foot level — radial gradient, no stencil interaction */}
-        <BlobShadow y={-0.01} opacity={0.35} radius={1.2} />
+        <mesh
+          ref={shadowRef}
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, 0.01, 0]}
+          renderOrder={0}
+          raycast={() => {}}
+        >
+          <circleGeometry args={[1.2, 32]} />
+          <primitive object={blobShadowMaterial} attach="material" />
+        </mesh>
 
         {/* Turntable — rotates mannequin on Y axis */}
         <group ref={turntableRef} scale={settings.mannequinScale}>
