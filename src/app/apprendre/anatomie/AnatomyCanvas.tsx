@@ -131,33 +131,37 @@ function makePlanarShadowMatrix(groundY: number, lightDir: THREE.Vector3): THREE
   return m;
 }
 
-function PlanarShadow({ mannequinGroupRef }: { mannequinGroupRef: React.RefObject<Group | null> }) {
+const LIGHT_DIR_WORLD = new THREE.Vector3(-0.5, 0.7, -0.4).normalize();
+const Y_AXIS = new THREE.Vector3(0, 1, 0);
+
+function PlanarShadow({ mannequinGroupRef, turntableRef }: {
+  mannequinGroupRef: React.RefObject<Group | null>;
+  turntableRef: React.RefObject<Group | null>;
+}) {
   const groupRef = useRef<THREE.Group>(null);
+  const mainMGRef = useRef<THREE.Group>(null);
+  const penumbraMGRef = useRef<THREE.Group>(null);
+  const groundYRef = useRef(0);
   const { scene: silhouetteScene } = useGLTF("/models/silhouette_fixed.glb");
   const { scene: musclesScene } = useGLTF("/models/muscles.glb");
   const { scene: musclesExtraScene } = useGLTF("/models/muscles_manquants.glb");
 
+  // Clone meshes once — store only GLTF base matrices (no shadow projection)
   useEffect(() => {
-    const shadowGroup = groupRef.current;
     const mannequin = mannequinGroupRef.current;
-    if (!shadowGroup || !mannequin) return;
+    const mainMG = mainMGRef.current;
+    const penMG = penumbraMGRef.current;
+    if (!mannequin || !mainMG || !penMG) return;
 
-    // Wait for mannequin centering to complete
     const timer = setTimeout(() => {
-      // Compute ground Y from mannequin bounding box
       const box = new THREE.Box3().setFromObject(mannequin);
-      const groundY = box.min.y;
-
-      // Light direction: sun at ~45° elevation, upper-left-behind
-      const lightDir = new THREE.Vector3(-0.5, 0.7, -0.4).normalize();
-      const shadowMatrix = makePlanarShadowMatrix(groundY, lightDir);
+      groundYRef.current = box.min.y;
 
       // Clear previous clones
-      while (shadowGroup.children.length > 0) {
-        shadowGroup.remove(shadowGroup.children[0]);
+      for (const g of [mainMG, penMG]) {
+        while (g.children.length > 0) g.remove(g.children[0]);
       }
 
-      // Helper: clone all visible meshes with a given material into a sub-group
       const cloneInto = (parent: THREE.Group, mat: THREE.Material) => {
         const sources = [silhouetteScene, musclesScene, musclesExtraScene];
         for (const src of sources) {
@@ -168,8 +172,7 @@ function PlanarShadow({ mannequinGroupRef }: { mannequinGroupRef: React.RefObjec
               clone.matrixAutoUpdate = false;
               clone.frustumCulled = false;
               mesh.updateWorldMatrix(true, false);
-              clone.matrix.copy(mesh.matrixWorld);
-              clone.matrix.premultiply(shadowMatrix);
+              clone.matrix.copy(mesh.matrixWorld); // GLTF transform only
               clone.renderOrder = -1;
               clone.raycast = () => {};
               parent.add(clone);
@@ -178,27 +181,42 @@ function PlanarShadow({ mannequinGroupRef }: { mannequinGroupRef: React.RefObjec
         }
       };
 
-      // Main shadow layer
-      const mainGroup = new THREE.Group();
-      cloneInto(mainGroup, SHADOW_MAT);
-      shadowGroup.add(mainGroup);
-
-      // Penumbra layer (slightly larger, more transparent)
-      // Scale from shadow center (not origin) to avoid splitting into 2 shadows
-      const penumbraGroup = new THREE.Group();
-      cloneInto(penumbraGroup, PENUMBRA_MAT);
-      const mainBox = new THREE.Box3().setFromObject(mainGroup);
-      const center = mainBox.getCenter(new THREE.Vector3());
-      const s = 1.06;
-      penumbraGroup.scale.set(s, 1.0, s);
-      penumbraGroup.position.set(center.x * (1 - s), 0, center.z * (1 - s));
-      shadowGroup.add(penumbraGroup);
-    }, 200); // Small delay to ensure centering has run
+      cloneInto(mainMG, SHADOW_MAT);
+      cloneInto(penMG, PENUMBRA_MAT);
+    }, 200);
 
     return () => clearTimeout(timer);
   }, [silhouetteScene, musclesScene, musclesExtraScene, mannequinGroupRef]);
 
-  return <group ref={groupRef} />;
+  // Per-frame: counter-rotate light direction to cancel turntable rotation,
+  // so the shadow always falls in the same world-space direction.
+  useFrame(() => {
+    const turntable = turntableRef.current;
+    const mainMG = mainMGRef.current;
+    const penMG = penumbraMGRef.current;
+    if (!turntable || !mainMG || !penMG) return;
+
+    const θ = turntable.rotation.y;
+    // Counter-rotate: if turntable rotates by θ, rotate light by -θ
+    const L = LIGHT_DIR_WORLD.clone().applyAxisAngle(Y_AXIS, -θ);
+
+    const gY = groundYRef.current;
+
+    // Main shadow
+    mainMG.matrix.copy(makePlanarShadowMatrix(gY, L));
+    mainMG.matrixWorldNeedsUpdate = true;
+
+    // Penumbra (slightly lower groundY → wider projection)
+    penMG.matrix.copy(makePlanarShadowMatrix(gY - 0.04, L));
+    penMG.matrixWorldNeedsUpdate = true;
+  });
+
+  return (
+    <group ref={groupRef}>
+      <group ref={mainMGRef} matrixAutoUpdate={false} />
+      <group ref={penumbraMGRef} matrixAutoUpdate={false} />
+    </group>
+  );
 }
 
 /* ── Background plane — fixed in scene, follows camera zoom/pan ──── */
@@ -621,7 +639,7 @@ function Scene({
 
         {/* Turntable — rotates mannequin on Y axis */}
         <group ref={turntableRef} scale={settings.mannequinScale}>
-          <PlanarShadow mannequinGroupRef={mannequinGroupRef} />
+          <PlanarShadow mannequinGroupRef={mannequinGroupRef} turntableRef={turntableRef} />
           <group ref={mannequinGroupRef}>
             <group scale={settings.innerScale} position={[0, 0, -0.15]}>
               <HologramMannequin
