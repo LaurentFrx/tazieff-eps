@@ -106,27 +106,20 @@ const PENUMBRA_MAT = new THREE.MeshBasicMaterial({
 
 /** Build a 4x4 matrix that projects geometry onto a plane along a light direction. */
 function makePlanarShadowMatrix(groundY: number, lightDir: THREE.Vector3): THREE.Matrix4 {
-  // Standard planar shadow: project onto Y=groundY along lightDir
-  const d = lightDir.clone().normalize();
-  const m = new THREE.Matrix4();
-  // Shadow matrix for plane Y = groundY, directional light
-  m.set(
-    d.y,    -d.x,  0,      0,
-    0,       0,    0,      0,
-    0,      -d.z,  d.y,    0,
-    0,       groundY * (1 - d.y),  0,  d.y,
-  );
-  // Hmm, let me use the standard formula properly
+  // Standard planar shadow: M = (N·L)*I - L⊗N
   // Plane: dot(N, P) + D = 0 where N=(0,1,0), D=-groundY
   // Light direction L = (lx, ly, lz, 0) for directional
+  const d = lightDir.clone().normalize();
+  const m = new THREE.Matrix4();
   const lx = d.x, ly = d.y, lz = d.z;
   const nx = 0, ny = 1, nz = 0, D = -groundY;
   const dot = nx * lx + ny * ly + nz * lz;
+  // M[i][j] = dot * δ_ij - L_i * N_j  (outer product L⊗N)
   m.set(
-    dot - lx * nx, -ly * nx,      -lz * nx,      0,
-    -lx * ny,      dot - ly * ny,  -lz * ny,      0,
-    -lx * nz,      -ly * nz,       dot - lz * nz, 0,
-    -lx * D,       -ly * D,        -lz * D,       dot,
+    dot - lx * nx, -lx * ny,      -lx * nz,      -lx * D,
+    -ly * nx,      dot - ly * ny,  -ly * nz,      -ly * D,
+    -lz * nx,      -lz * ny,       dot - lz * nz, -lz * D,
+    0,             0,              0,              dot,
   );
   return m;
 }
