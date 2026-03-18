@@ -184,9 +184,14 @@ function PlanarShadow({ mannequinGroupRef }: { mannequinGroupRef: React.RefObjec
       shadowGroup.add(mainGroup);
 
       // Penumbra layer (slightly larger, more transparent)
+      // Scale from shadow center (not origin) to avoid splitting into 2 shadows
       const penumbraGroup = new THREE.Group();
       cloneInto(penumbraGroup, PENUMBRA_MAT);
-      penumbraGroup.scale.set(1.06, 1.0, 1.06);
+      const mainBox = new THREE.Box3().setFromObject(mainGroup);
+      const center = mainBox.getCenter(new THREE.Vector3());
+      const s = 1.06;
+      penumbraGroup.scale.set(s, 1.0, s);
+      penumbraGroup.position.set(center.x * (1 - s), 0, center.z * (1 - s));
       shadowGroup.add(penumbraGroup);
     }, 200); // Small delay to ensure centering has run
 
