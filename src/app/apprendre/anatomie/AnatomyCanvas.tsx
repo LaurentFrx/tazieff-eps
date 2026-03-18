@@ -89,7 +89,7 @@ const SHADOW_MAT = new THREE.MeshBasicMaterial({
   transparent: true,
   opacity: 0.35,
   depthWrite: false,
-  depthTest: true,
+  depthTest: false,
   side: THREE.DoubleSide,
   stencilWrite: false,
 });
@@ -99,24 +99,34 @@ const PENUMBRA_MAT = new THREE.MeshBasicMaterial({
   transparent: true,
   opacity: 0.12,
   depthWrite: false,
-  depthTest: true,
+  depthTest: false,
   side: THREE.DoubleSide,
   stencilWrite: false,
 });
 
-/** Build an affine 4x4 matrix that projects geometry onto Y=groundY along lightDir. */
+/**
+ * Build an affine shadow matrix projecting onto a TILTED plane.
+ *
+ * The orthographic camera looks horizontally (polar = π/2), so a purely
+ * horizontal plane (Y = const) is edge-on and invisible. We tilt the shadow
+ * plane ~20° away from the camera so it gains visible Y-extent while still
+ * looking like a floor shadow.
+ *
+ * Plane: passes through (0, groundY, 0), normal = (0, cosα, sinα).
+ */
 function makePlanarShadowMatrix(groundY: number, lightDir: THREE.Vector3): THREE.Matrix4 {
   const d = lightDir.clone().normalize();
   const m = new THREE.Matrix4();
-  // Shadow offset ratios (per unit height above ground)
-  const rx = d.x / d.y;
-  const rz = d.z / d.y;
-  // Affine projection: x' = x - rx*(y-gY), y' = gY, z' = z - rz*(y-gY)
+  const tilt = 0.35; // ~20° — shadow plane tilted away from camera
+  const ny = Math.cos(tilt), nz = Math.sin(tilt);
+  const D = -ny * groundY;
+  const dot = ny * d.y + nz * d.z;
+  // Affine shadow: M[i][j] = δ_ij - L_i·N_j / dot, translation = -L_i·D / dot
   m.set(
-    1,  -rx,  0,   rx * groundY,
-    0,   0,   0,   groundY,
-    0,  -rz,  1,   rz * groundY,
-    0,   0,   0,   1,
+    1,                    -d.x * ny / dot,  -d.x * nz / dot,  -d.x * D / dot,
+    0,               1 - d.y * ny / dot,   -d.y * nz / dot,  -d.y * D / dot,
+    0,                    -d.z * ny / dot,  1 - d.z * nz / dot, -d.z * D / dot,
+    0,                     0,                0,                  1,
   );
   return m;
 }
@@ -156,6 +166,7 @@ function PlanarShadow({ mannequinGroupRef }: { mannequinGroupRef: React.RefObjec
               const mesh = child as THREE.Mesh;
               const clone = new THREE.Mesh(mesh.geometry, mat);
               clone.matrixAutoUpdate = false;
+              clone.frustumCulled = false;
               mesh.updateWorldMatrix(true, false);
               clone.matrix.copy(mesh.matrixWorld);
               clone.matrix.premultiply(shadowMatrix);
