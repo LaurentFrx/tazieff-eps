@@ -104,6 +104,16 @@ const PENUMBRA_MAT = new THREE.MeshBasicMaterial({
   stencilWrite: false,
 });
 
+const PENUMBRA_EXT_MAT = new THREE.MeshBasicMaterial({
+  color: 0x000000,
+  transparent: true,
+  opacity: 0.06,
+  depthWrite: false,
+  depthTest: false,
+  side: THREE.DoubleSide,
+  stencilWrite: false,
+});
+
 /**
  * Build an affine shadow matrix projecting onto a TILTED plane.
  *
@@ -141,6 +151,7 @@ function PlanarShadow({ mannequinGroupRef, turntableRef }: {
   const groupRef = useRef<THREE.Group>(null);
   const mainMGRef = useRef<THREE.Group>(null);
   const penumbraMGRef = useRef<THREE.Group>(null);
+  const penumbraExtMGRef = useRef<THREE.Group>(null);
   const groundYRef = useRef(0);
   const { scene: silhouetteScene } = useGLTF("/models/silhouette_fixed.glb");
   const { scene: musclesScene } = useGLTF("/models/muscles.glb");
@@ -151,14 +162,15 @@ function PlanarShadow({ mannequinGroupRef, turntableRef }: {
     const mannequin = mannequinGroupRef.current;
     const mainMG = mainMGRef.current;
     const penMG = penumbraMGRef.current;
-    if (!mannequin || !mainMG || !penMG) return;
+    const penExtMG = penumbraExtMGRef.current;
+    if (!mannequin || !mainMG || !penMG || !penExtMG) return;
 
     const timer = setTimeout(() => {
       const box = new THREE.Box3().setFromObject(mannequin);
       groundYRef.current = box.min.y;
 
       // Clear previous clones
-      for (const g of [mainMG, penMG]) {
+      for (const g of [mainMG, penMG, penExtMG]) {
         while (g.children.length > 0) g.remove(g.children[0]);
       }
 
@@ -183,6 +195,7 @@ function PlanarShadow({ mannequinGroupRef, turntableRef }: {
 
       cloneInto(mainMG, SHADOW_MAT);
       cloneInto(penMG, PENUMBRA_MAT);
+      cloneInto(penExtMG, PENUMBRA_EXT_MAT);
     }, 200);
 
     return () => clearTimeout(timer);
@@ -194,7 +207,8 @@ function PlanarShadow({ mannequinGroupRef, turntableRef }: {
     const turntable = turntableRef.current;
     const mainMG = mainMGRef.current;
     const penMG = penumbraMGRef.current;
-    if (!turntable || !mainMG || !penMG) return;
+    const penExtMG = penumbraExtMGRef.current;
+    if (!turntable || !mainMG || !penMG || !penExtMG) return;
 
     const θ = turntable.rotation.y;
     // Counter-rotate: if turntable rotates by θ, rotate light by -θ
@@ -202,19 +216,24 @@ function PlanarShadow({ mannequinGroupRef, turntableRef }: {
 
     const gY = groundYRef.current;
 
-    // Main shadow
+    // Clone 1: ombre dense (opacity 0.35)
     mainMG.matrix.copy(makePlanarShadowMatrix(gY, L));
     mainMG.matrixWorldNeedsUpdate = true;
 
-    // Penumbra (slightly lower groundY → wider projection)
+    // Clone 2: pénombre (opacity 0.12, slightly wider)
     penMG.matrix.copy(makePlanarShadowMatrix(gY - 0.04, L));
     penMG.matrixWorldNeedsUpdate = true;
+
+    // Clone 3: pénombre extérieure (opacity 0.06, wider still)
+    penExtMG.matrix.copy(makePlanarShadowMatrix(gY - 0.08, L));
+    penExtMG.matrixWorldNeedsUpdate = true;
   });
 
   return (
     <group ref={groupRef}>
-      <group ref={mainMGRef} matrixAutoUpdate={false} />
+      <group ref={penumbraExtMGRef} matrixAutoUpdate={false} />
       <group ref={penumbraMGRef} matrixAutoUpdate={false} />
+      <group ref={mainMGRef} matrixAutoUpdate={false} />
     </group>
   );
 }
