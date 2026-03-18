@@ -104,22 +104,19 @@ const PENUMBRA_MAT = new THREE.MeshBasicMaterial({
   stencilWrite: false,
 });
 
-/** Build a 4x4 matrix that projects geometry onto a plane along a light direction. */
+/** Build an affine 4x4 matrix that projects geometry onto Y=groundY along lightDir. */
 function makePlanarShadowMatrix(groundY: number, lightDir: THREE.Vector3): THREE.Matrix4 {
-  // Standard planar shadow: M = (N·L)*I - L⊗N
-  // Plane: dot(N, P) + D = 0 where N=(0,1,0), D=-groundY
-  // Light direction L = (lx, ly, lz, 0) for directional
   const d = lightDir.clone().normalize();
   const m = new THREE.Matrix4();
-  const lx = d.x, ly = d.y, lz = d.z;
-  const nx = 0, ny = 1, nz = 0, D = -groundY;
-  const dot = nx * lx + ny * ly + nz * lz;
-  // M[i][j] = dot * δ_ij - L_i * N_j  (outer product L⊗N)
+  // Shadow offset ratios (per unit height above ground)
+  const rx = d.x / d.y;
+  const rz = d.z / d.y;
+  // Affine projection: x' = x - rx*(y-gY), y' = gY, z' = z - rz*(y-gY)
   m.set(
-    dot - lx * nx, -lx * ny,      -lx * nz,      -lx * D,
-    -ly * nx,      dot - ly * ny,  -ly * nz,      -ly * D,
-    -lz * nx,      -lz * ny,       dot - lz * nz, -lz * D,
-    0,             0,              0,              dot,
+    1,  -rx,  0,   rx * groundY,
+    0,   0,   0,   groundY,
+    0,  -rz,  1,   rz * groundY,
+    0,   0,   0,   1,
   );
   return m;
 }
