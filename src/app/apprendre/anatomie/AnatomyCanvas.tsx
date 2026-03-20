@@ -83,31 +83,63 @@ const TAP_MAX_DURATION = 200;
 const INERTIA_EPSILON = 0.0001;
 
 /* ── Planar projected shadow ─────────────────────────────────────── */
-/*
- * The ortho camera is perfectly horizontal (polar = π/2) → a horizontal
- * plane Y=const is edge-on and invisible. We project onto a TILTED plane
- * (normal ≈ (0, cos20°, sin20°) in world space) so the shadow has visible
- * Y-extent while looking like a floor shadow.
- *
- * Each frame we counter-rotate BOTH the light direction AND the plane
- * normal by the turntable angle. This keeps the shadow plane always facing
- * the camera and the light direction always fixed relative to the
- * background, regardless of mannequin rotation.
- */
 
-const SHADOW_MAT = new THREE.MeshBasicMaterial({
-  color: 0x000000, transparent: true, opacity: 0.30,
-  depthWrite: false, depthTest: false, side: THREE.DoubleSide, stencilWrite: false,
-});
+// Shader: gradient opacity — dense at feet, fading toward head projection
+const SHADOW_VS = /* glsl */ `
+  uniform vec4 uYRow;
+  uniform float uGroundY;
+  uniform float uMaxHeight;
+  varying float vGradient;
+  void main() {
+    float origY = dot(uYRow, vec4(position, 1.0));
+    float h = origY - uGroundY;
+    vGradient = clamp(h / uMaxHeight, 0.0, 1.0);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const SHADOW_FS = /* glsl */ `
+  uniform float uOpacity;
+  varying float vGradient;
+  void main() {
+    float alpha = uOpacity * (1.0 - vGradient * 0.6);
+    gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);
+  }
+`;
 
-// Sun direction in world space — upper-left-behind → shadow toward lower-right-front
-const LIGHT_DIR_WORLD = new THREE.Vector3(-0.5, 0.7, -0.4).normalize();
-// Shadow plane normal in world space — tilted 20° away from camera so it's visible
-const SHADOW_TILT = 0.35; // radians ≈ 20°
+function makeShadowShaderMat(opacity: number): THREE.ShaderMaterial {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uYRow: { value: new THREE.Vector4(0, 1, 0, 0) },
+      uGroundY: { value: 0 },
+      uMaxHeight: { value: 2.0 },
+      uOpacity: { value: opacity },
+    },
+    vertexShader: SHADOW_VS,
+    fragmentShader: SHADOW_FS,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false,
+    side: THREE.DoubleSide,
+  });
+}
+
+// 3 layers: dense shadow + penumbra + outer penumbra
+const SHADOW_MAT_MAIN = makeShadowShaderMat(0.35);
+const SHADOW_MAT_PEN = makeShadowShaderMat(0.10);
+const SHADOW_MAT_PEN_EXT = makeShadowShaderMat(0.05);
+
+// Adj 1: sun higher (Y=0.9) → shorter shadow (late morning, ~55° elevation)
+const LIGHT_DIR_WORLD = new THREE.Vector3(-0.5, 0.9, -0.4).normalize();
+// Tilted plane normal (20° away from camera) — visible to horizontal ortho camera
+const SHADOW_TILT = 0.35;
 const PLANE_NORMAL_WORLD = new THREE.Vector3(0, Math.cos(SHADOW_TILT), Math.sin(SHADOW_TILT));
 const Y_AXIS = new THREE.Vector3(0, 1, 0);
 
-/** Affine shadow matrix: project onto a plane through (0,groundY,0) with given normal, along lightDir. */
+// Adj 3: penumbra scale matrices (applied AFTER shadow projection, from origin ≈ feet)
+const PEN_SCALE = new THREE.Matrix4().makeScale(1.04, 1.0, 1.04);
+const PEN_EXT_SCALE = new THREE.Matrix4().makeScale(1.08, 1.0, 1.08);
+
+/** Affine shadow matrix: project onto plane through (0,groundY,0) with given normal, along lightDir. */
 function makePlanarShadowMatrix(
   groundY: number,
   lightDir: THREE.Vector3,
@@ -115,7 +147,7 @@ function makePlanarShadowMatrix(
 ): THREE.Matrix4 {
   const d = lightDir;
   const n = planeNormal;
-  const D = -n.y * groundY; // plane passes through (0, groundY, 0)
+  const D = -n.y * groundY;
   const dot = n.x * d.x + n.y * d.y + n.z * d.z;
   const m = new THREE.Matrix4();
   m.set(
@@ -132,23 +164,34 @@ function PlanarShadow({ mannequinGroupRef, turntableRef }: {
   turntableRef: React.RefObject<Group | null>;
 }) {
   const mainMGRef = useRef<THREE.Group>(null);
+  const penMGRef = useRef<THREE.Group>(null);
+  const penExtMGRef = useRef<THREE.Group>(null);
   const groundYRef = useRef(0);
   const { scene: silhouetteScene } = useGLTF("/models/silhouette_fixed.glb");
   const { scene: musclesScene } = useGLTF("/models/muscles.glb");
   const { scene: musclesExtraScene } = useGLTF("/models/muscles_manquants.glb");
 
-  // Clone meshes once with model transform baked in (to match rendered mannequin)
   useEffect(() => {
     const mannequin = mannequinGroupRef.current;
     const mainMG = mainMGRef.current;
-    if (!mannequin || !mainMG) return;
+    const penMG = penMGRef.current;
+    const penExtMG = penExtMGRef.current;
+    if (!mannequin || !mainMG || !penMG || !penExtMG) return;
 
     const timer = setTimeout(() => {
-      // After centering, feet are at Y≈0
-      groundYRef.current = 0;
+      // Adj 4: world-space bounding box for precise groundY + mannequin height
+      const box = new THREE.Box3().setFromObject(mannequin);
+      const groundY = box.min.y;
+      const maxHeight = box.max.y - box.min.y;
+      groundYRef.current = groundY;
 
-      // Build model transform: mannequinGroup offset + inner group (scale + position)
-      // to match the rendered mannequin hierarchy
+      // Push groundY + maxHeight to all 3 shader materials
+      for (const mat of [SHADOW_MAT_MAIN, SHADOW_MAT_PEN, SHADOW_MAT_PEN_EXT]) {
+        mat.uniforms.uGroundY.value = groundY;
+        mat.uniforms.uMaxHeight.value = maxHeight;
+      }
+
+      // Model transform: mannequinGroup offset + inner group (scale + position)
       mannequin.updateMatrix();
       const modelTransform = mannequin.matrix.clone();
       const inner = mannequin.children[0] as THREE.Group | undefined;
@@ -158,44 +201,77 @@ function PlanarShadow({ mannequinGroupRef, turntableRef }: {
       }
 
       // Clear previous clones
-      while (mainMG.children.length > 0) mainMG.remove(mainMG.children[0]);
-
-      for (const src of [silhouetteScene, musclesScene, musclesExtraScene]) {
-        src.traverse((child) => {
-          if ((child as THREE.Mesh).isMesh && child.visible) {
-            const mesh = child as THREE.Mesh;
-            const clone = new THREE.Mesh(mesh.geometry, SHADOW_MAT);
-            clone.matrixAutoUpdate = false;
-            clone.frustumCulled = false;
-            mesh.updateWorldMatrix(true, false);
-            clone.matrix.copy(modelTransform).multiply(mesh.matrixWorld);
-            clone.renderOrder = -1;
-            clone.raycast = () => {};
-            mainMG.add(clone);
-          }
-        });
+      for (const g of [mainMG, penMG, penExtMG]) {
+        while (g.children.length > 0) g.remove(g.children[0]);
       }
+
+      const cloneInto = (parent: THREE.Group, sharedMat: THREE.ShaderMaterial) => {
+        for (const src of [silhouetteScene, musclesScene, musclesExtraScene]) {
+          src.traverse((child) => {
+            if ((child as THREE.Mesh).isMesh && child.visible) {
+              const mesh = child as THREE.Mesh;
+              const clone = new THREE.Mesh(mesh.geometry, sharedMat);
+              clone.matrixAutoUpdate = false;
+              clone.frustumCulled = false;
+              mesh.updateWorldMatrix(true, false);
+              clone.matrix.copy(modelTransform).multiply(mesh.matrixWorld);
+              clone.renderOrder = -1;
+              clone.raycast = () => {};
+              // Pre-compute Y-row of clone matrix for per-vertex gradient
+              const e = clone.matrix.elements;
+              const yRow = new THREE.Vector4(e[1], e[5], e[9], e[13]);
+              clone.onBeforeRender = () => {
+                const m = clone.material as THREE.ShaderMaterial;
+                m.uniforms.uYRow.value.copy(yRow);
+                m.uniformsNeedUpdate = true;
+              };
+              parent.add(clone);
+            }
+          });
+        }
+      };
+
+      cloneInto(mainMG, SHADOW_MAT_MAIN);
+      cloneInto(penMG, SHADOW_MAT_PEN);
+      cloneInto(penExtMG, SHADOW_MAT_PEN_EXT);
     }, 200);
 
     return () => clearTimeout(timer);
   }, [silhouetteScene, musclesScene, musclesExtraScene, mannequinGroupRef]);
 
-  // Per-frame: counter-rotate BOTH light AND plane normal so the shadow
-  // plane always faces the camera and light is fixed in world space.
+  // Per-frame: counter-rotate light + plane normal by turntable angle
   useFrame(() => {
     const turntable = turntableRef.current;
     const mainMG = mainMGRef.current;
-    if (!turntable || !mainMG) return;
+    const penMG = penMGRef.current;
+    const penExtMG = penExtMGRef.current;
+    if (!turntable || !mainMG || !penMG || !penExtMG) return;
 
     const θ = turntable.rotation.y;
     const L = LIGHT_DIR_WORLD.clone().applyAxisAngle(Y_AXIS, -θ);
     const N = PLANE_NORMAL_WORLD.clone().applyAxisAngle(Y_AXIS, -θ);
+    const S = makePlanarShadowMatrix(groundYRef.current, L, N);
 
-    mainMG.matrix.copy(makePlanarShadowMatrix(groundYRef.current, L, N));
+    // Main shadow (scale 1.00)
+    mainMG.matrix.copy(S);
     mainMG.matrixWorldNeedsUpdate = true;
+
+    // Penumbra (scale 1.04 on XZ, applied after projection)
+    penMG.matrix.copy(PEN_SCALE).multiply(S);
+    penMG.matrixWorldNeedsUpdate = true;
+
+    // Outer penumbra (scale 1.08 on XZ)
+    penExtMG.matrix.copy(PEN_EXT_SCALE).multiply(S);
+    penExtMG.matrixWorldNeedsUpdate = true;
   });
 
-  return <group ref={mainMGRef} matrixAutoUpdate={false} />;
+  return (
+    <group>
+      <group ref={penExtMGRef} matrixAutoUpdate={false} />
+      <group ref={penMGRef} matrixAutoUpdate={false} />
+      <group ref={mainMGRef} matrixAutoUpdate={false} />
+    </group>
+  );
 }
 
 /* ── Background plane — fixed in scene, follows camera zoom/pan ──── */
