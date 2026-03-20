@@ -137,7 +137,7 @@ function PlanarShadow({ mannequinGroupRef, turntableRef }: {
   const { scene: musclesScene } = useGLTF("/models/muscles.glb");
   const { scene: musclesExtraScene } = useGLTF("/models/muscles_manquants.glb");
 
-  // Clone meshes once with model transform baked in (to match rendered mannequin)
+  // Clone meshes once — raw GLTF transforms only (no innerScale baking)
   useEffect(() => {
     const mannequin = mannequinGroupRef.current;
     const mainMG = mainMGRef.current;
@@ -146,16 +146,6 @@ function PlanarShadow({ mannequinGroupRef, turntableRef }: {
     const timer = setTimeout(() => {
       // After centering, feet are at Y≈0
       groundYRef.current = 0;
-
-      // Build model transform: mannequinGroup offset + inner group (scale + position)
-      // to match the rendered mannequin hierarchy
-      mannequin.updateMatrix();
-      const modelTransform = mannequin.matrix.clone();
-      const inner = mannequin.children[0] as THREE.Group | undefined;
-      if (inner) {
-        inner.updateMatrix();
-        modelTransform.multiply(inner.matrix);
-      }
 
       // Clear previous clones
       while (mainMG.children.length > 0) mainMG.remove(mainMG.children[0]);
@@ -168,7 +158,7 @@ function PlanarShadow({ mannequinGroupRef, turntableRef }: {
             clone.matrixAutoUpdate = false;
             clone.frustumCulled = false;
             mesh.updateWorldMatrix(true, false);
-            clone.matrix.copy(modelTransform).multiply(mesh.matrixWorld);
+            clone.matrix.copy(mesh.matrixWorld);
             clone.renderOrder = -1;
             clone.raycast = () => {};
             mainMG.add(clone);
