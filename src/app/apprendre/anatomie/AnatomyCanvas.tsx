@@ -177,20 +177,23 @@ function PlanarShadow({ mannequinGroupRef, turntableRef }: {
     return () => clearTimeout(timer);
   }, [silhouetteScene, musclesScene, musclesExtraScene, mannequinGroupRef]);
 
-  // Per-frame: counter-rotate BOTH light AND plane normal so the shadow
-  // plane always faces the camera and light is fixed in world space.
+  // Per-frame: counter-rotate light + plane normal.
+  // Priority 1 → runs AFTER Scene's useFrame (priority 0) to read the
+  // current turntable.rotation.y without one-frame lag.
+  const _L = useRef(new THREE.Vector3());
+  const _N = useRef(new THREE.Vector3());
   useFrame(() => {
     const turntable = turntableRef.current;
     const mainMG = mainMGRef.current;
     if (!turntable || !mainMG) return;
 
     const θ = turntable.rotation.y;
-    const L = LIGHT_DIR_WORLD.clone().applyAxisAngle(Y_AXIS, -θ);
-    const N = PLANE_NORMAL_WORLD.clone().applyAxisAngle(Y_AXIS, -θ);
+    _L.current.copy(LIGHT_DIR_WORLD).applyAxisAngle(Y_AXIS, -θ);
+    _N.current.copy(PLANE_NORMAL_WORLD).applyAxisAngle(Y_AXIS, -θ);
 
-    mainMG.matrix.copy(makePlanarShadowMatrix(groundYRef.current, L, N));
+    mainMG.matrix.copy(makePlanarShadowMatrix(groundYRef.current, _L.current, _N.current));
     mainMG.matrixWorldNeedsUpdate = true;
-  });
+  }, 1); // priority 1 → after Scene's useFrame (priority 0)
 
   return <group ref={mainMGRef} matrixAutoUpdate={false} />;
 }
