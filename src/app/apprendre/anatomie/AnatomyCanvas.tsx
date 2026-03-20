@@ -144,8 +144,14 @@ function PlanarShadow({ mannequinGroupRef, turntableRef }: {
     if (!mannequin || !mainMG) return;
 
     const timer = setTimeout(() => {
-      // After centering, feet are at Y≈0
       groundYRef.current = 0;
+
+      // Compute GLTF-space feet Y to align shadow feet with rendered feet (Y=0)
+      const gltfBox = new THREE.Box3();
+      for (const src of [silhouetteScene, musclesScene, musclesExtraScene]) {
+        gltfBox.expandByObject(src);
+      }
+      const feetOffset = new THREE.Matrix4().makeTranslation(0, -gltfBox.min.y, 0);
 
       // Clear previous clones
       while (mainMG.children.length > 0) mainMG.remove(mainMG.children[0]);
@@ -158,7 +164,8 @@ function PlanarShadow({ mannequinGroupRef, turntableRef }: {
             clone.matrixAutoUpdate = false;
             clone.frustumCulled = false;
             mesh.updateWorldMatrix(true, false);
-            clone.matrix.copy(mesh.matrixWorld);
+            // Translate GLTF positions so feet are at Y=0 (matching rendered mannequin)
+            clone.matrix.copy(feetOffset).multiply(mesh.matrixWorld);
             clone.renderOrder = -1;
             clone.raycast = () => {};
             mainMG.add(clone);
