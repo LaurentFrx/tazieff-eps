@@ -101,7 +101,7 @@ const SHADOW_MAT = new THREE.MeshBasicMaterial({
 });
 
 // Sun direction in world space — upper-left-behind → shadow toward lower-right-front
-const LIGHT_DIR_WORLD = new THREE.Vector3(-0.5, 0.7, -0.4).normalize();
+const LIGHT_DIR_WORLD = new THREE.Vector3(-0.5, 0.9, -0.4).normalize();
 // Shadow plane normal in world space — tilted 20° away from camera so it's visible
 const SHADOW_TILT = 0.35; // radians ≈ 20°
 const PLANE_NORMAL_WORLD = new THREE.Vector3(0, Math.cos(SHADOW_TILT), Math.sin(SHADOW_TILT));
