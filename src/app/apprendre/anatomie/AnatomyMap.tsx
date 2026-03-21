@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { LiveExerciseListItem } from "@/lib/live/types";
-import { MUSCLE_GROUPS, LAYERED_GROUPS, matchesGroup, getLayeredMuscles, getSubMuscleColor, isLayeredGroup } from "./anatomy-data";
+import { MUSCLE_GROUPS, POSTERIOR_GROUPS, LAYERED_GROUPS, matchesGroup, getLayeredMuscles, getSubMuscleColor, isLayeredGroup } from "./anatomy-data";
 import "./anatomy.css";
 
 const AnatomyCanvas = dynamic(() => import("./AnatomyCanvas"), {
@@ -31,18 +31,20 @@ export default function AnatomyMap({ exercises }: Props) {
   const [showWireframe, setShowWireframe] = useState(true);
   const [showMuscles, setShowMuscles] = useState(true);
 
-  // Pre-highlight groups from URL (?muscles=pectoraux,epaules)
-  const urlMuscleGroups = searchParams.get("muscles")?.split(",").filter((k) => k in MUSCLE_GROUPS) ?? [];
+  // Pre-highlight groups from URL (?muscles=pectoraux,epaules&from=exercice&slug=s3-03)
+  const urlMuscleGroups = useMemo(
+    () => searchParams.get("muscles")?.split(",").filter((k) => k in MUSCLE_GROUPS) ?? [],
+    [searchParams],
+  );
   const fromExercice = searchParams.get("from") === "exercice";
   const returnSlug = searchParams.get("slug") ?? "";
 
-  // On mount: select first group from URL if provided
-  useEffect(() => {
-    if (urlMuscleGroups.length > 0 && !selectedGroup) {
-      setSelectedGroup(urlMuscleGroups[0]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Compute initial rotation: if majority posterior → show back (PI)
+  const initialRotationY = useMemo(() => {
+    if (urlMuscleGroups.length === 0) return 0;
+    const posteriorCount = urlMuscleGroups.filter((k) => POSTERIOR_GROUPS.has(k)).length;
+    return posteriorCount > urlMuscleGroups.length / 2 ? Math.PI : 0;
+  }, [urlMuscleGroups]);
 
   /* ── Exercise count for selected group ─────────────────────────────── */
   const groupExerciseCount = useMemo(() => {
@@ -155,6 +157,8 @@ export default function AnatomyMap({ exercises }: Props) {
           <AnatomyCanvas
             selectedGroup={selectedGroup}
             highlightedMuscle={highlightedMuscle}
+            activeGroups={!selectedGroup ? urlMuscleGroups : undefined}
+            initialRotationY={initialRotationY}
             showSkeleton={showSkeleton}
             showWireframe={showWireframe}
             showMuscles={showMuscles}
@@ -204,7 +208,9 @@ export default function AnatomyMap({ exercises }: Props) {
               ))}
             </div>
           )}
-          {groupExerciseCount > 0 && (
+          {fromExercice && urlMuscleGroups.includes(selectedGroup) ? (
+            <p className="anatomy-submenu-context">{t("anatomy.usedByExercise")}</p>
+          ) : groupExerciseCount > 0 ? (
             <Link
               href={`/exercices?muscle=${selectedGroup}&from=anatomie`}
               className="anatomy-submenu-exercise-btn"
@@ -213,7 +219,7 @@ export default function AnatomyMap({ exercises }: Props) {
               {`${t("anatomy.seeThe")} ${groupExerciseCount} ${groupExerciseCount === 1 ? t("anatomy.exerciseCount") : t("anatomy.exerciseCountPlural")}`}
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="8" x2="13" y2="8"/><polyline points="9,4 13,8 9,12"/></svg>
             </Link>
-          )}
+          ) : null}
         </div>
       )}
 

@@ -20,6 +20,7 @@ export type MuscleUserData = {
 type Props = {
   selectedGroup: string | null;
   highlightedMuscle: string | null;
+  activeGroups?: string[];
   hoveredMuscle: string | null;
   wireframe: boolean;
   onHoverMuscle: (frName: string | null, groupKey: string | null) => void;
@@ -211,6 +212,7 @@ function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
 function MusclesModel({
   selectedGroup,
   highlightedMuscle,
+  activeGroups = [],
   wireframe,
   onHoverMuscle,
   onClickMuscle,
@@ -334,6 +336,15 @@ function MusclesModel({
           // Outside selected group → invisible
           mesh.visible = false;
         }
+      } else if (activeGroups.length > 0) {
+        // Multi-group mode (from exercise): highlight all active groups
+        if (ud.groupKey && activeGroups.includes(ud.groupKey)) {
+          mat.color.copy(ud.originalColor);
+          mat.opacity = 1;
+          mat.emissive.copy(ud.originalColor).multiplyScalar(0.3);
+        } else {
+          mesh.visible = false;
+        }
       } else {
         // No selection: restore original group color
         mat.color.copy(ud.originalColor);
@@ -344,7 +355,7 @@ function MusclesModel({
       // Stencil: block wireframe ONLY where muscle is visible and opaque
       mat.stencilWrite = mesh.visible && mat.opacity > 0.5;
     }
-  }, [selectedGroup, highlightedMuscle, wireframe]);
+  }, [selectedGroup, highlightedMuscle, activeGroups, wireframe]);
   /* eslint-enable react-hooks/immutability */
 
   // Raycasting for hover and click
@@ -521,6 +532,7 @@ function SkeletonBody() {
 export default function HologramMannequin({
   selectedGroup,
   highlightedMuscle,
+  activeGroups = [],
   wireframe,
   onHoverMuscle,
   onClickMuscle,
@@ -567,6 +579,7 @@ export default function HologramMannequin({
         <MusclesModel
           selectedGroup={selectedGroup}
           highlightedMuscle={highlightedMuscle}
+          activeGroups={activeGroups}
           wireframe={wireframe}
           onHoverMuscle={onHoverMuscle}
           onClickMuscle={onClickMuscle}

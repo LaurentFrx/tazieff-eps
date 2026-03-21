@@ -16,6 +16,8 @@ import HologramMannequin from "./HologramMannequin";
 type Props = {
   selectedGroup: string | null;
   highlightedMuscle: string | null;
+  activeGroups?: string[];
+  initialRotationY?: number;
   showSkeleton?: boolean;
   showWireframe?: boolean;
   showMuscles?: boolean;
@@ -321,6 +323,8 @@ function SettingsPanel({
 function Scene({
   selectedGroup,
   highlightedMuscle,
+  activeGroups,
+  initialRotationY,
   showSkeleton,
   showWireframe,
   showMuscles,
@@ -335,7 +339,7 @@ function Scene({
   const controlsRef = useRef<CameraControlsImpl>(null);
 
   /* Turntable state */
-  const rotationY = useRef(0);
+  const rotationY = useRef(initialRotationY ?? 0);
   const angularVelocity = useRef(0);
   const isDragging = useRef(false);
   const lastPointerX = useRef(0);
@@ -531,6 +535,7 @@ function Scene({
               <HologramMannequin
                 selectedGroup={selectedGroup}
                 highlightedMuscle={highlightedMuscle}
+                activeGroups={activeGroups}
                 hoveredMuscle={null}
                 wireframe={false}
                 showSkeleton={showSkeleton}
@@ -575,6 +580,8 @@ function Scene({
 export default function AnatomyCanvas({
   selectedGroup,
   highlightedMuscle,
+  activeGroups,
+  initialRotationY,
   showSkeleton,
   showWireframe,
   showMuscles,
@@ -598,6 +605,8 @@ export default function AnatomyCanvas({
         <Scene
           selectedGroup={selectedGroup}
           highlightedMuscle={highlightedMuscle}
+          activeGroups={activeGroups}
+          initialRotationY={initialRotationY}
           showSkeleton={showSkeleton}
           showWireframe={showWireframe}
           showMuscles={showMuscles}
