@@ -46,6 +46,15 @@
   color: #fff;
 }
 
+.anatomy-back-exercise {
+  width: auto;
+  gap: 6px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
 .anatomy-back-icon {
   width: 18px;
   height: 18px;

@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { LiveExerciseListItem } from "@/lib/live/types";
 import { MUSCLE_GROUPS, LAYERED_GROUPS, matchesGroup, getLayeredMuscles, getSubMuscleColor, isLayeredGroup } from "./anatomy-data";
@@ -23,12 +23,26 @@ type Props = {
 export default function AnatomyMap({ exercises }: Props) {
   const { t } = useI18n();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [highlightedMuscle, setHighlightedMuscle] = useState<string | null>(null);
   const [legendOpen, setLegendOpen] = useState(false);
   const [showSkeleton, setShowSkeleton] = useState(false);
   const [showWireframe, setShowWireframe] = useState(true);
   const [showMuscles, setShowMuscles] = useState(true);
+
+  // Pre-highlight groups from URL (?muscles=pectoraux,epaules)
+  const urlMuscleGroups = searchParams.get("muscles")?.split(",").filter((k) => k in MUSCLE_GROUPS) ?? [];
+  const fromExercice = searchParams.get("from") === "exercice";
+  const returnSlug = searchParams.get("slug") ?? "";
+
+  // On mount: select first group from URL if provided
+  useEffect(() => {
+    if (urlMuscleGroups.length > 0 && !selectedGroup) {
+      setSelectedGroup(urlMuscleGroups[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* ── Exercise count for selected group ─────────────────────────────── */
   const groupExerciseCount = useMemo(() => {
@@ -112,16 +126,28 @@ export default function AnatomyMap({ exercises }: Props) {
   return (
     <div className="anatomy-page fixed inset-0 z-[60]">
       {/* ── Back button (top left) ────────────────────────────────── */}
-      <button
-        type="button"
-        className="anatomy-back-btn"
-        onClick={() => router.back()}
-        aria-label={t("anatomy.close")}
-      >
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="anatomy-back-icon">
-          <path d="M12 4l-6 6 6 6" />
-        </svg>
-      </button>
+      {fromExercice && returnSlug ? (
+        <Link
+          href={`/exercices/${returnSlug}`}
+          className="anatomy-back-btn anatomy-back-exercise"
+        >
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="anatomy-back-icon">
+            <path d="M12 4l-6 6 6 6" />
+          </svg>
+          <span>{t("anatomy.backToExercise")}</span>
+        </Link>
+      ) : (
+        <button
+          type="button"
+          className="anatomy-back-btn"
+          onClick={() => router.back()}
+          aria-label={t("anatomy.close")}
+        >
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="anatomy-back-icon">
+            <path d="M12 4l-6 6 6 6" />
+          </svg>
+        </button>
+      )}
 
       <div className="anatomy-layout">
         {/* ── 3D Canvas (full viewport) ──────────────────────────────── */}

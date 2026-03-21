@@ -113,23 +113,6 @@ vi.mock("next/image", () => ({
   },
 }));
 
-vi.mock("./ExerciseAnatomyModal", () => ({
-  default: ({
-    onClose,
-    groupKeys,
-  }: {
-    onClose: () => void;
-    groupKeys: string[];
-  }) => (
-    <div data-testid="anatomy-modal">
-      <span data-testid="modal-groups">{groupKeys.join(",")}</span>
-      <button data-testid="modal-close" onClick={onClose}>
-        Close
-      </button>
-    </div>
-  ),
-}));
-
 vi.mock("@/lib/i18n/I18nProvider", () => ({
   useI18n: () => ({
     t: (key: string) => key,
@@ -147,6 +130,7 @@ describe("ExerciseAnatomyThumb", () => {
         <ExerciseAnatomyThumb
           muscles={["Pectoraux", "Triceps"]}
           translatedMuscles={["Pectoraux", "Triceps"]}
+          slug="s3-03"
         />,
       );
     });
@@ -163,6 +147,7 @@ describe("ExerciseAnatomyThumb", () => {
         <ExerciseAnatomyThumb
           muscles={["Pectoraux", "Triceps"]}
           translatedMuscles={["Pectoraux", "Triceps"]}
+          slug="s3-03"
         />,
       );
     });
@@ -177,6 +162,7 @@ describe("ExerciseAnatomyThumb", () => {
         <ExerciseAnatomyThumb
           muscles={["cardio"]}
           translatedMuscles={["Cardio"]}
+          slug="s1-01"
         />,
       );
     });
@@ -185,38 +171,23 @@ describe("ExerciseAnatomyThumb", () => {
     expect(screen.queryByTestId("mannequin-img")).toBeNull();
   });
 
-  it("opens modal on click and closes on button click", async () => {
+  it("links to anatomy page with muscle groups and slug", async () => {
     await act(async () => {
       render(
         <ExerciseAnatomyThumb
           muscles={["Pectoraux", "Triceps"]}
           translatedMuscles={["Pectoraux", "Triceps"]}
+          slug="s3-03"
         />,
       );
     });
 
-    // Click the thumb to open modal
-    const thumb = screen.getByLabelText("exerciseAnatomy.musclesWorked");
-    fireEvent.click(thumb);
-
-    // Wait for modal to resolve (React.lazy + createPortal need async flush)
-    await waitFor(() => {
-      expect(
-        document.querySelector("[data-testid='anatomy-modal']"),
-      ).toBeTruthy();
-    });
-
-    // Verify groups passed to modal
-    expect(
-      document.querySelector("[data-testid='modal-groups']")?.textContent,
-    ).toContain("pectoraux");
-
-    // Close the modal
-    fireEvent.click(
-      document.querySelector("[data-testid='modal-close']") as HTMLElement,
-    );
-
-    // Modal should be gone
-    expect(document.querySelector("[data-testid='anatomy-modal']")).toBeNull();
+    const link = screen.getByLabelText("exerciseAnatomy.musclesWorked");
+    expect(link.tagName).toBe("A");
+    const href = link.getAttribute("href");
+    expect(href).toContain("/apprendre/anatomie");
+    expect(href).toContain("muscles=pectoraux,triceps");
+    expect(href).toContain("from=exercice");
+    expect(href).toContain("slug=s3-03");
   });
 });

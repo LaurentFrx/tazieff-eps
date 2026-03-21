@@ -2601,6 +2601,7 @@ export function ExerciseLiveDetail({
         <ExerciseAnatomyThumb
           muscles={merged.frontmatter.muscles}
           translatedMuscles={translateTerms(merged.frontmatter.muscles, "muscles", lang)}
+          slug={slug}
         />
       </div>
 
