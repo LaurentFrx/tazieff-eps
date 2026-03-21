@@ -163,7 +163,7 @@ export const MUSCLE_GROUPS: Record<string, MuscleGroup> = {
 /* ── Sub-muscles per group (French display names for bottom sheets) ──────── */
 
 export const GROUP_MUSCLES: Record<string, string[]> = {
-  pectoraux: ["Grand pectoral", "Dentelé antérieur"],
+  pectoraux: ["Grand pectoral", "Petit pectoral", "Dentelé antérieur"],
   epaules: ["Deltoïde antérieur", "Deltoïde moyen", "Deltoïde postérieur", "Supra-épineux", "Infra-épineux", "Grand rond", "Petit rond", "Subscapulaire"],
   bras_anterieurs: ["Biceps brachial", "Brachial", "Brachio-radial", "Extenseur des doigts", "Fléchisseur radial du carpe", "Fléchisseur ulnaire du carpe"],
   triceps: ["Triceps brachial"],
@@ -364,6 +364,7 @@ export type LayeredMuscle = { name: string; color: string };
 export const LAYERED_GROUPS: Record<string, LayeredMuscle[]> = {
   pectoraux: [
     { name: "Grand pectoral", color: "#E74C3C" },
+    { name: "Petit pectoral", color: "#2ECC71" },
     { name: "Dentelé antérieur", color: "#3498DB" },
   ],
   epaules: [

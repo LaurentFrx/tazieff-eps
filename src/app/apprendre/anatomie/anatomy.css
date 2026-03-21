@@ -129,12 +129,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-family: var(--font-mono), "Space Mono", monospace;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: rgba(0, 212, 255, 0.6);
   margin-bottom: 8px;
+}
+
+.anatomy-submenu-group-title {
+  font-family: var(--font-mono), "Space Mono", monospace;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #fff;
 }
 
 .anatomy-submenu-close {

@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useSearchParams } from "next/navigation";
 import type { Difficulty } from "@/lib/content/schema";
 import type { Lang } from "@/lib/i18n/I18nProvider";
 import type { LiveExerciseListItem, LiveExerciseRow } from "@/lib/live/types";
@@ -10,7 +11,7 @@ import {
   filterExercises,
   NO_EQUIPMENT_ID,
 } from "@/lib/exercices/filters";
-import type { MuscleGroupId } from "@/lib/exercices/muscleGroups";
+import { MUSCLE_GROUP_IDS, type MuscleGroupId } from "@/lib/exercices/muscleGroups";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useTeacherMode } from "@/hooks/useTeacherMode";
 import { useExercisesLiveSync } from "@/hooks/useExercisesLiveSync";
@@ -120,6 +121,9 @@ export function ExerciseListClient({
   const { favorites } = useFavorites();
   const { unlocked: teacherUnlocked, pin: teacherPin } = useTeacherMode();
 
+  // Read ?muscle= from URL (set by anatomy page link)
+  const searchParams = useSearchParams();
+
   // Filter state
   const [query, setQuery] = useState("");
   const [selectedLevels, setSelectedLevels] = useState<Difficulty[]>([]);
@@ -127,6 +131,14 @@ export function ExerciseListClient({
   const [selectedMuscleGroups, setSelectedMuscleGroups] = useState<MuscleGroupId[]>([]);
   const [selectedThemes, setSelectedThemes] = useState<ThemeOption[]>([]);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
+
+  // Pre-select muscle group from URL query param (?muscle=pectoraux)
+  useEffect(() => {
+    const muscle = searchParams.get("muscle");
+    if (muscle && MUSCLE_GROUP_IDS.includes(muscle as MuscleGroupId)) {
+      setSelectedMuscleGroups([muscle as MuscleGroupId]);
+    }
+  }, [searchParams]);
 
   // View mode
   const viewMode = useSyncExternalStore(

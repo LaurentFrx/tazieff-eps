@@ -143,7 +143,7 @@ export default function AnatomyMap({ exercises }: Props) {
       {selectedGroup && (
         <div className="anatomy-submenu">
           <div className="anatomy-submenu-header">
-            <span>{t(`anatomy.groups.${selectedGroup}`)}</span>
+            <span className="anatomy-submenu-group-title">{t(`anatomy.groups.${selectedGroup}`)}</span>
             <button
               type="button"
               className="anatomy-submenu-close"
@@ -172,18 +172,8 @@ export default function AnatomyMap({ exercises }: Props) {
               ))}
             </div>
           )}
-          {highlightedMuscle && (
-            <div className="anatomy-submenu-detail">
-              <span className="anatomy-submenu-detail-name">{highlightedMuscle}</span>
-              {groupExerciseCount > 0 && (
-                <Link href="/exercices" className="anatomy-submenu-detail-link">
-                  {`${groupExerciseCount} ${groupExerciseCount === 1 ? t("anatomy.exerciseCount") : t("anatomy.exerciseCountPlural")} \u2192`}
-                </Link>
-              )}
-            </div>
-          )}
-          {!highlightedMuscle && !layeredMuscles && groupExerciseCount > 0 && (
-            <Link href="/exercices" className="anatomy-submenu-detail-link" style={{ marginTop: 4 }}>
+          {groupExerciseCount > 0 && (
+            <Link href={`/exercices?muscle=${selectedGroup}`} className="anatomy-submenu-detail-link" style={{ marginTop: 4 }}>
               {`${groupExerciseCount} ${groupExerciseCount === 1 ? t("anatomy.exerciseCount") : t("anatomy.exerciseCountPlural")} \u2192`}
             </Link>
           )}
