@@ -381,6 +381,9 @@ export const LAYERED_GROUPS: Record<string, LayeredMuscle[]> = {
     { name: "Biceps brachial", color: "#E74C3C" },
     { name: "Brachial", color: "#2ECC71" },
     { name: "Brachio-radial", color: "#F39C12" },
+    { name: "Extenseur des doigts", color: "#3498DB" },
+    { name: "Fléchisseur radial du carpe", color: "#9B59B6" },
+    { name: "Fléchisseur ulnaire du carpe", color: "#1ABC9C" },
   ],
   abdominaux: [
     { name: "Grand droit", color: "#E74C3C" },
