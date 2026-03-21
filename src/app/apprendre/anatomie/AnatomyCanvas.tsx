@@ -5,6 +5,7 @@ import * as THREE from "three";
 import {
   Box3,
   ClampToEdgeWrapping,
+  PCFSoftShadowMap,
   Vector3,
   type DirectionalLight,
   type Group,
@@ -82,121 +83,7 @@ const TAP_MAX_DURATION = 200;
 /** Angular velocity threshold below which inertia stops. */
 const INERTIA_EPSILON = 0.0001;
 
-/* ── Planar projected shadow ─────────────────────────────────────── */
-/*
- * The ortho camera is perfectly horizontal (polar = π/2) → a horizontal
- * plane Y=const is edge-on and invisible. We project onto a TILTED plane
- * (normal ≈ (0, cos20°, sin20°) in world space) so the shadow has visible
- * Y-extent while looking like a floor shadow.
- *
- * Each frame we counter-rotate BOTH the light direction AND the plane
- * normal by the turntable angle. This keeps the shadow plane always facing
- * the camera and the light direction always fixed relative to the
- * background, regardless of mannequin rotation.
- */
-
-const SHADOW_MAT = new THREE.MeshBasicMaterial({
-  color: 0x000000, transparent: true, opacity: 0.30,
-  depthWrite: false, depthTest: false, side: THREE.DoubleSide, stencilWrite: false,
-});
-
-// Sun direction in world space — upper-left-behind → shadow toward lower-right-front
-const LIGHT_DIR_WORLD = new THREE.Vector3(-0.5, 0.9, -0.4).normalize();
-// Shadow plane normal in world space — tilted 20° away from camera so it's visible
-const SHADOW_TILT = 0.35; // radians ≈ 20°
-const PLANE_NORMAL_WORLD = new THREE.Vector3(0, Math.cos(SHADOW_TILT), Math.sin(SHADOW_TILT));
-const Y_AXIS = new THREE.Vector3(0, 1, 0);
-
-/** Affine shadow matrix: project onto a plane through (0,groundY,0) with given normal, along lightDir. */
-function makePlanarShadowMatrix(
-  groundY: number,
-  lightDir: THREE.Vector3,
-  planeNormal: THREE.Vector3,
-): THREE.Matrix4 {
-  const d = lightDir;
-  const n = planeNormal;
-  const D = -n.y * groundY; // plane passes through (0, groundY, 0)
-  const dot = n.x * d.x + n.y * d.y + n.z * d.z;
-  const m = new THREE.Matrix4();
-  m.set(
-    1 - d.x * n.x / dot,  -d.x * n.y / dot,      -d.x * n.z / dot,     -d.x * D / dot,
-    -d.y * n.x / dot,     1 - d.y * n.y / dot,    -d.y * n.z / dot,     -d.y * D / dot,
-    -d.z * n.x / dot,     -d.z * n.y / dot,       1 - d.z * n.z / dot,  -d.z * D / dot,
-    0,                     0,                       0,                     1,
-  );
-  return m;
-}
-
-function PlanarShadow({ mannequinGroupRef, turntableRef }: {
-  mannequinGroupRef: React.RefObject<Group | null>;
-  turntableRef: React.RefObject<Group | null>;
-}) {
-  const mainMGRef = useRef<THREE.Group>(null);
-  const groundYRef = useRef(0);
-  const { scene: silhouetteScene } = useGLTF("/models/silhouette_fixed.glb");
-  const { scene: musclesScene } = useGLTF("/models/muscles.glb");
-  const { scene: musclesExtraScene } = useGLTF("/models/muscles_manquants.glb");
-
-  // Clone meshes once — raw GLTF transforms only (no innerScale baking)
-  useEffect(() => {
-    const mannequin = mannequinGroupRef.current;
-    const mainMG = mainMGRef.current;
-    if (!mannequin || !mainMG) return;
-
-    const timer = setTimeout(() => {
-      groundYRef.current = 0;
-
-      // Compute GLTF-space feet Y to align shadow feet with rendered feet (Y=0)
-      const gltfBox = new THREE.Box3();
-      for (const src of [silhouetteScene, musclesScene, musclesExtraScene]) {
-        gltfBox.expandByObject(src);
-      }
-      const feetOffset = new THREE.Matrix4().makeTranslation(0, -gltfBox.min.y, 0);
-
-      // Clear previous clones
-      while (mainMG.children.length > 0) mainMG.remove(mainMG.children[0]);
-
-      for (const src of [silhouetteScene, musclesScene, musclesExtraScene]) {
-        src.traverse((child) => {
-          if ((child as THREE.Mesh).isMesh && child.visible) {
-            const mesh = child as THREE.Mesh;
-            const clone = new THREE.Mesh(mesh.geometry, SHADOW_MAT);
-            clone.matrixAutoUpdate = false;
-            clone.frustumCulled = false;
-            mesh.updateWorldMatrix(true, false);
-            // Translate GLTF positions so feet are at Y=0 (matching rendered mannequin)
-            clone.matrix.copy(feetOffset).multiply(mesh.matrixWorld);
-            clone.renderOrder = -1;
-            clone.raycast = () => {};
-            mainMG.add(clone);
-          }
-        });
-      }
-    }, 200);
-
-    return () => clearTimeout(timer);
-  }, [silhouetteScene, musclesScene, musclesExtraScene, mannequinGroupRef]);
-
-  // Per-frame: counter-rotate light + plane normal.
-  // Priority 1 → runs AFTER Scene's useFrame (priority 0) to read the
-  // current turntable.rotation.y without one-frame lag.
-  const _L = useRef(new THREE.Vector3());
-  const _N = useRef(new THREE.Vector3());
-  useFrame(() => {
-    const turntable = turntableRef.current;
-    const mainMG = mainMGRef.current;
-    if (!turntable || !mainMG) return;
-
-    const θ = turntable.rotation.y;
-    _L.current.copy(LIGHT_DIR_WORLD).applyAxisAngle(Y_AXIS, -θ);
-    _N.current.copy(PLANE_NORMAL_WORLD).applyAxisAngle(Y_AXIS, -θ);
-
-    mainMG.matrix.copy(makePlanarShadowMatrix(groundYRef.current, _L.current, _N.current));
-    mainMG.matrixWorldNeedsUpdate = true;
-  }, 1); // priority 1 → after Scene's useFrame (priority 0)
-
-  return <group ref={mainMGRef} matrixAutoUpdate={false} />;
-}
+/* ── Shadow map (native Three.js DirectionalLight + receiveShadow) ── */
 
 /* ── Background plane — fixed in scene, follows camera zoom/pan ──── */
 
@@ -473,11 +360,15 @@ function Scene({
     // Keep defaults: right-click=TRUCK, wheel=DOLLY, two-finger=DOLLY_TRUCK
   }, []);
 
-  /* Sync camera zoom from debug settings */
+  /* Add shadow light target to scene (required for Three.js directional shadows) */
   useEffect(() => {
-    camera.zoom = settings.cameraZoom; // eslint-disable-line react-hooks/immutability -- Three.js camera is mutable
-    camera.updateProjectionMatrix();
-  }, [camera, settings.cameraZoom]);
+    const light = lightRef.current;
+    if (!light) return;
+    light.target.position.set(0, 0.5, 0);
+    light.parent?.add(light.target);
+  }, []);
+
+  /* Perspective camera: zoom handled by CameraControls dolly, not camera.zoom */
 
   /* Update CameraControls imperatively when settings change */
   useEffect(() => {
@@ -504,8 +395,8 @@ function Scene({
       box.setFromObject(mannequin);
       const center = box.getCenter(new Vector3());
 
-      // Orthographic: position camera in front, looking at center
-      controls.setLookAt(0, center.y, 5, 0, center.y, 0, false);
+      // Perspective: position camera in front, looking at center
+      controls.setLookAt(0, center.y, 3.5, 0, center.y, 0, false);
       controls.saveState();
     });
 
@@ -609,16 +500,32 @@ function Scene({
       />
 
       <group>
-        {/* Ambient fill light */}
+        {/* Shadow-casting sun light — OUTSIDE turntable so shadow stays fixed */}
         <directionalLight
           ref={lightRef}
           position={[-3, 6, -2]}
           intensity={0.6}
+          castShadow
+          shadow-mapSize-width={2048}
+          shadow-mapSize-height={2048}
+          shadow-camera-left={-5}
+          shadow-camera-right={5}
+          shadow-camera-top={6}
+          shadow-camera-bottom={-2}
+          shadow-camera-near={0.5}
+          shadow-camera-far={20}
+          shadow-bias={-0.003}
+          shadow-radius={4}
         />
+
+        {/* Ground plane receives shadow — OUTSIDE turntable */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} receiveShadow renderOrder={-1}>
+          <planeGeometry args={[20, 20]} />
+          <shadowMaterial transparent opacity={0.35} depthWrite={false} />
+        </mesh>
 
         {/* Turntable — rotates mannequin on Y axis */}
         <group ref={turntableRef} scale={settings.mannequinScale}>
-          <PlanarShadow mannequinGroupRef={mannequinGroupRef} turntableRef={turntableRef} />
           <group ref={mannequinGroupRef}>
             <group scale={settings.innerScale} position={[0, 0, -0.15]}>
               <HologramMannequin
@@ -684,8 +591,8 @@ export default function AnatomyCanvas({
   return (
     <>
       <Canvas
-        orthographic
-        camera={{ position: [0, 0.8, 5], zoom: 250, near: 0.01, far: 100 }}
+        shadows={{ type: PCFSoftShadowMap }}
+        camera={{ position: [0, 0.8, 3.5], fov: 60, near: 0.01, far: 100 }}
         gl={{ antialias: true, stencil: true }}
       >
         <Scene

@@ -152,6 +152,12 @@ function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
         });
         mesh.renderOrder = 2;
 
+        // Cast solid silhouette shadow (shadow map from DirectionalLight)
+        mesh.castShadow = true;
+        mesh.customDepthMaterial = new THREE.MeshDepthMaterial({
+          depthPacking: THREE.RGBADepthPacking,
+        });
+
         // GL_POINTS pass — child of mesh, identity transform.
         // Same geometry + same modelViewMatrix = exact vertex alignment.
         const pts = new THREE.Points(mesh.geometry, pointsMat);
