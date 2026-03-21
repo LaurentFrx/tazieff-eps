@@ -111,17 +111,17 @@
   z-index: 15;
   pointer-events: auto;
   touch-action: none;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid rgba(0, 212, 255, 0.25);
-  padding: 12px 16px;
-  padding-bottom: max(12px, env(safe-area-inset-bottom));
-  animation: submenu-up 0.2s ease both;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.88) 60%, rgba(0, 0, 0, 0.4));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 16px 16px 0 0;
+  padding: 16px 16px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  animation: submenu-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes submenu-up {
-  from { opacity: 0; transform: translateY(100%); }
+  from { opacity: 0; transform: translateY(40px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -129,12 +129,25 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+}
+
+.anatomy-submenu-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.anatomy-submenu-accent {
+  width: 4px;
+  height: 22px;
+  border-radius: 2px;
+  flex-shrink: 0;
 }
 
 .anatomy-submenu-group-title {
   font-family: var(--font-mono), "Space Mono", monospace;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -142,18 +155,19 @@
 }
 
 .anatomy-submenu-close {
-  background: none;
+  background: rgba(255, 255, 255, 0.08);
   border: none;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
-  padding: 4px 8px;
-  min-height: 32px;
-  min-width: 32px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.15s;
 }
+.anatomy-submenu-close:hover { background: rgba(255, 255, 255, 0.15); }
 
 .anatomy-submenu-chips {
   display: flex;
@@ -162,6 +176,7 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   padding-bottom: 2px;
+  flex-wrap: wrap;
 }
 
 .anatomy-submenu-chips::-webkit-scrollbar { display: none; }
@@ -170,11 +185,11 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  min-height: 44px;
+  min-height: 38px;
   padding: 0 14px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 22px;
+  border-radius: 20px;
   color: #fff;
   font-family: var(--font-mono), "Space Mono", monospace;
   font-size: 12px;
@@ -182,49 +197,36 @@
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: background 0.12s, border-color 0.12s;
+  transition: background 0.12s, border-color 0.12s, transform 0.1s;
 }
 
-.anatomy-submenu-chip:hover,
-.anatomy-submenu-chip:active {
-  background: rgba(0, 212, 255, 0.1);
-}
+.anatomy-submenu-chip:hover { background: rgba(255, 255, 255, 0.1); }
+.anatomy-submenu-chip:active { transform: scale(0.97); }
 
 .anatomy-submenu-chip--active {
-  border-color: rgba(0, 212, 255, 0.5);
-  background: rgba(0, 212, 255, 0.15);
+  background: rgba(255, 255, 255, 0.12);
 }
 
-/* ── Sub-menu detail (selected sub-muscle name + exercise link) ────────── */
+/* ── Exercise button (pill) ──────────────────────────────────────────── */
 
-.anatomy-submenu-detail {
+.anatomy-submenu-exercise-btn {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.anatomy-submenu-detail-name {
-  font-family: var(--font-mono), "Space Mono", monospace;
-  font-size: 13px;
-  font-weight: 700;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 20px;
+  border-radius: 24px;
   color: #fff;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.anatomy-submenu-detail-link {
-  display: inline-block;
   font-family: var(--font-mono), "Space Mono", monospace;
   font-size: 13px;
-  color: var(--holo-blue, #00d4ff);
+  font-weight: 600;
+  letter-spacing: 0.03em;
   text-decoration: none;
-  white-space: nowrap;
+  transition: filter 0.15s;
   pointer-events: auto;
 }
+.anatomy-submenu-exercise-btn:hover { filter: brightness(1.15); }
 
 /* ── Layer toolbar (top right) ──────────────────────────────────────────── */
 

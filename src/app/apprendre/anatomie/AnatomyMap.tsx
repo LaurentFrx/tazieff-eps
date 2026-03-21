@@ -143,14 +143,20 @@ export default function AnatomyMap({ exercises }: Props) {
       {selectedGroup && (
         <div className="anatomy-submenu">
           <div className="anatomy-submenu-header">
-            <span className="anatomy-submenu-group-title">{t(`anatomy.groups.${selectedGroup}`)}</span>
+            <div className="anatomy-submenu-title-row">
+              <span
+                className="anatomy-submenu-accent"
+                style={{ background: MUSCLE_GROUPS[selectedGroup]?.color }}
+              />
+              <span className="anatomy-submenu-group-title">{t(`anatomy.groups.${selectedGroup}`)}</span>
+            </div>
             <button
               type="button"
               className="anatomy-submenu-close"
               onClick={clearSelection}
               aria-label={t("anatomy.close")}
             >
-              ✕
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg>
             </button>
           </div>
           {layeredMuscles && (
@@ -173,8 +179,13 @@ export default function AnatomyMap({ exercises }: Props) {
             </div>
           )}
           {groupExerciseCount > 0 && (
-            <Link href={`/exercices?muscle=${selectedGroup}`} className="anatomy-submenu-detail-link" style={{ marginTop: 4 }}>
-              {`${groupExerciseCount} ${groupExerciseCount === 1 ? t("anatomy.exerciseCount") : t("anatomy.exerciseCountPlural")} \u2192`}
+            <Link
+              href={`/exercices?muscle=${selectedGroup}&from=anatomie`}
+              className="anatomy-submenu-exercise-btn"
+              style={{ background: MUSCLE_GROUPS[selectedGroup]?.color }}
+            >
+              {`${t("anatomy.seeThe")} ${groupExerciseCount} ${groupExerciseCount === 1 ? t("anatomy.exerciseCount") : t("anatomy.exerciseCountPlural")}`}
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="8" x2="13" y2="8"/><polyline points="9,4 13,8 9,12"/></svg>
             </Link>
           )}
         </div>

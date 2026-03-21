@@ -301,6 +301,35 @@ body:has(.anatomy-page) nav {
   gap: 12px;
 }
 
+/* ── Back to anatomy button ──────────────────────────────────────── */
+.back-to-anatomy {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s;
+  margin-bottom: -4px;
+}
+.back-to-anatomy:hover { background: rgba(0, 0, 0, 0.65); }
+@media (prefers-color-scheme: light) {
+  :where(:not(.dark)) .back-to-anatomy {
+    background: rgba(0, 0, 0, 0.06);
+    color: rgba(0, 0, 0, 0.7);
+  }
+  :where(:not(.dark)) .back-to-anatomy:hover { background: rgba(0, 0, 0, 0.1); }
+}
+:where(.dark, .dark *) .back-to-anatomy {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+}
+:where(.dark, .dark *) .back-to-anatomy:hover { background: rgba(255, 255, 255, 0.12); }
+
 .filter-panel {
   display: flex;
   flex-direction: column;

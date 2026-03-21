@@ -17,6 +17,7 @@ import { useTeacherMode } from "@/hooks/useTeacherMode";
 import { useExercisesLiveSync } from "@/hooks/useExercisesLiveSync";
 import { ExerciseFilters } from "@/components/exercices/ExerciseFilters";
 import { ExerciseGrid } from "@/components/exercices/ExerciseGrid";
+import { BackToAnatomy } from "./BackToAnatomy";
 import type { ViewMode } from "@/components/exercices/ExerciseGrid";
 import { TeacherToolbar } from "@/components/exercices/TeacherToolbar";
 
@@ -262,6 +263,7 @@ export function ExerciseListClient({
 
   return (
     <div className="stack-lg">
+      <BackToAnatomy />
       <div className="filter-panel">
         <TeacherToolbar
           teacherUnlocked={teacherUnlocked}
