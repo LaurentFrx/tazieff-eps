@@ -125,6 +125,7 @@ export const messages = {
         S4: "Bas du corps — squat, fentes & hanche",
         S5: "Exercices fonctionnels & composés",
         S6: "Étirements & récupération",
+        S7: "Machines guidées",
       },
     },
     seances: {
@@ -1109,6 +1110,7 @@ export const messages = {
         S4: "Lower body — squat, lunges & hips",
         S5: "Functional & compound exercises",
         S6: "Stretching & recovery",
+        S7: "Weight machines",
       },
     },
     seances: {
@@ -2093,6 +2095,7 @@ export const messages = {
         S4: "Tren inferior — sentadillas, zancadas & cadera",
         S5: "Ejercicios funcionales & compuestos",
         S6: "Estiramientos & recuperación",
+        S7: "Máquinas guiadas",
       },
     },
     seances: {
