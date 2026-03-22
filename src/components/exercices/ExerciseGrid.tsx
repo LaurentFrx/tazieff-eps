@@ -7,7 +7,7 @@ import type { ExerciseListItem } from "@/lib/exercices/filters";
 import { toggleFavorite } from "@/lib/favoritesStore";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
-const SESSION_ORDER = ["S1", "S2", "S3", "S4", "S5", "S6"] as const;
+const SESSION_ORDER = ["S1", "S2", "S3", "S4", "S5", "S6", "S7"] as const;
 
 function getSession(slug: string): string {
   const match = slug.match(/^s(\d+)-/);
