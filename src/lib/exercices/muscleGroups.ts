@@ -1,90 +1,129 @@
+import { normalizeForSearch as normalize } from "@/lib/text/normalize";
+
 export type MuscleGroupId =
-  | "abdominaux"
-  | "pectoraux"
   | "dos"
-  | "epaules"
-  | "bras"
-  | "fessiers"
-  | "cuisses"
-  | "mollets";
+  | "membres-inferieurs"
+  | "membres-superieurs"
+  | "abdominaux"
+  | "pectoraux";
 
 export const MUSCLE_GROUP_IDS: readonly MuscleGroupId[] = [
+  "dos",
+  "membres-inferieurs",
+  "membres-superieurs",
   "abdominaux",
   "pectoraux",
-  "dos",
-  "epaules",
-  "bras",
-  "fessiers",
-  "cuisses",
-  "mollets",
 ];
 
 // Lowercase + accent-stripped variants for each group.
 // The matcher normalizes exercise muscle values before lookup.
 const MUSCLE_GROUP_MAP: Record<MuscleGroupId, string[]> = {
-  abdominaux: [
-    "grand droit",
-    "grand droit des abdominaux",
-    "transverse",
-    "obliques",
-    "obliques droits",
-    "obliques gauches",
-    "stabilisateurs",
-  ],
-  pectoraux: [
-    "pectoraux",
-    "pectoraux internes",
-    "pectoraux superieurs",
-    "pectoraux inferieurs",
-    "pectoraux claviculaires",
-    "denteles",
-    "denteles",
-  ],
   dos: [
     "grand dorsal",
-    "trapezes",
-    "rhomboides",
-    "erecteurs du rachis",
-    "carre des lombes",
     "dorsaux",
+    "trapeze",
+    "trapezes",
+    "rhomboide",
+    "rhomboides",
+    "infra-epineux",
+    "petit rond",
+    "grand rond",
+    "carre des lombes",
     "lombaires",
+    "spinaux",
+    "erector spinae",
+    "dos",
+    "latissimus",
+    "back muscles",
+    "erecteurs du rachis",
+    "latissimus dorsi",
+    "teres major",
+    "trapezius",
+    "rhomboids",
+    "dorsal ancho",
+    "redondo mayor",
+    "trapecios",
+    "romboides",
   ],
-  epaules: [
+  "membres-inferieurs": [
+    "quadriceps",
+    "ischio-jambiers",
+    "ischio jambiers",
+    "ischios",
+    "mollets",
+    "triceps sural",
+    "jumeaux",
+    "soleaire",
+    "soleaires",
+    "gastrocnemiens",
+    "adducteurs",
+    "abducteurs",
+    "fessiers",
+    "grand fessier",
+    "moyen fessier",
+    "psoas",
+    "psoas-iliaque",
+    "jambier",
+    "jambier anterieur",
+    "long peronier",
+    "cuisses",
+    "jambes",
+    "gluteus",
+    "hamstrings",
+    "calves",
+    "tfl",
+    "piriforme",
+    "pyramidal",
+  ],
+  "membres-superieurs": [
     "deltoides",
     "deltoides anterieurs",
     "deltoides moyens",
     "deltoides posterieurs",
-    "coiffe des rotateurs",
-  ],
-  bras: [
     "biceps",
-    "biceps brachial",
-    "brachial",
-    "brachio-radial",
     "triceps",
-    "triceps brachial",
     "avant-bras",
+    "brachio-radial",
+    "brachial",
+    "coiffe des rotateurs",
+    "epaules",
+    "bras",
+    "biceps brachial",
+    "triceps brachial",
+    "shoulders",
+    "arms",
+    "anterior deltoids",
+    "deltoids",
+    "deltoides anteriores",
   ],
-  fessiers: [
-    "grand fessier",
-    "moyen fessier",
-    "piriforme",
-    "pyramidal",
+  abdominaux: [
+    "grand droit",
+    "grand droit des abdominaux",
+    "abdominaux",
+    "obliques",
+    "transverse",
+    "abdos",
+    "core",
+    "gainage",
+    "obliques droits",
+    "obliques gauches",
+    "rectus abdominis",
+    "stabilisateurs",
+    "abdominales",
   ],
-  cuisses: [
-    "quadriceps",
-    "ischio-jambiers",
-    "ischio jambiers",
-    "adducteurs",
-    "abducteurs",
-    "psoas",
-    "psoas-iliaque",
-    "tfl",
-  ],
-  mollets: [
-    "mollets",
-    "gastrocnemiens",
-    "soleaires",
+  pectoraux: [
+    "pectoraux",
+    "grand pectoral",
+    "petit pectoral",
+    "dentele",
+    "denteles",
+    "pecs",
+    "chest",
+    "pectoraux internes",
+    "pectoraux superieurs",
+    "pectoraux inferieurs",
+    "pectoraux claviculaires",
+    "pectorales",
   ],
 };
 
@@ -92,22 +131,32 @@ const MUSCLE_GROUP_MAP: Record<MuscleGroupId, string[]> = {
 const reverseLookup = new Map<string, MuscleGroupId>();
 for (const [groupId, muscles] of Object.entries(MUSCLE_GROUP_MAP) as [MuscleGroupId, string[]][]) {
   for (const muscle of muscles) {
-    reverseLookup.set(muscle, groupId);
+    reverseLookup.set(normalize(muscle), groupId);
   }
 }
 
-import { normalizeForSearch as normalize } from "@/lib/text/normalize";
+/** Return the muscle group ID for a single muscle name, or null if unknown. */
+export function getMuscleGroup(muscleName: string): MuscleGroupId | null {
+  const key = normalize(muscleName);
+  const group = reverseLookup.get(key) ?? null;
+  if (!group && process.env.NODE_ENV !== "production") {
+    console.warn(`[muscleGroups] Muscle non classé: "${muscleName}" (normalized: "${key}")`);
+  }
+  return group;
+}
 
-/** Return all muscle group IDs that match at least one muscle from the exercise. */
+/** Return all unique muscle group IDs that match at least one muscle from the exercise. */
 export function getMuscleGroups(muscles: string[]): MuscleGroupId[] {
   const groups = new Set<MuscleGroupId>();
   for (const muscle of muscles) {
-    const key = normalize(muscle);
-    const group = reverseLookup.get(key);
+    const group = getMuscleGroup(muscle);
     if (group) groups.add(group);
   }
   return MUSCLE_GROUP_IDS.filter((id) => groups.has(id));
 }
+
+/** Alias for getMuscleGroups — named for clarity when mapping an exercise's muscle list. */
+export const getMuscleGroupsForExercise = getMuscleGroups;
 
 /** Check if an exercise's muscles match any of the selected groups. */
 export function matchesMuscleGroups(

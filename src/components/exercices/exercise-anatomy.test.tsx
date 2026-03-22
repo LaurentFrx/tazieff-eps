@@ -1,39 +1,125 @@
 import { describe, it, expect, vi } from "vitest";
 import {
   getExerciseMuscleGroups,
-  isPosteriorDominant,
 } from "@/lib/exercices/muscle-groups";
+import {
+  getMuscleGroup,
+  getMuscleGroupsForExercise,
+} from "@/lib/exercices/muscleGroups";
 
-/* ── Pure utility tests ────────────────────────────────────────────────── */
+/* ── getMuscleGroup unit tests ──────────────────────────────────────────── */
 
-describe("getExerciseMuscleGroups", () => {
-  it("maps pectoraux + triceps + epaules", () => {
-    const result = getExerciseMuscleGroups([
-      "Pectoraux",
-      "triceps",
-      "deltoïde antérieur",
-    ]);
-    expect(result).toContain("pectoraux");
-    expect(result).toContain("triceps");
-    expect(result).toContain("epaules");
+describe("getMuscleGroup", () => {
+  it("maps 'grand dorsal' to dos", () => {
+    expect(getMuscleGroup("grand dorsal")).toBe("dos");
+  });
+  it("maps 'Trapeze' (case-insensitive) to dos", () => {
+    expect(getMuscleGroup("Trapeze")).toBe("dos");
+  });
+  it("maps 'LOMBAIRES' (uppercase) to dos", () => {
+    expect(getMuscleGroup("LOMBAIRES")).toBe("dos");
+  });
+  it("maps 'Érecteurs du rachis' (accented) to dos", () => {
+    expect(getMuscleGroup("Érecteurs du rachis")).toBe("dos");
   });
 
-  it("maps abdos variants to abdominaux group", () => {
-    const result = getExerciseMuscleGroups([
-      "Grand droit des abdominaux",
-      "obliques",
-    ]);
+  it("maps 'quadriceps' to membres-inferieurs", () => {
+    expect(getMuscleGroup("quadriceps")).toBe("membres-inferieurs");
+  });
+  it("maps 'Ischio-jambiers' to membres-inferieurs", () => {
+    expect(getMuscleGroup("Ischio-jambiers")).toBe("membres-inferieurs");
+  });
+  it("maps 'mollets' to membres-inferieurs", () => {
+    expect(getMuscleGroup("mollets")).toBe("membres-inferieurs");
+  });
+  it("maps 'Grand fessier' to membres-inferieurs", () => {
+    expect(getMuscleGroup("Grand fessier")).toBe("membres-inferieurs");
+  });
+
+  it("maps 'deltoides' to membres-superieurs", () => {
+    expect(getMuscleGroup("deltoides")).toBe("membres-superieurs");
+  });
+  it("maps 'Biceps' to membres-superieurs", () => {
+    expect(getMuscleGroup("Biceps")).toBe("membres-superieurs");
+  });
+  it("maps 'triceps' to membres-superieurs", () => {
+    expect(getMuscleGroup("triceps")).toBe("membres-superieurs");
+  });
+
+  it("maps 'obliques' to abdominaux", () => {
+    expect(getMuscleGroup("obliques")).toBe("abdominaux");
+  });
+  it("maps 'transverse' to abdominaux", () => {
+    expect(getMuscleGroup("transverse")).toBe("abdominaux");
+  });
+  it("maps 'grand droit' to abdominaux", () => {
+    expect(getMuscleGroup("grand droit")).toBe("abdominaux");
+  });
+
+  it("maps 'pectoraux' to pectoraux", () => {
+    expect(getMuscleGroup("pectoraux")).toBe("pectoraux");
+  });
+  it("maps 'dentele' to pectoraux", () => {
+    expect(getMuscleGroup("dentele")).toBe("pectoraux");
+  });
+  it("maps 'grand pectoral' to pectoraux", () => {
+    expect(getMuscleGroup("grand pectoral")).toBe("pectoraux");
+  });
+
+  it("returns null for unknown muscle", () => {
+    // Suppress console.warn in test
+    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    expect(getMuscleGroup("cardio")).toBeNull();
+    spy.mockRestore();
+  });
+});
+
+/* ── getMuscleGroupsForExercise tests ───────────────────────────────────── */
+
+describe("getMuscleGroupsForExercise", () => {
+  it("returns multiple groups for multi-muscle exercise", () => {
+    const result = getMuscleGroupsForExercise(["deltoides", "pectoraux", "grand droit"]);
+    expect(result).toContain("membres-superieurs");
+    expect(result).toContain("pectoraux");
     expect(result).toContain("abdominaux");
-    expect(result).toHaveLength(1); // both map to the same group
+    expect(result).toHaveLength(3);
+  });
+
+  it("deduplicates groups from multiple matching muscles", () => {
+    const result = getMuscleGroupsForExercise(["abdominaux", "obliques", "transverse", "grand droit"]);
+    expect(result).toEqual(["abdominaux"]);
   });
 
   it("returns empty for unrecognized muscle tags", () => {
-    const result = getExerciseMuscleGroups(["cardio", "endurance"]);
+    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const result = getMuscleGroupsForExercise(["cardio", "endurance"]);
     expect(result).toHaveLength(0);
+    spy.mockRestore();
   });
 
   it("handles empty input", () => {
-    expect(getExerciseMuscleGroups([])).toHaveLength(0);
+    expect(getMuscleGroupsForExercise([])).toHaveLength(0);
+  });
+
+  it("preserves canonical order: dos, membres-inferieurs, membres-superieurs, abdominaux, pectoraux", () => {
+    const result = getMuscleGroupsForExercise(["pectoraux", "grand dorsal", "quadriceps"]);
+    expect(result).toEqual(["dos", "membres-inferieurs", "pectoraux"]);
+  });
+});
+
+/* ── getExerciseMuscleGroups (bridge) tests ─────────────────────────────── */
+
+describe("getExerciseMuscleGroups", () => {
+  it("maps pectoraux + triceps to pectoraux + membres-superieurs", () => {
+    const result = getExerciseMuscleGroups(["Pectoraux", "triceps"]);
+    expect(result).toContain("pectoraux");
+    expect(result).toContain("membres-superieurs");
+  });
+
+  it("maps abdos variants to abdominaux group", () => {
+    const result = getExerciseMuscleGroups(["Grand droit des abdominaux", "obliques"]);
+    expect(result).toContain("abdominaux");
+    expect(result).toHaveLength(1);
   });
 
   it("maps dos-related terms", () => {
@@ -41,46 +127,9 @@ describe("getExerciseMuscleGroups", () => {
     expect(result).toContain("dos");
   });
 
-  it("maps ischio-jambiers to cuisses_arriere", () => {
+  it("maps ischio-jambiers to membres-inferieurs", () => {
     const result = getExerciseMuscleGroups(["Ischio-jambiers"]);
-    expect(result).toContain("cuisses_arriere");
-  });
-
-  it("deduplicates groups from multiple matching muscles", () => {
-    const result = getExerciseMuscleGroups([
-      "abdos",
-      "transverse",
-      "obliques",
-      "gainage",
-    ]);
-    // All of these match "abdominaux"
-    expect(result.filter((g) => g === "abdominaux")).toHaveLength(1);
-  });
-});
-
-describe("isPosteriorDominant", () => {
-  it("returns true for mostly dorsal groups", () => {
-    expect(
-      isPosteriorDominant(["dos", "cuisses_arriere", "fessiers"]),
-    ).toBe(true);
-  });
-
-  it("returns false for anterior groups", () => {
-    expect(isPosteriorDominant(["pectoraux", "triceps"])).toBe(false);
-  });
-
-  it("returns false for 50/50 split", () => {
-    expect(isPosteriorDominant(["dos", "pectoraux"])).toBe(false);
-  });
-
-  it("returns false for empty array", () => {
-    expect(isPosteriorDominant([])).toBe(false);
-  });
-
-  it("returns true when majority is posterior", () => {
-    expect(
-      isPosteriorDominant(["dos", "fessiers", "cuisses_avant"]),
-    ).toBe(true);
+    expect(result).toContain("membres-inferieurs");
   });
 });
 
@@ -120,7 +169,7 @@ vi.mock("@/lib/i18n/I18nProvider", () => ({
   }),
 }));
 
-import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
+import { render, screen, act } from "@testing-library/react";
 import ExerciseAnatomyThumb from "./ExerciseAnatomyThumb";
 
 describe("ExerciseAnatomyThumb", () => {
@@ -141,7 +190,7 @@ describe("ExerciseAnatomyThumb", () => {
     expect(screen.getByTestId("mannequin-img")).toBeTruthy();
   });
 
-  it("shows group labels on the thumb", async () => {
+  it("shows new 5-group labels on the thumb", async () => {
     await act(async () => {
       render(
         <ExerciseAnatomyThumb
@@ -152,11 +201,12 @@ describe("ExerciseAnatomyThumb", () => {
       );
     });
 
-    expect(screen.getByText("anatomy.groups.pectoraux")).toBeTruthy();
-    expect(screen.getByText("anatomy.groups.triceps")).toBeTruthy();
+    expect(screen.getByText("filters.muscleGroups.pectoraux")).toBeTruthy();
+    expect(screen.getByText("filters.muscleGroups.membres-superieurs")).toBeTruthy();
   });
 
   it("renders fallback chips for unrecognized muscles", async () => {
+    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
     await act(async () => {
       render(
         <ExerciseAnatomyThumb
@@ -169,6 +219,7 @@ describe("ExerciseAnatomyThumb", () => {
 
     expect(screen.getByText("Cardio")).toBeTruthy();
     expect(screen.queryByTestId("mannequin-img")).toBeNull();
+    spy.mockRestore();
   });
 
   it("links to anatomy page with muscle groups and slug", async () => {
@@ -186,7 +237,7 @@ describe("ExerciseAnatomyThumb", () => {
     expect(link.tagName).toBe("A");
     const href = link.getAttribute("href");
     expect(href).toContain("/apprendre/anatomie");
-    expect(href).toContain("muscles=pectoraux,triceps");
+    expect(href).toContain("muscles=membres-superieurs,pectoraux");
     expect(href).toContain("from=exercice");
     expect(href).toContain("slug=s3-03");
   });

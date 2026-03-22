@@ -134,10 +134,20 @@ export function ExerciseListClient({
   const [onlyFavorites, setOnlyFavorites] = useState(false);
 
   // Pre-select muscle group from URL query param (?muscle=pectoraux)
+  // Retro-compatibility: map old anatomy group slugs to new 5-group system
   useEffect(() => {
     const muscle = searchParams.get("muscle");
-    if (muscle && MUSCLE_GROUP_IDS.includes(muscle as MuscleGroupId)) {
-      setSelectedMuscleGroups([muscle as MuscleGroupId]);
+    if (!muscle) return;
+    const LEGACY_MAP: Record<string, MuscleGroupId> = {
+      epaules: "membres-superieurs",
+      bras: "membres-superieurs",
+      fessiers: "membres-inferieurs",
+      cuisses: "membres-inferieurs",
+      mollets: "membres-inferieurs",
+    };
+    const resolved = LEGACY_MAP[muscle] ?? muscle;
+    if (MUSCLE_GROUP_IDS.includes(resolved as MuscleGroupId)) {
+      setSelectedMuscleGroups([resolved as MuscleGroupId]);
     }
   }, [searchParams]);
 

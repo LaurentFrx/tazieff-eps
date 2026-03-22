@@ -3,10 +3,17 @@
 import Link from "next/link";
 import NextImage from "next/image";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { MUSCLE_GROUPS } from "@/app/apprendre/anatomie/anatomy-data";
 import { getExerciseMuscleGroups } from "@/lib/exercices/muscle-groups";
 import miniMannequin from "../../../public/images/anatomy/mini-mannequin.webp";
 import "./exercise-anatomy.css";
+
+const GROUP_COLORS: Record<string, string> = {
+  dos: "#3b82f6",
+  "membres-inferieurs": "#22c55e",
+  "membres-superieurs": "#f97316",
+  abdominaux: "#a855f7",
+  pectoraux: "#ef4444",
+};
 
 type Props = {
   muscles: string[];
@@ -56,20 +63,15 @@ export default function ExerciseAnatomyThumb({
         priority={false}
       />
       <div className="exo-anatomy-thumb-labels">
-        {groupKeys.slice(0, 5).map((key) => (
+        {groupKeys.map((key) => (
           <span key={key} className="exo-anatomy-thumb-label">
             <span
               className="exo-anatomy-thumb-dot"
-              style={{ background: MUSCLE_GROUPS[key]?.color }}
+              style={{ background: GROUP_COLORS[key] ?? "#888" }}
             />
-            {t(`anatomy.groups.${key}`)}
+            {t(`filters.muscleGroups.${key}`)}
           </span>
         ))}
-        {groupKeys.length > 5 && (
-          <span className="exo-anatomy-thumb-label">
-            +{groupKeys.length - 5}
-          </span>
-        )}
       </div>
       <div className="exo-anatomy-thumb-hint">
         {t("exerciseAnatomy.tapToExplore")}

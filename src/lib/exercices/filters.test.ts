@@ -325,22 +325,22 @@ describe("filterExercises", () => {
 
   // --- Muscle groups filter ---
   it("filters by single muscle group", () => {
-    const result = filterExercises(exercises, { muscleGroups: ["cuisses"] });
+    const result = filterExercises(exercises, { muscleGroups: ["membres-inferieurs"] });
     expect(result).toHaveLength(1);
     expect(result[0].slug).toBe("squats");
   });
 
   it("filters by multiple muscle groups (OR logic)", () => {
     const result = filterExercises(exercises, {
-      muscleGroups: ["cuisses", "pectoraux"],
+      muscleGroups: ["membres-inferieurs", "pectoraux"],
     });
     expect(result).toHaveLength(2);
   });
 
   it("matches exercises with at least one muscle in group", () => {
-    const result = filterExercises(exercises, { muscleGroups: ["bras"] });
+    const result = filterExercises(exercises, { muscleGroups: ["membres-superieurs"] });
     expect(result).toHaveLength(1);
-    expect(result[0].slug).toBe("pompes"); // has triceps → bras group
+    expect(result[0].slug).toBe("pompes"); // has triceps → membres-superieurs group
   });
 
   // --- Theme filter ---
