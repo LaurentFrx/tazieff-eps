@@ -4,6 +4,7 @@ import Link from "next/link";
 import NextImage from "next/image";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { getExerciseMuscleGroups } from "@/lib/exercices/muscle-groups";
+import { MUSCLE_GROUPS, matchesGroup } from "@/app/apprendre/anatomie/anatomy-data";
 import miniMannequin from "../../../public/images/anatomy/mini-mannequin.webp";
 import "./exercise-anatomy.css";
 
@@ -14,6 +15,19 @@ const GROUP_COLORS: Record<string, string> = {
   abdominaux: "#a855f7",
   pectoraux: "#ef4444",
 };
+
+/** Map exercise muscles to anatomy-data group keys (for the anatomy page link). */
+function getAnatomyGroupKeys(muscles: string[]): string[] {
+  const groups = new Set<string>();
+  for (const muscle of muscles) {
+    for (const [key, group] of Object.entries(MUSCLE_GROUPS)) {
+      if (matchesGroup(group, muscle)) {
+        groups.add(key);
+      }
+    }
+  }
+  return Array.from(groups);
+}
 
 type Props = {
   muscles: string[];
@@ -28,6 +42,7 @@ export default function ExerciseAnatomyThumb({
 }: Props) {
   const { t } = useI18n();
 
+  // 5 simplified groups for badge display
   const groupKeys = getExerciseMuscleGroups(muscles);
 
   /* No matched groups → fallback to text chips */
@@ -46,7 +61,9 @@ export default function ExerciseAnatomyThumb({
     );
   }
 
-  const href = `/apprendre/anatomie?muscles=${groupKeys.join(",")}&from=exercice&slug=${slug}`;
+  // anatomy-data groups for the anatomy page link
+  const anatomyKeys = getAnatomyGroupKeys(muscles);
+  const href = `/apprendre/anatomie?muscles=${anatomyKeys.join(",")}&from=exercice&slug=${slug}`;
 
   return (
     <Link

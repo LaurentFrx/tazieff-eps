@@ -222,7 +222,7 @@ describe("ExerciseAnatomyThumb", () => {
     spy.mockRestore();
   });
 
-  it("links to anatomy page with muscle groups and slug", async () => {
+  it("links to anatomy page with anatomy-data group keys (not simplified 5-groups)", async () => {
     await act(async () => {
       render(
         <ExerciseAnatomyThumb
@@ -237,7 +237,10 @@ describe("ExerciseAnatomyThumb", () => {
     expect(link.tagName).toBe("A");
     const href = link.getAttribute("href");
     expect(href).toContain("/apprendre/anatomie");
-    expect(href).toContain("muscles=membres-superieurs,pectoraux");
+    // href uses anatomy-data keys (pectoraux, triceps), NOT simplified groups
+    expect(href).toContain("pectoraux");
+    expect(href).toContain("triceps");
+    expect(href).not.toContain("membres-superieurs");
     expect(href).toContain("from=exercice");
     expect(href).toContain("slug=s3-03");
   });
