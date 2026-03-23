@@ -1166,6 +1166,15 @@ body:has(.anatomy-page) nav {
   }
 }
 
+/* Form wrapper */
+.carnet-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 672px;
+  margin: 0 auto;
+}
+
 /* Tabs */
 .carnet-tabs {
   position: relative;
@@ -1173,7 +1182,7 @@ body:has(.anatomy-page) nav {
   gap: 4px;
   margin-bottom: 24px;
   border-bottom: 1px solid var(--border);
-  padding-bottom: 0;
+  overflow: visible;
 }
 .carnet-tab {
   background: none;
@@ -1193,9 +1202,10 @@ body:has(.anatomy-page) nav {
   position: absolute;
   bottom: -1px;
   height: 3px;
-  background: var(--accent, #f97316);
-  border-radius: 3px 3px 0 0;
+  background: #f97316;
+  border-radius: 9999px;
   transition: left 250ms ease-out, width 250ms ease-out;
+  z-index: 1;
 }
 
 /* Fields */
@@ -1230,21 +1240,24 @@ body:has(.anatomy-page) nav {
   background: transparent;
   color: var(--muted);
   border-radius: 9999px;
-  padding: 6px 18px;
+  padding: 8px 20px;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   transition: all 200ms ease-out;
 }
+.carnet-obj-chip:hover {
+  background: color-mix(in srgb, var(--chip-color) 8%, transparent);
+}
 .carnet-obj-chip.active {
-  background: color-mix(in srgb, var(--chip-color) 15%, transparent);
+  background: color-mix(in srgb, var(--chip-color) 20%, transparent);
   border-color: var(--chip-color);
   color: var(--chip-color);
   animation: carnet-glow 2s ease-in-out infinite;
 }
 @keyframes carnet-glow {
-  0%, 100% { box-shadow: 0 0 20px color-mix(in srgb, var(--chip-color) 15%, transparent); }
-  50% { box-shadow: 0 0 20px color-mix(in srgb, var(--chip-color) 30%, transparent); }
+  0%, 100% { box-shadow: 0 0 24px color-mix(in srgb, var(--chip-color) 20%, transparent); }
+  50% { box-shadow: 0 0 24px color-mix(in srgb, var(--chip-color) 40%, transparent); }
 }
 
 /* Show more methods */
@@ -1268,17 +1281,21 @@ body:has(.anatomy-page) nav {
   gap: 16px;
 }
 
-/* Exercise card */
+/* Exercise card — VISIBLE with depth */
 .carnet-card {
   position: relative;
-  background: color-mix(in srgb, var(--card) 80%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 16px;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--ink) 6%, transparent);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--ink) 12%, transparent);
+  backdrop-filter: blur(4px);
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
 }
 .carnet-card-enter {
   animation: carnet-card-in 300ms ease-out both;
@@ -1325,21 +1342,35 @@ body:has(.anatomy-page) nav {
 }
 .carnet-flabel {
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-/* Row 2: Charge + Séries × Reps */
+/* Row 2: Charge + Séries × Reps — compact, left-aligned */
 .carnet-row2 {
   display: flex;
   gap: 12px;
   align-items: flex-end;
+  flex-wrap: wrap;
 }
-.carnet-row2 > .carnet-fcol { flex: 1; }
-.carnet-sxr { flex: 1; }
-.carnet-sxr .carnet-fcol { flex: 1; }
-.carnet-sxr .carnet-input { min-width: 0; }
-.carnet-sxr > div { display: flex; align-items: flex-end; gap: 6px; }
+.carnet-row2 > .carnet-fcol {
+  width: 112px;
+  flex-shrink: 0;
+}
+.carnet-sxr {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+.carnet-sxr .carnet-fcol {
+  width: 80px;
+  flex-shrink: 0;
+}
+.carnet-sxr .carnet-input {
+  min-width: 0;
+}
 .carnet-multiply {
   font-size: 16px;
   font-weight: 700;
@@ -1355,63 +1386,69 @@ body:has(.anatomy-page) nav {
   align-items: flex-end;
   flex-wrap: wrap;
 }
-.carnet-rir { width: 72px; }
+.carnet-rir { width: 80px; }
 
-/* Emojis */
+/* Emojis — big & vivid */
 .carnet-emojis {
   display: flex;
-  gap: 4px;
+  gap: 8px;
 }
 .carnet-emoji {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 24px;
-  min-width: 40px;
-  min-height: 40px;
+  font-size: 30px;
+  min-width: 48px;
+  min-height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  opacity: 0.3;
-  filter: grayscale(1);
-  transition: opacity 200ms, filter 200ms, transform 100ms;
+  border-radius: 12px;
+  opacity: 0.35;
+  filter: grayscale(0.8);
+  transition: opacity 150ms, filter 150ms, transform 150ms;
   line-height: 1;
   padding: 0;
 }
+.carnet-emoji:hover {
+  opacity: 0.7;
+  filter: grayscale(0.3);
+}
 .carnet-emoji.selected {
   opacity: 1;
-  filter: grayscale(0);
-  text-shadow: 0 0 12px rgba(251, 146, 60, 0.5);
+  filter: grayscale(0) drop-shadow(0 2px 8px rgba(251, 146, 60, 0.4));
+  transform: scale(1.15);
   animation: carnet-emoji-pop 250ms cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 @keyframes carnet-emoji-pop {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.35); }
-  100% { transform: scale(1); }
+  0% { transform: scale(1.15); }
+  50% { transform: scale(1.45); }
+  100% { transform: scale(1.15); }
 }
 
-/* Add exercise button */
+/* Add exercise button — high contrast */
 .carnet-add {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
   padding: 16px;
   background: none;
-  border: 2px dashed var(--border);
+  border: 2px dashed #52525b;
   border-radius: 16px;
-  color: var(--muted);
+  color: #a1a1aa;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: border-color 200ms, color 200ms, background 200ms;
 }
 .carnet-add:hover {
-  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
-  color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 5%, transparent);
+  border-color: #f97316;
+  color: #fb923c;
+  background: rgba(249, 115, 22, 0.05);
 }
 
 /* Combobox */
@@ -1507,10 +1544,10 @@ body:has(.anatomy-page) nav {
   min-height: 1.4em;
 }
 
-/* Save button */
+/* Save button — imposing gradient */
 .carnet-save {
   width: 100%;
-  padding: 14px 24px;
+  padding: 16px 24px;
   border: none;
   border-radius: 12px;
   font-size: 16px;
@@ -1520,17 +1557,24 @@ body:has(.anatomy-page) nav {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: background 300ms, color 300ms, transform 100ms;
-  background: var(--accent, #f97316);
+  transition: box-shadow 200ms, transform 100ms, background 300ms, color 300ms;
+  background: linear-gradient(to right, #f97316, #ea580c);
   color: white;
+  box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.25);
+}
+.carnet-save:hover:not(:disabled) {
+  box-shadow: 0 20px 25px -5px rgba(249, 115, 22, 0.4);
+  transform: translateY(-1px);
 }
 .carnet-save:active:not(:disabled) { transform: scale(0.98); }
 .carnet-save.saving {
   background: var(--muted);
+  box-shadow: none;
   pointer-events: none;
 }
 .carnet-save.done {
   background: #10b981;
+  box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.25);
   pointer-events: none;
 }
 
@@ -1601,7 +1645,7 @@ body:has(.anatomy-page) nav {
 }
 .carnet-empty-cta:active { transform: scale(0.97); }
 
-/* History (kept from original) */
+/* History */
 .carnet-history-header {
   display: flex;
   align-items: center;

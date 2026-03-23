@@ -479,7 +479,7 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
 
       {/* ── Form ─────────────────────────────────────────────────────── */}
       {tab === "form" && (
-        <div className="stack-md">
+        <div className="carnet-form">
           {/* Date */}
           <label className="carnet-field">
             <span className="carnet-label">{t("carnet.date")}</span>
