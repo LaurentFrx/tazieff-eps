@@ -7,7 +7,6 @@ import { InstallPwaBanner } from "@/components/InstallPwaBanner";
 import { OnlineStatus } from "@/components/OnlineStatus";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { AppProviders } from "@/components/providers/AppProviders";
-import { SplashScreenLoader } from "@/components/SplashScreenLoader";
 // RSC: useI18n() unavailable — read lang from cookie via getServerLang()
 import { getServerLang } from "@/lib/i18n/server";
 import "./globals.css";
@@ -88,7 +87,6 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable} ${orbitron.variable}`}>
-        <SplashScreenLoader />
         <AppProviders initialLang={initialLang} initialTheme={initialTheme}>
           <div className="app-shell">
             <main className="app-main">{children}</main>
