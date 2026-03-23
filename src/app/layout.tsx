@@ -200,7 +200,8 @@ export default async function RootLayout({
           (function(){
             var s=document.getElementById('splash-screen');
             if(!s)return;
-            try{if(sessionStorage.getItem('tazieff-splash-shown')){s.remove();return;}}catch(e){}
+            function hide(){s.style.display='none';s.style.pointerEvents='none';}
+            try{if(sessionStorage.getItem('tazieff-splash-shown')){hide();return;}}catch(e){}
             setTimeout(function(){
               var b=document.getElementById('sp-barbell');
               if(b){b.style.opacity='1';b.style.transform='scale(1) rotate(0deg)';}
@@ -222,12 +223,11 @@ export default async function RootLayout({
               },50);
             },1100);
             setTimeout(function(){
-              if(s)s.style.transition='opacity 500ms ease-out';
-              if(s)s.style.opacity='0';
+              if(s){s.style.transition='opacity 500ms ease-out';s.style.opacity='0';}
             },2600);
             setTimeout(function(){
               try{sessionStorage.setItem('tazieff-splash-shown','1');}catch(e){}
-              if(s)s.remove();
+              hide();
             },3100);
           })();
         `}} />
