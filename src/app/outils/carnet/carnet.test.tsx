@@ -6,6 +6,10 @@ vi.mock("@/lib/i18n/I18nProvider", () => ({
   useI18n: () => ({ t: (key: string) => key }),
 }));
 
+vi.mock("@/hooks/useAuth", () => ({
+  useAuth: () => ({ user: null, isLoading: false, isAnonymous: false }),
+}));
+
 vi.mock("lucide-react", () => ({
   ChevronDown: () => <span>▼</span>,
   ChevronUp: () => <span>▲</span>,

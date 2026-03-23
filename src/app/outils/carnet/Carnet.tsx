@@ -3,7 +3,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Download, Printer, Trash2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useAuth } from "@/hooks/useAuth";
 import { normalizeForSearch } from "@/lib/text/normalize";
+import {
+  type CarnetEntry,
+  loadEntriesLocal,
+  saveEntriesLocal,
+  loadEntriesFromSupabase,
+  saveEntryToSupabase,
+  deleteEntryFromSupabase,
+  mergeEntries,
+  syncLocalToSupabase,
+} from "@/lib/carnet-sync";
 
 /* ── Types ──────────────────────────────────────────────────────────── */
 
@@ -17,15 +28,6 @@ type CarnetExercice = {
 };
 
 type CarnetExerciceState = CarnetExercice & { _id: string };
-
-type CarnetEntry = {
-  id: string;
-  date: string;
-  objectif: "endurance" | "volume" | "puissance";
-  methodes: string[];
-  exercices: CarnetExercice[];
-  notes: string;
-};
 
 type ExerciceOption = {
   slug: string;
@@ -41,7 +43,6 @@ type Props = {
 
 /* ── Constants ──────────────────────────────────────────────────────── */
 
-const STORAGE_KEY = "tazieff-carnet";
 const OBJECTIFS = ["endurance", "volume", "puissance"] as const;
 
 const OBJECTIF_META: Record<string, { label: string; color: string }> = {
@@ -93,52 +94,6 @@ const SESSION_NAMES: Record<string, string> = {
 const SESSION_ORDER = ["S1", "S2", "S3", "S4", "S5", "S6", "S7"];
 
 /* ── Helpers ────────────────────────────────────────────────────────── */
-
-function migrateExercice(ex: Record<string, unknown>): CarnetExercice {
-  if ("seriesReps" in ex && !("series" in ex)) {
-    const parts = String(ex.seriesReps ?? "").split(/[x×*]/i);
-    return {
-      nom: String(ex.nom ?? ""),
-      charge: Number(ex.charge) || 0,
-      series: parseInt(parts[0]) || 0,
-      reps: parseInt(parts[1]) || 0,
-      rir: Number(ex.rir) || 0,
-      ressenti: Number(ex.ressenti) || 3,
-    };
-  }
-  return {
-    nom: String(ex.nom ?? ""),
-    charge: Number(ex.charge) || 0,
-    series: Number(ex.series) || 0,
-    reps: Number(ex.reps) || 0,
-    rir: Number(ex.rir) || 0,
-    ressenti: Number(ex.ressenti) || 3,
-  };
-}
-
-function loadEntries(): CarnetEntry[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as CarnetEntry[];
-    return parsed.map((entry) => ({
-      ...entry,
-      exercices: entry.exercices.map((ex) =>
-        migrateExercice(ex as unknown as Record<string, unknown>),
-      ),
-    }));
-  } catch {
-    return [];
-  }
-}
-
-function saveEntries(entries: CarnetEntry[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-  } catch {
-    /* ignore */
-  }
-}
 
 function formatSeriesReps(ex: Record<string, unknown>): string {
   const s = Number(ex.series);
@@ -567,6 +522,7 @@ function CarnetPrintView({
 
 export function Carnet({ methodeNames, exerciceNames }: Props) {
   const { t } = useI18n();
+  const { user } = useAuth();
   const [tab, setTab] = useState<"form" | "history">("form");
   const [entries, setEntries] = useState<CarnetEntry[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -594,9 +550,58 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
   const historyTabRef = useRef<HTMLButtonElement>(null);
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
 
+  // Track whether initial Supabase sync has happened
+  const hasSyncedRef = useRef(false);
+
+  // Load local entries immediately (offline-first)
   useEffect(() => {
-    setEntries(loadEntries());
+    setEntries(loadEntriesLocal());
   }, []);
+
+  // Merge with Supabase when user becomes available
+  useEffect(() => {
+    if (!user || hasSyncedRef.current) return;
+    hasSyncedRef.current = true;
+
+    (async () => {
+      try {
+        // Push unsynced local entries to Supabase
+        const local = loadEntriesLocal();
+        const synced = await syncLocalToSupabase(local, user.id);
+        saveEntriesLocal(synced);
+
+        // Load remote entries and merge
+        const remote = await loadEntriesFromSupabase(user.id);
+        const merged = mergeEntries(synced, remote);
+        setEntries(merged);
+        saveEntriesLocal(merged);
+      } catch {
+        // Sync failed — local entries remain, no data lost
+      }
+    })();
+  }, [user]);
+
+  // Re-sync when coming back online
+  useEffect(() => {
+    function handleOnline() {
+      if (!user) return;
+      (async () => {
+        try {
+          const local = loadEntriesLocal();
+          const synced = await syncLocalToSupabase(local, user.id);
+          const remote = await loadEntriesFromSupabase(user.id);
+          const merged = mergeEntries(synced, remote);
+          setEntries(merged);
+          saveEntriesLocal(merged);
+        } catch {
+          /* silent — will retry next time */
+        }
+      })();
+    }
+
+    window.addEventListener("online", handleOnline);
+    return () => window.removeEventListener("online", handleOnline);
+  }, [user]);
 
   useEffect(() => {
     const el = tab === "form" ? formTabRef.current : historyTabRef.current;
@@ -684,10 +689,31 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
         methodes: selectedMethodes,
         exercices: exercices.filter((e) => e.nom.trim()).map(({ _id, ...rest }) => rest),
         notes,
+        supabaseId: null,
+        syncedAt: null,
+        deletedAt: null,
       };
       const next = [entry, ...entries];
       setEntries(next);
-      saveEntries(next);
+      saveEntriesLocal(next);
+
+      // Async Supabase save (fire-and-forget, does not block UI)
+      if (user && navigator.onLine) {
+        saveEntryToSupabase(entry, user.id).then((supabaseId) => {
+          if (supabaseId) {
+            setEntries((prev) => {
+              const updated = prev.map((e) =>
+                e.id === entry.id
+                  ? { ...e, supabaseId, syncedAt: new Date().toISOString() }
+                  : e,
+              );
+              saveEntriesLocal(updated);
+              return updated;
+            });
+          }
+        }).catch(() => { /* will sync later */ });
+      }
+
       setSaveState("done");
       setTimeout(() => {
         resetForm();
@@ -695,15 +721,33 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
         setTab("history");
       }, 1500);
     }, 400);
-  }, [saveState, date, objectif, selectedMethodes, exercices, notes, entries, resetForm]);
+  }, [saveState, date, objectif, selectedMethodes, exercices, notes, entries, resetForm, user]);
 
   const deleteEntry = useCallback(
     (id: string) => {
+      const target = entries.find((e) => e.id === id);
       const next = entries.filter((e) => e.id !== id);
-      setEntries(next);
-      saveEntries(next);
+
+      // If synced to Supabase, delete remotely
+      if (target?.supabaseId && user && navigator.onLine) {
+        deleteEntryFromSupabase(target.supabaseId).catch(() => { /* ignore */ });
+        setEntries(next);
+        saveEntriesLocal(next);
+      } else if (target?.supabaseId && (!navigator.onLine || !user)) {
+        // Offline: soft-delete for later sync
+        const softDeleted = entries.map((e) =>
+          e.id === id ? { ...e, deletedAt: new Date().toISOString() } : e,
+        );
+        // Remove from display but keep in storage for sync
+        setEntries(softDeleted.filter((e) => !e.deletedAt));
+        saveEntriesLocal(softDeleted);
+      } else {
+        // Local-only entry, just remove
+        setEntries(next);
+        saveEntriesLocal(next);
+      }
     },
-    [entries],
+    [entries, user],
   );
 
   const exportJson = useCallback(() => {

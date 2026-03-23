@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { ThemeProvider, useTheme } from "next-themes";
 import { I18nProvider, type Lang } from "@/lib/i18n/I18nProvider";
+import { AuthProvider } from "@/lib/supabase/AuthProvider";
 import { DevServiceWorkerCleanup } from "@/components/DevServiceWorkerCleanup";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
@@ -60,10 +61,12 @@ export function AppProviders({
       storageKey={THEME_STORAGE_KEY}
     >
       <I18nProvider initialLang={initialLang}>
-        {children}
-        <ThemeSync initialTheme={initialTheme} />
-        <DevServiceWorkerCleanup />
-        <ServiceWorkerRegister />
+        <AuthProvider>
+          {children}
+          <ThemeSync initialTheme={initialTheme} />
+          <DevServiceWorkerCleanup />
+          <ServiceWorkerRegister />
+        </AuthProvider>
       </I18nProvider>
     </ThemeProvider>
   );
