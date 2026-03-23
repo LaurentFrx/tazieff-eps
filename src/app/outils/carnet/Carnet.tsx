@@ -409,6 +409,160 @@ function ExerciceSelector({
   );
 }
 
+/* ── Print helpers ─────────────────────────────────────────────────── */
+
+const RESSENTI_PRINT_LABELS = ["Difficile", "Moyen", "Correct", "Bien", "Excellent"];
+const OBJECTIF_PRINT_COLORS: Record<string, string> = {
+  endurance: "#16a34a",
+  volume: "#2563eb",
+  puissance: "#ea580c",
+};
+
+function formatDateFr(iso: string): string {
+  try {
+    const d = new Date(iso + "T00:00:00");
+    return d.toLocaleDateString("fr-FR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  } catch {
+    return iso;
+  }
+}
+
+function findSlugByTitle(
+  title: string,
+  exerciceNames: ExerciceOption[],
+): string | null {
+  const match = exerciceNames.find((e) => e.title === title);
+  return match?.slug ?? null;
+}
+
+function findSessionByTitle(
+  title: string,
+  exerciceNames: ExerciceOption[],
+): string | null {
+  const match = exerciceNames.find((e) => e.title === title);
+  return match?.session ?? null;
+}
+
+/* ── CarnetPrintView ─────────────────────────────────────────────────── */
+
+function CarnetPrintView({
+  entries,
+  methodeNames,
+  exerciceNames,
+}: {
+  entries: CarnetEntry[];
+  methodeNames: Props["methodeNames"];
+  exerciceNames: ExerciceOption[];
+}) {
+  if (entries.length === 0) return null;
+
+  return (
+    <div className="carnet-print-view">
+      {entries.map((entry, idx) => {
+        const objColor = OBJECTIF_PRINT_COLORS[entry.objectif] || "#000";
+        const objLabel = OBJECTIF_META[entry.objectif]?.label || entry.objectif;
+        const methodeLabels = entry.methodes
+          .map((slug) => methodeNames.find((m) => m.slug === slug)?.titre ?? slug)
+          .join(", ");
+
+        return (
+          <div
+            key={entry.id}
+            className="carnet-print-seance"
+            style={idx < entries.length - 1 ? { pageBreakAfter: "always" } : undefined}
+          >
+            {/* Header */}
+            <div className="carnet-print-header">
+              <div className="carnet-print-header-left">
+                <img
+                  src="/media/branding/logo-eps.webp"
+                  width={32}
+                  height={32}
+                  alt="Tazieff EPS"
+                />
+                <span className="carnet-print-brand">
+                  Tazieff&apos;EPS — Carnet d&apos;entraînement
+                </span>
+              </div>
+              <span className="carnet-print-date">{formatDateFr(entry.date)}</span>
+            </div>
+            <hr className="carnet-print-hr" />
+
+            {/* Résumé */}
+            <div className="carnet-print-resume">
+              <span className="carnet-print-objectif" style={{ color: objColor }}>
+                {objLabel}
+              </span>
+              {methodeLabels && (
+                <p className="carnet-print-methodes">Méthodes : {methodeLabels}</p>
+              )}
+              {entry.notes && (
+                <p className="carnet-print-notes">{entry.notes}</p>
+              )}
+            </div>
+
+            {/* Tableau exercices */}
+            <table className="carnet-print-table">
+              <thead>
+                <tr>
+                  <th className="carnet-print-th-left" style={{ width: 56 }}></th>
+                  <th className="carnet-print-th-left">Exercice</th>
+                  <th>Session</th>
+                  <th>Charge</th>
+                  <th>Séries</th>
+                  <th>Reps</th>
+                  <th>RIR</th>
+                  <th>Ressenti</th>
+                </tr>
+              </thead>
+              <tbody>
+                {entry.exercices.map((ex, i) => {
+                  const slug = findSlugByTitle(ex.nom, exerciceNames);
+                  const session = findSessionByTitle(ex.nom, exerciceNames);
+                  return (
+                    <tr key={i}>
+                      <td className="carnet-print-td-thumb">
+                        {slug && (
+                          <img
+                            src={`/images/exos/thumb169-${slug}.webp`}
+                            width={48}
+                            height={27}
+                            alt=""
+                            className="carnet-print-thumb"
+                          />
+                        )}
+                      </td>
+                      <td className="carnet-print-td-left">{ex.nom || "–"}</td>
+                      <td className="carnet-print-td-center">{session || "–"}</td>
+                      <td className="carnet-print-td-center">
+                        {ex.charge ? `${ex.charge} kg` : "–"}
+                      </td>
+                      <td className="carnet-print-td-center">{ex.series || "–"}</td>
+                      <td className="carnet-print-td-center">{ex.reps || "–"}</td>
+                      <td className="carnet-print-td-center">{ex.rir}</td>
+                      <td className="carnet-print-td-center">
+                        {RESSENTI_PRINT_LABELS[Math.max(0, Math.min(4, ex.ressenti - 1))]}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            {/* Footer */}
+            <p className="carnet-print-footer">Généré depuis muscu-eps.fr</p>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ── Main Component ─────────────────────────────────────────────────── */
 
 export function Carnet({ methodeNames, exerciceNames }: Props) {
@@ -430,6 +584,9 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
   const [saveState, setSaveState] = useState<"idle" | "saving" | "done">("idle");
   const [methodesFading, setMethodesFading] = useState(false);
   const prevObjectifRef = useRef(objectif);
+
+  // Print state
+  const [printEntries, setPrintEntries] = useState<CarnetEntry[]>([]);
 
   // Tab indicator
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -558,6 +715,14 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
     a.click();
     URL.revokeObjectURL(url);
   }, [entries]);
+
+  const triggerPrint = useCallback((entriesToPrint: CarnetEntry[]) => {
+    setPrintEntries(entriesToPrint);
+    requestAnimationFrame(() => {
+      window.print();
+      setPrintEntries([]);
+    });
+  }, []);
 
   /* ── Live summary ───────────────────────────────────────────────────── */
 
@@ -889,7 +1054,7 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
                 <button type="button" className="pill" onClick={exportJson}>
                   <Download size={14} /> {t("carnet.exportJson")}
                 </button>
-                <button type="button" className="pill" onClick={() => window.print()}>
+                <button type="button" className="pill" onClick={() => triggerPrint(entries)}>
                   <Printer size={14} /> {t("carnet.print")}
                 </button>
               </div>
@@ -898,28 +1063,38 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
                 const isExpanded = expandedId === entry.id;
                 return (
                   <div key={entry.id} className="card">
-                    <button
-                      type="button"
-                      className="carnet-history-header"
-                      onClick={() => setExpandedId(isExpanded ? null : entry.id)}
-                    >
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-[color:var(--ink)]">{entry.date}</span>
-                        <span
-                          className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
-                          style={{
-                            background: `color-mix(in srgb, ${OBJECTIF_META[entry.objectif]?.color || "var(--accent)"} 15%, transparent)`,
-                            color: OBJECTIF_META[entry.objectif]?.color || "var(--accent)",
-                          }}
-                        >
-                          {objectifLabels[entry.objectif]}
-                        </span>
-                        <span className="text-xs text-[color:var(--muted)]">
-                          {entry.exercices.length} exos
-                        </span>
-                      </div>
-                      {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                    </button>
+                    <div className="carnet-history-header">
+                      <button
+                        type="button"
+                        className="carnet-history-toggle"
+                        onClick={() => setExpandedId(isExpanded ? null : entry.id)}
+                      >
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold text-[color:var(--ink)]">{entry.date}</span>
+                          <span
+                            className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
+                            style={{
+                              background: `color-mix(in srgb, ${OBJECTIF_META[entry.objectif]?.color || "var(--accent)"} 15%, transparent)`,
+                              color: OBJECTIF_META[entry.objectif]?.color || "var(--accent)",
+                            }}
+                          >
+                            {objectifLabels[entry.objectif]}
+                          </span>
+                          <span className="text-xs text-[color:var(--muted)]">
+                            {entry.exercices.length} exos
+                          </span>
+                        </div>
+                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </button>
+                      <button
+                        type="button"
+                        className="carnet-history-print-btn"
+                        onClick={() => triggerPrint([entry])}
+                        aria-label="Imprimer cette séance"
+                      >
+                        <Printer size={14} />
+                      </button>
+                    </div>
 
                     {isExpanded && (
                       <div className="carnet-history-body">
@@ -972,6 +1147,15 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
             </>
           )}
         </div>
+      )}
+
+      {/* Hidden print view — visible only in @media print */}
+      {printEntries.length > 0 && (
+        <CarnetPrintView
+          entries={printEntries}
+          methodeNames={methodeNames}
+          exerciceNames={exerciceNames}
+        />
       )}
     </div>
   );

@@ -1651,10 +1651,20 @@ body:has(.anatomy-page) nav {
 
 /* ── History ─── */
 .carnet-history-header {
-  display: flex; align-items: center; justify-content: space-between;
-  width: 100%; background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 0;
+}
+.carnet-history-toggle {
+  flex: 1; display: flex; align-items: center; justify-content: space-between;
+  background: none; border: none; cursor: pointer;
   padding: 0; color: var(--ink); text-align: left;
 }
+.carnet-history-print-btn {
+  background: none; border: none; cursor: pointer; color: var(--muted);
+  padding: 6px; border-radius: 6px; display: flex; align-items: center;
+  transition: color 150ms, background 150ms; flex-shrink: 0;
+}
+.carnet-history-print-btn:hover { color: #f97316; background: rgba(249, 115, 22, 0.1); }
 .carnet-history-body { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
 .carnet-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .carnet-table th {
@@ -2058,6 +2068,88 @@ body:has(.anatomy-page) nav {
   a {
     color: #000 !important;
   }
+
+  /* ── Carnet print view ─── */
+  .carnet-print-view {
+    display: block !important;
+  }
+
+  /* Hide everything except the print view when printing carnet */
+  .carnet-tabs,
+  .carnet-form,
+  .stack-md,
+  .carnet-history-print-btn,
+  .carnet-delete-btn,
+  .carnet-empty,
+  .pill,
+  nav.fixed,
+  .fixed.top-0,
+  .page-header,
+  .carnet-save,
+  .carnet-add {
+    display: none !important;
+  }
+}
+
+/* ── Carnet print view (screen: hidden) ─── */
+.carnet-print-view { display: none; }
+
+.carnet-print-seance { padding: 0; }
+
+.carnet-print-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.carnet-print-header-left {
+  display: flex; align-items: center; gap: 8px;
+}
+.carnet-print-brand {
+  font-weight: 700; font-size: 16px; color: #111;
+}
+.carnet-print-date {
+  font-size: 13px; color: #555;
+}
+.carnet-print-hr {
+  border: none; border-top: 1px solid #ccc; margin: 8px 0 12px;
+}
+
+.carnet-print-resume { margin-bottom: 12px; }
+.carnet-print-objectif {
+  font-size: 20px; font-weight: 800; text-transform: uppercase;
+}
+.carnet-print-methodes {
+  font-size: 13px; color: #444; margin-top: 4px;
+}
+.carnet-print-notes {
+  font-size: 13px; color: #555; font-style: italic; margin-top: 4px;
+}
+
+.carnet-print-table {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+  margin-bottom: 16px;
+}
+.carnet-print-table thead tr {
+  background: #f0f0f0;
+}
+.carnet-print-table th {
+  font-weight: 700; padding: 6px 10px; border: 1px solid #ddd;
+  text-align: center; font-size: 12px;
+}
+.carnet-print-th-left { text-align: left !important; }
+.carnet-print-table td {
+  padding: 6px 10px; border: 1px solid #ddd;
+}
+.carnet-print-td-left { text-align: left; }
+.carnet-print-td-center { text-align: center; }
+.carnet-print-td-thumb { padding: 4px 6px; }
+.carnet-print-thumb {
+  display: block; border-radius: 4px; object-fit: cover;
+}
+.carnet-print-table tr { break-inside: avoid; }
+
+.carnet-print-footer {
+  font-size: 10px; color: #999; text-align: center;
+  margin-top: 20px; padding-top: 8px; border-top: 1px solid #ddd;
 }
 
 /* ---------- Timer animations ---------- */
