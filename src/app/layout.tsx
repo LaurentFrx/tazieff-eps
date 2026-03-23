@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Space_Mono, Sora, Orbitron } from "next/font/google";
-import Script from "next/script";
 import { cookies } from "next/headers";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { TopBar } from "@/components/TopBar";
@@ -8,6 +7,7 @@ import { InstallPwaBanner } from "@/components/InstallPwaBanner";
 import { OnlineStatus } from "@/components/OnlineStatus";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { AppProviders } from "@/components/providers/AppProviders";
+import { SplashScreen } from "@/components/SplashScreen";
 // RSC: useI18n() unavailable — read lang from cookie via getServerLang()
 import { getServerLang } from "@/lib/i18n/server";
 import "./globals.css";
@@ -88,7 +88,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable} ${orbitron.variable}`}>
-        <Script src="/splash-init.js" strategy="beforeInteractive" />
+        <SplashScreen />
         <AppProviders initialLang={initialLang} initialTheme={initialTheme}>
           <div className="app-shell">
             <main className="app-main">{children}</main>
