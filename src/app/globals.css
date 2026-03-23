@@ -1149,18 +1149,66 @@ body:has(.anatomy-page) nav {
 
 /* ── Carnet ──────────────────────────────────── */
 
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .carnet-card-enter,
+  .carnet-card-exit,
+  .carnet-emoji.selected,
+  .carnet-obj-chip.active,
+  .carnet-combo-option,
+  .carnet-combo-list,
+  .carnet-empty-emoji,
+  .carnet-spinner,
+  .carnet-check,
+  .carnet-tab-indicator {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Tabs */
+.carnet-tabs {
+  position: relative;
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+.carnet-tab {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  transition: color 200ms ease;
+}
+.carnet-tab.active {
+  color: var(--ink);
+  font-weight: 700;
+}
+.carnet-tab-indicator {
+  position: absolute;
+  bottom: -1px;
+  height: 3px;
+  background: var(--accent, #f97316);
+  border-radius: 3px 3px 0 0;
+  transition: left 250ms ease-out, width 250ms ease-out;
+}
+
+/* Fields */
 .carnet-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-
 .carnet-label {
   font-size: 13px;
   font-weight: 600;
   color: var(--ink);
 }
-
 .carnet-input {
   background: var(--bg-2);
   border: 1px solid var(--border);
@@ -1171,71 +1219,389 @@ body:has(.anatomy-page) nav {
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-
 .carnet-input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
 }
 
-.carnet-exo-row {
-  position: relative;
-  padding: 12px !important;
+/* Objectif chips with glow */
+.carnet-obj-chip {
+  border: 1px solid color-mix(in srgb, var(--chip-color, #888) 30%, transparent);
+  background: transparent;
+  color: var(--muted);
+  border-radius: 9999px;
+  padding: 6px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 200ms ease-out;
+}
+.carnet-obj-chip.active {
+  background: color-mix(in srgb, var(--chip-color) 15%, transparent);
+  border-color: var(--chip-color);
+  color: var(--chip-color);
+  animation: carnet-glow 2s ease-in-out infinite;
+}
+@keyframes carnet-glow {
+  0%, 100% { box-shadow: 0 0 20px color-mix(in srgb, var(--chip-color) 15%, transparent); }
+  50% { box-shadow: 0 0 20px color-mix(in srgb, var(--chip-color) 30%, transparent); }
 }
 
-.carnet-exo-grid {
-  display: grid;
-  grid-template-columns: 1fr 80px 90px 60px auto;
-  gap: 8px;
-  align-items: center;
-}
-
-@media (max-width: 640px) {
-  .carnet-exo-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.carnet-remove-btn {
-  position: absolute;
-  top: 4px;
-  right: 4px;
+/* Show more methods */
+.carnet-show-more {
   background: none;
   border: none;
-  color: var(--muted);
   cursor: pointer;
-  padding: 10px;
-  min-width: 44px;
-  min-height: 44px;
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: underline;
+  padding: 4px 0;
+  margin-top: 4px;
+  transition: color 150ms;
+}
+.carnet-show-more:hover { color: var(--ink); }
+
+/* Exercise cards container */
+.carnet-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Exercise card */
+.carnet-card {
+  position: relative;
+  background: color-mix(in srgb, var(--card) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--ink) 6%, transparent);
+}
+.carnet-card-enter {
+  animation: carnet-card-in 300ms ease-out both;
+}
+.carnet-card-exit {
+  animation: carnet-card-out 250ms ease-in forwards;
+  pointer-events: none;
+}
+@keyframes carnet-card-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes carnet-card-out {
+  to { opacity: 0; transform: scale(0.95); max-height: 0; padding: 0; margin: 0; overflow: hidden; }
+}
+
+/* Card delete button */
+.carnet-card-del {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: color 150ms, background 150ms;
+}
+.carnet-card-del:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
 }
 
-.carnet-ressenti {
+/* Card field micro-labels */
+.carnet-fcol {
   display: flex;
-  gap: 2px;
+  flex-direction: column;
+  gap: 4px;
+}
+.carnet-flabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
 }
 
-.carnet-ressenti-btn {
+/* Row 2: Charge + Séries × Reps */
+.carnet-row2 {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+.carnet-row2 > .carnet-fcol { flex: 1; }
+.carnet-sxr { flex: 1; }
+.carnet-sxr .carnet-fcol { flex: 1; }
+.carnet-sxr .carnet-input { min-width: 0; }
+.carnet-sxr > div { display: flex; align-items: flex-end; gap: 6px; }
+.carnet-multiply {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--muted);
+  padding-bottom: 10px;
+  flex-shrink: 0;
+}
+
+/* Row 3: RIR + Ressenti */
+.carnet-row3 {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.carnet-rir { width: 72px; }
+
+/* Emojis */
+.carnet-emojis {
+  display: flex;
+  gap: 4px;
+}
+.carnet-emoji {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 18px;
-  color: var(--border);
-  padding: 4px;
-  min-width: 32px;
-  min-height: 32px;
+  font-size: 24px;
+  min-width: 40px;
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border-radius: 10px;
+  opacity: 0.3;
+  filter: grayscale(1);
+  transition: opacity 200ms, filter 200ms, transform 100ms;
   line-height: 1;
+  padding: 0;
+}
+.carnet-emoji.selected {
+  opacity: 1;
+  filter: grayscale(0);
+  text-shadow: 0 0 12px rgba(251, 146, 60, 0.5);
+  animation: carnet-emoji-pop 250ms cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+@keyframes carnet-emoji-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.35); }
+  100% { transform: scale(1); }
 }
 
-.carnet-ressenti-btn.active {
-  color: #f59e0b;
-  text-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+/* Add exercise button */
+.carnet-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 16px;
+  background: none;
+  border: 2px dashed var(--border);
+  border-radius: 16px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 200ms, color 200ms, background 200ms;
+}
+.carnet-add:hover {
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
 }
 
+/* Combobox */
+.carnet-combo {
+  position: relative;
+}
+.carnet-combo-input-wrap {
+  position: relative;
+}
+.carnet-combo-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  pointer-events: none;
+}
+.carnet-combo-input {
+  padding-left: 36px !important;
+}
+.carnet-combo-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+  list-style: none;
+  margin: 0;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--ink) 15%, transparent);
+  animation: carnet-dropdown 150ms ease-out;
+}
+@keyframes carnet-dropdown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.carnet-combo-option {
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 100ms;
+  animation: carnet-dropdown 150ms ease-out both;
+}
+.carnet-combo-option:hover,
+.carnet-combo-option.active {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+/* Combobox selected state */
+.carnet-combo-selected {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.carnet-combo-badge {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.carnet-combo-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 6px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 150ms, background 150ms;
+}
+.carnet-combo-clear:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Live summary */
+.carnet-summary {
+  font-size: 14px;
+  color: var(--muted);
+  font-style: italic;
+  transition: opacity 300ms;
+  min-height: 1.4em;
+}
+
+/* Save button */
+.carnet-save {
+  width: 100%;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 300ms, color 300ms, transform 100ms;
+  background: var(--accent, #f97316);
+  color: white;
+}
+.carnet-save:active:not(:disabled) { transform: scale(0.98); }
+.carnet-save.saving {
+  background: var(--muted);
+  pointer-events: none;
+}
+.carnet-save.done {
+  background: #10b981;
+  pointer-events: none;
+}
+
+/* Spinner */
+.carnet-spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: carnet-spin 600ms linear infinite;
+}
+@keyframes carnet-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Checkmark */
+.carnet-check {
+  width: 20px;
+  height: 20px;
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: carnet-draw 400ms ease-out forwards;
+}
+@keyframes carnet-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Empty state */
+.carnet-empty {
+  text-align: center;
+  padding: 48px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.carnet-empty-emoji {
+  font-size: 48px;
+  line-height: 1;
+  animation: carnet-float 2s ease-in-out infinite;
+}
+@keyframes carnet-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.carnet-empty-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.carnet-empty-sub {
+  font-size: 14px;
+  color: var(--muted);
+  max-width: 280px;
+}
+.carnet-empty-cta {
+  margin-top: 8px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent, #f97316);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 100ms;
+}
+.carnet-empty-cta:active { transform: scale(0.97); }
+
+/* History (kept from original) */
 .carnet-history-header {
   display: flex;
   align-items: center;
@@ -1248,20 +1614,17 @@ body:has(.anatomy-page) nav {
   color: var(--ink);
   text-align: left;
 }
-
 .carnet-history-body {
   margin-top: 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-
 .carnet-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
 }
-
 .carnet-table th {
   text-align: left;
   font-weight: 600;
@@ -1272,13 +1635,11 @@ body:has(.anatomy-page) nav {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-
 .carnet-table td {
   padding: 6px 8px;
   color: var(--ink);
   border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
 }
-
 .carnet-delete-btn {
   display: inline-flex;
   align-items: center;
