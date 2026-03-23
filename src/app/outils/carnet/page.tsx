@@ -20,7 +20,12 @@ export default async function CarnetPage() {
   ]);
 
   const methodeNames = allMethodes.map((m) => ({ slug: m.slug, titre: m.titre }));
-  const exerciceNames = allExercices.map((e) => ({ slug: e.slug, title: e.title }));
+  const exerciceNames = allExercices.map((e) => ({
+    slug: e.slug,
+    title: e.title,
+    themeCompatibility: e.themeCompatibility,
+    session: e.slug.split("-")[0].toUpperCase(),
+  }));
 
   return (
     <section className="page">

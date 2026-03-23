@@ -27,9 +27,16 @@ type CarnetEntry = {
   notes: string;
 };
 
+type ExerciceOption = {
+  slug: string;
+  title: string;
+  themeCompatibility: number[];
+  session: string;
+};
+
 type Props = {
   methodeNames: { slug: string; titre: string }[];
-  exerciceNames: { slug: string; title: string }[];
+  exerciceNames: ExerciceOption[];
 };
 
 /* ── Constants ──────────────────────────────────────────────────────── */
@@ -52,13 +59,38 @@ const RESSENTI_LABELS = [
   "Excellent",
 ] as const;
 
-const PRIORITY_METHOD_SLUGS = new Set([
-  "charge-constante",
-  "super-set",
-  "circuit-training",
-  "pyramidale",
-  "drop-set",
-]);
+const METHODES_PAR_OBJECTIF: Record<string, string[]> = {
+  endurance: [
+    "charge-constante", "pyramide", "triple-tri-set", "circuit-training",
+    "defi-centurion", "emom", "amrap",
+  ],
+  volume: [
+    "aps", "super-set", "drop-set", "serie-brulante",
+    "rest-pause", "pre-activation", "demi-pyramide",
+  ],
+  puissance: [
+    "triple-tri-set", "double-progression", "methode-bulgare",
+    "pliometrie", "stato-dynamique", "demi-pyramide-force",
+  ],
+};
+
+const OBJECTIF_TO_THEME: Record<string, number> = {
+  endurance: 1,
+  volume: 2,
+  puissance: 3,
+};
+
+const SESSION_NAMES: Record<string, string> = {
+  S1: "Gainage statique",
+  S2: "Gainage dynamique et abdominaux",
+  S3: "Haut du corps",
+  S4: "Bas du corps",
+  S5: "Exercices fonctionnels",
+  S6: "Étirements",
+  S7: "Machines guidées",
+};
+
+const SESSION_ORDER = ["S1", "S2", "S3", "S4", "S5", "S6", "S7"];
 
 /* ── Helpers ────────────────────────────────────────────────────────── */
 
@@ -128,30 +160,80 @@ function newExercice(): CarnetExerciceState {
   };
 }
 
-/* ── ExerciceCombobox ───────────────────────────────────────────────── */
+/* ── ExerciceSelector (grouped by session) ─────────────────────────── */
 
-function ExerciceCombobox({
+type SessionGroup = { session: string; label: string; exercises: ExerciceOption[] };
+
+function ExerciceSelector({
   value,
   options,
+  objectif,
   onChange,
 }: {
   value: string;
-  options: { slug: string; title: string }[];
+  options: ExerciceOption[];
+  objectif: string;
   onChange: (title: string) => void;
 }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [othersExpanded, setOthersExpanded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const listId = useRef(`cb-${crypto.randomUUID().slice(0, 8)}`).current;
 
-  const filtered = useMemo(() => {
-    if (query.length < 2) return [];
+  const isSearching = query.length > 0;
+  const themeNum = OBJECTIF_TO_THEME[objectif];
+
+  // Flat search results
+  const searchResults = useMemo(() => {
+    if (!isSearching) return [];
     const norm = normalizeForSearch(query);
     return options
       .filter((o) => normalizeForSearch(o.title).includes(norm))
-      .slice(0, 6);
-  }, [query, options]);
+      .slice(0, 12);
+  }, [query, options, isSearching]);
+
+  // Grouped by session
+  const { matchingGroups, otherGroups } = useMemo((): {
+    matchingGroups: SessionGroup[];
+    otherGroups: SessionGroup[];
+  } => {
+    if (isSearching) return { matchingGroups: [], otherGroups: [] };
+
+    const buildGroups = (list: ExerciceOption[]): SessionGroup[] =>
+      SESSION_ORDER
+        .map((s) => ({
+          session: s,
+          label: SESSION_NAMES[s] || s,
+          exercises: list.filter((o) => o.session === s),
+        }))
+        .filter((g) => g.exercises.length > 0);
+
+    if (!themeNum) {
+      return { matchingGroups: buildGroups(options), otherGroups: [] };
+    }
+
+    const matching: ExerciceOption[] = [];
+    const others: ExerciceOption[] = [];
+    for (const o of options) {
+      if (o.themeCompatibility.includes(themeNum)) matching.push(o);
+      else others.push(o);
+    }
+    return { matchingGroups: buildGroups(matching), otherGroups: buildGroups(others) };
+  }, [options, themeNum, isSearching]);
+
+  // Flat list for keyboard nav
+  const flatItems = useMemo(() => {
+    if (isSearching) return searchResults;
+    const items: ExerciceOption[] = [];
+    for (const g of matchingGroups) items.push(...g.exercises);
+    if (othersExpanded) {
+      for (const g of otherGroups) items.push(...g.exercises);
+    }
+    return items;
+  }, [isSearching, searchResults, matchingGroups, otherGroups, othersExpanded]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -165,7 +247,12 @@ function ExerciceCombobox({
 
   useEffect(() => {
     setActiveIndex(-1);
-  }, [filtered]);
+  }, [query, objectif]);
+
+  // Reset "others" collapsed when objectif changes
+  useEffect(() => {
+    setOthersExpanded(false);
+  }, [objectif]);
 
   const select = (title: string) => {
     onChange(title);
@@ -174,14 +261,14 @@ function ExerciceCombobox({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!open || filtered.length === 0) {
-      if (e.key === "ArrowDown" && query.length >= 2) setOpen(true);
+    if (!open) {
+      if (e.key === "ArrowDown") { setOpen(true); e.preventDefault(); }
       return;
     }
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
-        setActiveIndex((p) => Math.min(p + 1, filtered.length - 1));
+        setActiveIndex((p) => Math.min(p + 1, flatItems.length - 1));
         break;
       case "ArrowUp":
         e.preventDefault();
@@ -189,7 +276,7 @@ function ExerciceCombobox({
         break;
       case "Enter":
         e.preventDefault();
-        if (activeIndex >= 0 && filtered[activeIndex]) select(filtered[activeIndex].title);
+        if (activeIndex >= 0 && flatItems[activeIndex]) select(flatItems[activeIndex].title);
         break;
       case "Escape":
         setOpen(false);
@@ -197,10 +284,21 @@ function ExerciceCombobox({
     }
   };
 
+  const sessionBadge = useMemo(() => {
+    if (!value) return null;
+    const match = options.find((o) => o.title === value);
+    return match ? match.session : null;
+  }, [value, options]);
+
   if (value) {
     return (
       <div className="carnet-combo-selected">
-        <span className="carnet-combo-badge">{value}</span>
+        <span className="carnet-combo-badge">
+          {value}
+          {sessionBadge && (
+            <span className="carnet-session-badge">{sessionBadge}</span>
+          )}
+        </span>
         <button
           type="button"
           className="carnet-combo-clear"
@@ -214,6 +312,8 @@ function ExerciceCombobox({
       </div>
     );
   }
+
+  const hasContent = isSearching ? searchResults.length > 0 : matchingGroups.length > 0 || otherGroups.length > 0;
 
   return (
     <div
@@ -239,37 +339,102 @@ function ExerciceCombobox({
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
-            setOpen(e.target.value.length >= 2);
+            if (!open) setOpen(true);
           }}
-          onFocus={() => {
-            if (query.length >= 2) setOpen(true);
-          }}
+          onFocus={() => setOpen(true)}
           onKeyDown={handleKeyDown}
           aria-autocomplete="list"
           aria-controls={listId}
           aria-activedescendant={activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined}
         />
       </div>
-      {open && filtered.length > 0 && (
-        <ul id={listId} className="carnet-combo-list" role="listbox">
-          {filtered.map((opt, i) => (
-            <li
-              key={opt.slug}
-              id={`${listId}-${i}`}
-              role="option"
-              aria-selected={i === activeIndex}
-              className={`carnet-combo-option ${i === activeIndex ? "active" : ""}`}
-              style={{ animationDelay: `${i * 30}ms` }}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                select(opt.title);
-              }}
-              onMouseEnter={() => setActiveIndex(i)}
-            >
-              {opt.title}
-            </li>
-          ))}
-        </ul>
+      {open && hasContent && (
+        <div
+          ref={listRef}
+          id={listId}
+          className="carnet-combo-list carnet-selector-list"
+          role="listbox"
+        >
+          {isSearching ? (
+            searchResults.map((opt, i) => (
+              <div
+                key={opt.slug}
+                id={`${listId}-${i}`}
+                role="option"
+                aria-selected={i === activeIndex}
+                className={`carnet-selector-item${i === activeIndex ? " active" : ""}`}
+                onMouseDown={(e) => { e.preventDefault(); select(opt.title); }}
+                onMouseEnter={() => setActiveIndex(i)}
+              >
+                {opt.title}
+                <span className="carnet-session-badge-sm">{opt.session}</span>
+              </div>
+            ))
+          ) : (
+            <>
+              {matchingGroups.map((group) => (
+                <div key={group.session}>
+                  <div className="carnet-session-header">
+                    {group.session} — {group.label} ({group.exercises.length})
+                  </div>
+                  {group.exercises.map((ex) => {
+                    const idx = flatItems.indexOf(ex);
+                    return (
+                      <div
+                        key={ex.slug}
+                        id={`${listId}-${idx}`}
+                        role="option"
+                        aria-selected={idx === activeIndex}
+                        className={`carnet-selector-item${idx === activeIndex ? " active" : ""}`}
+                        onMouseDown={(e) => { e.preventDefault(); select(ex.title); }}
+                        onMouseEnter={() => setActiveIndex(idx)}
+                      >
+                        {ex.title}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+              {otherGroups.length > 0 && (
+                <div className="carnet-others-section">
+                  <button
+                    type="button"
+                    className="carnet-others-toggle"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      setOthersExpanded((p) => !p);
+                    }}
+                  >
+                    {othersExpanded ? "▾ Autres exercices" : "▸ Autres exercices"}
+                  </button>
+                  {othersExpanded && otherGroups.map((group) => (
+                    <div key={group.session}>
+                      <div className="carnet-session-header">
+                        {group.session} — {group.label} ({group.exercises.length})
+                      </div>
+                      {group.exercises.map((ex) => {
+                        const idx = flatItems.indexOf(ex);
+                        return (
+                          <div
+                            key={ex.slug}
+                            id={`${listId}-${idx}`}
+                            role="option"
+                            aria-selected={idx === activeIndex}
+                            className={`carnet-selector-item${idx === activeIndex ? " active" : ""}`}
+                            onMouseDown={(e) => { e.preventDefault(); select(ex.title); }}
+                            onMouseEnter={() => setActiveIndex(idx)}
+                          >
+                            {ex.title}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       )}
     </div>
   );
@@ -282,7 +447,6 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
   const [tab, setTab] = useState<"form" | "history">("form");
   const [entries, setEntries] = useState<CarnetEntry[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [showAllMethodes, setShowAllMethodes] = useState(false);
 
   // Form state
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -295,6 +459,8 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
   const [newCardIds, setNewCardIds] = useState<Set<string>>(new Set());
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "done">("idle");
+  const [methodesFading, setMethodesFading] = useState(false);
+  const prevObjectifRef = useRef(objectif);
 
   // Tab indicator
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -315,29 +481,25 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
     }
   }, [tab]);
 
-  // Methods: priority first, then extra
-  const { priorityMethodes, extraMethodes } = useMemo(() => {
-    const priority: typeof methodeNames = [];
-    const extra: typeof methodeNames = [];
-    for (const m of methodeNames) {
-      if (PRIORITY_METHOD_SLUGS.has(m.slug)) priority.push(m);
-      else extra.push(m);
-    }
-    while (priority.length < 5 && extra.length > 0) priority.push(extra.shift()!);
-    return { priorityMethodes: priority, extraMethodes: extra };
-  }, [methodeNames]);
+  // Methods filtered by objectif
+  const filteredMethodes = useMemo(() => {
+    const allowed = METHODES_PAR_OBJECTIF[objectif];
+    if (!allowed) return methodeNames;
+    const set = new Set(allowed);
+    return methodeNames.filter((m) => set.has(m.slug));
+  }, [methodeNames, objectif]);
 
-  // Always show priority + selected extras
-  const visibleMethodes = useMemo(() => {
-    const selected = new Set(selectedMethodes);
-    const visible = [...priorityMethodes];
-    for (const m of extraMethodes) {
-      if (selected.has(m.slug) && !visible.some((v) => v.slug === m.slug)) {
-        visible.push(m);
-      }
+  // Deselect methods not in new objectif + fade animation
+  useEffect(() => {
+    if (prevObjectifRef.current !== objectif) {
+      setMethodesFading(true);
+      const allowed = new Set(METHODES_PAR_OBJECTIF[objectif] ?? []);
+      setSelectedMethodes((prev) => prev.filter((s) => allowed.has(s)));
+      const timer = setTimeout(() => setMethodesFading(false), 150);
+      prevObjectifRef.current = objectif;
+      return () => clearTimeout(timer);
     }
-    return visible;
-  }, [priorityMethodes, extraMethodes, selectedMethodes]);
+  }, [objectif]);
 
   /* ── Handlers ──────────────────────────────────────────────────────── */
 
@@ -383,7 +545,6 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
     setSelectedMethodes([]);
     setExercices([newExercice()]);
     setNotes("");
-    setShowAllMethodes(false);
   }, []);
 
   const saveEntry = useCallback(() => {
@@ -513,11 +674,17 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
             </div>
           </fieldset>
 
-          {/* Méthodes (collapsible) */}
+          {/* Méthodes (filtered by objectif) */}
           <fieldset className="carnet-field">
             <legend className="carnet-label">{t("carnet.methodes")}</legend>
-            <div className="flex gap-2 flex-wrap">
-              {(showAllMethodes ? methodeNames : visibleMethodes).map((m) => (
+            <div
+              className="flex gap-2 flex-wrap"
+              style={{
+                opacity: methodesFading ? 0 : 1,
+                transition: methodesFading ? "opacity 150ms" : "opacity 200ms",
+              }}
+            >
+              {filteredMethodes.map((m) => (
                 <button
                   key={m.slug}
                   type="button"
@@ -528,15 +695,6 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
                 </button>
               ))}
             </div>
-            {extraMethodes.length > 0 && (
-              <button
-                type="button"
-                className="carnet-show-more"
-                onClick={() => setShowAllMethodes((p) => !p)}
-              >
-                {showAllMethodes ? "Masquer" : `Voir les ${extraMethodes.length} autres méthodes`}
-              </button>
-            )}
           </fieldset>
 
           {/* Exercices */}
@@ -573,10 +731,11 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
                       </button>
                     )}
 
-                    {/* Row 1: Combobox */}
-                    <ExerciceCombobox
+                    {/* Row 1: Exercise selector */}
+                    <ExerciceSelector
                       value={ex.nom}
                       options={exerciceNames}
+                      objectif={objectif}
                       onChange={(title) => updateExercice(ex._id, "nom", title)}
                     />
 

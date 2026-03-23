@@ -1466,6 +1466,59 @@ body:has(.anatomy-page) nav {
 }
 .carnet-combo-clear:hover { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
 
+/* ── Grouped selector (session groups) ─── */
+.carnet-selector-list {
+  max-height: 16rem; overflow-y: auto; scroll-behavior: smooth;
+  padding: 4px 0;
+}
+.carnet-session-header {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: #a1a1aa;
+  padding: 6px 12px; background: rgba(39, 39, 42, 0.3);
+  position: sticky; top: 0; z-index: 1;
+}
+:where(.light, [data-theme="light"]) .carnet-session-header {
+  background: rgba(244, 244, 245, 0.9); color: #71717a;
+}
+.carnet-selector-item {
+  padding: 10px 16px; font-size: 14px; color: var(--ink);
+  cursor: pointer; transition: background 100ms;
+}
+.carnet-selector-item:hover, .carnet-selector-item.active {
+  background: rgba(249, 115, 22, 0.1);
+}
+.carnet-others-section {
+  border-top: 1px solid rgba(63, 63, 70, 0.5); margin-top: 8px; padding-top: 8px;
+}
+:where(.light, [data-theme="light"]) .carnet-others-section {
+  border-color: #e4e4e7;
+}
+.carnet-others-toggle {
+  display: block; width: 100%; text-align: left; background: none; border: none;
+  font-size: 12px; font-style: italic; color: #71717a; cursor: pointer;
+  padding: 6px 12px; transition: color 150ms;
+}
+.carnet-others-toggle:hover { color: #a1a1aa; }
+
+/* Session badge */
+.carnet-session-badge {
+  display: inline-block; background: rgba(63, 63, 70, 0.7); color: #d4d4d8;
+  font-size: 11px; border-radius: 4px; padding: 1px 6px; font-family: monospace;
+  margin-left: 8px; vertical-align: middle;
+}
+:where(.light, [data-theme="light"]) .carnet-session-badge {
+  background: #e4e4e7; color: #52525b;
+}
+.carnet-session-badge-sm {
+  display: inline-block; background: rgba(63, 63, 70, 0.5); color: #a1a1aa;
+  font-size: 10px; border-radius: 3px; padding: 0 4px; font-family: monospace;
+  margin-left: auto;
+}
+:where(.light, [data-theme="light"]) .carnet-session-badge-sm {
+  background: #e4e4e7; color: #71717a;
+}
+.carnet-selector-item { display: flex; align-items: center; gap: 8px; }
+
 /* ── Live summary (Mod 9) ─── */
 .carnet-summary {
   display: flex; align-items: center; gap: 8px;

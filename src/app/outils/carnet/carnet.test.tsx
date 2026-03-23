@@ -24,8 +24,8 @@ const mockMethodes = [
 ];
 
 const mockExercices = [
-  { slug: "developpe-couche", title: "Développé couché" },
-  { slug: "squat", title: "Squat" },
+  { slug: "s3-01", title: "Développé couché", themeCompatibility: [1, 2], session: "S3" },
+  { slug: "s4-01", title: "Squat", themeCompatibility: [1, 2, 3], session: "S4" },
 ];
 
 /* ── localStorage ────────────────────────────────────────────────── */
@@ -227,11 +227,20 @@ describe("Carnet — component", () => {
     expect(methodeBtn).toBeDefined();
   });
 
-  it("combobox filters exercises on input", () => {
+  it("selector filters exercises on search input", () => {
     render(<Carnet methodeNames={mockMethodes} exerciceNames={mockExercices} />);
     const searchInput = screen.getByPlaceholderText("Rechercher un exercice...");
     fireEvent.change(searchInput, { target: { value: "Sq" } });
     // The dropdown should appear with "Squat"
     expect(screen.getByText("Squat")).toBeDefined();
+  });
+
+  it("selector shows grouped sessions on focus", () => {
+    render(<Carnet methodeNames={mockMethodes} exerciceNames={mockExercices} />);
+    const searchInput = screen.getByPlaceholderText("Rechercher un exercice...");
+    fireEvent.focus(searchInput);
+    // Session headers should appear
+    expect(screen.getByText(/S3 — Haut du corps/)).toBeDefined();
+    expect(screen.getByText(/S4 — Bas du corps/)).toBeDefined();
   });
 });
