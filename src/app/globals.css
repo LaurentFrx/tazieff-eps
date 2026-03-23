@@ -1542,6 +1542,13 @@ body:has(.anatomy-page) nav {
 :where(.light, [data-theme="light"]) .carnet-exo-thumb {
   background: #e4e4e7;
 }
+.carnet-exo-thumb-selected {
+  width: 80px; height: 45px; object-fit: cover; border-radius: 8px;
+  background: #3f3f46; flex-shrink: 0;
+}
+:where(.light, [data-theme="light"]) .carnet-exo-thumb-selected {
+  background: #e4e4e7;
+}
 .carnet-exo-thumb-fallback {
   width: 64px; height: 36px; border-radius: 6px; flex-shrink: 0;
   background: #3f3f46; display: flex; align-items: center; justify-content: center;

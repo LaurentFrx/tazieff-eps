@@ -284,20 +284,30 @@ function ExerciceSelector({
     }
   };
 
-  const sessionBadge = useMemo(() => {
+  const selectedMatch = useMemo(() => {
     if (!value) return null;
-    const match = options.find((o) => o.title === value);
-    return match ? match.session : null;
+    return options.find((o) => o.title === value) ?? null;
   }, [value, options]);
 
-  // Selected state: show badge + "Changer" button
+  // Selected state: show thumb + badge + "Changer" button
   if (value) {
     return (
       <div className="carnet-combo-selected">
+        {selectedMatch && (
+          <img
+            src={`/images/exos/thumb169-${selectedMatch.slug}.webp`}
+            width={80}
+            height={45}
+            loading="lazy"
+            alt=""
+            className="carnet-exo-thumb-selected"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+          />
+        )}
         <span className="carnet-combo-badge">
           {value}
-          {sessionBadge && (
-            <span className="carnet-session-badge">{sessionBadge}</span>
+          {selectedMatch?.session && (
+            <span className="carnet-session-badge">{selectedMatch.session}</span>
           )}
         </span>
         <button
