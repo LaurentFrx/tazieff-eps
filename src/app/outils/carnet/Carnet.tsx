@@ -160,9 +160,31 @@ function newExercice(): CarnetExerciceState {
   };
 }
 
-/* ── ExerciceSelector (grouped by session) ─────────────────────────── */
+/* ── ExerciceSelector (grouped by session, always visible) ──────────── */
 
 type SessionGroup = { session: string; label: string; exercises: ExerciceOption[] };
+
+function ExoThumb({ slug }: { slug: string }) {
+  const [error, setError] = useState(false);
+  if (error) {
+    return (
+      <div className="carnet-exo-thumb-fallback">
+        <span>🏋️</span>
+      </div>
+    );
+  }
+  return (
+    <img
+      src={`/images/exos/thumb169-${slug}.webp`}
+      width={64}
+      height={36}
+      loading="lazy"
+      alt=""
+      className="carnet-exo-thumb"
+      onError={() => setError(true)}
+    />
+  );
+}
 
 function ExerciceSelector({
   value,
@@ -176,11 +198,8 @@ function ExerciceSelector({
   onChange: (title: string) => void;
 }) {
   const [query, setQuery] = useState("");
-  const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [othersExpanded, setOthersExpanded] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
   const listId = useRef(`cb-${crypto.randomUUID().slice(0, 8)}`).current;
 
   const isSearching = query.length > 0;
@@ -236,20 +255,9 @@ function ExerciceSelector({
   }, [isSearching, searchResults, matchingGroups, otherGroups, othersExpanded]);
 
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  useEffect(() => {
     setActiveIndex(-1);
   }, [query, objectif]);
 
-  // Reset "others" collapsed when objectif changes
   useEffect(() => {
     setOthersExpanded(false);
   }, [objectif]);
@@ -257,14 +265,9 @@ function ExerciceSelector({
   const select = (title: string) => {
     onChange(title);
     setQuery("");
-    setOpen(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!open) {
-      if (e.key === "ArrowDown") { setOpen(true); e.preventDefault(); }
-      return;
-    }
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
@@ -278,9 +281,6 @@ function ExerciceSelector({
         e.preventDefault();
         if (activeIndex >= 0 && flatItems[activeIndex]) select(flatItems[activeIndex].title);
         break;
-      case "Escape":
-        setOpen(false);
-        break;
     }
   };
 
@@ -290,6 +290,7 @@ function ExerciceSelector({
     return match ? match.session : null;
   }, [value, options]);
 
+  // Selected state: show badge + "Changer" button
   if (value) {
     return (
       <div className="carnet-combo-selected">
@@ -301,29 +302,34 @@ function ExerciceSelector({
         </span>
         <button
           type="button"
-          className="carnet-combo-clear"
+          className="carnet-combo-change"
           onClick={() => onChange("")}
-          aria-label="Effacer la sélection"
         >
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3 h-3">
-            <path d="M4 4l8 8M12 4l-8 8" />
-          </svg>
+          Changer
         </button>
       </div>
     );
   }
 
-  const hasContent = isSearching ? searchResults.length > 0 : matchingGroups.length > 0 || otherGroups.length > 0;
+  // Unselected: search + always-visible list
+  const renderExoRow = (ex: ExerciceOption, idx: number) => (
+    <div
+      key={ex.slug}
+      id={`${listId}-${idx}`}
+      role="option"
+      aria-selected={idx === activeIndex}
+      className={`carnet-selector-item${idx === activeIndex ? " active" : ""}`}
+      onMouseDown={(e) => { e.preventDefault(); select(ex.title); }}
+      onMouseEnter={() => setActiveIndex(idx)}
+    >
+      <ExoThumb slug={ex.slug} />
+      <span className="carnet-selector-item-title">{ex.title}</span>
+    </div>
+  );
 
   return (
-    <div
-      ref={containerRef}
-      className="carnet-combo"
-      role="combobox"
-      aria-expanded={open}
-      aria-haspopup="listbox"
-      aria-owns={listId}
-    >
+    <div>
+      {/* Search input */}
       <div className="carnet-combo-input-wrap">
         <svg viewBox="0 0 20 20" fill="currentColor" className="carnet-combo-icon" aria-hidden="true">
           <path
@@ -337,105 +343,61 @@ function ExerciceSelector({
           className="carnet-input carnet-combo-input"
           placeholder="Rechercher un exercice..."
           value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            if (!open) setOpen(true);
-          }}
-          onFocus={() => setOpen(true)}
+          onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           aria-autocomplete="list"
           aria-controls={listId}
           aria-activedescendant={activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined}
         />
       </div>
-      {open && hasContent && (
-        <div
-          ref={listRef}
-          id={listId}
-          className="carnet-combo-list carnet-selector-list"
-          role="listbox"
-        >
-          {isSearching ? (
-            searchResults.map((opt, i) => (
-              <div
-                key={opt.slug}
-                id={`${listId}-${i}`}
-                role="option"
-                aria-selected={i === activeIndex}
-                className={`carnet-selector-item${i === activeIndex ? " active" : ""}`}
-                onMouseDown={(e) => { e.preventDefault(); select(opt.title); }}
-                onMouseEnter={() => setActiveIndex(i)}
-              >
-                {opt.title}
-                <span className="carnet-session-badge-sm">{opt.session}</span>
-              </div>
-            ))
+
+      {/* Always-visible grouped list */}
+      <div
+        id={listId}
+        className="carnet-selector-container"
+        role="listbox"
+      >
+        {isSearching ? (
+          searchResults.length > 0 ? (
+            searchResults.map((opt, i) => renderExoRow(opt, i))
           ) : (
-            <>
-              {matchingGroups.map((group) => (
-                <div key={group.session}>
-                  <div className="carnet-session-header">
-                    {group.session} — {group.label} ({group.exercises.length})
-                  </div>
-                  {group.exercises.map((ex) => {
-                    const idx = flatItems.indexOf(ex);
-                    return (
-                      <div
-                        key={ex.slug}
-                        id={`${listId}-${idx}`}
-                        role="option"
-                        aria-selected={idx === activeIndex}
-                        className={`carnet-selector-item${idx === activeIndex ? " active" : ""}`}
-                        onMouseDown={(e) => { e.preventDefault(); select(ex.title); }}
-                        onMouseEnter={() => setActiveIndex(idx)}
-                      >
-                        {ex.title}
-                      </div>
-                    );
-                  })}
+            <div className="carnet-selector-empty">Aucun exercice trouvé</div>
+          )
+        ) : (
+          <>
+            {matchingGroups.map((group) => (
+              <div key={group.session}>
+                <div className="carnet-session-header">
+                  {group.session} — {group.label} ({group.exercises.length})
                 </div>
-              ))}
-              {otherGroups.length > 0 && (
-                <div className="carnet-others-section">
-                  <button
-                    type="button"
-                    className="carnet-others-toggle"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      setOthersExpanded((p) => !p);
-                    }}
-                  >
-                    {othersExpanded ? "▾ Autres exercices" : "▸ Autres exercices"}
-                  </button>
-                  {othersExpanded && otherGroups.map((group) => (
-                    <div key={group.session}>
-                      <div className="carnet-session-header">
-                        {group.session} — {group.label} ({group.exercises.length})
-                      </div>
-                      {group.exercises.map((ex) => {
-                        const idx = flatItems.indexOf(ex);
-                        return (
-                          <div
-                            key={ex.slug}
-                            id={`${listId}-${idx}`}
-                            role="option"
-                            aria-selected={idx === activeIndex}
-                            className={`carnet-selector-item${idx === activeIndex ? " active" : ""}`}
-                            onMouseDown={(e) => { e.preventDefault(); select(ex.title); }}
-                            onMouseEnter={() => setActiveIndex(idx)}
-                          >
-                            {ex.title}
-                          </div>
-                        );
-                      })}
+                {group.exercises.map((ex) => renderExoRow(ex, flatItems.indexOf(ex)))}
+              </div>
+            ))}
+            {otherGroups.length > 0 && (
+              <div className="carnet-others-section">
+                <button
+                  type="button"
+                  className="carnet-others-toggle"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setOthersExpanded((p) => !p);
+                  }}
+                >
+                  {othersExpanded ? "▾ Autres exercices" : "▸ Autres exercices"}
+                </button>
+                {othersExpanded && otherGroups.map((group) => (
+                  <div key={group.session}>
+                    <div className="carnet-session-header">
+                      {group.session} — {group.label} ({group.exercises.length})
                     </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      )}
+                    {group.exercises.map((ex) => renderExoRow(ex, flatItems.indexOf(ex)))}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
