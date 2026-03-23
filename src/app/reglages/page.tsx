@@ -5,21 +5,14 @@ import { useTheme } from "next-themes";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useBuildInfo } from "@/components/BuildStamp";
 import { getTheme, onThemeChange, setTheme as setFieldTheme, type ThemePreference } from "@/lib/storage";
-import { TeacherAuth } from "@/components/TeacherAuth";
-import { CodeEtablissement } from "@/components/CodeEtablissement";
+import { useAuth } from "@/hooks/useAuth";
+import { usePlan } from "@/hooks/usePlan";
+import { isAcademicEmail, ACADEMIC_EMAIL_PATTERN } from "@/lib/auth/academic-domains";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
-const languageOptions = [
-  { value: "fr", labelKey: "settings.language.fr" },
-  { value: "en", labelKey: "settings.language.en" },
-  { value: "es", labelKey: "settings.language.es" },
-] as const;
+/* ── Types & constants ─────────────────────────────────────────────── */
 
-type LanguageValue = (typeof languageOptions)[number]["value"];
-
-type TeacherModeSnapshot = {
-  unlocked: boolean;
-  pin: string;
-};
+type TeacherModeSnapshot = { unlocked: boolean; pin: string };
 
 declare global {
   interface Window {
@@ -27,131 +20,122 @@ declare global {
   }
 }
 
-const FlagIcon = ({ locale }: { locale: LanguageValue }) => {
-  if (locale === "fr") {
-    return (
-      <svg
-        viewBox="0 0 30 20"
-        className="h-4 w-6 rounded-sm ring-1 ring-black/10"
-        aria-hidden="true"
-        focusable="false"
-      >
-        <rect width="10" height="20" fill="#0055A4" />
-        <rect x="10" width="10" height="20" fill="#FFFFFF" />
-        <rect x="20" width="10" height="20" fill="#EF4135" />
-      </svg>
-    );
-  }
+const LANG_OPTIONS = [
+  { value: "fr" as const, flag: "\u{1F1EB}\u{1F1F7}", short: "FR" },
+  { value: "en" as const, flag: "\u{1F1EC}\u{1F1E7}", short: "EN" },
+  { value: "es" as const, flag: "\u{1F1EA}\u{1F1F8}", short: "ES" },
+];
 
-  if (locale === "es") {
-    return (
-      <svg
-        viewBox="0 0 30 20"
-        className="h-4 w-6 rounded-sm ring-1 ring-black/10"
-        aria-hidden="true"
-        focusable="false"
-      >
-        <rect width="30" height="5" fill="#AA151B" />
-        <rect y="5" width="30" height="10" fill="#F1BF00" />
-        <rect y="15" width="30" height="5" fill="#AA151B" />
-      </svg>
-    );
-  }
+const THEME_OPTIONS = [
+  { value: "system" as const, label: "Auto" },
+  { value: "light" as const, label: "Clair" },
+  { value: "dark" as const, label: "Sombre" },
+];
 
-  return (
-    <svg
-      viewBox="0 0 30 20"
-      className="h-4 w-6 rounded-sm ring-1 ring-black/10"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <rect width="30" height="20" fill="#012169" />
-      <path
-        d="M0 0 L30 20 M30 0 L0 20"
-        stroke="#FFFFFF"
-        strokeWidth="4"
-        strokeLinecap="square"
-      />
-      <path
-        d="M0 0 L30 20 M30 0 L0 20"
-        stroke="#C8102E"
-        strokeWidth="2"
-        strokeLinecap="square"
-      />
-      <path
-        d="M0 10 H30 M15 0 V20"
-        stroke="#FFFFFF"
-        strokeWidth="6"
-        strokeLinecap="square"
-      />
-      <path
-        d="M0 10 H30 M15 0 V20"
-        stroke="#C8102E"
-        strokeWidth="4"
-        strokeLinecap="square"
-      />
-    </svg>
-  );
-};
-
-const themeOptions = [
-  { value: "system", labelKey: "settings.theme.system" },
-  { value: "light", labelKey: "settings.theme.light" },
-  { value: "dark", labelKey: "settings.theme.dark" },
-] as const;
-
-type UiThemePreference = (typeof themeOptions)[number]["value"];
-
-const fieldThemeOptions = [
-  { value: 1, labelKey: "settings.fieldTheme.one" },
-  { value: 2, labelKey: "settings.fieldTheme.two" },
-  { value: 3, labelKey: "settings.fieldTheme.three" },
-] as const;
+const FIELD_THEME_OPTIONS = [
+  { value: 1 as const, label: "Endurance", color: "#34d399" },
+  { value: 2 as const, label: "Volume", color: "#60a5fa" },
+  { value: 3 as const, label: "Puissance", color: "#fb923c" },
+];
 
 const DEFAULT_TEACHER_MODE: TeacherModeSnapshot = { unlocked: false, pin: "" };
 
+const ORG_CODE_KEY = "tazieff-org-code";
+const PLAN_CACHE_KEY = "tazieff-plan-cache";
+
 function getTeacherModeSnapshot(): TeacherModeSnapshot {
-  if (typeof window === "undefined") {
-    return { ...DEFAULT_TEACHER_MODE };
-  }
-  const snapshot = window.__teacherMode;
-  if (!snapshot) {
-    return { ...DEFAULT_TEACHER_MODE };
-  }
-  return {
-    unlocked: Boolean(snapshot.unlocked),
-    pin: snapshot.pin ?? "",
-  };
+  if (typeof window === "undefined") return { ...DEFAULT_TEACHER_MODE };
+  const s = window.__teacherMode;
+  return s ? { unlocked: Boolean(s.unlocked), pin: s.pin ?? "" } : { ...DEFAULT_TEACHER_MODE };
 }
 
 function setTeacherModeSnapshot(next: TeacherModeSnapshot) {
-  if (typeof window === "undefined") {
-    return;
-  }
-  window.__teacherMode = next;
+  if (typeof window !== "undefined") window.__teacherMode = next;
 }
+
+/* ── Segment control ───────────────────────────────────────────────── */
+
+function Seg<O extends { value: string | number }>({
+  options,
+  value,
+  onChange,
+  render,
+}: {
+  options: readonly O[];
+  value: O["value"];
+  onChange: (v: O["value"]) => void;
+  render: (opt: O, active: boolean) => React.ReactNode;
+}) {
+  return (
+    <div className="flex rounded-lg bg-[color:var(--surface)] p-0.5">
+      {options.map((opt) => {
+        const active = opt.value === value;
+        return (
+          <button
+            key={String(opt.value)}
+            type="button"
+            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-200 ease-out ${
+              active
+                ? "bg-[color:var(--border)] text-[color:var(--ink)] shadow-sm"
+                : "text-[color:var(--muted)] hover:text-[color:var(--ink)]"
+            }`}
+            onClick={() => onChange(opt.value)}
+          >
+            {render(opt, active)}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── Page ───────────────────────────────────────────────────────────── */
 
 export default function ReglagesPage() {
   const { t, lang, setLang } = useI18n();
   const { theme, setTheme } = useTheme();
-  const currentTheme = (theme ?? "system") as UiThemePreference;
+  const currentTheme = (theme ?? "system") as "system" | "light" | "dark";
   const buildInfo = useBuildInfo();
+  const { user, isAnonymous } = useAuth();
+  const { isPro } = usePlan();
+
   const [fieldTheme, setLocalFieldTheme] = useState<ThemePreference>(getTheme());
-  const [teacherMode, setTeacherMode] = useState<TeacherModeSnapshot>(
-    () => getTeacherModeSnapshot(),
-  );
+  const [mounted, setMounted] = useState(false);
+
+  // Teacher mode
+  const [teacherMode, setTeacherMode] = useState<TeacherModeSnapshot>(getTeacherModeSnapshot);
   const [pinModalOpen, setPinModalOpen] = useState(false);
   const [pinValue, setPinValue] = useState(teacherMode.pin);
   const [pinError, setPinError] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
+
+  // Teacher auth (inline)
+  const [teacherEmail, setTeacherEmail] = useState("");
+  const [teacherStep, setTeacherStep] = useState<"input" | "sending" | "confirmation">("input");
+  const [teacherError, setTeacherError] = useState("");
+
+  // Org code (inline)
+  const [orgCode, setOrgCode] = useState(
+    () => (typeof window !== "undefined" ? localStorage.getItem(ORG_CODE_KEY) : null) ?? "",
+  );
+  const [orgStatus, setOrgStatus] = useState<"idle" | "checking" | "success" | "error">(
+    () => (typeof window !== "undefined" && localStorage.getItem(ORG_CODE_KEY) ? "success" : "idle"),
+  );
+  const [orgError, setOrgError] = useState("");
 
   useEffect(() => onThemeChange(setLocalFieldTheme), []);
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
   const stableLang = mounted ? lang : lang;
-  const stableTheme = mounted ? currentTheme : "system";
-  const stableFieldTheme = mounted ? fieldTheme : 1;
+  const stableTheme = mounted ? currentTheme : ("system" as const);
+  const stableFieldTheme = mounted ? fieldTheme : (1 as ThemePreference);
+
+  const trimmedEmail = teacherEmail.trim();
+  const emailValid = isAcademicEmail(trimmedEmail);
+  const showEmailError = trimmedEmail.length > 0 && trimmedEmail.includes("@") && !emailValid;
+  const hasAcademicEmail = !!(user?.email && isAcademicEmail(user.email));
+
+  /* ── Handlers ────────────────────────────────────────────────────── */
 
   const openPinModal = () => {
     setPinError(null);
@@ -161,10 +145,7 @@ export default function ReglagesPage() {
 
   const handleUnlock = (event?: React.FormEvent) => {
     event?.preventDefault();
-    if (!pinValue.trim()) {
-      setPinError(t("teacherMode.pinRequired"));
-      return;
-    }
+    if (!pinValue.trim()) { setPinError(t("teacherMode.pinRequired")); return; }
     const next = { unlocked: true, pin: pinValue.trim() };
     setTeacherModeSnapshot(next);
     setTeacherMode(next);
@@ -181,176 +162,336 @@ export default function ReglagesPage() {
   };
 
   const handleCopy = async () => {
-    if (!navigator?.clipboard) {
+    try { await navigator?.clipboard?.writeText(buildInfo.label); } catch { /* ignore */ }
+  };
+
+  const handleTeacherSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailValid) return;
+    setTeacherStep("sending");
+    setTeacherError("");
+
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      setTeacherError("Connexion indisponible.");
+      setTeacherStep("input");
       return;
     }
 
     try {
-      await navigator.clipboard.writeText(buildInfo.label);
+      const { error } = await supabase.auth.updateUser(
+        { email: trimmedEmail },
+        { emailRedirectTo: `${window.location.origin}/reglages` },
+      );
+      if (error) {
+        if (error.message?.includes("rate") || error.status === 429) {
+          setTeacherError("Trop de tentatives. Attendez quelques minutes.");
+        } else if (error.message?.includes("already")) {
+          setTeacherError("Adresse déjà associée à un autre compte.");
+        } else {
+          setTeacherError(error.message || "Une erreur est survenue.");
+        }
+        setTeacherStep("input");
+        return;
+      }
+      setTeacherStep("confirmation");
     } catch {
-      // Ignore clipboard errors to keep the UI silent.
+      setTeacherError("Erreur réseau.");
+      setTeacherStep("input");
     }
   };
 
+  const handleOrgSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = orgCode.trim().toUpperCase();
+    if (!trimmed) return;
+    setOrgStatus("checking");
+    setOrgError("");
+
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) { setOrgStatus("error"); setOrgError("Connexion indisponible."); return; }
+
+    try {
+      const { data } = await supabase
+        .from("organizations")
+        .select("id, is_pro, pro_expires_at")
+        .eq("code", trimmed)
+        .eq("is_pro", true)
+        .maybeSingle();
+
+      if (data && (!data.pro_expires_at || new Date(data.pro_expires_at) > new Date())) {
+        localStorage.setItem(ORG_CODE_KEY, trimmed);
+        localStorage.setItem(PLAN_CACHE_KEY, JSON.stringify({ plan: "pro", timestamp: Date.now() }));
+        setOrgStatus("success");
+      } else {
+        setOrgStatus("error");
+        setOrgError("Code invalide ou établissement non activé.");
+      }
+    } catch {
+      setOrgStatus("error");
+      setOrgError("Erreur réseau.");
+    }
+  };
+
+  const handleOrgRemove = () => {
+    localStorage.removeItem(ORG_CODE_KEY);
+    localStorage.removeItem(PLAN_CACHE_KEY);
+    setOrgCode("");
+    setOrgStatus("idle");
+  };
+
+  /* ── Render ──────────────────────────────────────────────────────── */
+
   return (
-    <section className="page settings-page">
-      <div className="settings-list">
-        <div className="settings-card">
-          <div>
-            <h2 className="settings-heading">{t("settings.language.label")}</h2>
-            <p className="settings-help">{t("pages.settings.languageHelp")}</p>
-          </div>
-          <div className="segmented">
-            {languageOptions.map((option) => (
-              <label
-                key={option.value}
-                className={`segment-button${
-                  stableLang === option.value ? " is-active" : ""
-                }`}
-              >
-                <input
-                  className="segment-input"
-                  type="radio"
-                  name="language"
-                  value={option.value}
-                  checked={stableLang === option.value}
-                  onChange={() => setLang(option.value)}
-                />
-                <span className="inline-flex items-center gap-2">
-                  <FlagIcon locale={option.value} />
-                  {t(option.labelKey)}
+    <section className="page pb-32">
+      <div className="mx-auto max-w-lg space-y-4">
+        <h1 className="text-2xl font-bold text-[color:var(--ink)] mb-6">Réglages</h1>
+
+        {/* ── SECTION 1 : Préférences ─────────────────────────── */}
+        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-5 space-y-0">
+          {/* Langue */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-[color:var(--ink)]">Langue</span>
+            <Seg
+              options={LANG_OPTIONS}
+              value={stableLang}
+              onChange={(v) => setLang(v)}
+              render={(opt) => (
+                <span className="inline-flex items-center gap-1">
+                  <span>{opt.flag}</span> {opt.short}
                 </span>
-              </label>
-            ))}
+              )}
+            />
           </div>
-        </div>
-        <div className="settings-card">
-          <div>
-            <h2 className="settings-heading">{t("settings.theme.label")}</h2>
-            <p className="settings-help">{t("pages.settings.themeHelp")}</p>
+
+          <div className="border-b border-[color:var(--border)] my-3" />
+
+          {/* Thème */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-[color:var(--ink)]">Thème</span>
+            <Seg
+              options={THEME_OPTIONS}
+              value={stableTheme}
+              onChange={(v) => setTheme(v)}
+              render={(opt) => opt.label}
+            />
           </div>
-          <div className="segmented">
-            {themeOptions.map((option) => (
-              <label
-                key={option.value}
-                className={`segment-button${
-                  stableTheme === option.value ? " is-active" : ""
-                }`}
-              >
-                <input
-                  className="segment-input"
-                  type="radio"
-                  name="theme"
-                  value={option.value}
-                  checked={stableTheme === option.value}
-                  onChange={() => setTheme(option.value)}
-                />
-                {t(option.labelKey)}
-              </label>
-            ))}
-          </div>
-        </div>
-        <div className="settings-card">
-          <div>
-            <h2 className="settings-heading">{t("settings.fieldTheme.label")}</h2>
-            <p className="settings-help">{t("settings.fieldTheme.help")}</p>
-          </div>
-          <div className="segmented">
-            {fieldThemeOptions.map((option) => (
-              <label
-                key={option.value}
-                className={`segment-button${
-                  stableFieldTheme === option.value ? " is-active" : ""
-                }`}
-              >
-                <input
-                  className="segment-input"
-                  type="radio"
-                  name="field-theme"
-                  value={option.value}
-                  checked={stableFieldTheme === option.value}
-                  onChange={() => {
-                    setLocalFieldTheme(option.value);
-                    setFieldTheme(option.value);
-                  }}
-                />
-                {t(option.labelKey)}
-              </label>
-            ))}
-          </div>
-        </div>
-        <div className="settings-card">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="settings-heading">{t("teacherMode.heading")}</h2>
-              <p className="settings-help">{t("teacherMode.help")}</p>
+
+          <div className="border-b border-[color:var(--border)] my-3" />
+
+          {/* Objectif par défaut */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-[color:var(--ink)]">Objectif par défaut</span>
+            <div className="flex gap-1">
+              {FIELD_THEME_OPTIONS.map((opt) => {
+                const active = stableFieldTheme === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    className="rounded-md px-2.5 py-1 text-xs font-medium transition-all duration-200 ease-out"
+                    style={
+                      active
+                        ? { background: opt.color, color: "#fff" }
+                        : { border: "1px solid var(--border)", color: "var(--muted)" }
+                    }
+                    onClick={() => { setLocalFieldTheme(opt.value); setFieldTheme(opt.value); }}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
             </div>
-            <span
-              className={`rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${
-                teacherMode.unlocked
-                  ? "border-emerald-400/40 bg-emerald-400/15 text-emerald-100"
-                  : "border-white/10 bg-white/5 text-[color:var(--muted)]"
-              }`}
-            >
-              {teacherMode.unlocked ? t("teacherMode.unlocked") : t("teacherMode.locked")}
-            </span>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {teacherMode.unlocked ? (
-              <button type="button" className="chip" onClick={handleDisable}>
-                {t("teacherMode.deactivate")}
-              </button>
-            ) : (
+        </div>
+
+        {/* ── SECTION 2 : Compte & accès ──────────────────────── */}
+        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-5 space-y-0">
+          {/* Statut du compte */}
+          <div className="flex items-center justify-between">
+            <span className="inline-flex items-center gap-2 text-sm font-medium text-[color:var(--ink)]">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-[color:var(--muted)]">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              Compte
+            </span>
+            <div className="text-right">
+              {hasAcademicEmail ? (
+                <>
+                  <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
+                    Enseignant
+                  </span>
+                  <p className="text-[10px] text-[color:var(--muted)] mt-0.5">{user?.email}</p>
+                </>
+              ) : isPro && orgStatus === "success" ? (
+                <span className="rounded-full bg-blue-500/20 px-2.5 py-0.5 text-xs font-medium text-blue-400">
+                  Pro
+                </span>
+              ) : (
+                <span className="rounded-full bg-[color:var(--border)] px-2.5 py-0.5 text-xs font-medium text-[color:var(--muted)]">
+                  Anonyme
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Accès enseignant */}
+          {!hasAcademicEmail && (
+            <>
+              <div className="border-b border-[color:var(--border)] my-3" />
+              <div>
+                <p className="text-xs text-[color:var(--muted)] mb-2">Email académique</p>
+                {teacherStep === "confirmation" ? (
+                  <div className="flex items-center gap-2">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 shrink-0 text-emerald-500">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span className="text-sm text-emerald-400">
+                      Lien envoyé à {trimmedEmail}. Vérifiez votre boîte mail.
+                    </span>
+                    <button
+                      type="button"
+                      className="ml-auto shrink-0 text-xs text-[color:var(--muted)] underline"
+                      onClick={() => { setTeacherStep("input"); setTeacherError(""); }}
+                    >
+                      Renvoyer
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleTeacherSubmit} className="flex gap-2">
+                    <div className="relative flex-1">
+                      <input
+                        type="email"
+                        className="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] py-2 pl-3 pr-8 text-sm text-[color:var(--ink)] placeholder:text-[color:var(--muted)] focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        placeholder={ACADEMIC_EMAIL_PATTERN}
+                        value={teacherEmail}
+                        onChange={(e) => setTeacherEmail(e.target.value)}
+                        disabled={teacherStep === "sending"}
+                        autoComplete="email"
+                      />
+                      {emailValid && (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-emerald-500">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      )}
+                    </div>
+                    <button
+                      type="submit"
+                      className="shrink-0 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
+                      disabled={!emailValid || teacherStep === "sending"}
+                    >
+                      {teacherStep === "sending" ? "..." : "Valider"}
+                    </button>
+                  </form>
+                )}
+                {showEmailError && (
+                  <p className="mt-1 text-xs text-red-400">
+                    Seules les adresses académiques (@ac-xxx.fr) sont acceptées.
+                  </p>
+                )}
+                {teacherError && <p className="mt-1 text-xs text-red-400">{teacherError}</p>}
+              </div>
+            </>
+          )}
+
+          {/* Déconnexion enseignant */}
+          {hasAcademicEmail && (
+            <>
+              <div className="border-b border-[color:var(--border)] my-3" />
               <button
                 type="button"
-                className="primary-button primary-button--wide"
-                onClick={openPinModal}
+                className="text-xs text-red-400 underline"
+                onClick={async () => {
+                  const supabase = getSupabaseBrowserClient();
+                  if (supabase) { await supabase.auth.signOut(); window.location.reload(); }
+                }}
               >
-                {t("teacherMode.activate")}
+                Se déconnecter
               </button>
-            )}
-          </div>
-        </div>
-        <div className="settings-card">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="settings-heading">{t("settings.about")}</h2>
-            </div>
-            <button
-              type="button"
-              className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted)] transition hover:text-[color:var(--ink)]"
-              onClick={handleCopy}
+            </>
+          )}
+
+          {/* Code établissement */}
+          {!isPro && (
+            <>
+              <div className="border-b border-[color:var(--border)] my-3" />
+              <div>
+                <p className="text-xs text-[color:var(--muted)] mb-2">Code établissement</p>
+                {orgStatus === "success" ? (
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
+                      <svg viewBox="0 0 20 20" fill="currentColor" className="h-3 w-3">
+                        <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                      </svg>
+                      {orgCode}
+                    </span>
+                    <button type="button" className="text-xs text-[color:var(--muted)] underline" onClick={handleOrgRemove}>
+                      Supprimer
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleOrgSubmit} className="flex gap-2">
+                    <input
+                      type="text"
+                      className="flex-1 rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-2 text-sm text-[color:var(--ink)] placeholder:text-[color:var(--muted)]"
+                      placeholder="Ex : TAZIEFF2026"
+                      value={orgCode}
+                      onChange={(e) => setOrgCode(e.target.value)}
+                      disabled={orgStatus === "checking"}
+                    />
+                    <button
+                      type="submit"
+                      className="shrink-0 rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
+                      disabled={orgStatus === "checking" || !orgCode.trim()}
+                    >
+                      {orgStatus === "checking" ? "..." : "Activer"}
+                    </button>
+                  </form>
+                )}
+                {orgStatus === "error" && <p className="mt-1 text-xs text-red-400">{orgError}</p>}
+              </div>
+            </>
+          )}
+
+          {/* Mode professeur */}
+          <div className="border-b border-[color:var(--border)] my-3" />
+          <button
+            type="button"
+            className="flex w-full items-center justify-between py-0.5"
+            onClick={teacherMode.unlocked ? handleDisable : openPinModal}
+          >
+            <span className="inline-flex items-center gap-2 text-sm font-medium text-[color:var(--ink)]">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-[color:var(--muted)]">
+                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+              </svg>
+              Mode professeur
+            </span>
+            <span
+              className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                teacherMode.unlocked
+                  ? "bg-emerald-500/20 text-emerald-400"
+                  : "bg-[color:var(--border)] text-[color:var(--muted)]"
+              }`}
             >
-              {t("settings.copy")}
+              {teacherMode.unlocked ? "Actif" : "Verrouillé"}
+            </span>
+          </button>
+        </div>
+
+        {/* ── SECTION 3 : À propos ────────────────────────────── */}
+        <div className="pt-2 text-center">
+          <p className="text-xs text-[color:var(--muted)]">
+            Tazieff EPS
+            <button type="button" className="ml-1.5 underline" onClick={handleCopy}>
+              {buildInfo.label}
             </button>
-          </div>
-          <div className="flex items-center justify-between gap-4 text-xs text-[color:var(--muted)]">
-            <span>{t("settings.version")}</span>
-            <span className="font-mono">{buildInfo.label}</span>
-          </div>
+          </p>
         </div>
       </div>
 
-      {/* ── Espace enseignant ─────────────────────────────── */}
-      <div className="border-t border-[color:var(--border)] my-8" />
-      <div className="settings-list">
-        <div className="flex items-center gap-2 mb-4">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-[color:var(--accent)]">
-            <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-            <path d="M6 12v5c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2v-5" />
-          </svg>
-          <h2 className="text-base font-semibold text-[color:var(--ink)]">Espace enseignant</h2>
-        </div>
-        <TeacherAuth />
-        <div className="mt-6">
-          <h3 className="text-sm font-medium text-[color:var(--muted)] mb-3">
-            Ou entrer un code établissement
-          </h3>
-          <CodeEtablissement />
-        </div>
-      </div>
-
-      {pinModalOpen ? (
+      {/* ── PIN Modal ─────────────────────────────────────────── */}
+      {pinModalOpen && (
         <div className="modal-overlay" role="dialog" aria-modal="true">
           <div className="modal-card">
             <h2>{t("teacherMode.pinHeading")}</h2>
@@ -362,25 +503,19 @@ export default function ReglagesPage() {
                 onChange={(event) => setPinValue(event.target.value)}
                 placeholder={t("teacherMode.pinRequired")}
               />
-              {pinError ? (
-                <p className="text-xs text-[color:var(--muted)]">{pinError}</p>
-              ) : null}
+              {pinError && <p className="text-xs text-[color:var(--muted)]">{pinError}</p>}
               <div className="modal-actions">
                 <button type="submit" className="primary-button primary-button--wide">
                   {t("teacherMode.unlock")}
                 </button>
-                <button
-                  type="button"
-                  className="chip"
-                  onClick={() => setPinModalOpen(false)}
-                >
+                <button type="button" className="chip" onClick={() => setPinModalOpen(false)}>
                   {t("teacherMode.cancel")}
                 </button>
               </div>
             </form>
           </div>
         </div>
-      ) : null}
+      )}
     </section>
   );
 }
