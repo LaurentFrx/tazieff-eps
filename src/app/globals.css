@@ -1216,6 +1216,10 @@ body:has(.anatomy-page) nav {
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
+.carnet-input-number {
+  font-weight: 700; font-size: 16px;
+}
+.carnet-input-number::placeholder { font-weight: 400; }
 .carnet-input:focus {
   border-color: #f97316;
   box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
@@ -1453,11 +1457,26 @@ body:has(.anatomy-page) nav {
 }
 
 /* Combobox selected badge — orange accent (Mod 2) */
-.carnet-combo-selected { display: flex; align-items: center; gap: 8px; }
+.carnet-combo-selected {
+  display: flex; align-items: center; gap: 12px;
+  flex-wrap: wrap;
+}
+@media (max-width: 639px) {
+  .carnet-combo-selected { flex-direction: column; align-items: stretch; }
+}
 .carnet-combo-badge {
   background: rgba(249, 115, 22, 0.15);
   color: #fb923c; font-weight: 600;
   border-radius: 8px; padding: 6px 12px; font-size: 14px;
+  border: none;
+}
+.carnet-combo-badge-clickable {
+  cursor: pointer; text-decoration: none; text-align: left;
+  transition: text-decoration 150ms, background 150ms;
+}
+.carnet-combo-badge-clickable:hover {
+  text-decoration: underline;
+  background: rgba(249, 115, 22, 0.25);
 }
 .carnet-combo-clear {
   background: none; border: none; cursor: pointer; color: var(--muted);
@@ -1543,8 +1562,14 @@ body:has(.anatomy-page) nav {
   background: #e4e4e7;
 }
 .carnet-exo-thumb-selected {
-  width: 80px; height: 45px; object-fit: cover; border-radius: 8px;
+  width: 120px; height: 68px; object-fit: cover; border-radius: 12px;
   background: #3f3f46; flex-shrink: 0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+@media (max-width: 639px) {
+  .carnet-exo-thumb-selected {
+    width: 100%; height: auto; max-height: 160px;
+  }
 }
 :where(.light, [data-theme="light"]) .carnet-exo-thumb-selected {
   background: #e4e4e7;

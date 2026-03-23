@@ -289,33 +289,30 @@ function ExerciceSelector({
     return options.find((o) => o.title === value) ?? null;
   }, [value, options]);
 
-  // Selected state: show thumb + badge + "Changer" button
+  // Selected state: show thumb + clickable badge (click reopens list)
   if (value) {
     return (
       <div className="carnet-combo-selected">
         {selectedMatch && (
           <img
             src={`/images/exos/thumb169-${selectedMatch.slug}.webp`}
-            width={80}
-            height={45}
+            width={120}
+            height={68}
             loading="lazy"
             alt=""
             className="carnet-exo-thumb-selected"
             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
           />
         )}
-        <span className="carnet-combo-badge">
+        <button
+          type="button"
+          className="carnet-combo-badge carnet-combo-badge-clickable"
+          onClick={() => onChange("")}
+        >
           {value}
           {selectedMatch?.session && (
             <span className="carnet-session-badge">{selectedMatch.session}</span>
           )}
-        </span>
-        <button
-          type="button"
-          className="carnet-combo-change"
-          onClick={() => onChange("")}
-        >
-          Changer
         </button>
       </div>
     );
@@ -718,7 +715,7 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
                         <input
                           type="number"
                           inputMode="decimal"
-                          className="carnet-input"
+                          className="carnet-input carnet-input-number"
                           placeholder="0"
                           value={ex.charge || ""}
                           onChange={(e) => updateExercice(ex._id, "charge", Number(e.target.value))}
@@ -731,7 +728,7 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
                           <input
                             type="number"
                             inputMode="numeric"
-                            className="carnet-input"
+                            className="carnet-input carnet-input-number"
                             placeholder="4"
                             value={ex.series || ""}
                             onChange={(e) =>
@@ -747,7 +744,7 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
                           <input
                             type="number"
                             inputMode="numeric"
-                            className="carnet-input"
+                            className="carnet-input carnet-input-number"
                             placeholder="10"
                             value={ex.reps || ""}
                             onChange={(e) =>
@@ -767,7 +764,7 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
                         <input
                           type="number"
                           inputMode="numeric"
-                          className="carnet-input carnet-rir"
+                          className="carnet-input carnet-input-number carnet-rir"
                           value={ex.rir}
                           onChange={(e) => updateExercice(ex._id, "rir", Number(e.target.value))}
                           min={0}
