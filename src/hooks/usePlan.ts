@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "./useAuth";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { isAcademicEmail } from "@/lib/auth/academic-domains";
 
 type Plan = "free" | "pro";
 
@@ -45,6 +46,15 @@ export function usePlan(): UsePlanResult {
   const [isLoading, setIsLoading] = useState(true);
 
   const checkPlan = useCallback(async () => {
+    // Priority 1: academic email → instant Pro
+    if (user?.email && isAcademicEmail(user.email)) {
+      setPlan("pro");
+      writePlanCache("pro");
+      setIsLoading(false);
+      return;
+    }
+
+    // Priority 2: organization code
     const code = localStorage.getItem(ORG_CODE_KEY);
     if (!code) {
       setPlan("free");
@@ -87,7 +97,7 @@ export function usePlan(): UsePlanResult {
     const cached = readPlanCache();
     setPlan(cached?.plan ?? "free");
     setIsLoading(false);
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (authLoading) return;

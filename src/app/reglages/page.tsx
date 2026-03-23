@@ -5,6 +5,8 @@ import { useTheme } from "next-themes";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useBuildInfo } from "@/components/BuildStamp";
 import { getTheme, onThemeChange, setTheme as setFieldTheme, type ThemePreference } from "@/lib/storage";
+import { TeacherAuth } from "@/components/TeacherAuth";
+import { CodeEtablissement } from "@/components/CodeEtablissement";
 
 const languageOptions = [
   { value: "fr", labelKey: "settings.language.fr" },
@@ -328,6 +330,26 @@ export default function ReglagesPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Espace enseignant ─────────────────────────────── */}
+      <div className="border-t border-[color:var(--border)] my-8" />
+      <div className="settings-list">
+        <div className="flex items-center gap-2 mb-4">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-[color:var(--accent)]">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+            <path d="M6 12v5c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2v-5" />
+          </svg>
+          <h2 className="text-base font-semibold text-[color:var(--ink)]">Espace enseignant</h2>
+        </div>
+        <TeacherAuth />
+        <div className="mt-6">
+          <h3 className="text-sm font-medium text-[color:var(--muted)] mb-3">
+            Ou entrer un code établissement
+          </h3>
+          <CodeEtablissement />
+        </div>
+      </div>
+
       {pinModalOpen ? (
         <div className="modal-overlay" role="dialog" aria-modal="true">
           <div className="modal-card">
