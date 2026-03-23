@@ -2141,9 +2141,9 @@ body:has(.anatomy-page) nav {
 }
 .carnet-print-td-left { text-align: left; }
 .carnet-print-td-center { text-align: center; }
-.carnet-print-td-thumb { padding: 4px 6px; }
+.carnet-print-td-thumb { padding: 4px 6px; min-width: 96px; }
 .carnet-print-thumb {
-  display: block; border-radius: 4px; object-fit: cover;
+  display: block; border-radius: 6px; object-fit: cover;
 }
 .carnet-print-table tr { break-inside: avoid; }
 

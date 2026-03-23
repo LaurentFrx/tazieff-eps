@@ -530,8 +530,8 @@ function CarnetPrintView({
                         {slug && (
                           <img
                             src={`/images/exos/thumb169-${slug}.webp`}
-                            width={48}
-                            height={27}
+                            width={96}
+                            height={54}
                             alt=""
                             className="carnet-print-thumb"
                           />
