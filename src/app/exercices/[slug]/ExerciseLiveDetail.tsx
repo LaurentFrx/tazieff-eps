@@ -702,7 +702,7 @@ export function ExerciseLiveDetail({
   // Hero media resolution: override > video (.webm/.mp4) > image (.webp)
   const exerciseSlug = merged.frontmatter.slug;
   const videoSrc = exerciseSlug
-    ? `/images/exos/${exerciseSlug.toLowerCase()}.webm`
+    ? `/images/exos/${exerciseSlug.toLowerCase()}`
     : undefined;
   const imageSrc = exerciseSlug
     ? `/images/exos/${exerciseSlug.toLowerCase()}.webp`

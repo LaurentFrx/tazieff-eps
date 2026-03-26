@@ -95,12 +95,11 @@ export function HeroMedia(props: HeroMediaProps) {
           playsInline
           controls={false}
           preload="auto"
-          onError={() => setVideoError(true)}
           className="w-full h-auto"
           aria-label={alt}
         >
-          <source src={props.src} type="video/webm" />
-          <source src={props.src.replace('.webm', '.mp4')} type="video/mp4" />
+          <source src={`${props.src}.webm`} type="video/webm" />
+          <source src={`${props.src}.mp4`} type="video/mp4" onError={() => setVideoError(true)} />
         </video>
 
         {/* Bouton play en overlay */}
