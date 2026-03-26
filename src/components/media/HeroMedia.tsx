@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Image, { type StaticImageData } from "next/image";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -39,6 +39,18 @@ export function HeroMedia(props: HeroMediaProps) {
   const [videoError, setVideoError] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Native listener on last <source> — more reliable than React onError for <source>
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const sources = video.querySelectorAll("source");
+    const last = sources[sources.length - 1];
+    if (!last) return;
+    const onFail = () => setVideoError(true);
+    last.addEventListener("error", onFail);
+    return () => last.removeEventListener("error", onFail);
+  }, []);
 
   const wrapperClass = rounded
     ? "rounded-3xl overflow-hidden bg-white/5 ring-1 ring-white/10 shadow-xl"
@@ -79,6 +91,8 @@ export function HeroMedia(props: HeroMediaProps) {
           <Image
             src={props.imageFallback}
             alt={alt}
+            width={800}
+            height={600}
             className="w-full h-auto"
           />
         </div>
@@ -99,7 +113,7 @@ export function HeroMedia(props: HeroMediaProps) {
           aria-label={alt}
         >
           <source src={`${props.src}.webm`} type="video/webm" />
-          <source src={`${props.src}.mp4`} type="video/mp4" onError={() => setVideoError(true)} />
+          <source src={`${props.src}.mp4`} type="video/mp4" />
         </video>
 
         {/* Bouton play en overlay */}

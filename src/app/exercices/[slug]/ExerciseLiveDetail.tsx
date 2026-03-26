@@ -699,7 +699,7 @@ export function ExerciseLiveDetail({
   const displayTitle =
     merged.frontmatter.title?.trim() || t("exerciseGrid.untitledDraft");
 
-  // Hero media resolution: override > video (.webm/.mp4) > image (.webp)
+  // Hero media resolution: video (.webm/.mp4) > override image > default image
   const exerciseSlug = merged.frontmatter.slug;
   const videoSrc = exerciseSlug
     ? `/images/exos/${exerciseSlug.toLowerCase()}`
@@ -712,22 +712,20 @@ export function ExerciseLiveDetail({
   const overrideHero = overrideDocView?.heroImage;
   const overrideHeroUrl = overrideHero?.url?.trim() ?? "";
   const hero: HeroRender | null =
-    overrideDocView && overrideHero
-      ? overrideHeroUrl
+    videoSrc
+      ? {
+          type: "video",
+          src: videoSrc,
+          alt: overrideHero?.alt ?? displayTitle,
+          imageFallback: overrideHeroUrl || imageFallback,
+        }
+      : overrideDocView && overrideHero && overrideHeroUrl
         ? {
             type: "image",
             src: overrideHeroUrl,
             alt: overrideHero.alt ?? displayTitle,
             width: HERO_OVERRIDE_DIMENSIONS.width,
             height: HERO_OVERRIDE_DIMENSIONS.height,
-          }
-        : null
-      : videoSrc
-        ? {
-            type: "video",
-            src: videoSrc,
-            alt: displayTitle,
-            imageFallback,
           }
         : imageFallback
           ? { type: "image", src: imageFallback, alt: displayTitle, width: 800, height: 600 }
