@@ -116,7 +116,8 @@
     "espalier (echelle suedoise)": { "fr": "Espalier (échelle suédoise)", "en": "Wall bars", "es": "Espaldera" },
     "roulette abdominale (ab wheel)": { "fr": "Roulette abdominale (Ab Wheel)", "en": "Ab wheel", "es": "Rueda abdominal" },
     "sol libre (espace suffisant)": { "fr": "Sol libre (espace suffisant)", "en": "Open floor (enough space)", "es": "Suelo libre (espacio suficiente)" },
-    "step ou rebord": { "fr": "Step ou rebord", "en": "Step or ledge", "es": "Escalón o borde" }
+    "step ou rebord": { "fr": "Step ou rebord", "en": "Step or ledge", "es": "Escalón o borde" },
+    "lat machine": { "fr": "Lat machine (tirage vertical)", "en": "Lat pulldown machine", "es": "Máquina de jalón al pecho" }
   },
   "tags": {
     "gainage": { "fr": "Gainage", "en": "Core", "es": "Core" },
