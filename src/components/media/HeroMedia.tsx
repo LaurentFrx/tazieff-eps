@@ -52,17 +52,19 @@ export function HeroMedia(props: HeroMediaProps) {
     return () => last.removeEventListener("error", onFail);
   }, []);
 
-  // Seamless loop: seek back to start just before end to avoid native loop gap
+  // Seamless loop via requestAnimationFrame (~16ms precision vs ~250ms for timeupdate)
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    const onTimeUpdate = () => {
-      if (video.duration && video.currentTime > video.duration - 0.3) {
+    let rafId: number;
+    const check = () => {
+      if (video.duration && video.currentTime > video.duration - 0.08) {
         video.currentTime = 0;
       }
+      rafId = requestAnimationFrame(check);
     };
-    video.addEventListener("timeupdate", onTimeUpdate);
-    return () => video.removeEventListener("timeupdate", onTimeUpdate);
+    rafId = requestAnimationFrame(check);
+    return () => cancelAnimationFrame(rafId);
   }, []);
 
   const wrapperClass = rounded
