@@ -52,6 +52,19 @@ export function HeroMedia(props: HeroMediaProps) {
     return () => last.removeEventListener("error", onFail);
   }, []);
 
+  // Seamless loop: seek back to start just before end to avoid native loop gap
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const onTimeUpdate = () => {
+      if (video.duration && video.currentTime > video.duration - 0.3) {
+        video.currentTime = 0;
+      }
+    };
+    video.addEventListener("timeupdate", onTimeUpdate);
+    return () => video.removeEventListener("timeupdate", onTimeUpdate);
+  }, []);
+
   const wrapperClass = rounded
     ? "rounded-3xl overflow-hidden bg-white/5 ring-1 ring-white/10 shadow-xl"
     : "w-full";
@@ -105,7 +118,6 @@ export function HeroMedia(props: HeroMediaProps) {
           ref={videoRef}
           autoPlay
           muted
-          loop
           playsInline
           controls={false}
           preload="auto"
