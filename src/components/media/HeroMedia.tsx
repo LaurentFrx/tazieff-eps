@@ -52,21 +52,6 @@ export function HeroMedia(props: HeroMediaProps) {
     return () => last.removeEventListener("error", onFail);
   }, []);
 
-  // Seamless loop via requestAnimationFrame (~16ms precision vs ~250ms for timeupdate)
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    let rafId: number;
-    const check = () => {
-      if (video.duration && video.currentTime > video.duration - 0.08) {
-        video.currentTime = 0;
-      }
-      rafId = requestAnimationFrame(check);
-    };
-    rafId = requestAnimationFrame(check);
-    return () => cancelAnimationFrame(rafId);
-  }, []);
-
   const wrapperClass = rounded
     ? "rounded-3xl overflow-hidden bg-white/5 ring-1 ring-white/10 shadow-xl"
     : "w-full";
@@ -120,6 +105,7 @@ export function HeroMedia(props: HeroMediaProps) {
           ref={videoRef}
           autoPlay
           muted
+          loop
           playsInline
           controls={false}
           preload="auto"
