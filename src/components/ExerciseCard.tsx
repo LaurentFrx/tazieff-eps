@@ -4,6 +4,7 @@ import Image, { type StaticImageData } from "next/image";
 import { useState, type CSSProperties, type ReactNode } from "react";
 import logo from "../../public/media/branding/logo-eps.webp";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
+import { getMuscleGroup } from "@/lib/exercices/muscleGroups";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
 export type ExerciseCardProps = {
@@ -30,6 +31,12 @@ const LEVEL_BADGE: Record<string, string> = {
   debutant: "bg-green-100 text-green-700",
   intermediaire: "bg-yellow-100 text-yellow-700",
   avance: "bg-red-100 text-red-700",
+};
+
+const LEVEL_BADGE_LIST: Record<string, string> = {
+  debutant: "bg-green-500/20 text-green-400",
+  intermediaire: "bg-amber-500/20 text-amber-400",
+  avance: "bg-rose-500/20 text-rose-400",
 };
 
 // ---------------------------------------------------------------------------
@@ -157,9 +164,24 @@ export function ExerciseCard({
           <h2 className="text-base font-semibold text-[color:var(--ink)] md:text-lg">
             {title}
           </h2>
-          <p className="mt-0.5 text-xs font-mono text-gray-400 uppercase">
-            {displaySlug}
-          </p>
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+            {exercise.muscles.length > 0 && (() => {
+              const groupId = getMuscleGroup(exercise.muscles[0]);
+              return groupId ? (
+                <span className="text-sm text-zinc-400">
+                  {t(`filters.muscleGroups.${groupId}`)}
+                </span>
+              ) : null;
+            })()}
+            {level && LEVEL_BADGE_LIST[level] && (
+              <span className={`rounded-full px-2 py-0.5 text-xs font-semibold leading-tight ${LEVEL_BADGE_LIST[level]}`}>
+                {t(`difficultyShort.${level}`)}
+              </span>
+            )}
+            <span className="text-sm font-mono text-zinc-500 uppercase">
+              {displaySlug}
+            </span>
+          </div>
         </div>
       ) : (
         <p className="line-clamp-2 break-words text-xs font-bold leading-tight text-[color:var(--ink)]">
