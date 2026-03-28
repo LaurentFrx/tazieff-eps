@@ -770,6 +770,11 @@ body:has(.anatomy-page) nav {
 }
 
 
+@keyframes chip-appear {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
 @keyframes fade-slide {
   from {
     opacity: 0;

@@ -106,6 +106,7 @@ export const messages = {
         abdominaux: "Abdominaux",
         pectoraux: "Pectoraux",
       },
+      moreFilters: "Plus de filtres",
     },
     exerciseGrid: {
       gridView: "Vue grille",
@@ -1088,6 +1089,7 @@ export const messages = {
         abdominaux: "Abs",
         pectoraux: "Chest",
       },
+      moreFilters: "More filters",
     },
     exerciseGrid: {
       gridView: "Grid view",
@@ -2070,6 +2072,7 @@ export const messages = {
         abdominaux: "Abdominales",
         pectoraux: "Pectorales",
       },
+      moreFilters: "Más filtros",
     },
     exerciseGrid: {
       gridView: "Vista cuadrícula",
