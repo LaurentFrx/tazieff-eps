@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import dynamic from "next/dynamic";
 import NextImage from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -20,7 +19,17 @@ import type { ExerciseFrontmatter } from "@/lib/content/schema";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Lang } from "@/lib/i18n/messages";
 import { translateTerms } from "@/lib/i18n/terms/translate";
-import { mdxComponents } from "@/lib/mdx/components";
+const MarkdownRenderer = dynamic(
+  () => import("@/components/MarkdownRenderer"),
+  {
+    loading: () => (
+      <div className="animate-pulse space-y-2">
+        <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-3/4" />
+        <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-1/2" />
+      </div>
+    ),
+  },
+);
 import { applyExercisePatch, splitMarkdownSections } from "@/lib/live/patch";
 import type {
   ExerciseLiveBulletsBlock,
@@ -2634,13 +2643,11 @@ export function ExerciseLiveDetail({
                 {section.blocks.map((block, blockIndex) => {
                   if (block.type === "markdown") {
                     return (
-                      <ReactMarkdown
+                      <MarkdownRenderer
                         key={`markdown-${section.id}-${blockIndex}`}
-                        remarkPlugins={[remarkGfm]}
-                        components={mdxComponents}
                       >
                         {block.content}
-                      </ReactMarkdown>
+                      </MarkdownRenderer>
                     );
                   }
                   if (block.type === "bullets") {
@@ -2731,9 +2738,9 @@ export function ExerciseLiveDetail({
             </section>
           ))
         ) : (
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdxComponents}>
+          <MarkdownRenderer>
             {merged.content}
-          </ReactMarkdown>
+          </MarkdownRenderer>
         )}
       </div>
 
