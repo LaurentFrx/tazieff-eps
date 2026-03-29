@@ -9,7 +9,7 @@ import { fetchExerciseOverride, fetchLiveExercise } from "@/lib/live/queries";
 import { ExerciseLiveDetail } from "@/app/exercices/[slug]/ExerciseLiveDetail";
 // RSC: useI18n() unavailable — read lang from cookie via getServerLang()
 import { getServerLang, getServerT } from "@/lib/i18n/server";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
+
 import { MethodeCard } from "@/components/methodes/MethodeCard";
 
 type ExercicePageProps = {
@@ -188,13 +188,6 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
 
   return (
     <section className="page">
-      <Breadcrumbs
-        items={[
-          { label: t("nav.home.label"), href: "/" },
-          { label: t("breadcrumbs.exercices"), href: "/exercices" },
-          { label: exerciseTitle },
-        ]}
-      />
       <ExerciseLiveDetail
         key={`${slug}-${locale}`}
         slug={slug}
