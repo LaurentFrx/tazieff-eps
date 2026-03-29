@@ -4,7 +4,7 @@ import Link from "next/link";
 import NextImage from "next/image";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { getExerciseMuscleGroups } from "@/lib/exercices/muscle-groups";
-import { MUSCLE_GROUPS, matchesGroup } from "@/app/apprendre/anatomie/anatomy-data";
+import { MUSCLE_GROUPS, matchesGroup } from "@/app/[locale]/apprendre/anatomie/anatomy-data";
 import miniMannequin from "../../../public/images/anatomy/mini-mannequin.webp";
 import "./exercise-anatomy.css";
 

@@ -1,5 +1,7 @@
 # CLAUDE.md — Tazieff EPS
 
+> **Toujours travailler en mode approfondi : analyser le code existant avant de modifier, vérifier les impacts, et ne jamais prendre de raccourcis.**
+
 > Ce fichier est lu automatiquement par Claude Code CLI à chaque session.
 > Il constitue la référence unique pour tout développement sur ce projet.
 > Dernière mise à jour : Mars 2026

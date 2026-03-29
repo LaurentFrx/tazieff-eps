@@ -2,14 +2,15 @@ import { HomepageClient } from "@/components/HomepageClient";
 import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
 import { getAllMethodes, getAllLearnPages } from "@/lib/content/fs";
 import { getServerLang } from "@/lib/i18n/server";
+import type { Lang } from "@/lib/i18n/messages";
 
-/**
- * Root page fallback — the middleware rewrites / → /[locale]/,
- * so this page should not normally be rendered in production.
- * Kept for build compatibility.
- */
-export default async function HomePage() {
-  const lang = await getServerLang();
+type HomePageProps = {
+  params: Promise<{ locale: string }>;
+};
+
+export default async function HomePage({ params }: HomePageProps) {
+  const { locale } = await params;
+  const lang = await getServerLang(locale as Lang);
   const [exercises, methodes, learnPages] = await Promise.all([
     getExercisesIndex(lang),
     getAllMethodes(lang),

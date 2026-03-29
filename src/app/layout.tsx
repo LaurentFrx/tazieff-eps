@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Space_Mono, Sora, Orbitron } from "next/font/google";
-import { cookies } from "next/headers";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { TopBar } from "@/components/TopBar";
 import { InstallPwaBanner } from "@/components/InstallPwaBanner";
@@ -8,8 +7,6 @@ import { OnlineStatus } from "@/components/OnlineStatus";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { SplashScreen } from "@/components/SplashScreen";
-// RSC: useI18n() unavailable — read lang from cookie via getServerLang()
-import { getServerLang } from "@/lib/i18n/server";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -57,34 +54,31 @@ export const metadata: Metadata = {
   },
 };
 
-type ThemePreference = "system" | "light" | "dark";
-
-const THEME_COOKIE = "eps_theme";
-
-function getInitialTheme(value?: string): ThemePreference {
-  if (value === "light" || value === "dark" || value === "system") {
-    return value;
-  }
-
-  return "dark";
-}
-
-export default async function RootLayout({
+/**
+ * Root layout — NO cookies() or headers() calls here so that
+ * child pages under [locale] can be statically generated.
+ *
+ * Language and theme are resolved at build time via defaults ("fr" / "dark")
+ * and hydrated client-side by I18nProvider and next-themes from
+ * localStorage / the eps_lang cookie.
+ *
+ * suppressHydrationWarning on <html> silences the brief flash when the
+ * client-side values differ from the SSG defaults.
+ */
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
-  const initialLang = await getServerLang();
-  const initialTheme = getInitialTheme(cookieStore.get(THEME_COOKIE)?.value);
-  const htmlClassName = initialTheme === "dark" ? "dark" : undefined;
-  const dataTheme = initialTheme !== "system" ? initialTheme : undefined;
+  // Defaults for SSG — client-side providers override immediately
+  const initialLang = "fr";
+  const initialTheme = "dark" as const;
 
   return (
     <html
       lang={initialLang}
-      data-theme={dataTheme}
-      className={htmlClassName}
+      data-theme={initialTheme}
+      className="dark"
       suppressHydrationWarning
     >
       <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable} ${orbitron.variable}`}>

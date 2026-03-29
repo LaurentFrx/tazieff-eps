@@ -1,5 +1,4 @@
 import "server-only";
-import { cookies } from "next/headers";
 import { messages, type Lang } from "@/lib/i18n/messages";
 
 const COOKIE_KEY = "eps_lang";
@@ -12,11 +11,27 @@ function isValidLang(value: string): value is Lang {
 }
 
 /**
- * Read the user's language from the cookie in a Server Component.
- * RSC cannot use React hooks, so useI18n() is unavailable — this
- * reads the eps_lang cookie directly via next/headers instead.
+ * Read the user's language.
+ *
+ * When a `locale` parameter is provided (from the [locale] route segment),
+ * it is used directly — no cookie read, so the page can be statically
+ * generated.
+ *
+ * When called without argument (legacy/fallback), falls back to reading
+ * the eps_lang cookie via next/headers, which forces dynamic rendering.
+ * The cookies import is dynamic to avoid tainting the module.
  */
-export async function getServerLang(): Promise<Lang> {
+export async function getServerLang(locale?: string): Promise<Lang> {
+  // If locale is explicitly provided, validate and use it directly
+  if (locale !== undefined) {
+    if (isValidLang(locale)) {
+      return locale;
+    }
+    return DEFAULT_LANG;
+  }
+
+  // Legacy fallback: dynamic import to avoid tainting static pages
+  const { cookies } = await import("next/headers");
   const cookieStore = await cookies();
   const raw = cookieStore.get(COOKIE_KEY)?.value;
   if (raw && isValidLang(raw)) {
