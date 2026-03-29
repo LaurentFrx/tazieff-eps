@@ -93,6 +93,7 @@ export function HeroMedia(props: HeroMediaProps) {
             alt={alt}
             width={800}
             height={600}
+            sizes="(max-width: 768px) 100vw, 50vw"
             className="w-full h-auto"
           />
         </div>
@@ -214,6 +215,7 @@ export function HeroMedia(props: HeroMediaProps) {
             <Image
               src={src}
               alt={alt}
+              sizes="100vw"
               className="w-auto h-auto max-w-full max-h-screen object-contain"
               {...dimensionProps}
             />

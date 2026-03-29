@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { ChevronDown, ChevronUp, Download, Printer, Trash2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useAuth } from "@/hooks/useAuth";
@@ -129,11 +130,10 @@ function ExoThumb({ slug }: { slug: string }) {
     );
   }
   return (
-    <img
+    <Image
       src={`/images/exos/thumb169-${slug}.webp`}
       width={64}
       height={36}
-      loading="lazy"
       alt=""
       className="carnet-exo-thumb"
       onError={() => setError(true)}
@@ -249,11 +249,10 @@ function ExerciceSelector({
     return (
       <div className="carnet-combo-selected">
         {selectedMatch && (
-          <img
+          <Image
             src={`/images/exos/thumb169-${selectedMatch.slug}.webp`}
             width={120}
             height={68}
-            loading="lazy"
             alt=""
             className="carnet-exo-thumb-selected"
             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
@@ -483,7 +482,7 @@ function CarnetPrintView({
                     <tr key={i}>
                       <td className="carnet-print-td-thumb">
                         {slug && (
-                          <img
+                          <Image
                             src={`/images/exos/thumb169-${slug}.webp`}
                             width={96}
                             height={54}

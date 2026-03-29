@@ -79,7 +79,7 @@ const serwist = new Serwist({
         cacheName: "images",
         plugins: [
           new ExpirationPlugin({
-            maxEntries: 120,
+            maxEntries: 256,
             maxAgeSeconds: 60 * 60 * 24 * 7,
           }),
         ],
