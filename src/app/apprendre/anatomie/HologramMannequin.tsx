@@ -313,8 +313,13 @@ function MusclesModel({
             mat.opacity = 0.4;
             mat.emissive.set(0x000000);
           }
+        } else if (!selectedGroup && activeGroups.length > 0 && ud.groupKey && activeGroups.includes(ud.groupKey)) {
+          // Exercise mode: other muscles in active groups → dimmed
+          mat.color.copy(ud.originalColor);
+          mat.opacity = 0.4;
+          mat.emissive.set(0x000000);
         } else {
-          // Outside selected group → invisible
+          // Outside selected/active groups → invisible
           mesh.visible = false;
         }
       } else if (selectedGroup) {

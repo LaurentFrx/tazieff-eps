@@ -68,14 +68,25 @@ export default function AnatomyMap({ exercises }: Props) {
     setHighlightedMuscle(null);
   }, []);
 
-  /* ── Tap on muscle → select group ──────────────────────────────────── */
+  /* ── Tap on muscle → select group (or toggle highlight in exercise mode) */
   const handleClickMuscle = useCallback(
     (frName: string | null, groupKey: string | null, _x: number, _y: number) => {
       if (!frName || !groupKey) {
         clearSelection();
         return;
       }
-      // If tapping a muscle in the already-selected group, highlight it
+
+      // Exercise mode: toggle highlight directly, never change selectedGroup
+      if (fromExercice) {
+        if (highlightedMuscle === frName) {
+          setHighlightedMuscle(null);
+        } else {
+          setHighlightedMuscle(frName);
+        }
+        return;
+      }
+
+      // Normal anatomy page: existing behavior
       if (groupKey === selectedGroup && layeredMuscles) {
         if (highlightedMuscle === frName) {
           setHighlightedMuscle(null);
@@ -84,11 +95,10 @@ export default function AnatomyMap({ exercises }: Props) {
         }
         return;
       }
-      // Select the group
       setSelectedGroup(groupKey);
       setHighlightedMuscle(null);
     },
-    [selectedGroup, layeredMuscles, highlightedMuscle, clearSelection],
+    [selectedGroup, layeredMuscles, highlightedMuscle, clearSelection, fromExercice],
   );
 
   /* ── Sub-muscle chip toggle ────────────────────────────────────────── */
@@ -106,10 +116,14 @@ export default function AnatomyMap({ exercises }: Props) {
   /* ── Long press → same as tap (no separate behavior) ───────────────── */
   const handleLongPressMuscle = useCallback(
     (frName: string, groupKey: string, _x: number, _y: number) => {
-      setSelectedGroup(groupKey);
-      setHighlightedMuscle(frName);
+      if (fromExercice) {
+        setHighlightedMuscle((prev) => (prev === frName ? null : frName));
+      } else {
+        setSelectedGroup(groupKey);
+        setHighlightedMuscle(frName);
+      }
     },
-    [],
+    [fromExercice],
   );
 
   /* ── Hover (no-op — hover tooltip removed) ─────────────────────────── */
@@ -169,8 +183,23 @@ export default function AnatomyMap({ exercises }: Props) {
         </div>
       </div>
 
+      {/* ── Exercise mode: simple muscle label at bottom ─────────────── */}
+      {fromExercice && highlightedMuscle && (
+        <div className="anatomy-exercise-label">
+          <span className="anatomy-exercise-label-name">{highlightedMuscle}</span>
+          <button
+            type="button"
+            className="anatomy-submenu-close"
+            onClick={() => setHighlightedMuscle(null)}
+            aria-label={t("anatomy.close")}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg>
+          </button>
+        </div>
+      )}
+
       {/* ── Bottom sheet (unified — group + chips + exercise link) ────── */}
-      {selectedGroup && (
+      {!fromExercice && selectedGroup && (
         <div className="anatomy-submenu">
           <div className="anatomy-submenu-header">
             <div className="anatomy-submenu-title-row">
@@ -208,9 +237,7 @@ export default function AnatomyMap({ exercises }: Props) {
               ))}
             </div>
           )}
-          {fromExercice && urlMuscleGroups.includes(selectedGroup) ? (
-            <p className="anatomy-submenu-context">{t("anatomy.usedByExercise")}</p>
-          ) : groupExerciseCount > 0 ? (
+          {groupExerciseCount > 0 ? (
             <Link
               href={`/exercices?muscle=${selectedGroup}&from=anatomie`}
               className="anatomy-submenu-exercise-btn"
@@ -262,6 +289,7 @@ export default function AnatomyMap({ exercises }: Props) {
             <path d="M8 10C9 8 11 8 12 10" />
           </svg>
         </button>
+        {!fromExercice && (
         <button
           type="button"
           className={`anatomy-toolbar-btn${legendOpen ? " anatomy-toolbar-btn--active" : ""}`}
@@ -274,10 +302,11 @@ export default function AnatomyMap({ exercises }: Props) {
             <rect x="3" y="14" width="14" height="2" rx="1" />
           </svg>
         </button>
+        )}
       </div>
 
-      {/* ── Side panel (muscle index) ────────────────────────────────────── */}
-      {legendOpen && (
+      {/* ── Side panel (muscle index) — hidden in exercise mode ─────────── */}
+      {!fromExercice && legendOpen && (
         <>
           <div className="anatomy-backdrop" onClick={() => setLegendOpen(false)} />
           <div className="anatomy-side-panel">
