@@ -207,7 +207,7 @@ function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
   );
 }
 
-/* ─── Exercise mode: high-contrast palette per group ────────────────────── */
+/* ─── Exercise mode: high-contrast palette per individual muscle ─────────── */
 
 const EXERCISE_PALETTE = [
   new THREE.Color("#e63946"), // rouge vif
@@ -222,12 +222,31 @@ const EXERCISE_PALETTE = [
   new THREE.Color("#ffd166"), // jaune clair
   new THREE.Color("#073b4c"), // bleu nuit
   new THREE.Color("#b5179e"), // magenta
+  new THREE.Color("#fb8500"), // orange vif
+  new THREE.Color("#00b4d8"), // cyan
+  new THREE.Color("#9b5de5"), // lavande
+  new THREE.Color("#00f5d4"), // turquoise
+  new THREE.Color("#f15bb5"), // pink
+  new THREE.Color("#fee440"), // jaune électrique
+  new THREE.Color("#3a86ff"), // bleu roi
+  new THREE.Color("#ff006e"), // framboise
 ];
 
-function exerciseGroupColor(activeGroups: string[], groupKey: string): THREE.Color | null {
-  const idx = activeGroups.indexOf(groupKey);
-  if (idx < 0) return null;
-  return EXERCISE_PALETTE[idx % EXERCISE_PALETTE.length];
+/** Build a map: baseFrName → palette color, for all visible muscles in exercise mode */
+function buildExerciseMuscleColorMap(
+  meshes: THREE.Mesh[],
+  activeGroups: string[],
+): Map<string, THREE.Color> {
+  const colorMap = new Map<string, THREE.Color>();
+  const seen = new Set<string>();
+  for (const mesh of meshes) {
+    const ud = mesh.userData as MuscleUserData;
+    if (!ud.groupKey || !activeGroups.includes(ud.groupKey)) continue;
+    if (seen.has(ud.baseFrName)) continue;
+    seen.add(ud.baseFrName);
+    colorMap.set(ud.baseFrName, EXERCISE_PALETTE[colorMap.size % EXERCISE_PALETTE.length]);
+  }
+  return colorMap;
 }
 
 /* ─── Muscles model ──────────────────────────────────────────────────────── */
@@ -247,6 +266,7 @@ function MusclesModel({
   const canvasElRef = useRef(gl.domElement);
   const meshesRef = useRef<THREE.Mesh[]>([]);
   const hoveredRef = useRef<THREE.Mesh | null>(null);
+  const exColorMapRef = useRef<Map<string, THREE.Color> | null>(null);
 
   // Initialize muscle materials and userData on load
   useEffect(() => {
@@ -299,6 +319,12 @@ function MusclesModel({
   // Update materials when selection/highlight/wireframe changes
   /* eslint-disable react-hooks/immutability -- Three.js materials are mutable by design */
   useEffect(() => {
+    // Build color map once for all muscles (exercise mode)
+    const exColorMap = activeGroups.length > 0
+      ? buildExerciseMuscleColorMap(meshesRef.current, activeGroups)
+      : null;
+    exColorMapRef.current = exColorMap;
+
     for (const mesh of meshesRef.current) {
       const ud = mesh.userData as MuscleUserData;
       const mat = mesh.material as THREE.MeshPhongMaterial;
@@ -307,10 +333,8 @@ function MusclesModel({
       // Default: visible
       mesh.visible = true;
 
-      // Exercise mode: high-contrast color per group index
-      const exColor = activeGroups.length > 0 && ud.groupKey
-        ? exerciseGroupColor(activeGroups, ud.groupKey)
-        : null;
+      // Exercise mode: high-contrast color per individual muscle
+      const exColor = exColorMap?.get(ud.baseFrName) ?? null;
 
       if (highlightedMuscle) {
         if (ud.baseFrName === highlightedMuscle) {
@@ -424,7 +448,7 @@ function MusclesModel({
           const prevUd = hoveredRef.current.userData as MuscleUserData;
           const prevMat = hoveredRef.current.material as THREE.MeshPhongMaterial;
           if (activeGroups.length > 0) {
-            const pc = exerciseGroupColor(activeGroups, prevUd.groupKey ?? "") ?? prevUd.originalColor;
+            const pc = exColorMapRef.current?.get(prevUd.baseFrName) ?? prevUd.originalColor;
             prevMat.emissive.copy(pc).multiplyScalar(0.3);
           } else {
             prevMat.emissive.set(0x000000);
@@ -436,7 +460,7 @@ function MusclesModel({
           const mat = mesh.material as THREE.MeshPhongMaterial;
           const ud = mesh.userData as MuscleUserData;
           const gc = activeGroups.length > 0
-            ? exerciseGroupColor(activeGroups, ud.groupKey ?? "") ?? ud.originalColor
+            ? exColorMapRef.current?.get(ud.baseFrName) ?? ud.originalColor
             : ud.originalColor;
           mat.emissive.copy(gc).multiplyScalar(0.8);
         }
@@ -449,7 +473,7 @@ function MusclesModel({
         const prevUd = hoveredRef.current.userData as MuscleUserData;
         const prevMat = hoveredRef.current.material as THREE.MeshPhongMaterial;
         if (activeGroups.length > 0) {
-          const pc = exerciseGroupColor(activeGroups, prevUd.groupKey ?? "") ?? prevUd.originalColor;
+          const pc = exColorMapRef.current?.get(prevUd.baseFrName) ?? prevUd.originalColor;
           prevMat.emissive.copy(pc).multiplyScalar(0.3);
         } else {
           prevMat.emissive.set(0x000000);
