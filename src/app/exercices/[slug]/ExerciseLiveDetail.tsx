@@ -2592,9 +2592,11 @@ export function ExerciseLiveDetail({
           ) : (
             <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("exerciseDetail.noEquipment")}</p>
           )}
+          {merged.frontmatter.themeCompatibility.length > 0 && merged.frontmatter.themeCompatibility.length < 3 && (
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
             {t("exerciseDetail.compatibleThemes")}: {merged.frontmatter.themeCompatibility.map((v) => t(`filters.themeName.${v}`)).join(", ")}
           </p>
+          )}
         </div>
         <ExerciseAnatomyThumb
           muscles={merged.frontmatter.muscles}
