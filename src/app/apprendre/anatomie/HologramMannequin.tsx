@@ -371,24 +371,35 @@ function MusclesModel({
     mouse.copy(pointer);
     raycaster.setFromCamera(mouse, camera);
 
-    // When a group is active, only raycast against that group's meshes
+    // Only raycast against visible meshes from the active selection
     const targets = selectedGroup
       ? meshesRef.current.filter((m) => (m.userData as MuscleUserData).groupKey === selectedGroup)
-      : meshesRef.current;
+      : activeGroups.length > 0
+        ? meshesRef.current.filter((m) => {
+            const ud = m.userData as MuscleUserData;
+            return ud.groupKey && activeGroups.includes(ud.groupKey);
+          })
+        : meshesRef.current;
     const hits = raycaster.intersectObjects(targets, false);
 
+    const noGroupLock = !selectedGroup;
     if (hits.length > 0) {
       const mesh = hits[0].object as THREE.Mesh;
       if (mesh !== hoveredRef.current) {
         // Un-glow previous
-        if (hoveredRef.current && !selectedGroup) {
-          const mat = hoveredRef.current
-            .material as THREE.MeshPhongMaterial;
-          mat.emissive.set(0x000000);
+        if (hoveredRef.current && noGroupLock) {
+          const prevUd = hoveredRef.current.userData as MuscleUserData;
+          const prevMat = hoveredRef.current.material as THREE.MeshPhongMaterial;
+          // Restore to base emissive (dimmed glow for activeGroups, none otherwise)
+          if (activeGroups.length > 0) {
+            prevMat.emissive.copy(prevUd.originalColor).multiplyScalar(0.3);
+          } else {
+            prevMat.emissive.set(0x000000);
+          }
         }
         hoveredRef.current = mesh;
         // Glow current
-        if (!selectedGroup) {
+        if (noGroupLock) {
           const mat = mesh.material as THREE.MeshPhongMaterial;
           const ud = mesh.userData as MuscleUserData;
           mat.emissive.copy(ud.originalColor).multiplyScalar(0.8);
@@ -398,9 +409,14 @@ function MusclesModel({
       }
       canvasElRef.current.style.cursor = "pointer";
     } else {
-      if (hoveredRef.current && !selectedGroup) {
-        const mat = hoveredRef.current.material as THREE.MeshPhongMaterial;
-        mat.emissive.set(0x000000);
+      if (hoveredRef.current && noGroupLock) {
+        const prevUd = hoveredRef.current.userData as MuscleUserData;
+        const prevMat = hoveredRef.current.material as THREE.MeshPhongMaterial;
+        if (activeGroups.length > 0) {
+          prevMat.emissive.copy(prevUd.originalColor).multiplyScalar(0.3);
+        } else {
+          prevMat.emissive.set(0x000000);
+        }
       }
       hoveredRef.current = null;
       onHoverMuscle(null, null);
