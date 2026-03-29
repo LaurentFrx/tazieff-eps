@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+  enabled: process.env.ANALYZE === "true",
+});
 const withSerwistInit = require("@serwist/next");
 const withSerwist = (withSerwistInit.default ?? withSerwistInit)({
   swSrc: "src/app/sw.ts",
@@ -30,4 +33,4 @@ const nextConfig = {
   },
 };
 
-module.exports = withSerwist(nextConfig);
+module.exports = withBundleAnalyzer(withSerwist(nextConfig));
