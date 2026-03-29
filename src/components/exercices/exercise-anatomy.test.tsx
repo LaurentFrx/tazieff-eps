@@ -222,6 +222,43 @@ describe("ExerciseAnatomyThumb", () => {
     spy.mockRestore();
   });
 
+  // IMPORTANT : test anti-régression — bug récurrent.
+  // Quand ouvert depuis un exercice, seuls les muscles de l'exercice sont surlignés.
+  // "rotation" / "anti-rotation" NE DOIVENT PAS matcher le groupe abdominaux.
+  it("does NOT include abdominaux group for a back exercise with 'rotation' muscle", async () => {
+    await act(async () => {
+      render(
+        <ExerciseAnatomyThumb
+          muscles={["Grand dorsal", "Trapezes", "rotation"]}
+          translatedMuscles={["Grand dorsal", "Trapèzes", "Rotation"]}
+          slug="s2-12"
+        />,
+      );
+    });
+
+    const link = screen.getByLabelText("exerciseAnatomy.musclesWorked");
+    const href = link.getAttribute("href") ?? "";
+    expect(href).toContain("dos");
+    expect(href).not.toContain("abdominaux");
+  });
+
+  it("does NOT include abdominaux group for 'Coiffe des rotateurs'", async () => {
+    await act(async () => {
+      render(
+        <ExerciseAnatomyThumb
+          muscles={["Deltoides", "Coiffe des rotateurs"]}
+          translatedMuscles={["Deltoïdes", "Coiffe des rotateurs"]}
+          slug="s3-05"
+        />,
+      );
+    });
+
+    const link = screen.getByLabelText("exerciseAnatomy.musclesWorked");
+    const href = link.getAttribute("href") ?? "";
+    expect(href).toContain("epaules");
+    expect(href).not.toContain("abdominaux");
+  });
+
   it("links to anatomy page with anatomy-data group keys (not simplified 5-groups)", async () => {
     await act(async () => {
       render(

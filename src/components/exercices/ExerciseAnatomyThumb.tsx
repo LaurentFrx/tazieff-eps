@@ -16,7 +16,10 @@ const GROUP_COLORS: Record<string, string> = {
   pectoraux: "#ef4444",
 };
 
-/** Map exercise muscles to anatomy-data group keys (for the anatomy page link). */
+// IMPORTANT : bug récurrent. Ne pas supprimer ce filtrage.
+// Quand ouvert depuis un exercice, seuls les muscles de l'exercice sont surlignés.
+// Les exerciseSearchTerms dans anatomy-data ne doivent contenir QUE des noms
+// de muscles, jamais des noms de mouvements (rotation, extension, gainage…).
 function getAnatomyGroupKeys(muscles: string[]): string[] {
   const groups = new Set<string>();
   for (const muscle of muscles) {

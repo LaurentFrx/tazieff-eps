@@ -44,28 +44,29 @@ export const MUSCLE_GROUPS: Record<string, MuscleGroup> = {
     id: "bras_anterieurs",
     color: "#38bdf8",
     keywords: ["biceps brachii", "brachialis", "coracobrachialis", "brachioradialis", "extensor digitorum", "flexor carpi"],
-    exerciseSearchTerms: ["biceps", "brachial", "curl", "avant-bras"],
+    exerciseSearchTerms: ["biceps", "brachial", "avant-bras"],
   },
   triceps: {
     id: "triceps",
     color: "#818cf8",
     keywords: ["triceps"],
-    exerciseSearchTerms: ["triceps", "extension", "dips"],
+    // Pas de termes de mouvement (extension, dips) — faux positifs
+    exerciseSearchTerms: ["triceps"],
   },
   /* ── TRONC ─── */
   abdominaux: {
     id: "abdominaux",
     color: "#eab308",
     keywords: ["abdominis", "oblique", "transversus"],
+    // IMPORTANT : bug récurrent. Ne pas ajouter de termes de mouvement ici
+    // (rotation, gainage, extension…) car ils provoquent des faux positifs
+    // quand l'explorateur anatomie est ouvert depuis un exercice.
     exerciseSearchTerms: [
       "abdomin",
       "abdos",
       "grand droit",
       "oblique",
       "transverse",
-      "gainage",
-      "rotation",
-      "anti-rotation",
     ],
   },
   dos: {
