@@ -1,13 +1,30 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { getAnatomyAnim } from "@/lib/storage";
 import type { LiveExerciseListItem } from "@/lib/live/types";
 import { MUSCLE_GROUPS, POSTERIOR_GROUPS, LAYERED_GROUPS, matchesGroup, getLayeredMuscles, getSubMuscleColor, isLayeredGroup } from "./anatomy-data";
 import "./anatomy.css";
+
+/* ── Scan animation: muscle groups ordered by vertical position (head→feet) */
+const SCAN_ORDER: readonly string[] = [
+  "epaules",          // 15-25%
+  "pectoraux",        // 25-35%
+  "bras_anterieurs",  // 30-40%
+  "triceps",          // 30-45%
+  "abdominaux",       // 35-50%
+  "dos",              // 35-55%
+  "fessiers",         // 55-65%
+  "cuisses_avant",    // 65-80%
+  "cuisses_arriere",  // 65-80%
+  "adducteurs",       // 65-80%
+  "mollets",          // 85-95%
+  "flechisseurs",     // 85-95%
+];
 
 const AnatomyCanvas = dynamic(() => import("./AnatomyCanvas"), {
   ssr: false,
@@ -45,6 +62,47 @@ export default function AnatomyMap({ exercises }: Props) {
     const posteriorCount = urlMuscleGroups.filter((k) => POSTERIOR_GROUPS.has(k)).length;
     return posteriorCount > urlMuscleGroups.length / 2 ? Math.PI : 0;
   }, [urlMuscleGroups]);
+
+  /* ── Scan animation state ─────────────────────────────────────────── */
+  const [scanning, setScanning] = useState(false);
+  const [revealedGroups, setRevealedGroups] = useState<string[]>([]);
+  const scanStarted = useRef(false);
+  const reducedMotion = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  const shouldScan = fromExercice && urlMuscleGroups.length > 0 && getAnatomyAnim() && !reducedMotion;
+
+  // Progressively reveal muscle groups during scan
+  useEffect(() => {
+    if (scanStarted.current || !shouldScan) return;
+    scanStarted.current = true;
+    setScanning(true);
+
+    // Groups from URL that exist in scan order
+    const toReveal = SCAN_ORDER.filter((g) => urlMuscleGroups.includes(g));
+    const step = toReveal.length > 0 ? 800 / toReveal.length : 100;
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    toReveal.forEach((group, i) => {
+      timers.push(setTimeout(() => {
+        setRevealedGroups((prev) => [...prev, group]);
+      }, 150 + i * step));
+    });
+
+    // End scan
+    timers.push(setTimeout(() => {
+      setScanning(false);
+      setRevealedGroups(urlMuscleGroups);
+    }, 1100));
+
+    return () => timers.forEach(clearTimeout);
+  }, [shouldScan, urlMuscleGroups]);
+
+  // Active groups: during scan show revealed groups, after scan show all
+  const effectiveActiveGroups = useMemo(() => {
+    if (!fromExercice) return !selectedGroup ? urlMuscleGroups : undefined;
+    if (shouldScan && scanning) return revealedGroups;
+    if (shouldScan && !scanning && revealedGroups.length > 0) return urlMuscleGroups;
+    return !selectedGroup ? urlMuscleGroups : undefined;
+  }, [fromExercice, selectedGroup, urlMuscleGroups, shouldScan, scanning, revealedGroups]);
 
   /* ── Exercise count for selected group ─────────────────────────────── */
   const groupExerciseCount = useMemo(() => {
@@ -171,7 +229,7 @@ export default function AnatomyMap({ exercises }: Props) {
           <AnatomyCanvas
             selectedGroup={selectedGroup}
             highlightedMuscle={highlightedMuscle}
-            activeGroups={!selectedGroup ? urlMuscleGroups : undefined}
+            activeGroups={effectiveActiveGroups}
             initialRotationY={initialRotationY}
             showSkeleton={showSkeleton}
             showWireframe={showWireframe}
@@ -180,6 +238,7 @@ export default function AnatomyMap({ exercises }: Props) {
             onClickMuscle={handleClickMuscle}
             onLongPressMuscle={handleLongPressMuscle}
           />
+          {scanning && <div className="anatomy-scan-line" aria-hidden="true" />}
         </div>
       </div>
 

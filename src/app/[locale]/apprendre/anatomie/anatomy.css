@@ -86,6 +86,39 @@
   touch-action: none;
 }
 
+/* ── Scan line overlay ─────────────────────────────────────────────────── */
+
+.anatomy-scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 10;
+  pointer-events: none;
+  background: #00FFFF;
+  box-shadow:
+    0 0 8px #00FFFFcc,
+    0 0 24px #00FFFF55,
+    0 -8px 16px #00FFFF18,
+    0 8px 16px #00FFFF18;
+  mix-blend-mode: screen;
+  opacity: 0.85;
+  animation: anatomy-3d-scan 1s linear forwards;
+}
+
+@keyframes anatomy-3d-scan {
+  from { top: 0%; opacity: 0.85; }
+  85%  { opacity: 0.85; }
+  to   { top: 100%; opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anatomy-scan-line {
+    animation: none;
+    display: none;
+  }
+}
+
 /* ── Loading placeholder ────────────────────────────────────────────────── */
 
 .anatomy-loading {
