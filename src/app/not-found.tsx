@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 
-export default function NotFound() {
-  const lang = getServerLang("fr");
+export default async function NotFound() {
+  const lang = await getServerLang();
   const t = getServerT(lang);
 
   return (

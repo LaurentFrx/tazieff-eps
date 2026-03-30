@@ -8,7 +8,7 @@ type ChecklistProps = {
   items: string[];
 };
 
-export function Checklist({ slug, items = [] }: ChecklistProps) {
+export function Checklist({ slug, items }: ChecklistProps) {
   const { t } = useI18n();
   const storageKey = `checklist-${slug}`;
   const [checked, setChecked] = useState<boolean[]>(() =>
