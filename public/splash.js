@@ -1,6 +1,5 @@
 (function(){
 if(window.__splashStarted)return;window.__splashStarted=true;
-try{if(sessionStorage.getItem("splash-done")==="true")return}catch(e){}
 
 /* ── Step 1: Hide body immediately (no DOM change = no React #418) ── */
 var hideStyle=document.createElement("style");
@@ -125,7 +124,7 @@ requestAnimationFrame(function(){
   },2800);
   setTimeout(function(){
     splash.style.transition="opacity 0.8s ease, transform 0.8s ease";splash.style.opacity="0";splash.style.transform="scale(1.06)";
-    setTimeout(function(){splash.remove();ks.remove();try{sessionStorage.setItem("splash-done","true")}catch(e){}},800);
+    setTimeout(function(){splash.remove();ks.remove()},800);
   },4600);
 });
 })();
