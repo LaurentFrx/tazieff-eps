@@ -28,11 +28,12 @@ type Props = {
   onLongPressMuscle: (frName: string, groupKey: string, x: number, y: number) => void;
 };
 
-/* ── 3D Scan line — stencil-masked to mannequin silhouette ────────── */
+/* ── 3D Scan disc — horizontal circle descending through mannequin ── */
 
 const SCAN_DURATION = 3000; // ms
+const DISC_RADIUS = 0.45; // slightly wider than mannequin
 
-function ScanLine3D({
+function ScanDisc({
   bounds,
   scanYRef,
 }: {
@@ -76,20 +77,19 @@ function ScanLine3D({
         uniform float uOpacity;
         varying vec2 vUv;
         void main() {
-          float d = abs(vUv.y - 0.5) * 2.0;
-          // White-hot core (neon center is white)
-          float core = exp(-d * d * 200.0);
-          // Bright cyan close glow
-          float glow = exp(-d * d * 18.0) * 0.8;
-          // Medium halo
-          float mid = exp(-d * d * 4.0) * 0.3;
-          // Wide diffuse halo
-          float halo = exp(-d * d * 1.2) * 0.08;
-          float intensity = core + glow + mid + halo;
-          // Core is white, everything else is cyan
-          vec3 col = mix(uColor, vec3(1.0), core * 0.9) * intensity;
-          float alpha = intensity * uOpacity;
-          gl_FragColor = vec4(col, alpha);
+          // Distance from center of disc (UV 0.5,0.5 = center for CircleGeometry)
+          float r = length(vUv - 0.5) * 2.0;
+          if (r > 1.0) discard;
+          // Body: semi-transparent fill
+          float body = 0.35;
+          // Edge glow: bright ring at outer 10%
+          float edge = smoothstep(0.75, 0.95, r) * 0.6;
+          // Subtle center brightening
+          float center = (1.0 - r * r) * 0.08;
+          float alpha = (body + edge + center) * uOpacity;
+          // Edge is whiter, body is cyan
+          vec3 col = mix(uColor, vec3(1.0), edge * 0.5 + center);
+          gl_FragColor = vec4(col * (1.0 + edge * 0.8), alpha);
         }
       `,
       transparent: true,
@@ -101,8 +101,13 @@ function ScanLine3D({
   );
 
   return (
-    <mesh ref={meshRef} renderOrder={10} position={[0, bounds.maxY, 0]}>
-      <planeGeometry args={[0.7, 0.15]} />
+    <mesh
+      ref={meshRef}
+      renderOrder={10}
+      position={[0, bounds.maxY, 0]}
+      rotation={[-Math.PI / 2, 0, 0]}
+    >
+      <circleGeometry args={[DISC_RADIUS, 64]} />
       <primitive object={material.current} ref={matRef} attach="material" />
     </mesh>
   );
@@ -624,7 +629,7 @@ function Scene({
         <group ref={turntableRef} scale={settings.mannequinScale}>
           <group ref={mannequinGroupRef}>
             {scanning && mannequinBounds && (
-              <ScanLine3D bounds={mannequinBounds} scanYRef={scanYRef} />
+              <ScanDisc bounds={mannequinBounds} scanYRef={scanYRef} />
             )}
             <group scale={settings.innerScale} position={[0, 0, -0.15]}>
               <HologramMannequin
