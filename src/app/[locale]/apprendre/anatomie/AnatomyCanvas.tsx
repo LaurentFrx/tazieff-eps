@@ -92,16 +92,12 @@ function ScanLine3D({
       depthWrite: false,
       blending: THREE.AdditiveBlending,
       side: THREE.DoubleSide,
-      stencilWrite: false,
-      stencilFunc: THREE.EqualStencilFunc,
-      stencilRef: 0x02,
-      stencilFuncMask: 0x02,
     }),
   );
 
   return (
     <mesh ref={meshRef} renderOrder={10} position={[0, bounds.maxY, 0]}>
-      <planeGeometry args={[3, 0.08]} />
+      <planeGeometry args={[0.7, 0.08]} />
       <primitive object={material.current} ref={matRef} attach="material" />
     </mesh>
   );

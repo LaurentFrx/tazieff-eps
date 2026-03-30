@@ -71,7 +71,6 @@ function makePointsShaderMaterial(color: string, size: number, opacity: number) 
     stencilWrite: true,
     stencilRef: 0,
     stencilFunc: THREE.EqualStencilFunc,
-    stencilFuncMask: 0x01,
     stencilFail: THREE.KeepStencilOp,
     stencilZFail: THREE.KeepStencilOp,
     stencilZPass: THREE.KeepStencilOp,
@@ -149,29 +148,11 @@ function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
           stencilWrite: true,
           stencilRef: 0,
           stencilFunc: THREE.EqualStencilFunc,
-          stencilFuncMask: 0x01,
           stencilFail: THREE.KeepStencilOp,
           stencilZFail: THREE.KeepStencilOp,
           stencilZPass: THREE.KeepStencilOp,
         });
         mesh.renderOrder = 2;
-
-        // Solid stencil mask clone — writes bit 1 for scan line masking
-        const maskClone = mesh.clone();
-        maskClone.material = new THREE.MeshBasicMaterial({
-          colorWrite: false,
-          depthWrite: false,
-          side: THREE.FrontSide,
-          stencilWrite: true,
-          stencilRef: 0x02,
-          stencilWriteMask: 0x02,
-          stencilFunc: THREE.AlwaysStencilFunc,
-          stencilZPass: THREE.ReplaceStencilOp,
-          stencilFail: THREE.KeepStencilOp,
-          stencilZFail: THREE.KeepStencilOp,
-        });
-        maskClone.renderOrder = -1;
-        if (mesh.parent) mesh.parent.add(maskClone);
 
         // Cast solid silhouette shadow (shadow map from DirectionalLight)
         mesh.castShadow = true;
@@ -318,11 +299,10 @@ function MusclesModel({
         baseFrName: frName,
         originalColor: color.clone(),
       } as MuscleUserData;
-      /* Render BEFORE wireframe — muscles write stencil bit 0 to mask wireframe. */
+      /* Render BEFORE wireframe — muscles write stencil=1 to mask wireframe. */
       mesh.renderOrder = 1;
       mesh.material.stencilWrite = true;
       mesh.material.stencilRef = 1;
-      mesh.material.stencilWriteMask = 0x01;
       mesh.material.stencilFunc = THREE.AlwaysStencilFunc;
       mesh.material.stencilZPass = THREE.ReplaceStencilOp;
       mesh.material.stencilFail = THREE.KeepStencilOp;
@@ -341,7 +321,7 @@ function MusclesModel({
         shader.fragmentShader = shader.fragmentShader.replace(
           "#include <dithering_fragment>",
           `float scanMix = smoothstep(uScanY - 0.04, uScanY + 0.04, vWorldY);
-          gl_FragColor.rgb = mix(gl_FragColor.rgb * 0.1, gl_FragColor.rgb, scanMix);
+          gl_FragColor.rgb = mix(gl_FragColor.rgb * 0.3, gl_FragColor.rgb, scanMix);
           #include <dithering_fragment>`,
         );
         (mesh.material as THREE.MeshPhongMaterial).userData.scanShader = shader;
@@ -649,7 +629,6 @@ function SkeletonBody() {
           depthTest: true,
           stencilWrite: true,
           stencilRef: 1,
-          stencilWriteMask: 0x01,
           stencilFunc: THREE.AlwaysStencilFunc,
           stencilZPass: THREE.ReplaceStencilOp,
           stencilFail: THREE.KeepStencilOp,
