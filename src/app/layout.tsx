@@ -94,7 +94,7 @@ var scan=h("div","position:absolute;top:5%;left:0;width:100%;height:2px;backgrou
 splash.appendChild(scan);
 var tw=h("div","position:absolute;top:calc(50% + 180px);left:50%;transform:translateX(-50%);text-align:center;z-index:4;display:flex;flex-direction:column;align-items:center;gap:8px");
 var tc=h("div","overflow:hidden");
-var title=h("h1","font-family:'Bebas Neue',sans-serif;font-size:2.2rem;font-weight:400;letter-spacing:0.2em;color:#F0F0F5;line-height:1;margin:0;transform:translateY(120%);opacity:0",{id:"sp-title"});
+var title=h("h1","font-family:'Bebas Neue',sans-serif;font-size:clamp(1.4rem,6vw,2.2rem);font-weight:400;letter-spacing:0.2em;color:#F0F0F5;line-height:1;margin:0;white-space:nowrap;transform:translateY(120%);opacity:0",{id:"sp-title"});
 title.textContent="MUSCU - EPS";tc.appendChild(title);tw.appendChild(tc);
 var gl=h("div","width:0;height:1px;background:linear-gradient(90deg,#00E5FF00,#00E5FFCC,#FF006ECC,#FF006E00)",{id:"sp-grad-line"});
 tw.appendChild(gl);
