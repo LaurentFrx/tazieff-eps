@@ -50,8 +50,9 @@ export function I18nProvider({
   const setLang = useCallback((nextLang: Lang) => {
     setLangState(nextLang);
     const newPath = buildLocalePath(pathname ?? "/", nextLang);
-    router.push(newPath);
-  }, [pathname, router]);
+    // Full page navigation to ensure [locale]/layout.tsx re-renders with new locale
+    window.location.href = newPath;
+  }, [pathname]);
 
   useEffect(() => {
     if (typeof window === "undefined") {

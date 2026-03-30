@@ -110,7 +110,7 @@ bt.textContent="LYC\\u00C9E HAROUN TAZIEFF";bw.appendChild(bt);
 splash.appendChild(bw);
 grain.style.backgroundImage="url(\\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\\")";
 document.head.appendChild(ks);
-document.documentElement.appendChild(splash);
+document.body.prepend(splash);
 splash.offsetHeight;
 setTimeout(function(){
 circle.style.transition="stroke-dashoffset 2s cubic-bezier(0.16,1,0.3,1)";circle.style.strokeDashoffset="0";
@@ -177,7 +177,6 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: SPLASH_SCRIPT }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -187,6 +186,7 @@ export default function RootLayout({
         <link rel="preload" href="/images/anatomy/mini-mannequin.webp" as="image" />
       </head>
       <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable} ${orbitron.variable}`} suppressHydrationWarning>
+        <script dangerouslySetInnerHTML={{ __html: SPLASH_SCRIPT }} />
         {children}
       </body>
     </html>
