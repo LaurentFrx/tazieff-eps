@@ -42,6 +42,11 @@ export function I18nProvider({
   const router = useRouter();
   const pathname = usePathname();
 
+  // Sync state when initialLang changes (e.g. client-side navigation to /en/...)
+  useEffect(() => {
+    setLangState(initialLang);
+  }, [initialLang]);
+
   const setLang = useCallback((nextLang: Lang) => {
     setLangState(nextLang);
     const newPath = buildLocalePath(pathname ?? "/", nextLang);
