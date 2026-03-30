@@ -21,6 +21,7 @@ type Props = {
   selectedGroup: string | null;
   highlightedMuscle: string | null;
   activeGroups?: string[];
+  scanYRef?: React.MutableRefObject<number | null>;
   hoveredMuscle: string | null;
   wireframe: boolean;
   onHoverMuscle: (frName: string | null, groupKey: string | null) => void;
@@ -68,13 +69,12 @@ function makePointsShaderMaterial(color: string, size: number, opacity: number) 
     depthTest: true,
     blending: THREE.AdditiveBlending,
     stencilWrite: true,
-    stencilRef: 0x02,
+    stencilRef: 0,
     stencilFunc: THREE.EqualStencilFunc,
     stencilFuncMask: 0x01,
-    stencilWriteMask: 0x02,
     stencilFail: THREE.KeepStencilOp,
     stencilZFail: THREE.KeepStencilOp,
-    stencilZPass: THREE.ReplaceStencilOp,
+    stencilZPass: THREE.KeepStencilOp,
   });
 }
 
@@ -147,15 +147,31 @@ function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
           depthWrite: false,
           depthTest: true,
           stencilWrite: true,
-          stencilRef: 0x02,
+          stencilRef: 0,
           stencilFunc: THREE.EqualStencilFunc,
           stencilFuncMask: 0x01,
-          stencilWriteMask: 0x02,
           stencilFail: THREE.KeepStencilOp,
           stencilZFail: THREE.KeepStencilOp,
-          stencilZPass: THREE.ReplaceStencilOp,
+          stencilZPass: THREE.KeepStencilOp,
         });
         mesh.renderOrder = 2;
+
+        // Solid stencil mask clone — writes bit 1 for scan line masking
+        const maskClone = mesh.clone();
+        maskClone.material = new THREE.MeshBasicMaterial({
+          colorWrite: false,
+          depthWrite: false,
+          side: THREE.FrontSide,
+          stencilWrite: true,
+          stencilRef: 0x02,
+          stencilWriteMask: 0x02,
+          stencilFunc: THREE.AlwaysStencilFunc,
+          stencilZPass: THREE.ReplaceStencilOp,
+          stencilFail: THREE.KeepStencilOp,
+          stencilZFail: THREE.KeepStencilOp,
+        });
+        maskClone.renderOrder = -1;
+        if (mesh.parent) mesh.parent.add(maskClone);
 
         // Cast solid silhouette shadow (shadow map from DirectionalLight)
         mesh.castShadow = true;
@@ -259,6 +275,7 @@ function MusclesModel({
   selectedGroup,
   highlightedMuscle,
   activeGroups = [],
+  scanYRef,
   wireframe,
   onHoverMuscle,
   onClickMuscle,
@@ -301,15 +318,35 @@ function MusclesModel({
         baseFrName: frName,
         originalColor: color.clone(),
       } as MuscleUserData;
-      /* Render BEFORE wireframe — muscles write stencil bits 0+1 (wireframe mask + scan mask). */
+      /* Render BEFORE wireframe — muscles write stencil bit 0 to mask wireframe. */
       mesh.renderOrder = 1;
       mesh.material.stencilWrite = true;
-      mesh.material.stencilRef = 0x03;
-      mesh.material.stencilWriteMask = 0x03;
+      mesh.material.stencilRef = 1;
+      mesh.material.stencilWriteMask = 0x01;
       mesh.material.stencilFunc = THREE.AlwaysStencilFunc;
       mesh.material.stencilZPass = THREE.ReplaceStencilOp;
       mesh.material.stencilFail = THREE.KeepStencilOp;
       mesh.material.stencilZFail = THREE.KeepStencilOp;
+
+      // Scan reveal shader injection — progressive Y-based coloring
+      mesh.material.onBeforeCompile = (shader: THREE.WebGLProgramParametersWithUniforms) => {
+        shader.uniforms.uScanY = { value: -999.0 };
+        shader.vertexShader = "varying float vWorldY;\n" + shader.vertexShader;
+        shader.vertexShader = shader.vertexShader.replace(
+          "#include <begin_vertex>",
+          `#include <begin_vertex>
+          vWorldY = (modelMatrix * vec4(position, 1.0)).y;`,
+        );
+        shader.fragmentShader = "varying float vWorldY;\nuniform float uScanY;\n" + shader.fragmentShader;
+        shader.fragmentShader = shader.fragmentShader.replace(
+          "#include <dithering_fragment>",
+          `float scanMix = smoothstep(uScanY - 0.04, uScanY + 0.04, vWorldY);
+          gl_FragColor.rgb = mix(gl_FragColor.rgb * 0.1, gl_FragColor.rgb, scanMix);
+          #include <dithering_fragment>`,
+        );
+        (mesh.material as THREE.MeshPhongMaterial).userData.scanShader = shader;
+      };
+      (mesh.material as THREE.MeshPhongMaterial).customProgramCacheKey = () => "phong-scan";
       meshes.push(mesh);
     };
     scene.traverse((child) => {
@@ -424,6 +461,17 @@ function MusclesModel({
     }
   }, [selectedGroup, highlightedMuscle, activeGroups, wireframe]);
   /* eslint-enable react-hooks/immutability */
+
+  // Update scan Y uniform each frame for progressive muscle reveal
+  useFrame(() => {
+    const sy = scanYRef?.current;
+    for (const mesh of meshesRef.current) {
+      const shader = (mesh.material as THREE.MeshPhongMaterial).userData?.scanShader;
+      if (shader?.uniforms?.uScanY) {
+        shader.uniforms.uScanY.value = sy ?? -999;
+      }
+    }
+  });
 
   // Raycasting for hover and click
   const raycaster = useMemo(() => new THREE.Raycaster(), []);
@@ -600,8 +648,8 @@ function SkeletonBody() {
           depthWrite: true,
           depthTest: true,
           stencilWrite: true,
-          stencilRef: 0x03,
-          stencilWriteMask: 0x03,
+          stencilRef: 1,
+          stencilWriteMask: 0x01,
           stencilFunc: THREE.AlwaysStencilFunc,
           stencilZPass: THREE.ReplaceStencilOp,
           stencilFail: THREE.KeepStencilOp,
@@ -621,6 +669,7 @@ export default function HologramMannequin({
   selectedGroup,
   highlightedMuscle,
   activeGroups = [],
+  scanYRef,
   wireframe,
   onHoverMuscle,
   onClickMuscle,
@@ -668,6 +717,7 @@ export default function HologramMannequin({
           selectedGroup={selectedGroup}
           highlightedMuscle={highlightedMuscle}
           activeGroups={activeGroups}
+          scanYRef={scanYRef}
           wireframe={wireframe}
           onHoverMuscle={onHoverMuscle}
           onClickMuscle={onClickMuscle}

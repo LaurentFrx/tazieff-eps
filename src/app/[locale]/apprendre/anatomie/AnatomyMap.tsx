@@ -10,21 +10,7 @@ import type { LiveExerciseListItem } from "@/lib/live/types";
 import { MUSCLE_GROUPS, POSTERIOR_GROUPS, LAYERED_GROUPS, matchesGroup, getLayeredMuscles, getSubMuscleColor, isLayeredGroup } from "./anatomy-data";
 import "./anatomy.css";
 
-/* ── Scan animation: muscle groups ordered by vertical position (head→feet) */
-const SCAN_ORDER: readonly string[] = [
-  "epaules",          // 15-25%
-  "pectoraux",        // 25-35%
-  "bras_anterieurs",  // 30-40%
-  "triceps",          // 30-45%
-  "abdominaux",       // 35-50%
-  "dos",              // 35-55%
-  "fessiers",         // 55-65%
-  "cuisses_avant",    // 65-80%
-  "cuisses_arriere",  // 65-80%
-  "adducteurs",       // 65-80%
-  "mollets",          // 85-95%
-  "flechisseurs",     // 85-95%
-];
+const SCAN_TOTAL_MS = 3300; // 3s scan + 300ms fade
 
 const AnatomyCanvas = dynamic(() => import("./AnatomyCanvas"), {
   ssr: false,
@@ -65,44 +51,24 @@ export default function AnatomyMap({ exercises }: Props) {
 
   /* ── Scan animation state ─────────────────────────────────────────── */
   const [scanning, setScanning] = useState(false);
-  const [revealedGroups, setRevealedGroups] = useState<string[]>([]);
   const scanStarted = useRef(false);
   const reducedMotion = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
   const shouldScan = fromExercice && urlMuscleGroups.length > 0 && getAnatomyAnim() && !reducedMotion;
 
-  // Progressively reveal muscle groups during scan
   useEffect(() => {
     if (scanStarted.current || !shouldScan) return;
     scanStarted.current = true;
     setScanning(true);
+    const timer = setTimeout(() => setScanning(false), SCAN_TOTAL_MS);
+    return () => clearTimeout(timer);
+  }, [shouldScan]);
 
-    // Groups from URL that exist in scan order
-    const toReveal = SCAN_ORDER.filter((g) => urlMuscleGroups.includes(g));
-    const step = toReveal.length > 0 ? 1600 / toReveal.length : 100;
-
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    toReveal.forEach((group, i) => {
-      timers.push(setTimeout(() => {
-        setRevealedGroups((prev) => [...prev, group]);
-      }, 300 + i * step));
-    });
-
-    // End scan (2s scan + 300ms fade)
-    timers.push(setTimeout(() => {
-      setScanning(false);
-      setRevealedGroups(urlMuscleGroups);
-    }, 2300));
-
-    return () => timers.forEach(clearTimeout);
-  }, [shouldScan, urlMuscleGroups]);
-
-  // Active groups: during scan show revealed groups, after scan show all
+  // During scan: all exercise groups visible (shader handles progressive reveal)
+  // After scan / no scan: normal behavior
   const effectiveActiveGroups = useMemo(() => {
     if (!fromExercice) return !selectedGroup ? urlMuscleGroups : undefined;
-    if (shouldScan && scanning) return revealedGroups;
-    if (shouldScan && !scanning && revealedGroups.length > 0) return urlMuscleGroups;
     return !selectedGroup ? urlMuscleGroups : undefined;
-  }, [fromExercice, selectedGroup, urlMuscleGroups, shouldScan, scanning, revealedGroups]);
+  }, [fromExercice, selectedGroup, urlMuscleGroups]);
 
   /* ── Exercise count for selected group ─────────────────────────────── */
   const groupExerciseCount = useMemo(() => {

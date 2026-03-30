@@ -30,9 +30,15 @@ type Props = {
 
 /* ── 3D Scan line — stencil-masked to mannequin silhouette ────────── */
 
-const SCAN_DURATION = 2000; // ms
+const SCAN_DURATION = 3000; // ms
 
-function ScanLine3D({ bounds }: { bounds: { minY: number; maxY: number } }) {
+function ScanLine3D({
+  bounds,
+  scanYRef,
+}: {
+  bounds: { minY: number; maxY: number };
+  scanYRef: React.MutableRefObject<number | null>;
+}) {
   const meshRef = useRef<THREE.Mesh>(null);
   const matRef = useRef<THREE.ShaderMaterial>(null);
   const startTime = useRef(0);
@@ -44,10 +50,11 @@ function ScanLine3D({ bounds }: { bounds: { minY: number; maxY: number } }) {
     const { minY, maxY } = bounds;
     const y = maxY - progress * (maxY - minY);
 
+    scanYRef.current = y;
     if (meshRef.current) meshRef.current.position.y = y;
     if (matRef.current) {
       matRef.current.uniforms.uOpacity.value =
-        progress > 0.85 ? ((1 - progress) / 0.15) * 0.85 : 0.85;
+        progress > 0.85 ? ((1 - progress) / 0.15) * 0.9 : 0.9;
     }
   });
 
@@ -55,7 +62,7 @@ function ScanLine3D({ bounds }: { bounds: { minY: number; maxY: number } }) {
     new THREE.ShaderMaterial({
       uniforms: {
         uColor: { value: new THREE.Color(0x00ffff) },
-        uOpacity: { value: 0.85 },
+        uOpacity: { value: 0.9 },
       },
       vertexShader: `
         varying vec2 vUv;
@@ -69,11 +76,15 @@ function ScanLine3D({ bounds }: { bounds: { minY: number; maxY: number } }) {
         uniform float uOpacity;
         varying vec2 vUv;
         void main() {
-          float dist = abs(vUv.y - 0.5) * 2.0;
-          float core = smoothstep(0.9, 0.4, dist);
-          float glow = smoothstep(1.0, 0.0, dist) * 0.35;
-          float alpha = (core + glow) * uOpacity;
-          gl_FragColor = vec4(uColor, alpha);
+          float d = abs(vUv.y - 0.5) * 2.0;
+          // Neon core — bright thin line
+          float core = exp(-d * d * 120.0);
+          // Close glow
+          float glow = exp(-d * d * 12.0) * 0.55;
+          // Diffuse halo
+          float halo = exp(-d * d * 2.5) * 0.12;
+          float alpha = (core + glow + halo) * uOpacity;
+          gl_FragColor = vec4(uColor * (core * 1.2 + glow + halo * 0.5), alpha);
         }
       `,
       transparent: true,
@@ -90,7 +101,7 @@ function ScanLine3D({ bounds }: { bounds: { minY: number; maxY: number } }) {
 
   return (
     <mesh ref={meshRef} renderOrder={10} position={[0, bounds.maxY, 0]}>
-      <planeGeometry args={[3, 0.06]} />
+      <planeGeometry args={[3, 0.08]} />
       <primitive object={material.current} ref={matRef} attach="material" />
     </mesh>
   );
@@ -408,6 +419,12 @@ function Scene({
   const mannequinGroupRef = useRef<Group>(null);
   const turntableRef = useRef<Group>(null);
   const [mannequinBounds, setMannequinBounds] = useState<{ minY: number; maxY: number } | null>(null);
+  const scanYRef = useRef<number | null>(null);
+
+  // Reset scanY when scan ends
+  useEffect(() => {
+    if (!scanning) scanYRef.current = null;
+  }, [scanning]);
   const lightRef = useRef<DirectionalLight>(null);
   const controlsRef = useRef<CameraControlsImpl>(null);
 
@@ -606,13 +623,14 @@ function Scene({
         <group ref={turntableRef} scale={settings.mannequinScale}>
           <group ref={mannequinGroupRef}>
             {scanning && mannequinBounds && (
-              <ScanLine3D bounds={mannequinBounds} />
+              <ScanLine3D bounds={mannequinBounds} scanYRef={scanYRef} />
             )}
             <group scale={settings.innerScale} position={[0, 0, -0.15]}>
               <HologramMannequin
                 selectedGroup={selectedGroup}
                 highlightedMuscle={highlightedMuscle}
                 activeGroups={activeGroups}
+                scanYRef={scanYRef}
                 hoveredMuscle={null}
                 wireframe={false}
                 showSkeleton={showSkeleton}
