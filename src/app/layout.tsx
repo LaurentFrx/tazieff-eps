@@ -7,8 +7,6 @@ import { InstallPwaBanner } from "@/components/InstallPwaBanner";
 import { OnlineStatus } from "@/components/OnlineStatus";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { AppProviders } from "@/components/providers/AppProviders";
-// RSC: useI18n() unavailable — read lang from cookie via getServerLang()
-import { getServerLang } from "@/lib/i18n/server";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -181,7 +179,6 @@ function getInitialTheme(value?: string): ThemePreference {
   if (value === "light" || value === "dark" || value === "system") {
     return value;
   }
-
   return "dark";
 }
 
@@ -191,14 +188,13 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const cookieStore = await cookies();
-  const initialLang = getServerLang();
   const initialTheme = getInitialTheme(cookieStore.get(THEME_COOKIE)?.value);
   const htmlClassName = initialTheme === "dark" ? "dark" : undefined;
   const dataTheme = initialTheme !== "system" ? initialTheme : undefined;
 
   return (
     <html
-      lang={initialLang}
+      lang="fr"
       data-theme={dataTheme}
       className={htmlClassName}
       suppressHydrationWarning
@@ -214,7 +210,7 @@ export default async function RootLayout({
       </head>
       <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable} ${orbitron.variable}`} suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: SPLASH_SCRIPT }} />
-        <AppProviders initialLang={initialLang} initialTheme={initialTheme}>
+        <AppProviders initialLang="fr" initialTheme={initialTheme}>
           <div className="app-shell">
             <main className="app-main">{children}</main>
           </div>
