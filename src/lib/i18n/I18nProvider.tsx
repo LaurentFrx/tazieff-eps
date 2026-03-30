@@ -8,7 +8,9 @@ import {
   useMemo,
   useState,
 } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { messages, type Lang } from "@/lib/i18n/messages";
+import { buildLocalePath } from "@/lib/i18n/locale-path";
 
 export type { Lang };
 
@@ -37,10 +39,15 @@ export function I18nProvider({
   initialLang = DEFAULT_LANG,
 }: I18nProviderProps) {
   const [lang, setLangState] = useState<Lang>(initialLang);
+  const router = useRouter();
+  const pathname = usePathname();
 
   const setLang = useCallback((nextLang: Lang) => {
     setLangState(nextLang);
-  }, []);
+    // Navigate to the locale-prefixed URL
+    const newPath = buildLocalePath(pathname ?? "/", nextLang);
+    router.push(newPath);
+  }, [pathname, router]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
