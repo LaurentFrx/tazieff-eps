@@ -1,4 +1,5 @@
 (function(){
+if(window.__splashStarted)return;window.__splashStarted=true;
 try{if(sessionStorage.getItem("splash-done")==="true")return}catch(e){}
 
 /* ── Step 1: Hide body immediately (no DOM change = no React #418) ── */
