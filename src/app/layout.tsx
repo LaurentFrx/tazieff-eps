@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Space_Mono, Sora, Orbitron } from "next/font/google";
+import Script from "next/script";
 import { cookies } from "next/headers";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { TopBar } from "@/components/TopBar";
@@ -14,9 +15,19 @@ import "./globals.css";
 const GRAIN_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
 
 const SPLASH_SCRIPT = `(function(){
-  var s=document.getElementById('splash-screen');
-  if(!s)return;
-  try{if(sessionStorage.getItem('splash-done')==='true'){s.remove();return;}}catch(e){}
+  // Return visit: hide splash via CSS class before body is even parsed
+  var done=false;
+  try{done=sessionStorage.getItem('splash-done')==='true';}catch(e){}
+  if(done){
+    document.documentElement.classList.add('sp-done');
+    (function rm(){var s=document.getElementById('splash-screen');if(s)s.remove();else setTimeout(rm,50);})();
+    return;
+  }
+
+  // First visit: poll until splash element exists (script runs in <head>)
+  (function init(){
+    var s=document.getElementById('splash-screen');
+    if(!s){setTimeout(init,10);return;}
 
   var circle=document.getElementById('sp-circle');
   var circleGlow=document.getElementById('sp-circle-glow');
@@ -110,6 +121,8 @@ const SPLASH_SCRIPT = `(function(){
       try{sessionStorage.setItem('splash-done','true');}catch(e){}
     },800);
   },4600);
+
+  })();
 })();`;
 
 const spaceGrotesk = Space_Grotesk({
@@ -194,7 +207,9 @@ export default async function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500&family=JetBrains+Mono:wght@300;400&display=swap"
           rel="stylesheet"
         />
+        <style>{`.sp-done #splash-screen{display:none!important}`}</style>
       </head>
+      <Script id="splash-anim" strategy="beforeInteractive">{SPLASH_SCRIPT}</Script>
       <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable} ${orbitron.variable}`}>
 
         {/* ── Splash Screen (vanilla HTML/CSS/JS — runs before React hydration) ── */}
@@ -479,9 +494,6 @@ export default async function RootLayout({
             }}>LYCÉE HAROUN TAZIEFF</span>
           </div>
         </div>
-
-        {/* Splash animation script */}
-        <script dangerouslySetInnerHTML={{ __html: SPLASH_SCRIPT }} />
 
         <AppProviders initialLang={initialLang} initialTheme={initialTheme}>
           <div className="app-shell">
