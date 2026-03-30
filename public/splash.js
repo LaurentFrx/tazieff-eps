@@ -1,6 +1,13 @@
 (function(){
 try{if(sessionStorage.getItem("splash-done")==="true")return}catch(e){}
-try{
+
+/* ── Step 1: Hide body immediately (no DOM change = no React #418) ── */
+var hideStyle=document.createElement("style");
+hideStyle.id="splash-hide";
+hideStyle.textContent="body{visibility:hidden!important}";
+document.head.appendChild(hideStyle);
+
+/* ── Step 2: Build splash off-DOM (in memory, not attached yet) ── */
 var NS="http://www.w3.org/2000/svg";
 function h(t,c,a){var e=document.createElement(t);if(c)e.style.cssText=c;if(a)for(var k in a)e.setAttribute(k,a[k]);return e}
 function sv(t,a){var e=document.createElementNS(NS,t);if(a)for(var k in a)e.setAttribute(k,a[k]);return e}
@@ -81,42 +88,43 @@ var bt=h("span","font-family:'JetBrains Mono',monospace;font-size:0.42rem;color:
 bt.textContent="LYC\u00C9E HAROUN TAZIEFF";bw.appendChild(bt);
 splash.appendChild(bw);
 grain.style.backgroundImage='url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")';
-document.head.appendChild(ks);
-document.documentElement.appendChild(splash);
-splash.offsetHeight;
-setTimeout(function(){
-circle.style.transition="stroke-dashoffset 2s cubic-bezier(0.16,1,0.3,1)";circle.style.strokeDashoffset="0";
-circleGlow.style.transition="stroke-dashoffset 2s cubic-bezier(0.16,1,0.3,1)";circleGlow.style.strokeDashoffset="0";
-setTimeout(function(){square.style.transition="stroke-dashoffset 2.2s cubic-bezier(0.16,1,0.3,1)";square.style.strokeDashoffset="0"},300);
-setTimeout(function(){mann.style.transition="opacity 1.2s ease, filter 1s ease";mann.style.opacity="1"},600);
-},400);
-setTimeout(function(){
-scan.style.transition="top 2s ease-in-out, opacity 0.3s ease";scan.style.opacity="1";scan.style.top="90%";
-mann.style.filter="brightness(0.9) contrast(1.2) drop-shadow(0 0 12px #00E5FF40) drop-shadow(0 0 25px #7B2FFF1F)";
-crossH.style.transition="opacity 0.8s ease";crossH.style.opacity="1";
-crossV.style.transition="opacity 0.8s ease";crossV.style.opacity="1";
-diag1.style.transition="opacity 0.8s ease";diag1.style.opacity="1";
-diag2.style.transition="opacity 0.8s ease";diag2.style.opacity="1";
-},1400);
-setTimeout(function(){
-title.style.transition="transform 0.7s cubic-bezier(0.16,1,0.3,1), opacity 0.7s ease";title.style.transform="translateY(0)";title.style.opacity="1";
-setTimeout(function(){gl.style.transition="width 0.9s cubic-bezier(0.16,1,0.3,1)";gl.style.width="44px"},200);
-setTimeout(function(){sub.style.transition="transform 0.7s cubic-bezier(0.16,1,0.3,1), opacity 0.7s ease";sub.style.transform="translateY(0)";sub.style.opacity="1"},300);
-setTimeout(function(){ctl.style.transition="opacity 0.6s ease";ctl.style.opacity="1"},400);
-setTimeout(function(){ctr.style.transition="opacity 0.6s ease";ctr.style.opacity="1"},500);
-ticks.forEach(function(t){t.style.transition="opacity 0.6s ease";t.style.opacity="0.35"});
-var start=performance.now(),dur=1400;
-function tick(now){var p=Math.min((now-start)/dur,1);pb.style.width=(1-Math.pow(1-p,3))*100+"%";if(p<1)requestAnimationFrame(tick)}
-requestAnimationFrame(tick);
-},2800);
-setTimeout(function(){
-splash.style.transition="opacity 0.8s ease, transform 0.8s ease";splash.style.opacity="0";splash.style.transform="scale(1.06)";
-setTimeout(function(){splash.remove();ks.remove();try{sessionStorage.setItem("splash-done","true")}catch(e){}},800);
-},4600);
-}catch(err){
-/* If splash fails, show error indicator in console and ensure page is usable */
-console.error("Splash error:",err);
-var el=document.getElementById("splash-screen");
-if(el)el.remove();
-}
+
+/* ── Step 3: Inject splash AFTER React hydration (next paint) ── */
+requestAnimationFrame(function(){
+  document.head.appendChild(ks);
+  document.body.appendChild(splash);
+  hideStyle.remove();
+  splash.offsetHeight;
+
+  /* ── Step 4: Choreography ── */
+  setTimeout(function(){
+    circle.style.transition="stroke-dashoffset 2s cubic-bezier(0.16,1,0.3,1)";circle.style.strokeDashoffset="0";
+    circleGlow.style.transition="stroke-dashoffset 2s cubic-bezier(0.16,1,0.3,1)";circleGlow.style.strokeDashoffset="0";
+    setTimeout(function(){square.style.transition="stroke-dashoffset 2.2s cubic-bezier(0.16,1,0.3,1)";square.style.strokeDashoffset="0"},300);
+    setTimeout(function(){mann.style.transition="opacity 1.2s ease, filter 1s ease";mann.style.opacity="1"},600);
+  },400);
+  setTimeout(function(){
+    scan.style.transition="top 2s ease-in-out, opacity 0.3s ease";scan.style.opacity="1";scan.style.top="90%";
+    mann.style.filter="brightness(0.9) contrast(1.2) drop-shadow(0 0 12px #00E5FF40) drop-shadow(0 0 25px #7B2FFF1F)";
+    crossH.style.transition="opacity 0.8s ease";crossH.style.opacity="1";
+    crossV.style.transition="opacity 0.8s ease";crossV.style.opacity="1";
+    diag1.style.transition="opacity 0.8s ease";diag1.style.opacity="1";
+    diag2.style.transition="opacity 0.8s ease";diag2.style.opacity="1";
+  },1400);
+  setTimeout(function(){
+    title.style.transition="transform 0.7s cubic-bezier(0.16,1,0.3,1), opacity 0.7s ease";title.style.transform="translateY(0)";title.style.opacity="1";
+    setTimeout(function(){gl.style.transition="width 0.9s cubic-bezier(0.16,1,0.3,1)";gl.style.width="44px"},200);
+    setTimeout(function(){sub.style.transition="transform 0.7s cubic-bezier(0.16,1,0.3,1), opacity 0.7s ease";sub.style.transform="translateY(0)";sub.style.opacity="1"},300);
+    setTimeout(function(){ctl.style.transition="opacity 0.6s ease";ctl.style.opacity="1"},400);
+    setTimeout(function(){ctr.style.transition="opacity 0.6s ease";ctr.style.opacity="1"},500);
+    ticks.forEach(function(t){t.style.transition="opacity 0.6s ease";t.style.opacity="0.35"});
+    var start=performance.now(),dur=1400;
+    function tick(now){var p=Math.min((now-start)/dur,1);pb.style.width=(1-Math.pow(1-p,3))*100+"%";if(p<1)requestAnimationFrame(tick)}
+    requestAnimationFrame(tick);
+  },2800);
+  setTimeout(function(){
+    splash.style.transition="opacity 0.8s ease, transform 0.8s ease";splash.style.opacity="0";splash.style.transform="scale(1.06)";
+    setTimeout(function(){splash.remove();ks.remove();try{sessionStorage.setItem("splash-done","true")}catch(e){}},800);
+  },4600);
+});
 })();
