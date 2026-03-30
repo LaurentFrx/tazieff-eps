@@ -6,13 +6,13 @@ import { Carnet } from "./Carnet";
 import { BackButton } from "@/components/BackButton";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   return { title: t("carnet.title") };
 }
 
 export default async function CarnetPage() {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   const [allMethodes, allExercices] = await Promise.all([
     getAllMethodes(lang),

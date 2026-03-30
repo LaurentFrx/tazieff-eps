@@ -90,7 +90,7 @@ export async function generateMetadata({
   params,
 }: ExercicePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const locale = await getServerLang();
+  const locale = getServerLang();
   const result = await getExercise(slug, locale);
   const liveExercise = result ? null : await fetchLiveExercise(slug, locale);
   const importedExercise = result || liveExercise ? null : await getImportedExercise(slug);
@@ -135,7 +135,7 @@ export async function generateMetadata({
 
 export default async function ExercicePage({ params }: ExercicePageProps) {
   const { slug } = await params;
-  const locale = await getServerLang();
+  const locale = getServerLang();
   const t = getServerT(locale);
   const result = await getExercise(slug, locale);
   const liveExercise = result ? null : await fetchLiveExercise(slug, locale);

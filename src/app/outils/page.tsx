@@ -6,13 +6,13 @@ import { SectionHero } from "@/components/SectionHero";
 import { IlluDashboard } from "@/components/illustrations";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   return { title: t("outils.title") };
 }
 
 export default async function OutilsPage() {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
 
   const tools = [

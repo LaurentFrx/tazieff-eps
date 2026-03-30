@@ -5,13 +5,13 @@ import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { SessionGenerator } from "./SessionGenerator";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   return { title: t("maSeance.title") };
 }
 
 export default async function MaSeancePage() {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   const [allMethodes, allExercices] = await Promise.all([
     getAllMethodes(lang),

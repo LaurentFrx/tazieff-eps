@@ -9,7 +9,7 @@ import { SectionHero } from "@/components/SectionHero";
 import { IlluDumbbell } from "@/components/illustrations";
 
 export default async function ExercicesPage() {
-  const locale = await getServerLang();
+  const locale = getServerLang();
   const t = getServerT(locale);
   const exercises = await getExercisesIndex(locale);
   const liveExercises = await fetchLiveExercises(locale);

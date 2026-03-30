@@ -16,7 +16,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { niveau } = await params;
   if (!VALID_NIVEAUX.includes(niveau as Niveau)) return {};
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   return {
     title: `${t("parcours.title")} — ${t(`parcours.niveaux.${niveau as Niveau}`)}`,
@@ -27,7 +27,7 @@ export default async function NiveauPage({ params }: Props) {
   const { niveau } = await params;
   if (!VALID_NIVEAUX.includes(niveau as Niveau)) notFound();
 
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   const data = NIVEAUX.find((n) => n.key === niveau)!;
 

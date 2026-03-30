@@ -16,7 +16,7 @@ export async function generateMetadata({
   params,
 }: SeancePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   const result = await getSeance(slug, lang);
 
@@ -33,7 +33,7 @@ export async function generateMetadata({
 
 export default async function SeancePage({ params }: SeancePageProps) {
   const { slug } = await params;
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   const result = await getSeance(slug, lang);
 

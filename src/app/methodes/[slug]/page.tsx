@@ -27,7 +27,7 @@ export async function generateMetadata({
   params,
 }: MethodePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
 
   const result = await getMethode(slug, lang);
@@ -45,7 +45,7 @@ export async function generateMetadata({
 
 export default async function MethodePage({ params }: MethodePageProps) {
   const { slug } = await params;
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
 
   const result = await getMethode(slug, lang);

@@ -89,7 +89,7 @@ async function buildCards(items: BacCard[], incompleteLabel: string) {
 }
 
 export default async function BacPage() {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   const bacPages = await getAllBacPages(lang);
   const { source } = await getPageMdx("bac");

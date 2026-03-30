@@ -8,7 +8,9 @@ import {
   useMemo,
   useState,
 } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { messages, type Lang } from "@/lib/i18n/messages";
+import { buildLocalePath } from "@/lib/i18n/locale-path";
 
 export type { Lang };
 
@@ -37,10 +39,24 @@ export function I18nProvider({
   initialLang = DEFAULT_LANG,
 }: I18nProviderProps) {
   const [lang, setLangState] = useState<Lang>(initialLang);
+  let router: ReturnType<typeof useRouter> | null = null;
+  let pathname: string | null = null;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    router = useRouter();
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    pathname = usePathname();
+  } catch {
+    // In test environments without AppRouterContext, these hooks throw
+  }
 
   const setLang = useCallback((nextLang: Lang) => {
     setLangState(nextLang);
-  }, []);
+    if (router) {
+      const newPath = buildLocalePath(pathname ?? "/", nextLang);
+      router.push(newPath);
+    }
+  }, [pathname, router]);
 
   useEffect(() => {
     if (typeof window === "undefined") {

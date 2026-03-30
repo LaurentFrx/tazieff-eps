@@ -19,7 +19,7 @@ export async function generateMetadata({
   params,
 }: BacSlugPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   const result = await getBacPage(slug, lang);
   if (!result) return { title: t("bac.notFound") };
@@ -28,7 +28,7 @@ export async function generateMetadata({
 
 export default async function BacSlugPage({ params }: BacSlugPageProps) {
   const { slug } = await params;
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   const result = await getBacPage(slug, lang);
 

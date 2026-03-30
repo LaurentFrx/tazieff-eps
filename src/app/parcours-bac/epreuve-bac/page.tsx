@@ -4,13 +4,13 @@ import { GrilleBac } from "./GrilleBac";
 import { DetailHeader } from "@/components/DetailHeader";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   return { title: t("parcours.grille.title") };
 }
 
 export default async function EpreuveBacPage() {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
 
   return (

@@ -5,13 +5,13 @@ import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { OnboardingWizard } from "./OnboardingWizard";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   return { title: t("onboarding.title") };
 }
 
 export default async function OnboardingPage() {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const [allMethodes, allExercices] = await Promise.all([
     getAllMethodes(lang),
     getExercisesIndex(lang),

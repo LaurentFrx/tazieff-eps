@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 
 export default async function OfflinePage() {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
 
   const cachedSections = [

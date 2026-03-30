@@ -6,13 +6,13 @@ import { SectionHero } from "@/components/SectionHero";
 import { IlluTrophy } from "@/components/illustrations";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   return { title: t("parcours.title") };
 }
 
 export default async function ParcoursBacPage() {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
 
   return (

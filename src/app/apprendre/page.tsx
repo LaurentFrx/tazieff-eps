@@ -5,7 +5,7 @@ import { SectionHero } from "@/components/SectionHero";
 import { IlluBook } from "@/components/illustrations";
 
 export default async function ApprendrePage() {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   const learnPages = await getAllLearnPages(lang);
 

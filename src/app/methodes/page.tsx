@@ -9,7 +9,7 @@ import { SectionHero } from "@/components/SectionHero";
 import { IlluClipboard } from "@/components/illustrations";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   return { title: t("methodes.title") };
 }
@@ -31,7 +31,7 @@ export default async function MethodesPage({
 }: {
   searchParams: Promise<{ objectif?: string }>;
 }) {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   const methodes = await getAllMethodes(lang);
   const params = await searchParams;

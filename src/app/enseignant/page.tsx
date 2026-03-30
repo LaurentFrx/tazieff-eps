@@ -5,13 +5,13 @@ import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { EnseignantDashboard } from "./EnseignantDashboard";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   return { title: t("enseignant.title") };
 }
 
 export default async function EnseignantPage() {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const [allMethodes, allExercices] = await Promise.all([
     getAllMethodes(lang),
     getExercisesIndex(lang),

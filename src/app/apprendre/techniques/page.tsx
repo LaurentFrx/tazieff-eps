@@ -2,7 +2,7 @@ import { getPageMdx } from "@/lib/content/reader";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 
 export default async function TechniquesPage() {
-  const lang = await getServerLang();
+  const lang = getServerLang();
   const t = getServerT(lang);
   const { frontmatter, content, toc } = await getPageMdx("apprendre_techniques");
   const tocItems = toc.filter((item) => item.level === 2);
