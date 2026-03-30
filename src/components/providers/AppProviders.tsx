@@ -54,13 +54,21 @@ export function AppProviders({
   initialTheme,
 }: AppProvidersProps) {
   return (
-    /* ThemeProvider temporarily removed to diagnose #418 */
-    <I18nProvider initialLang={initialLang}>
-      <AuthProvider>
-        {children}
-        <DevServiceWorkerCleanup />
-        <ServiceWorkerRegister />
-      </AuthProvider>
-    </I18nProvider>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme={initialTheme}
+      enableSystem
+      enableColorScheme={false}
+      storageKey={THEME_STORAGE_KEY}
+    >
+      <I18nProvider initialLang={initialLang}>
+        <AuthProvider>
+          {children}
+          <ThemeSync initialTheme={initialTheme} />
+          <DevServiceWorkerCleanup />
+          <ServiceWorkerRegister />
+        </AuthProvider>
+      </I18nProvider>
+    </ThemeProvider>
   );
 }
