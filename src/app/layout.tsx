@@ -69,8 +69,6 @@ export default function RootLayout({
         />
       </head>
       <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable} ${orbitron.variable}`} suppressHydrationWarning>
-        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
-        <script src="/splash.js" />
         {children}
       </body>
     </html>
