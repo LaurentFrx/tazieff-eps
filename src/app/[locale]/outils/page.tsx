@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Calculator, Clock, Dumbbell, BookOpen } from "lucide-react";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
+
+const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale}${path}`;
 import { SectionHero } from "@/components/SectionHero";
 import { IlluDashboard } from "@/components/illustrations";
 
@@ -61,7 +63,7 @@ export default async function OutilsPage({ params }: { params: Promise<{ locale:
         {tools.map((tool) => (
           <Link
             key={tool.href}
-            href={tool.href}
+            href={lp(tool.href, locale)}
             className="tool-card"
             style={{ "--tool-accent": tool.accent } as React.CSSProperties}
           >

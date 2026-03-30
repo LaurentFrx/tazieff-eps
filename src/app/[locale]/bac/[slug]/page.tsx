@@ -8,6 +8,8 @@ import { renderMdx } from "@/lib/mdx/render";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 
+const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale}${path}`;
+
 type BacSlugPageProps = {
   params: Promise<{ locale: string; slug: string }>;
 };
@@ -57,7 +59,7 @@ export default async function BacSlugPage({ params }: BacSlugPageProps) {
       />
       <header className="page-header">
         <Link
-          href="/bac"
+          href={lp("/bac", locale)}
           className="eyebrow hover:text-[color:var(--accent)]"
         >
           ← {t("bac.backLabel")}

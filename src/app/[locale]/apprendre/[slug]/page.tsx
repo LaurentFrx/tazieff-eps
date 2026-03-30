@@ -7,6 +7,8 @@ import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { DetailHeader } from "@/components/DetailHeader";
 
+const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale}${path}`;
+
 type LearnPageProps = {
   params: Promise<{ locale: string; slug: string }>;
 };
@@ -69,7 +71,7 @@ export default async function LearnSlugPage({ params }: LearnPageProps) {
       <DetailHeader
         title={fm.titre}
         gradient="from-emerald-600 to-teal-500"
-        backHref="/apprendre"
+        backHref={lp("/apprendre", locale)}
         backLabel={t("apprendre.backLabel")}
         badges={
           <>
@@ -90,7 +92,7 @@ export default async function LearnSlugPage({ params }: LearnPageProps) {
         <nav className="flex items-stretch gap-3">
           {prev ? (
             <Link
-              href={`/apprendre/${prev.slug}`}
+              href={lp(`/apprendre/${prev.slug}`, locale)}
               className="flex-1 flex items-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 px-4 py-3 text-sm font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/50 transition-colors group"
             >
               <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 transition-transform group-hover:-translate-x-0.5">
@@ -106,7 +108,7 @@ export default async function LearnSlugPage({ params }: LearnPageProps) {
           )}
           {next ? (
             <Link
-              href={`/apprendre/${next.slug}`}
+              href={lp(`/apprendre/${next.slug}`, locale)}
               className="flex-1 flex items-center justify-end gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 px-4 py-3 text-sm font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/50 transition-colors text-right group"
             >
               <span className="min-w-0">
@@ -131,7 +133,7 @@ export default async function LearnSlugPage({ params }: LearnPageProps) {
         <nav className="flex items-stretch gap-3">
           {prev ? (
             <Link
-              href={`/apprendre/${prev.slug}`}
+              href={lp(`/apprendre/${prev.slug}`, locale)}
               className="flex-1 flex items-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 px-4 py-3 text-sm font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/50 transition-colors group"
             >
               <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 transition-transform group-hover:-translate-x-0.5">
@@ -147,7 +149,7 @@ export default async function LearnSlugPage({ params }: LearnPageProps) {
           )}
           {next ? (
             <Link
-              href={`/apprendre/${next.slug}`}
+              href={lp(`/apprendre/${next.slug}`, locale)}
               className="flex-1 flex items-center justify-end gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 px-4 py-3 text-sm font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/50 transition-colors text-right group"
             >
               <span className="min-w-0">

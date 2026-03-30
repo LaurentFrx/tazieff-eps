@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { getAllLearnPages } from "@/lib/content/fs";
+
+const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale}${path}`;
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { SectionHero } from "@/components/SectionHero";
 import { IlluBook } from "@/components/illustrations";
@@ -44,7 +46,7 @@ export default async function ApprendrePage({ params }: { params: Promise<{ loca
       />
       <div className="card-grid">
         {staticCards.map((card) => (
-          <Link key={card.href} href={card.href} className="card">
+          <Link key={card.href} href={lp(card.href, locale)} className="card">
             <h2>{card.title}</h2>
             <p>{card.description}</p>
           </Link>
@@ -60,7 +62,7 @@ export default async function ApprendrePage({ params }: { params: Promise<{ loca
             {learnPages.map((page) => (
               <li key={page.slug}>
                 <Link
-                  href={`/apprendre/${page.slug}`}
+                  href={lp(`/apprendre/${page.slug}`, locale)}
                   className="card flex items-center justify-between gap-4 p-4 transition-colors hover:border-[color:var(--accent)]"
                 >
                   <div>

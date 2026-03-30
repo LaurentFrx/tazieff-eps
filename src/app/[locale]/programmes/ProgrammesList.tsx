@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { CategorieMethode } from "@/lib/content/schema";

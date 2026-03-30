@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("next/link");
 vi.mock("@/lib/i18n/I18nProvider", () => ({
-  useI18n: () => ({ t: (key: string) => key }),
+  useI18n: () => ({ t: (key: string) => key, lang: "fr", setLang: () => {} }),
 }));
 
 import {

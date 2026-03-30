@@ -6,6 +6,8 @@ import { renderMdx } from "@/lib/mdx/render";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { DetailHeader } from "@/components/DetailHeader";
+
+const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale}${path}`;
 import { CategoryBadge } from "@/components/methodes/CategoryBadge";
 import { ScoresBlock } from "@/components/methodes/ScoreBar";
 import { ParametresTable } from "@/components/methodes/ParametresTable";
@@ -107,7 +109,7 @@ export default async function MethodePage({ params }: MethodePageProps) {
       <DetailHeader
         title={m.titre}
         gradient="from-blue-600 to-cyan-500"
-        backHref="/methodes"
+        backHref={lp("/methodes", locale)}
         backLabel={t("methodes.backLabel")}
         badges={
           <>
@@ -145,7 +147,7 @@ export default async function MethodePage({ params }: MethodePageProps) {
         <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/40 dark:to-cyan-950/30 shadow-sm p-5">
           <MethodeTimer labels={timerLabels} />
           <Link
-            href="/outils/timer"
+            href={lp("/outils/timer", locale)}
             className="mt-4 flex items-center justify-center py-3 text-sm font-semibold text-blue-600 dark:text-blue-400 rounded-xl bg-white/60 dark:bg-zinc-900/40 hover:bg-white dark:hover:bg-zinc-800 transition-colors"
           >
             {t("methodes.timer.fullTimerLink")}

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getAllMethodes } from "@/lib/content/fs";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
+
+const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale}${path}`;
 import { CategoryBadge } from "@/components/methodes/CategoryBadge";
 import { MethodeCard } from "@/components/methodes/MethodeCard";
 import type { CategorieMethode } from "@/lib/content/schema";
@@ -83,7 +85,7 @@ export default async function MethodesPage({
       {activeCategory && (
         <div className="mb-4">
           <Link
-            href="/methodes"
+            href={lp("/methodes", locale)}
             className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
           >
             ← {t("methodes.showAll")}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import Image from "next/image";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useFavorites } from "@/hooks/useFavorites";

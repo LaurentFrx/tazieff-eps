@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import NextImage from "next/image";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useSearchParams } from "next/navigation";
 import DifficultyPill from "@/components/DifficultyPill";
 import ExerciseAnatomyThumb from "@/components/exercices/ExerciseAnatomyThumb";

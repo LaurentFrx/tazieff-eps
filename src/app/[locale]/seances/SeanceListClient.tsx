@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useMemo, useState } from "react";
 import { Chips } from "@/components/Chips";
 import { SeanceCard } from "@/components/SeanceCard";
