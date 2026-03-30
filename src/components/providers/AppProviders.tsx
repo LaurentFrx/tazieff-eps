@@ -58,6 +58,7 @@ export function AppProviders({
       attribute="class"
       defaultTheme={initialTheme}
       enableSystem
+      enableColorScheme={false}
       storageKey={THEME_STORAGE_KEY}
     >
       <I18nProvider initialLang={initialLang}>

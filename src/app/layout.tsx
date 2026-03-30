@@ -56,6 +56,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
+      className="dark"
       suppressHydrationWarning
     >
       <head>
