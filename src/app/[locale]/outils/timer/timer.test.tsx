@@ -2,6 +2,12 @@ import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 
+// Mock next/navigation for test environment
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
+  usePathname: () => "/fr/outils/timer",
+}));
+
 // Mock audio modules
 vi.mock("@/lib/audio/beep", () => ({
   unlockAudio: vi.fn(),
