@@ -1,5 +1,6 @@
 (function(){
 try{if(sessionStorage.getItem("splash-done")==="true")return}catch(e){}
+try{
 var NS="http://www.w3.org/2000/svg";
 function h(t,c,a){var e=document.createElement(t);if(c)e.style.cssText=c;if(a)for(var k in a)e.setAttribute(k,a[k]);return e}
 function sv(t,a){var e=document.createElementNS(NS,t);if(a)for(var k in a)e.setAttribute(k,a[k]);return e}
@@ -112,4 +113,10 @@ setTimeout(function(){
 splash.style.transition="opacity 0.8s ease, transform 0.8s ease";splash.style.opacity="0";splash.style.transform="scale(1.06)";
 setTimeout(function(){splash.remove();ks.remove();try{sessionStorage.setItem("splash-done","true")}catch(e){}},800);
 },4600);
+}catch(err){
+/* If splash fails, show error indicator in console and ensure page is usable */
+console.error("Splash error:",err);
+var el=document.getElementById("splash-screen");
+if(el)el.remove();
+}
 })();
