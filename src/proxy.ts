@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+/* ── Admin basic auth ────────────────────────────────────────────────── */
+
 const BASIC_AUTH_ENV = process.env.ADMIN_BASIC_AUTH;
 
 function unauthorized() {
@@ -12,20 +14,14 @@ function unauthorized() {
   });
 }
 
-export function proxy(request: NextRequest) {
-  if (!BASIC_AUTH_ENV) {
-    return NextResponse.next();
-  }
+function handleAdminAuth(request: NextRequest): NextResponse | null {
+  if (!BASIC_AUTH_ENV) return null;
 
   const authHeader = request.headers.get("authorization");
-  if (!authHeader) {
-    return unauthorized();
-  }
+  if (!authHeader) return unauthorized();
 
   const [scheme, encoded] = authHeader.split(" ");
-  if (scheme !== "Basic" || !encoded) {
-    return unauthorized();
-  }
+  if (scheme !== "Basic" || !encoded) return unauthorized();
 
   let decoded = "";
   try {
@@ -34,13 +30,43 @@ export function proxy(request: NextRequest) {
     return unauthorized();
   }
 
-  if (decoded !== BASIC_AUTH_ENV) {
-    return unauthorized();
+  if (decoded !== BASIC_AUTH_ENV) return unauthorized();
+  return null; // auth OK
+}
+
+/* ── i18n locale rewrite ─────────────────────────────────────────────── */
+
+const LOCALES = ["fr", "en", "es"];
+
+/* ── Main proxy ──────────────────────────────────────────────────────── */
+
+export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Admin basic auth
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    const authResponse = handleAdminAuth(request);
+    if (authResponse) return authResponse;
+    return NextResponse.next();
   }
 
-  return NextResponse.next();
+  // Skip if already prefixed by a locale
+  const pathnameHasLocale = LOCALES.some(
+    (locale) =>
+      pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`,
+  );
+  if (pathnameHasLocale) return NextResponse.next();
+
+  // Rewrite unprefixed paths to /fr/...
+  const url = request.nextUrl.clone();
+  url.pathname = `/fr${pathname}`;
+  return NextResponse.rewrite(url);
 }
 
 export const config = {
-  matcher: ["/admin", "/admin/:path*"],
+  matcher: [
+    "/admin",
+    "/admin/:path*",
+    "/((?!_next|api|auth|callback|images|models|fonts|media|manifest\\.webmanifest|sw\\.js|swe-worker|favicon\\.ico|favicon-16\\.png|favicon-32\\.png|apple-touch-icon\\.png|.*\\..*).*)",
+  ],
 };

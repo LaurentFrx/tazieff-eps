@@ -1,15 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Space_Mono, Sora, Orbitron } from "next/font/google";
-import { cookies } from "next/headers";
-import { BottomTabBar } from "@/components/BottomTabBar";
-import { TopBar } from "@/components/TopBar";
-import { InstallPwaBanner } from "@/components/InstallPwaBanner";
-import { OnlineStatus } from "@/components/OnlineStatus";
-import { ScrollToTop } from "@/components/ScrollToTop";
-import { AppProviders } from "@/components/providers/AppProviders";
-import { SplashScreen } from "@/components/SplashScreen";
-// RSC: useI18n() unavailable — read lang from cookie via getServerLang()
-import { getServerLang } from "@/lib/i18n/server";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -57,48 +47,18 @@ export const metadata: Metadata = {
   },
 };
 
-type ThemePreference = "system" | "light" | "dark";
-
-const THEME_COOKIE = "eps_theme";
-
-function getInitialTheme(value?: string): ThemePreference {
-  if (value === "light" || value === "dark" || value === "system") {
-    return value;
-  }
-
-  return "dark";
-}
-
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
-  const initialLang = await getServerLang();
-  const initialTheme = getInitialTheme(cookieStore.get(THEME_COOKIE)?.value);
-  const htmlClassName = initialTheme === "dark" ? "dark" : undefined;
-  const dataTheme = initialTheme !== "system" ? initialTheme : undefined;
-
   return (
     <html
-      lang={initialLang}
-      data-theme={dataTheme}
-      className={htmlClassName}
+      lang="fr"
       suppressHydrationWarning
     >
       <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable} ${orbitron.variable}`}>
-        <SplashScreen />
-        <AppProviders initialLang={initialLang} initialTheme={initialTheme}>
-          <div className="app-shell">
-            <main className="app-main">{children}</main>
-          </div>
-          <BottomTabBar />
-          <TopBar />
-          <ScrollToTop />
-          <OnlineStatus />
-          <InstallPwaBanner />
-        </AppProviders>
+        {children}
       </body>
     </html>
   );
