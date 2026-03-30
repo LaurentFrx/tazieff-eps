@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useBuildInfo } from "@/components/BuildStamp";
-import { getTheme, onThemeChange, setTheme as setFieldTheme, type ThemePreference } from "@/lib/storage";
+import { getTheme, onThemeChange, setTheme as setFieldTheme, type ThemePreference, getAnatomyAnim, setAnatomyAnim, onAnatomyAnimChange } from "@/lib/storage";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlan } from "@/hooks/usePlan";
 import { isAcademicEmail, ACADEMIC_EMAIL_PATTERN } from "@/lib/auth/academic-domains";
@@ -100,6 +100,7 @@ export default function ReglagesPage() {
   const { isPro } = usePlan();
 
   const [fieldTheme, setLocalFieldTheme] = useState<ThemePreference>(getTheme());
+  const [anatomyAnim, setLocalAnatomyAnim] = useState(getAnatomyAnim());
   const [mounted, setMounted] = useState(false);
 
   // Teacher mode
@@ -123,6 +124,7 @@ export default function ReglagesPage() {
   const [orgError, setOrgError] = useState("");
 
   useEffect(() => onThemeChange(setLocalFieldTheme), []);
+  useEffect(() => onAnatomyAnimChange(setLocalAnatomyAnim), []);
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
@@ -303,6 +305,28 @@ export default function ReglagesPage() {
               })}
             </div>
           </div>
+
+          <div className="border-b border-[color:var(--border)] my-3" />
+
+          {/* Animations anatomiques */}
+          <button
+            type="button"
+            className="flex w-full items-center justify-between py-0.5"
+            onClick={() => { const next = !anatomyAnim; setLocalAnatomyAnim(next); setAnatomyAnim(next); }}
+          >
+            <span className="text-sm font-medium text-[color:var(--ink)]">{t("settings.anatomyAnimations")}</span>
+            <span
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                anatomyAnim ? "bg-cyan-500" : "bg-[color:var(--border)]"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                  anatomyAnim ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </span>
+          </button>
         </div>
 
         {/* ── SECTION 2 : Compte & accès ──────────────────────── */}

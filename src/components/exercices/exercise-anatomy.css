@@ -79,6 +79,79 @@
   flex-shrink: 0;
 }
 
+/* ── Scan Animation ────────────────────────────────────────────────────────── */
+
+/* Pre-scan: image dimmed before IntersectionObserver triggers */
+.exo-anatomy-thumb--pre-scan .exo-anatomy-thumb-img--dim {
+  filter: brightness(0.25) saturate(0.15);
+}
+
+.exo-anatomy-thumb--pre-scan .exo-anatomy-thumb-labels {
+  opacity: 0;
+}
+
+/* During scan: base image stays dim */
+.exo-anatomy-thumb--scanning > .exo-anatomy-thumb-img {
+  filter: brightness(0.25) saturate(0.15);
+}
+
+/* Bright reveal layer — clips open top-to-bottom */
+.exo-anatomy-scan-reveal {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  animation: anatomy-reveal 1s linear forwards;
+}
+
+@keyframes anatomy-reveal {
+  from { clip-path: inset(0 0 100% 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+
+/* Scan line */
+.exo-anatomy-scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 2;
+  background: #00FFFF;
+  box-shadow: 0 0 8px #00FFFFcc, 0 0 20px #00FFFF66, 0 -6px 12px #00FFFF22, 0 6px 12px #00FFFF22;
+  mix-blend-mode: screen;
+  opacity: 0.85;
+  animation: anatomy-scan-line 1s linear forwards;
+}
+
+@keyframes anatomy-scan-line {
+  from { top: 0%; opacity: 0.85; }
+  90%  { opacity: 0.85; }
+  to   { top: 100%; opacity: 0; }
+}
+
+/* Labels fade in sequentially during scan */
+.exo-anatomy-scan-labels .exo-anatomy-thumb-label {
+  opacity: 0;
+  animation: anatomy-label-in 0.25s ease-out forwards;
+}
+
+@keyframes anatomy-label-in {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exo-anatomy-thumb--pre-scan .exo-anatomy-thumb-img--dim,
+  .exo-anatomy-thumb--scanning > .exo-anatomy-thumb-img {
+    filter: none;
+  }
+  .exo-anatomy-scan-reveal,
+  .exo-anatomy-scan-line,
+  .exo-anatomy-scan-labels .exo-anatomy-thumb-label {
+    animation: none;
+    opacity: 1;
+    clip-path: none;
+  }
+}
 
 /* ── Exercise Anatomy Modal ─────────────────────────────────────────────── */
 

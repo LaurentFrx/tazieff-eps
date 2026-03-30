@@ -67,3 +67,29 @@ export function onThemeChange(handler: (value: ThemePreference) => void) {
   window.addEventListener(THEME_EVENT, listener);
   return () => window.removeEventListener(THEME_EVENT, listener);
 }
+
+/* ── Anatomy animation preference ─────────────────────────────────── */
+
+const ANAT_ANIM_KEY = "eps_anatomy_anim";
+const ANAT_ANIM_EVENT = "eps:anatomy-anim";
+
+export function getAnatomyAnim(): boolean {
+  if (!isBrowser()) return true;
+  const raw = window.localStorage.getItem(ANAT_ANIM_KEY);
+  return raw !== "false"; // default true
+}
+
+export function setAnatomyAnim(value: boolean) {
+  if (!isBrowser()) return;
+  window.localStorage.setItem(ANAT_ANIM_KEY, String(value));
+  emit(ANAT_ANIM_EVENT, value);
+}
+
+export function onAnatomyAnimChange(handler: (value: boolean) => void) {
+  if (!isBrowser()) return () => {};
+  const listener = (event: Event) => {
+    handler((event as CustomEvent<boolean>).detail ?? getAnatomyAnim());
+  };
+  window.addEventListener(ANAT_ANIM_EVENT, listener);
+  return () => window.removeEventListener(ANAT_ANIM_EVENT, listener);
+}

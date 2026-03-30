@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   getExerciseMuscleGroups,
 } from "@/lib/exercices/muscle-groups";
+import { setAnatomyAnim, getAnatomyAnim } from "@/lib/storage";
 import {
   getMuscleGroup,
   getMuscleGroupsForExercise,
@@ -172,6 +173,20 @@ vi.mock("@/lib/i18n/I18nProvider", () => ({
 import { render, screen, act } from "@testing-library/react";
 import ExerciseAnatomyThumb from "./ExerciseAnatomyThumb";
 
+/* Global IntersectionObserver mock for jsdom */
+beforeEach(() => {
+  if (typeof globalThis.IntersectionObserver === "undefined") {
+    globalThis.IntersectionObserver = class IntersectionObserver {
+      constructor(public cb: (entries: Array<{ isIntersecting: boolean }>) => void) {}
+      observe = vi.fn();
+      disconnect = vi.fn();
+      unobserve = vi.fn();
+    } as unknown as typeof globalThis.IntersectionObserver;
+  }
+  localStorage.clear();
+  setAnatomyAnim(true); // default for each test
+});
+
 describe("ExerciseAnatomyThumb", () => {
   it("renders thumb with mannequin image when muscles match groups", async () => {
     await act(async () => {
@@ -259,6 +274,63 @@ describe("ExerciseAnatomyThumb", () => {
     expect(href).not.toContain("abdominaux");
   });
 
+  it("shows scan overlay when animation is enabled and element is visible", async () => {
+    setAnatomyAnim(true);
+    let intersectionCb: (entries: Array<{ isIntersecting: boolean }>) => void;
+    const mockObserve = vi.fn();
+    const mockDisconnect = vi.fn();
+    vi.stubGlobal("IntersectionObserver", class {
+      constructor(cb: (entries: Array<{ isIntersecting: boolean }>) => void) { intersectionCb = cb; }
+      observe = mockObserve;
+      disconnect = mockDisconnect;
+      unobserve = vi.fn();
+    });
+
+    await act(async () => {
+      render(
+        <ExerciseAnatomyThumb
+          muscles={["Pectoraux", "Triceps"]}
+          translatedMuscles={["Pectoraux", "Triceps"]}
+          slug="s3-03"
+        />,
+      );
+    });
+
+    // Trigger intersection
+    await act(async () => { intersectionCb!([{ isIntersecting: true }]); });
+
+    const thumb = screen.getByLabelText("exerciseAnatomy.musclesWorked");
+    expect(thumb.className).toContain("scanning");
+    vi.unstubAllGlobals();
+  });
+
+  it("does NOT show scan overlay when animation is disabled", async () => {
+    setAnatomyAnim(false);
+    let intersectionCb: (entries: Array<{ isIntersecting: boolean }>) => void;
+    vi.stubGlobal("IntersectionObserver", class {
+      constructor(cb: (entries: Array<{ isIntersecting: boolean }>) => void) { intersectionCb = cb; }
+      observe = vi.fn();
+      disconnect = vi.fn();
+      unobserve = vi.fn();
+    });
+
+    await act(async () => {
+      render(
+        <ExerciseAnatomyThumb
+          muscles={["Pectoraux", "Triceps"]}
+          translatedMuscles={["Pectoraux", "Triceps"]}
+          slug="s3-03"
+        />,
+      );
+    });
+
+    await act(async () => { intersectionCb!([{ isIntersecting: true }]); });
+
+    const thumb = screen.getByLabelText("exerciseAnatomy.musclesWorked");
+    expect(thumb.className).not.toContain("scanning");
+    vi.unstubAllGlobals();
+  });
+
   it("links to anatomy page with anatomy-data group keys (not simplified 5-groups)", async () => {
     await act(async () => {
       render(
@@ -280,5 +352,28 @@ describe("ExerciseAnatomyThumb", () => {
     expect(href).not.toContain("membres-superieurs");
     expect(href).toContain("from=exercice");
     expect(href).toContain("slug=s3-03");
+  });
+});
+
+/* ── Anatomy animation toggle (localStorage) ─────────────────────────────── */
+
+describe("anatomy animation preference", () => {
+  afterEach(() => localStorage.clear());
+
+  it("defaults to true when no localStorage value set", () => {
+    localStorage.removeItem("eps_anatomy_anim");
+    expect(getAnatomyAnim()).toBe(true);
+  });
+
+  it("persists false in localStorage", () => {
+    setAnatomyAnim(false);
+    expect(localStorage.getItem("eps_anatomy_anim")).toBe("false");
+    expect(getAnatomyAnim()).toBe(false);
+  });
+
+  it("persists true in localStorage", () => {
+    setAnatomyAnim(true);
+    expect(localStorage.getItem("eps_anatomy_anim")).toBe("true");
+    expect(getAnatomyAnim()).toBe(true);
   });
 });
