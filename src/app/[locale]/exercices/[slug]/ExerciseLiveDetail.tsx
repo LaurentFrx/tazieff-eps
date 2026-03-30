@@ -90,7 +90,16 @@ const DROPDOWN_MAX_HEIGHT = 288;
 const DROPDOWN_MENU_LAYER_CLASS = "z-[80]";
 const DROPDOWN_MENU_PANEL_CLASS =
   "rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-xl";
-const LEVEL_DEFAULTS = ["Débutant", "Intermédiaire", "Avancé"];
+function getLevelDefaults(t: (key: string) => string) {
+  return [
+    t("difficulty.debutant"),
+    t("difficulty.intermediaire"),
+    t("difficulty.avance"),
+  ];
+}
+
+// TODO: i18n — these are exercise classification terms (teacher-mode only).
+// Add keys to messages.ts when full translation is needed.
 const TYPE_DEFAULTS = [
   "Fondamentaux",
   "Technique",
@@ -105,22 +114,35 @@ const TYPE_DEFAULTS = [
   "Échauffement",
   "Retour au calme",
 ];
-const MUSCLE_DEFAULTS = [
-  "Abdominaux",
-  "Transverse",
-  "Obliques",
-  "Dos",
-  "Pectoraux",
-  "Épaules",
-  "Biceps",
-  "Triceps",
-  "Fessiers",
-  "Quadriceps",
-  "Ischio-jambiers",
-  "Mollets",
-  "Lombaires",
-];
-const THEME_DEFAULTS = ["AFL1", "AFL2", "AFL3", "Sécurité", "Méthode", "Technique"];
+
+function getMuscleDefaults(t: (key: string) => string) {
+  return [
+    t("exerciseEditor.muscleNames.abdominaux"),
+    t("exerciseEditor.muscleNames.transverse"),
+    t("exerciseEditor.muscleNames.obliques"),
+    t("exerciseEditor.muscleNames.dos"),
+    t("exerciseEditor.muscleNames.pectoraux"),
+    t("exerciseEditor.muscleNames.epaules"),
+    t("exerciseEditor.muscleNames.biceps"),
+    t("exerciseEditor.muscleNames.triceps"),
+    t("exerciseEditor.muscleNames.fessiers"),
+    t("exerciseEditor.muscleNames.quadriceps"),
+    t("exerciseEditor.muscleNames.ischiojambiers"),
+    t("exerciseEditor.muscleNames.mollets"),
+    t("exerciseEditor.muscleNames.lombaires"),
+  ];
+}
+
+function getThemeDefaults(t: (key: string) => string) {
+  return [
+    "AFL1",
+    "AFL2",
+    "AFL3",
+    t("exerciseEditor.themeTags.securite"),
+    t("exerciseEditor.themeTags.methode"),
+    t("exerciseEditor.themeTags.technique"),
+  ];
+}
 const DEFAULT_TEACHER_MODE: TeacherModeSnapshot = { unlocked: false, pin: "" };
 
 function getTeacherModeSnapshot(): TeacherModeSnapshot {
@@ -281,6 +303,8 @@ function formatMediaInfo(info?: MediaInfo | null) {
   return parts.length > 0 ? parts.join(" · ") : null;
 }
 
+// TODO: i18n — these error strings are matched by value in the catch block
+// (see handleFileUpload). Refactor to use error codes instead of French strings.
 function formatResolveError(status?: number | null) {
   if (typeof status === "number" && Number.isFinite(status)) {
     return `Erreur: ${status}`;
@@ -762,9 +786,12 @@ export function ExerciseLiveDetail({
       : null);
   const pillState = useMemo(() => {
     const pills = overrideDoc?.doc.pills ?? [];
+    const levelDefaults = getLevelDefaults(t);
+    const muscleDefaults = getMuscleDefaults(t);
+    const themeDefaults = getThemeDefaults(t);
     const levelKeys = new Set(
       [
-        ...LEVEL_DEFAULTS,
+        ...levelDefaults,
         "debutant",
         "débutant",
         "intermediaire",
@@ -829,7 +856,7 @@ export function ExerciseLiveDetail({
     const options = {
       level: sortLabels(
         uniqueLabels([
-          ...LEVEL_DEFAULTS,
+          ...levelDefaults,
           nextSelections.level,
           ...pillCustomOptions.level,
         ]),
@@ -844,7 +871,7 @@ export function ExerciseLiveDetail({
       ),
       muscles: sortLabels(
         uniqueLabels([
-          ...MUSCLE_DEFAULTS,
+          ...muscleDefaults,
           ...(merged.frontmatter.muscles ?? []),
           ...nextSelections.muscles,
           ...pillCustomOptions.muscles,
@@ -852,7 +879,7 @@ export function ExerciseLiveDetail({
       ),
       themes: sortLabels(
         uniqueLabels([
-          ...THEME_DEFAULTS,
+          ...themeDefaults,
           ...nextSelections.themes,
           ...pillCustomOptions.themes,
         ]),
@@ -883,6 +910,7 @@ export function ExerciseLiveDetail({
     merged.frontmatter.muscles,
     merged.frontmatter.tags,
     pillCustomOptions,
+    t,
   ]);
 
   const saveMeta = useMemo(() => {

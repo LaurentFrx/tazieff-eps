@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const ORG_CODE_KEY = "tazieff-org-code";
@@ -9,6 +10,7 @@ const PLAN_CACHE_KEY = "tazieff-plan-cache";
 type Status = "idle" | "checking" | "success" | "error";
 
 export function CodeEtablissement() {
+  const { t } = useI18n();
   const [code, setCode] = useState(
     () => (typeof window !== "undefined" ? localStorage.getItem(ORG_CODE_KEY) : null) ?? "",
   );
@@ -28,7 +30,7 @@ export function CodeEtablissement() {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
       setStatus("error");
-      setErrorMsg("Connexion indisponible. Réessaie plus tard.");
+      setErrorMsg(t("settings.account.connectionUnavailable"));
       return;
     }
 
@@ -52,11 +54,11 @@ export function CodeEtablissement() {
         setStatus("success");
       } else {
         setStatus("error");
-        setErrorMsg("Code invalide ou établissement non activé.");
+        setErrorMsg(t("settings.schoolCode.invalid"));
       }
     } catch {
       setStatus("error");
-      setErrorMsg("Erreur réseau. Réessaie plus tard.");
+      setErrorMsg(t("settings.account.networkError"));
     }
   }
 
@@ -70,10 +72,10 @@ export function CodeEtablissement() {
   return (
     <div className="rounded-xl border border-[color:var(--border)] p-4">
       <h3 className="text-sm font-semibold text-[color:var(--ink)] mb-2">
-        Code établissement
+        {t("settings.schoolCode.label")}
       </h3>
       <p className="text-xs text-[color:var(--muted)] mb-3">
-        Ton professeur peut te donner un code pour débloquer les fonctionnalités Pro.
+        {t("settings.schoolCode.help")}
       </p>
 
       {status === "success" ? (
@@ -93,7 +95,7 @@ export function CodeEtablissement() {
             className="text-xs text-[color:var(--muted)] underline"
             onClick={handleRemove}
           >
-            Supprimer
+            {t("settings.schoolCode.remove")}
           </button>
         </div>
       ) : (
@@ -101,7 +103,7 @@ export function CodeEtablissement() {
           <input
             type="text"
             className="flex-1 rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-2 text-sm text-[color:var(--ink)] placeholder:text-[color:var(--muted)]"
-            placeholder="Ex : TAZIEFF2026"
+            placeholder={t("settings.schoolCode.placeholder")}
             value={code}
             onChange={(e) => setCode(e.target.value)}
             disabled={status === "checking"}
@@ -111,7 +113,7 @@ export function CodeEtablissement() {
             className="rounded-lg bg-[color:var(--accent)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
             disabled={status === "checking" || !code.trim()}
           >
-            {status === "checking" ? "..." : "Valider"}
+            {status === "checking" ? "..." : t("settings.account.validate")}
           </button>
         </form>
       )}

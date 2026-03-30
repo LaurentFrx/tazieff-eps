@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { isAcademicEmail, ACADEMIC_EMAIL_PATTERN } from "@/lib/auth/academic-domains";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Step = "input" | "sending" | "confirmation";
 
 export function TeacherAuth() {
+  const { t } = useI18n();
   const { user, isLoading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [step, setStep] = useState<Step>("input");
@@ -28,11 +30,12 @@ export function TeacherAuth() {
             </svg>
           </div>
           <h3 className="text-xl font-bold text-emerald-500 mb-1">
-            Compte enseignant actif
+            {t("settings.account.activeTitle")}
           </h3>
           <p className="text-sm text-[color:var(--muted)] mb-4">
-            Connecté avec <strong className="text-[color:var(--ink)]">{user.email}</strong>.
-            Toutes les fonctionnalités sont débloquées.
+            {t("settings.account.connectedWith")}{" "}
+            <strong className="text-[color:var(--ink)]">{user.email}</strong>.{" "}
+            {t("settings.account.allUnlocked")}
           </p>
           <button
             type="button"
@@ -45,7 +48,7 @@ export function TeacherAuth() {
               }
             }}
           >
-            Se déconnecter
+            {t("settings.account.logout")}
           </button>
         </div>
       </div>
@@ -65,11 +68,10 @@ export function TeacherAuth() {
             </svg>
           </div>
           <h3 className="text-xl font-bold text-emerald-500 mb-1">
-            Lien envoyé !
+            {t("settings.account.linkSentTitle")}
           </h3>
           <p className="text-sm text-[color:var(--muted)] mb-4">
-            Vérifiez votre boîte mail académique et cliquez sur le lien de connexion.
-            Vous pouvez fermer cette page.
+            {t("settings.account.checkInbox")}
           </p>
           <button
             type="button"
@@ -79,7 +81,7 @@ export function TeacherAuth() {
               setErrorMsg("");
             }}
           >
-            Renvoyer le lien
+            {t("settings.account.resendLink")}
           </button>
         </div>
       </div>
@@ -96,7 +98,7 @@ export function TeacherAuth() {
 
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
-      setErrorMsg("Connexion indisponible. Réessayez plus tard.");
+      setErrorMsg(t("settings.account.connectionUnavailable"));
       setStep("input");
       return;
     }
@@ -109,11 +111,11 @@ export function TeacherAuth() {
 
       if (error) {
         if (error.message?.includes("rate") || error.status === 429) {
-          setErrorMsg("Trop de tentatives. Attendez quelques minutes avant de réessayer.");
+          setErrorMsg(t("settings.account.tooManyAttempts"));
         } else if (error.message?.includes("already")) {
-          setErrorMsg("Cette adresse est déjà associée à un autre compte.");
+          setErrorMsg(t("settings.account.alreadyLinked"));
         } else {
-          setErrorMsg(error.message || "Une erreur est survenue.");
+          setErrorMsg(error.message || t("settings.account.genericError"));
         }
         setStep("input");
         return;
@@ -121,7 +123,7 @@ export function TeacherAuth() {
 
       setStep("confirmation");
     } catch {
-      setErrorMsg("Erreur réseau. Réessayez plus tard.");
+      setErrorMsg(t("settings.account.networkError"));
       setStep("input");
     }
   }
@@ -129,11 +131,10 @@ export function TeacherAuth() {
   return (
     <div className="mx-auto max-w-[480px] rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-6">
       <h3 className="text-xl font-bold text-[color:var(--ink)] mb-1">
-        Accès enseignant
+        {t("settings.account.teacherAccess")}
       </h3>
       <p className="text-sm text-[color:var(--muted)] mb-4">
-        Identifiez-vous avec votre email académique pour débloquer toutes les
-        fonctionnalités.
+        {t("settings.account.teacherAccessHelp")}
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-3">
@@ -180,7 +181,7 @@ export function TeacherAuth() {
 
         {showError && (
           <p className="text-xs text-red-400">
-            Seules les adresses académiques (@ac-xxx.fr) sont acceptées.
+            {t("settings.account.academicOnly")}
           </p>
         )}
 
@@ -199,10 +200,10 @@ export function TeacherAuth() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              Envoi en cours…
+              {t("settings.account.sending")}
             </span>
           ) : (
-            "Recevoir le lien de connexion"
+            t("settings.account.receiveLink")
           )}
         </button>
       </form>

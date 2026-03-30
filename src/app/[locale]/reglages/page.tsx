@@ -27,15 +27,15 @@ const LANG_OPTIONS = [
 ];
 
 const THEME_OPTIONS = [
-  { value: "system" as const, label: "Auto" },
-  { value: "light" as const, label: "Clair" },
-  { value: "dark" as const, label: "Sombre" },
+  { value: "system" as const, key: "settings.theme.system" as const },
+  { value: "light" as const, key: "settings.theme.light" as const },
+  { value: "dark" as const, key: "settings.theme.dark" as const },
 ];
 
 const FIELD_THEME_OPTIONS = [
-  { value: 1 as const, label: "Endurance", color: "#34d399" },
-  { value: 2 as const, label: "Volume", color: "#60a5fa" },
-  { value: 3 as const, label: "Puissance", color: "#fb923c" },
+  { value: 1 as const, key: "methodes.objectifs.endurance" as const, color: "#34d399" },
+  { value: 2 as const, key: "methodes.objectifs.volume" as const, color: "#60a5fa" },
+  { value: 3 as const, key: "methodes.objectifs.puissance" as const, color: "#fb923c" },
 ];
 
 const DEFAULT_TEACHER_MODE: TeacherModeSnapshot = { unlocked: false, pin: "" };
@@ -173,7 +173,7 @@ export default function ReglagesPage() {
 
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
-      setTeacherError("Connexion indisponible.");
+      setTeacherError(t("settings.account.connectionUnavailable"));
       setTeacherStep("input");
       return;
     }
@@ -185,18 +185,18 @@ export default function ReglagesPage() {
       );
       if (error) {
         if (error.message?.includes("rate") || error.status === 429) {
-          setTeacherError("Trop de tentatives. Attendez quelques minutes.");
+          setTeacherError(t("settings.account.tooManyAttempts"));
         } else if (error.message?.includes("already")) {
-          setTeacherError("Adresse déjà associée à un autre compte.");
+          setTeacherError(t("settings.account.alreadyLinked"));
         } else {
-          setTeacherError(error.message || "Une erreur est survenue.");
+          setTeacherError(error.message || t("settings.account.genericError"));
         }
         setTeacherStep("input");
         return;
       }
       setTeacherStep("confirmation");
     } catch {
-      setTeacherError("Erreur réseau.");
+      setTeacherError(t("settings.account.networkError"));
       setTeacherStep("input");
     }
   };
@@ -209,7 +209,7 @@ export default function ReglagesPage() {
     setOrgError("");
 
     const supabase = getSupabaseBrowserClient();
-    if (!supabase) { setOrgStatus("error"); setOrgError("Connexion indisponible."); return; }
+    if (!supabase) { setOrgStatus("error"); setOrgError(t("settings.account.connectionUnavailable")); return; }
 
     try {
       const { data } = await supabase
@@ -225,11 +225,11 @@ export default function ReglagesPage() {
         setOrgStatus("success");
       } else {
         setOrgStatus("error");
-        setOrgError("Code invalide ou établissement non activé.");
+        setOrgError(t("settings.schoolCode.invalid"));
       }
     } catch {
       setOrgStatus("error");
-      setOrgError("Erreur réseau.");
+      setOrgError(t("settings.account.networkError"));
     }
   };
 
@@ -245,13 +245,13 @@ export default function ReglagesPage() {
   return (
     <section className="page pb-32">
       <div className="mx-auto max-w-lg space-y-4">
-        <h1 className="text-2xl font-bold text-[color:var(--ink)] mb-6">Réglages</h1>
+        <h1 className="text-2xl font-bold text-[color:var(--ink)] mb-6">{t("settings.title")}</h1>
 
         {/* ── SECTION 1 : Préférences ─────────────────────────── */}
         <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-5 space-y-0">
           {/* Langue */}
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-[color:var(--ink)]">Langue</span>
+            <span className="text-sm font-medium text-[color:var(--ink)]">{t("settings.language.label")}</span>
             <Seg
               options={LANG_OPTIONS}
               value={stableLang}
@@ -268,12 +268,12 @@ export default function ReglagesPage() {
 
           {/* Thème */}
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-[color:var(--ink)]">Thème</span>
+            <span className="text-sm font-medium text-[color:var(--ink)]">{t("settings.theme.label")}</span>
             <Seg
               options={THEME_OPTIONS}
               value={stableTheme}
               onChange={(v) => setTheme(v)}
-              render={(opt) => opt.label}
+              render={(opt) => t(opt.key)}
             />
           </div>
 
@@ -281,7 +281,7 @@ export default function ReglagesPage() {
 
           {/* Objectif par défaut */}
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-[color:var(--ink)]">Objectif par défaut</span>
+            <span className="text-sm font-medium text-[color:var(--ink)]">{t("settings.defaultObjective")}</span>
             <div className="flex gap-1">
               {FIELD_THEME_OPTIONS.map((opt) => {
                 const active = stableFieldTheme === opt.value;
@@ -297,7 +297,7 @@ export default function ReglagesPage() {
                     }
                     onClick={() => { setLocalFieldTheme(opt.value); setFieldTheme(opt.value); }}
                   >
-                    {opt.label}
+                    {t(opt.key)}
                   </button>
                 );
               })}
@@ -314,23 +314,23 @@ export default function ReglagesPage() {
                 <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
               </svg>
-              Compte
+              {t("settings.account.label")}
             </span>
             <div className="text-right">
               {hasAcademicEmail ? (
                 <>
                   <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
-                    Enseignant
+                    {t("settings.account.teacher")}
                   </span>
                   <p className="text-[10px] text-[color:var(--muted)] mt-0.5">{user?.email}</p>
                 </>
               ) : isPro && orgStatus === "success" ? (
                 <span className="rounded-full bg-blue-500/20 px-2.5 py-0.5 text-xs font-medium text-blue-400">
-                  Pro
+                  {t("settings.account.pro")}
                 </span>
               ) : (
                 <span className="rounded-full bg-[color:var(--border)] px-2.5 py-0.5 text-xs font-medium text-[color:var(--muted)]">
-                  Anonyme
+                  {t("settings.account.anonymous")}
                 </span>
               )}
             </div>
@@ -341,21 +341,21 @@ export default function ReglagesPage() {
             <>
               <div className="border-b border-[color:var(--border)] my-3" />
               <div>
-                <p className="text-xs text-[color:var(--muted)] mb-2">Email académique</p>
+                <p className="text-xs text-[color:var(--muted)] mb-2">{t("settings.account.academicEmail")}</p>
                 {teacherStep === "confirmation" ? (
                   <div className="flex items-center gap-2">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 shrink-0 text-emerald-500">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                     <span className="text-sm text-emerald-400">
-                      Lien envoyé à {trimmedEmail}. Vérifiez votre boîte mail.
+                      {t("settings.account.linkSent")}
                     </span>
                     <button
                       type="button"
                       className="ml-auto shrink-0 text-xs text-[color:var(--muted)] underline"
                       onClick={() => { setTeacherStep("input"); setTeacherError(""); }}
                     >
-                      Renvoyer
+                      {t("settings.account.resend")}
                     </button>
                   </div>
                 ) : (
@@ -381,13 +381,13 @@ export default function ReglagesPage() {
                       className="shrink-0 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
                       disabled={!emailValid || teacherStep === "sending"}
                     >
-                      {teacherStep === "sending" ? "..." : "Valider"}
+                      {teacherStep === "sending" ? "..." : t("settings.account.validate")}
                     </button>
                   </form>
                 )}
                 {showEmailError && (
                   <p className="mt-1 text-xs text-red-400">
-                    Seules les adresses académiques (@ac-xxx.fr) sont acceptées.
+                    {t("settings.account.academicOnly")}
                   </p>
                 )}
                 {teacherError && <p className="mt-1 text-xs text-red-400">{teacherError}</p>}
@@ -407,7 +407,7 @@ export default function ReglagesPage() {
                   if (supabase) { await supabase.auth.signOut(); window.location.reload(); }
                 }}
               >
-                Se déconnecter
+                {t("settings.account.logout")}
               </button>
             </>
           )}
@@ -417,7 +417,7 @@ export default function ReglagesPage() {
             <>
               <div className="border-b border-[color:var(--border)] my-3" />
               <div>
-                <p className="text-xs text-[color:var(--muted)] mb-2">Code établissement</p>
+                <p className="text-xs text-[color:var(--muted)] mb-2">{t("settings.schoolCode.label")}</p>
                 {orgStatus === "success" ? (
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
@@ -427,7 +427,7 @@ export default function ReglagesPage() {
                       {orgCode}
                     </span>
                     <button type="button" className="text-xs text-[color:var(--muted)] underline" onClick={handleOrgRemove}>
-                      Supprimer
+                      {t("settings.schoolCode.remove")}
                     </button>
                   </div>
                 ) : (
@@ -435,7 +435,7 @@ export default function ReglagesPage() {
                     <input
                       type="text"
                       className="flex-1 rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-2 text-sm text-[color:var(--ink)] placeholder:text-[color:var(--muted)]"
-                      placeholder="Ex : TAZIEFF2026"
+                      placeholder={t("settings.schoolCode.placeholder")}
                       value={orgCode}
                       onChange={(e) => setOrgCode(e.target.value)}
                       disabled={orgStatus === "checking"}
@@ -445,7 +445,7 @@ export default function ReglagesPage() {
                       className="shrink-0 rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
                       disabled={orgStatus === "checking" || !orgCode.trim()}
                     >
-                      {orgStatus === "checking" ? "..." : "Activer"}
+                      {orgStatus === "checking" ? "..." : t("settings.schoolCode.activate")}
                     </button>
                   </form>
                 )}
@@ -465,7 +465,7 @@ export default function ReglagesPage() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-[color:var(--muted)]">
                 <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
               </svg>
-              Mode professeur
+              {t("settings.teacherModeLabel")}
             </span>
             <span
               className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -474,7 +474,7 @@ export default function ReglagesPage() {
                   : "bg-[color:var(--border)] text-[color:var(--muted)]"
               }`}
             >
-              {teacherMode.unlocked ? "Actif" : "Verrouillé"}
+              {teacherMode.unlocked ? t("settings.active") : t("teacherMode.locked")}
             </span>
           </button>
         </div>

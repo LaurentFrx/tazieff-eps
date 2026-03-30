@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { CameraControls, useGLTF, useTexture } from "@react-three/drei";
 import * as THREE from "three";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import {
   Box3,
   ClampToEdgeWrapping,
@@ -110,9 +111,9 @@ function BackgroundPlane({ x, y, z, width, height }: {
 type SliderDef = { key: keyof DebugSettings; label: string; min: number; max: number; step: number };
 type ColorDef = { key: keyof DebugSettings; label: string };
 
-const SLIDER_GROUPS: { title: string; sliders: SliderDef[]; colors?: ColorDef[] }[] = [
+const SLIDER_GROUPS: { titleKey: string; sliders: SliderDef[]; colors?: ColorDef[] }[] = [
   {
-    title: "CAMÉRA",
+    titleKey: "anatomy.debug.camera",
     sliders: [
       { key: "cameraZoom", label: "cameraZoom (Taille écran)", min: 100, max: 500, step: 10 },
       { key: "dollySpeed", label: "dollySpeed (Vitesse zoom)", min: 0.1, max: 3.0, step: 0.1 },
@@ -123,34 +124,34 @@ const SLIDER_GROUPS: { title: string; sliders: SliderDef[]; colors?: ColorDef[] 
     ],
   },
   {
-    title: "TURNTABLE",
+    titleKey: "anatomy.debug.turntable",
     sliders: [
       { key: "rotateSpeed", label: "rotateSpeed (Sensibilité rotation)", min: 0.001, max: 0.02, step: 0.001 },
       { key: "inertiaDecay", label: "inertiaDecay (Durée inertie rotation)", min: 0.8, max: 0.99, step: 0.01 },
     ],
   },
   {
-    title: "MANNEQUIN",
+    titleKey: "anatomy.debug.mannequin",
     sliders: [
       { key: "mannequinScale", label: "mannequinScale (Taille modèle)", min: 0.2, max: 1.0, step: 0.05 },
       { key: "innerScale", label: "innerScale (Taille interne)", min: 0.5, max: 3.0, step: 0.1 },
     ],
   },
   {
-    title: "FOND",
+    titleKey: "anatomy.debug.background",
     sliders: [
       { key: "bgWidth", label: "bgWidth (Largeur fond)", min: 3, max: 30, step: 0.5 },
       { key: "bgHeight", label: "bgHeight (Hauteur fond)", min: 2, max: 20, step: 0.5 },
     ],
   },
   {
-    title: "WIREFRAME",
+    titleKey: "anatomy.debug.wireframe",
     sliders: [
       { key: "wireframeOpacity", label: "wireframeOpacity (Wireframe opacité)", min: 0, max: 1.0, step: 0.01 },
     ],
   },
   {
-    title: "POINTS",
+    titleKey: "anatomy.debug.points",
     sliders: [
       { key: "pointSize", label: "pointSize (Points taille px)", min: 0.5, max: 10, step: 0.5 },
       { key: "pointOpacity", label: "pointOpacity (Points intensité)", min: 0, max: 1.0, step: 0.01 },
@@ -160,7 +161,7 @@ const SLIDER_GROUPS: { title: string; sliders: SliderDef[]; colors?: ColorDef[] 
     ],
   },
   {
-    title: "ÉCLAIRAGE",
+    titleKey: "anatomy.debug.lighting",
     sliders: [
       { key: "ambientIntensity", label: "ambientIntensity (Lumière ambiante)", min: 0, max: 2.0, step: 0.1 },
       { key: "mainLightIntensity", label: "mainLightIntensity (Lumière principale)", min: 0, max: 3.0, step: 0.1 },
@@ -178,6 +179,7 @@ function SettingsPanel({
   onChange: (s: DebugSettings) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const { t } = useI18n();
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(JSON.stringify(settings, null, 2));
@@ -203,7 +205,7 @@ function SettingsPanel({
           fontFamily: "monospace",
         }}
       >
-        Debug
+        {t("anatomy.debug.toggle")}
       </button>
     );
   }
@@ -231,7 +233,7 @@ function SettingsPanel({
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <span style={{ fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em" }}>
-          Debug Settings
+          {t("anatomy.debug.title")}
         </span>
         <button
           type="button"
@@ -243,7 +245,7 @@ function SettingsPanel({
       </div>
 
       {SLIDER_GROUPS.map((group) => (
-        <div key={group.title} style={{ marginBottom: 8 }}>
+        <div key={group.titleKey} style={{ marginBottom: 8 }}>
           <div style={{
             color: "rgba(0,212,255,0.6)",
             fontSize: 9,
@@ -251,7 +253,7 @@ function SettingsPanel({
             letterSpacing: "0.1em",
             marginBottom: 4,
           }}>
-            {group.title}
+            {t(group.titleKey)}
           </div>
           {group.sliders.map((s) => (
             <div key={s.key} style={{ marginBottom: 4 }}>
@@ -312,7 +314,7 @@ function SettingsPanel({
           letterSpacing: "0.08em",
         }}
       >
-        Copier valeurs
+        {t("anatomy.debug.copy")}
       </button>
     </div>
   );
