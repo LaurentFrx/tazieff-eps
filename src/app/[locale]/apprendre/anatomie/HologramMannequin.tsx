@@ -308,7 +308,7 @@ function MusclesModel({
       mesh.material.stencilFail = THREE.KeepStencilOp;
       mesh.material.stencilZFail = THREE.KeepStencilOp;
 
-      // Scan reveal shader injection — progressive Y-based coloring
+      // Scan reveal shader: muscles invisible below scan line, visible above
       mesh.material.onBeforeCompile = (shader: THREE.WebGLProgramParametersWithUniforms) => {
         shader.uniforms.uScanY = { value: -999.0 };
         shader.vertexShader = "varying float vWorldY;\n" + shader.vertexShader;
@@ -320,8 +320,9 @@ function MusclesModel({
         shader.fragmentShader = "varying float vWorldY;\nuniform float uScanY;\n" + shader.fragmentShader;
         shader.fragmentShader = shader.fragmentShader.replace(
           "#include <dithering_fragment>",
-          `float scanMix = smoothstep(uScanY - 0.04, uScanY + 0.04, vWorldY);
-          gl_FragColor.rgb = mix(gl_FragColor.rgb * 0.3, gl_FragColor.rgb, scanMix);
+          `float scanAlpha = smoothstep(uScanY - 0.05, uScanY + 0.05, vWorldY);
+          if (scanAlpha < 0.01) discard;
+          gl_FragColor.a *= scanAlpha;
           #include <dithering_fragment>`,
         );
         (mesh.material as THREE.MeshPhongMaterial).userData.scanShader = shader;

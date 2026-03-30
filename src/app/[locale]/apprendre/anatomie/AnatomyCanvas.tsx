@@ -77,14 +77,19 @@ function ScanLine3D({
         varying vec2 vUv;
         void main() {
           float d = abs(vUv.y - 0.5) * 2.0;
-          // Neon core — bright thin line
-          float core = exp(-d * d * 120.0);
-          // Close glow
-          float glow = exp(-d * d * 12.0) * 0.55;
-          // Diffuse halo
-          float halo = exp(-d * d * 2.5) * 0.12;
-          float alpha = (core + glow + halo) * uOpacity;
-          gl_FragColor = vec4(uColor * (core * 1.2 + glow + halo * 0.5), alpha);
+          // White-hot core (neon center is white)
+          float core = exp(-d * d * 200.0);
+          // Bright cyan close glow
+          float glow = exp(-d * d * 18.0) * 0.8;
+          // Medium halo
+          float mid = exp(-d * d * 4.0) * 0.3;
+          // Wide diffuse halo
+          float halo = exp(-d * d * 1.2) * 0.08;
+          float intensity = core + glow + mid + halo;
+          // Core is white, everything else is cyan
+          vec3 col = mix(uColor, vec3(1.0), core * 0.9) * intensity;
+          float alpha = intensity * uOpacity;
+          gl_FragColor = vec4(col, alpha);
         }
       `,
       transparent: true,
@@ -97,7 +102,7 @@ function ScanLine3D({
 
   return (
     <mesh ref={meshRef} renderOrder={10} position={[0, bounds.maxY, 0]}>
-      <planeGeometry args={[0.7, 0.08]} />
+      <planeGeometry args={[0.7, 0.15]} />
       <primitive object={material.current} ref={matRef} attach="material" />
     </mesh>
   );
