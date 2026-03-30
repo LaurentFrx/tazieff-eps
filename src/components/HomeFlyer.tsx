@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import flyer from "../../public/media/branding/flyer-eps.webp";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -68,13 +68,13 @@ function pickRandom(pool: string[], count: number): string[] {
 export function HomeFlyer() {
   const { t } = useI18n();
 
-  // Build the 3-phrase list once on mount, then duplicate for seamless loop
-  const marqueeItems = useMemo(() => {
+  // Build the 3-phrase list on client only to avoid SSR/client mismatch (#418)
+  const [marqueeItems, setMarqueeItems] = useState<string[]>([]);
+  useEffect(() => {
     const greeting = t(getGreetingKey());
     const [a1, a2] = pickRandom(ACCROCHE_POOL, 2);
     const phrases = [greeting, a1, a2];
-    // Duplicate for seamless infinite scroll
-    return [...phrases, ...phrases];
+    setMarqueeItems([...phrases, ...phrases]);
   }, [t]);
 
   return (
