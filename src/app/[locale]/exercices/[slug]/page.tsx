@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
 import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
@@ -80,10 +82,15 @@ function convertImportedToContent(
 }
 
 export async function generateStaticParams() {
-  const exercises = await getExercisesIndex("fr");
-  return exercises.map((exercise) => ({
-    slug: exercise.slug,
-  }));
+  const locales = ["fr", "en", "es"] as const;
+  const params: { locale: string; slug: string }[] = [];
+  for (const locale of locales) {
+    const exercises = await getExercisesIndex(locale);
+    for (const exercise of exercises) {
+      params.push({ locale, slug: exercise.slug });
+    }
+  }
+  return params;
 }
 
 export async function generateMetadata({

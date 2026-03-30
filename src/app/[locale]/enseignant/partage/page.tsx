@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { SharedSession } from "./SharedSession";

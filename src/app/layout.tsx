@@ -1,12 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Space_Mono, Sora, Orbitron } from "next/font/google";
-import { cookies } from "next/headers";
-import { BottomTabBar } from "@/components/BottomTabBar";
-import { TopBar } from "@/components/TopBar";
-import { InstallPwaBanner } from "@/components/InstallPwaBanner";
-import { OnlineStatus } from "@/components/OnlineStatus";
-import { ScrollToTop } from "@/components/ScrollToTop";
-import { AppProviders } from "@/components/providers/AppProviders";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -171,32 +164,16 @@ export const metadata: Metadata = {
   },
 };
 
-type ThemePreference = "system" | "light" | "dark";
-
-const THEME_COOKIE = "eps_theme";
-
-function getInitialTheme(value?: string): ThemePreference {
-  if (value === "light" || value === "dark" || value === "system") {
-    return value;
-  }
-  return "dark";
-}
-
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
-  const initialTheme = getInitialTheme(cookieStore.get(THEME_COOKIE)?.value);
-  const htmlClassName = initialTheme === "dark" ? "dark" : undefined;
-  const dataTheme = initialTheme !== "system" ? initialTheme : undefined;
-
   return (
     <html
       lang="fr"
-      data-theme={dataTheme}
-      className={htmlClassName}
+      className="dark"
+      data-theme="dark"
       suppressHydrationWarning
     >
       <head>
@@ -210,16 +187,7 @@ export default async function RootLayout({
       </head>
       <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable} ${orbitron.variable}`} suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: SPLASH_SCRIPT }} />
-        <AppProviders initialLang="fr" initialTheme={initialTheme}>
-          <div className="app-shell">
-            <main className="app-main">{children}</main>
-          </div>
-          <BottomTabBar />
-          <TopBar />
-          <ScrollToTop />
-          <OnlineStatus />
-          <InstallPwaBanner />
-        </AppProviders>
+        {children}
       </body>
     </html>
   );

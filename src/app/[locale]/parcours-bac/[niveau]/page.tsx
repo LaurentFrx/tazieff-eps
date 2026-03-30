@@ -10,7 +10,14 @@ const VALID_NIVEAUX: Niveau[] = ["seconde", "premiere", "terminale"];
 type Props = { params: Promise<{ locale: string; niveau: string }> };
 
 export async function generateStaticParams() {
-  return VALID_NIVEAUX.map((niveau) => ({ niveau }));
+  const locales = ["fr", "en", "es"] as const;
+  const params: { locale: string; niveau: string }[] = [];
+  for (const locale of locales) {
+    for (const niveau of VALID_NIVEAUX) {
+      params.push({ locale, niveau });
+    }
+  }
+  return params;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

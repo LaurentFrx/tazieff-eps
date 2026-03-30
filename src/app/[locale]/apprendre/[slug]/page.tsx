@@ -12,8 +12,15 @@ type LearnPageProps = {
 };
 
 export async function generateStaticParams() {
-  const pages = await getAllLearnPages("fr");
-  return pages.map((p) => ({ slug: p.slug }));
+  const locales = ["fr", "en", "es"] as const;
+  const params: { locale: string; slug: string }[] = [];
+  for (const locale of locales) {
+    const pages = await getAllLearnPages(locale);
+    for (const p of pages) {
+      params.push({ locale, slug: p.slug });
+    }
+  }
+  return params;
 }
 
 export async function generateMetadata({

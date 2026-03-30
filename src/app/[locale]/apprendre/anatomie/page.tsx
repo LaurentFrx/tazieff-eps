@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
 import { getServerLang } from "@/lib/i18n/server";
 import AnatomyMap from "./AnatomyMap";

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
 import { getAllMethodes } from "@/lib/content/fs";
 import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";

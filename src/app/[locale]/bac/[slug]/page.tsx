@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -11,8 +13,15 @@ type BacSlugPageProps = {
 };
 
 export async function generateStaticParams() {
-  const pages = await getAllBacPages("fr");
-  return pages.map((p) => ({ slug: p.slug }));
+  const locales = ["fr", "en", "es"] as const;
+  const params: { locale: string; slug: string }[] = [];
+  for (const locale of locales) {
+    const pages = await getAllBacPages(locale);
+    for (const p of pages) {
+      params.push({ locale, slug: p.slug });
+    }
+  }
+  return params;
 }
 
 export async function generateMetadata({
@@ -58,7 +67,7 @@ export default async function BacSlugPage({ params }: BacSlugPageProps) {
           <span className="pill">
             {t(`bac.niveaux.${fm.niveau_minimum}`)}
           </span>
-          {fm.mots_cles.slice(0, 4).map((mot) => (
+          {(fm.mots_cles ?? []).slice(0, 4).map((mot) => (
             <span key={mot} className="pill">
               {mot}
             </span>

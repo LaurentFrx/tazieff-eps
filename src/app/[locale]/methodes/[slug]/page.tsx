@@ -19,8 +19,15 @@ type MethodePageProps = {
 };
 
 export async function generateStaticParams() {
-  const methodes = await getAllMethodes();
-  return methodes.map((m) => ({ slug: m.slug }));
+  const locales = ["fr", "en", "es"] as const;
+  const params: { locale: string; slug: string }[] = [];
+  for (const locale of locales) {
+    const methodes = await getAllMethodes(locale);
+    for (const m of methodes) {
+      params.push({ locale, slug: m.slug });
+    }
+  }
+  return params;
 }
 
 export async function generateMetadata({
