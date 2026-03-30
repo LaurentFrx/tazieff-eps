@@ -19,6 +19,7 @@ type Props = {
   highlightedMuscle: string | null;
   activeGroups?: string[];
   initialRotationY?: number;
+  scanning?: boolean;
   showSkeleton?: boolean;
   showWireframe?: boolean;
   showMuscles?: boolean;
@@ -26,6 +27,74 @@ type Props = {
   onClickMuscle: (frName: string | null, groupKey: string | null, x: number, y: number) => void;
   onLongPressMuscle: (frName: string, groupKey: string, x: number, y: number) => void;
 };
+
+/* ── 3D Scan line — stencil-masked to mannequin silhouette ────────── */
+
+const SCAN_DURATION = 2000; // ms
+
+function ScanLine3D({ bounds }: { bounds: { minY: number; maxY: number } }) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const matRef = useRef<THREE.ShaderMaterial>(null);
+  const startTime = useRef(0);
+
+  useFrame(({ clock }) => {
+    if (!startTime.current) startTime.current = clock.elapsedTime * 1000;
+    const elapsed = clock.elapsedTime * 1000 - startTime.current;
+    const progress = Math.min(elapsed / SCAN_DURATION, 1);
+    const { minY, maxY } = bounds;
+    const y = maxY - progress * (maxY - minY);
+
+    if (meshRef.current) meshRef.current.position.y = y;
+    if (matRef.current) {
+      matRef.current.uniforms.uOpacity.value =
+        progress > 0.85 ? ((1 - progress) / 0.15) * 0.85 : 0.85;
+    }
+  });
+
+  const material = useRef(
+    new THREE.ShaderMaterial({
+      uniforms: {
+        uColor: { value: new THREE.Color(0x00ffff) },
+        uOpacity: { value: 0.85 },
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 uColor;
+        uniform float uOpacity;
+        varying vec2 vUv;
+        void main() {
+          float dist = abs(vUv.y - 0.5) * 2.0;
+          float core = smoothstep(0.9, 0.4, dist);
+          float glow = smoothstep(1.0, 0.0, dist) * 0.35;
+          float alpha = (core + glow) * uOpacity;
+          gl_FragColor = vec4(uColor, alpha);
+        }
+      `,
+      transparent: true,
+      depthTest: false,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+      stencilWrite: false,
+      stencilFunc: THREE.EqualStencilFunc,
+      stencilRef: 0x02,
+      stencilFuncMask: 0x02,
+    }),
+  );
+
+  return (
+    <mesh ref={meshRef} renderOrder={10} position={[0, bounds.maxY, 0]}>
+      <planeGeometry args={[3, 0.06]} />
+      <primitive object={material.current} ref={matRef} attach="material" />
+    </mesh>
+  );
+}
 
 /* ── Debug settings ────────────────────────────────────────────────── */
 
@@ -326,6 +395,7 @@ function Scene({
   selectedGroup,
   highlightedMuscle,
   activeGroups,
+  scanning,
   initialRotationY,
   showSkeleton,
   showWireframe,
@@ -337,6 +407,7 @@ function Scene({
 }: Props & { settings: DebugSettings }) {
   const mannequinGroupRef = useRef<Group>(null);
   const turntableRef = useRef<Group>(null);
+  const [mannequinBounds, setMannequinBounds] = useState<{ minY: number; maxY: number } | null>(null);
   const lightRef = useRef<DirectionalLight>(null);
   const controlsRef = useRef<CameraControlsImpl>(null);
 
@@ -404,6 +475,7 @@ function Scene({
       // Perspective: position camera in front, looking at center
       controls.setLookAt(0, center.y, 3.5, 0, center.y, 0, false);
       controls.saveState();
+      setMannequinBounds({ minY: box.min.y, maxY: box.max.y });
     });
 
     return () => cancelAnimationFrame(id);
@@ -533,6 +605,9 @@ function Scene({
         {/* Turntable — rotates mannequin on Y axis */}
         <group ref={turntableRef} scale={settings.mannequinScale}>
           <group ref={mannequinGroupRef}>
+            {scanning && mannequinBounds && (
+              <ScanLine3D bounds={mannequinBounds} />
+            )}
             <group scale={settings.innerScale} position={[0, 0, -0.15]}>
               <HologramMannequin
                 selectedGroup={selectedGroup}
@@ -583,6 +658,7 @@ export default function AnatomyCanvas({
   selectedGroup,
   highlightedMuscle,
   activeGroups,
+  scanning,
   initialRotationY,
   showSkeleton,
   showWireframe,
@@ -608,6 +684,7 @@ export default function AnatomyCanvas({
           selectedGroup={selectedGroup}
           highlightedMuscle={highlightedMuscle}
           activeGroups={activeGroups}
+          scanning={scanning}
           initialRotationY={initialRotationY}
           showSkeleton={showSkeleton}
           showWireframe={showWireframe}

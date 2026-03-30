@@ -78,20 +78,20 @@ export default function AnatomyMap({ exercises }: Props) {
 
     // Groups from URL that exist in scan order
     const toReveal = SCAN_ORDER.filter((g) => urlMuscleGroups.includes(g));
-    const step = toReveal.length > 0 ? 800 / toReveal.length : 100;
+    const step = toReveal.length > 0 ? 1600 / toReveal.length : 100;
 
     const timers: ReturnType<typeof setTimeout>[] = [];
     toReveal.forEach((group, i) => {
       timers.push(setTimeout(() => {
         setRevealedGroups((prev) => [...prev, group]);
-      }, 150 + i * step));
+      }, 300 + i * step));
     });
 
-    // End scan
+    // End scan (2s scan + 300ms fade)
     timers.push(setTimeout(() => {
       setScanning(false);
       setRevealedGroups(urlMuscleGroups);
-    }, 1100));
+    }, 2300));
 
     return () => timers.forEach(clearTimeout);
   }, [shouldScan, urlMuscleGroups]);
@@ -230,6 +230,7 @@ export default function AnatomyMap({ exercises }: Props) {
             selectedGroup={selectedGroup}
             highlightedMuscle={highlightedMuscle}
             activeGroups={effectiveActiveGroups}
+            scanning={scanning}
             initialRotationY={initialRotationY}
             showSkeleton={showSkeleton}
             showWireframe={showWireframe}
@@ -238,7 +239,6 @@ export default function AnatomyMap({ exercises }: Props) {
             onClickMuscle={handleClickMuscle}
             onLongPressMuscle={handleLongPressMuscle}
           />
-          {scanning && <div className="anatomy-scan-line" aria-hidden="true" />}
         </div>
       </div>
 

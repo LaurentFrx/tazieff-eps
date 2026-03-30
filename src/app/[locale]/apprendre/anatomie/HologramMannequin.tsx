@@ -68,11 +68,13 @@ function makePointsShaderMaterial(color: string, size: number, opacity: number) 
     depthTest: true,
     blending: THREE.AdditiveBlending,
     stencilWrite: true,
-    stencilRef: 0,
+    stencilRef: 0x02,
     stencilFunc: THREE.EqualStencilFunc,
+    stencilFuncMask: 0x01,
+    stencilWriteMask: 0x02,
     stencilFail: THREE.KeepStencilOp,
     stencilZFail: THREE.KeepStencilOp,
-    stencilZPass: THREE.KeepStencilOp,
+    stencilZPass: THREE.ReplaceStencilOp,
   });
 }
 
@@ -145,11 +147,13 @@ function SilhouetteBody({ opacity, pointSize, pointOpacity, pointColor }: {
           depthWrite: false,
           depthTest: true,
           stencilWrite: true,
-          stencilRef: 0,
+          stencilRef: 0x02,
           stencilFunc: THREE.EqualStencilFunc,
+          stencilFuncMask: 0x01,
+          stencilWriteMask: 0x02,
           stencilFail: THREE.KeepStencilOp,
           stencilZFail: THREE.KeepStencilOp,
-          stencilZPass: THREE.KeepStencilOp,
+          stencilZPass: THREE.ReplaceStencilOp,
         });
         mesh.renderOrder = 2;
 
@@ -297,10 +301,11 @@ function MusclesModel({
         baseFrName: frName,
         originalColor: color.clone(),
       } as MuscleUserData;
-      /* Render BEFORE wireframe — muscles write stencil=1 to mask wireframe. */
+      /* Render BEFORE wireframe — muscles write stencil bits 0+1 (wireframe mask + scan mask). */
       mesh.renderOrder = 1;
       mesh.material.stencilWrite = true;
-      mesh.material.stencilRef = 1;
+      mesh.material.stencilRef = 0x03;
+      mesh.material.stencilWriteMask = 0x03;
       mesh.material.stencilFunc = THREE.AlwaysStencilFunc;
       mesh.material.stencilZPass = THREE.ReplaceStencilOp;
       mesh.material.stencilFail = THREE.KeepStencilOp;
@@ -595,7 +600,8 @@ function SkeletonBody() {
           depthWrite: true,
           depthTest: true,
           stencilWrite: true,
-          stencilRef: 1,
+          stencilRef: 0x03,
+          stencilWriteMask: 0x03,
           stencilFunc: THREE.AlwaysStencilFunc,
           stencilZPass: THREE.ReplaceStencilOp,
           stencilFail: THREE.KeepStencilOp,
