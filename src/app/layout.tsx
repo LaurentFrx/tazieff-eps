@@ -212,7 +212,7 @@ export default async function RootLayout({
         />
         <link rel="preload" href="/images/anatomy/mini-mannequin.webp" as="image" />
       </head>
-      <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable} ${orbitron.variable}`}>
+      <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable} ${orbitron.variable}`} suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: SPLASH_SCRIPT }} />
         <AppProviders initialLang={initialLang} initialTheme={initialTheme}>
           <div className="app-shell">
