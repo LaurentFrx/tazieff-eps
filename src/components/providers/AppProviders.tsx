@@ -57,7 +57,6 @@ export function AppProviders({
     <ThemeProvider
       attribute="class"
       defaultTheme={initialTheme}
-      enableSystem
       enableColorScheme={false}
       storageKey={THEME_STORAGE_KEY}
     >
