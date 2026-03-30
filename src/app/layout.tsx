@@ -177,6 +177,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <script dangerouslySetInnerHTML={{ __html: SPLASH_SCRIPT }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -186,7 +187,6 @@ export default function RootLayout({
         <link rel="preload" href="/images/anatomy/mini-mannequin.webp" as="image" />
       </head>
       <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable} ${orbitron.variable}`} suppressHydrationWarning>
-        <script dangerouslySetInnerHTML={{ __html: SPLASH_SCRIPT }} />
         {children}
       </body>
     </html>
