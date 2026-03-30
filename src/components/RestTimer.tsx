@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 type RestTimerProps = {
   durationSec?: number;
@@ -13,6 +14,7 @@ function formatSeconds(value: number) {
 }
 
 export function RestTimer({ durationSec = 0 }: RestTimerProps) {
+  const { t } = useI18n();
   const [remaining, setRemaining] = useState(durationSec);
   const [running, setRunning] = useState(false);
 
@@ -40,15 +42,15 @@ export function RestTimer({ durationSec = 0 }: RestTimerProps) {
   if (!durationSec) {
     return (
       <div className="rest-timer">
-        <span className="rest-label">Repos</span>
-        <span className="rest-value">Pas de repos programmé</span>
+        <span className="rest-label">{t("restTimer.label")}</span>
+        <span className="rest-value">{t("restTimer.noRest")}</span>
       </div>
     );
   }
 
   return (
     <div className="rest-timer">
-      <span className="rest-label">Repos</span>
+      <span className="rest-label">{t("restTimer.label")}</span>
       <span className="rest-value">{label}</span>
       <div className="rest-actions">
         <button
@@ -56,7 +58,7 @@ export function RestTimer({ durationSec = 0 }: RestTimerProps) {
           className="chip"
           onClick={() => setRunning((prev) => !prev)}
         >
-          {running ? "Pause" : "Démarrer"}
+          {running ? t("restTimer.pause") : t("restTimer.start")}
         </button>
         <button
           type="button"
@@ -66,7 +68,7 @@ export function RestTimer({ durationSec = 0 }: RestTimerProps) {
             setRemaining(durationSec);
           }}
         >
-          Réinitialiser
+          {t("restTimer.reset")}
         </button>
       </div>
     </div>

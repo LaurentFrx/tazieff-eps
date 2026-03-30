@@ -7,6 +7,9 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 
 // ---------------------------------------------------------------------------
 // Pool of 24 accroches (FR-only, hardcoded)
+// i18n: These 24 marketing taglines are intentionally FR-only.
+// The target audience is 100% French high school students.
+// Do NOT extract to messages.ts unless internationalization strategy changes.
 // ---------------------------------------------------------------------------
 
 const ACCROCHE_POOL = [

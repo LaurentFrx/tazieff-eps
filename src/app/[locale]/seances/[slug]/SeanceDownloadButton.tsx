@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 
 type SeanceDownloadButtonProps = {
   exerciseSlugs: string[];
@@ -16,6 +17,7 @@ function sleep(ms: number) {
 }
 
 export function SeanceDownloadButton({ exerciseSlugs }: SeanceDownloadButtonProps) {
+  const { t } = useI18n();
   const uniqueSlugs = useMemo(
     () => Array.from(new Set(exerciseSlugs.filter(Boolean))),
     [exerciseSlugs],
@@ -58,27 +60,27 @@ export function SeanceDownloadButton({ exerciseSlugs }: SeanceDownloadButtonProp
 
       if (failures > 0) {
         setStatus("error");
-        setError("Certaines fiches n'ont pas pu être téléchargées.");
+        setError(t("seanceDetail.download.partialError"));
       } else {
         setStatus("done");
       }
     } catch (err) {
       setStatus("error");
-      setError(err instanceof Error ? err.message : "Téléchargement interrompu.");
+      setError(err instanceof Error ? err.message : t("seanceDetail.download.interrupted"));
     }
   };
 
   const label = (() => {
     if (total === 0) {
-      return "Aucune fiche à télécharger";
+      return t("seanceDetail.download.empty");
     }
     if (status === "loading") {
-      return `Téléchargement ${completed}/${total}`;
+      return `${t("seanceDetail.download.progress")} ${completed}/${total}`;
     }
     if (status === "done") {
-      return "Séance téléchargée";
+      return t("seanceDetail.download.done");
     }
-    return "Télécharger pour la séance";
+    return t("seanceDetail.download.button");
   })();
 
   return (
@@ -96,7 +98,7 @@ export function SeanceDownloadButton({ exerciseSlugs }: SeanceDownloadButtonProp
       ) : null}
       {status === "done" ? (
         <p className="text-xs text-[color:var(--muted)]">
-          Les fiches sont prêtes en mode hors ligne.
+          {t("seanceDetail.download.offlineReady")}
         </p>
       ) : null}
     </div>
