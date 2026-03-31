@@ -220,6 +220,7 @@ body:has(.anatomy-page) nav {
   display: flex;
   flex-direction: column;
   gap: 32px;
+  touch-action: manipulation;
 }
 
 .page {

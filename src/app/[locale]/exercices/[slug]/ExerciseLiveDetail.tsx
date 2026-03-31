@@ -9,6 +9,7 @@ import { useSearchParams } from "next/navigation";
 import DifficultyPill from "@/components/DifficultyPill";
 import ExerciseAnatomyThumb from "@/components/exercices/ExerciseAnatomyThumb";
 import { HeroMedia } from "@/components/media/HeroMedia";
+import { ExerciseImageLightbox } from "@/components/ExerciseImageLightbox";
 import {
   getFavoritesSnapshot,
   subscribeFavorites,
@@ -2586,15 +2587,24 @@ export function ExerciseLiveDetail({
               rounded={false}
             />
           ) : (
-            <HeroMedia
-              type="image"
+            <ExerciseImageLightbox
               src={hero.src}
               alt={hero.alt}
               width={hero.width}
               height={hero.height}
               priority
               rounded={false}
-            />
+            >
+              <HeroMedia
+                type="image"
+                src={hero.src}
+                alt={hero.alt}
+                width={hero.width}
+                height={hero.height}
+                priority
+                rounded={false}
+              />
+            </ExerciseImageLightbox>
           )}
 
           {/* Gradient + titre en overlay au bas */}
