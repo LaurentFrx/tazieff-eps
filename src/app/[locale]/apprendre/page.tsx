@@ -19,73 +19,50 @@ export default async function ApprendrePage({ params }: { params: Promise<{ loca
   const t = getServerT(lang);
   const learnPages = await getAllLearnPages(lang);
 
-  const staticCards = [
-    {
-      href: "/apprendre/parametres",
-      title: t("pages.apprendre.cards.parametres.title"),
-      description: t("pages.apprendre.cards.parametres.description"),
-    },
-    {
-      href: "/apprendre/techniques",
-      title: t("pages.apprendre.cards.techniques.title"),
-      description: t("pages.apprendre.cards.techniques.description"),
-    },
-    {
-      href: "/apprendre/connaissances",
-      title: t("pages.apprendre.cards.connaissances.title"),
-      description: t("pages.apprendre.cards.connaissances.description"),
-    },
-{
-      href: "/apprendre/anatomie",
-      title: t("pages.apprendre.cards.anatomie.title"),
-      description: t("pages.apprendre.cards.anatomie.description"),
-    },
+  const bySlug = new Map(learnPages.map((p) => [p.slug, p]));
+
+  const ORDERED_SLUGS = [
+    "muscles",
+    "rm-rir-rpe",
+    "securite",
+    "contractions",
+    "glossaire",
+    "programmes-hebdomadaires",
+  ];
+
+  type CardItem = { href: string; title: string; description: string };
+  const allCards: CardItem[] = [
+    { href: "/apprendre/parametres", title: t("pages.apprendre.cards.parametres.title"), description: t("pages.apprendre.cards.parametres.description") },
+    ...ORDERED_SLUGS.slice(0, 4).map((slug) => {
+      const p = bySlug.get(slug);
+      return { href: `/apprendre/${slug}`, title: p?.titre ?? slug, description: p?.description ?? "" };
+    }),
+    { href: "/apprendre/techniques", title: t("pages.apprendre.cards.techniques.title"), description: t("pages.apprendre.cards.techniques.description") },
+    { href: "/apprendre/connaissances", title: t("pages.apprendre.cards.connaissances.title"), description: t("pages.apprendre.cards.connaissances.description") },
+    ...ORDERED_SLUGS.slice(4).map((slug) => {
+      const p = bySlug.get(slug);
+      return { href: `/apprendre/${slug}`, title: p?.titre ?? slug, description: p?.description ?? "" };
+    }),
+    { href: "/apprendre/anatomie", title: t("pages.apprendre.cards.anatomie.title"), description: t("pages.apprendre.cards.anatomie.description") },
   ];
 
   return (
     <section className="page">
       <SectionHero
         title={t("pages.home.apprendreLabel")}
-        count={learnPages.length + staticCards.length}
+        count={allCards.length}
         subtitle={t("pages.home.heroApprendreSub")}
         gradient="from-green-500 to-emerald-400"
         illustration={<IlluBook />}
       />
       <div className="card-grid">
-        {staticCards.map((card) => (
+        {allCards.map((card) => (
           <Link key={card.href} href={lp(card.href, locale)} className="card">
             <h2>{card.title}</h2>
             <p>{card.description}</p>
           </Link>
         ))}
       </div>
-
-      {learnPages.length > 0 ? (
-        <section>
-          <h2 className="mb-3 text-base font-semibold text-[color:var(--ink)]">
-            {t("apprendre.learnPagesHeading")}
-          </h2>
-          <ul className="flex flex-col gap-2">
-            {learnPages.map((page) => (
-              <li key={page.slug}>
-                <Link
-                  href={lp(`/apprendre/${page.slug}`, locale)}
-                  className="card flex items-center justify-between gap-4 p-4 transition-colors hover:border-[color:var(--accent)]"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-[color:var(--ink)]">
-                      {page.titre}
-                    </p>
-                    <p className="mt-0.5 line-clamp-1 text-xs text-[color:var(--muted)]">
-                      {page.description}
-                    </p>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
     </section>
   );
 }
