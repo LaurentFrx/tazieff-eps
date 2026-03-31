@@ -7,3 +7,7 @@ export { LearnParamGrid } from "./LearnParamGrid";
 export { LearnChargeReps } from "./LearnChargeReps";
 export { LearnThemeCard } from "./LearnThemeCard";
 export { LearnQuizCard } from "./LearnQuizCard";
+export { LearnParamTable } from "./LearnParamTable";
+export { LearnMuscleRow } from "./LearnMuscleRow";
+export { LearnScale } from "./LearnScale";
+export { LearnNumberBadge } from "./LearnNumberBadge";

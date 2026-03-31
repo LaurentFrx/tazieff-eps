@@ -6,6 +6,15 @@ import { renderMdx } from "@/lib/mdx/render";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { DetailHeader } from "@/components/DetailHeader";
+import { MusclesContent } from "@/components/learn/MusclesContent";
+import { RmRirRpeContent } from "@/components/learn/RmRirRpeContent";
+import { SecuriteContent } from "@/components/learn/SecuriteContent";
+
+const REACT_PAGES: Record<string, React.ComponentType> = {
+  muscles: MusclesContent,
+  "rm-rir-rpe": RmRirRpeContent,
+  securite: SecuriteContent,
+};
 
 const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale}${path}`;
 
@@ -125,9 +134,13 @@ export default async function LearnSlugPage({ params }: LearnPageProps) {
         </nav>
       )}
 
-      <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-5 md:p-6 flex flex-col gap-5">
-        {mdxContent}
-      </div>
+      {REACT_PAGES[slug] ? (
+        (() => { const C = REACT_PAGES[slug]; return <C />; })()
+      ) : (
+        <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-5 md:p-6 flex flex-col gap-5">
+          {mdxContent}
+        </div>
+      )}
 
       {(prev || next) && (
         <nav className="flex items-stretch gap-3">
