@@ -11,3 +11,5 @@ export { LearnParamTable } from "./LearnParamTable";
 export { LearnMuscleRow } from "./LearnMuscleRow";
 export { LearnScale } from "./LearnScale";
 export { LearnNumberBadge } from "./LearnNumberBadge";
+export { LearnGlossary } from "./LearnGlossary";
+export { LearnWeekProgram } from "./LearnWeekProgram";

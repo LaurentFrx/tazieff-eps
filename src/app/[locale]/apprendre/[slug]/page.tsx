@@ -9,11 +9,17 @@ import { DetailHeader } from "@/components/DetailHeader";
 import { MusclesContent } from "@/components/learn/MusclesContent";
 import { RmRirRpeContent } from "@/components/learn/RmRirRpeContent";
 import { SecuriteContent } from "@/components/learn/SecuriteContent";
+import { ContractionsContent } from "@/components/learn/ContractionsContent";
+import { GlossaireContent } from "@/components/learn/GlossaireContent";
+import { ProgrammesContent } from "@/components/learn/ProgrammesContent";
 
 const REACT_PAGES: Record<string, React.ComponentType> = {
   muscles: MusclesContent,
   "rm-rir-rpe": RmRirRpeContent,
   securite: SecuriteContent,
+  contractions: ContractionsContent,
+  glossaire: GlossaireContent,
+  "programmes-hebdomadaires": ProgrammesContent,
 };
 
 const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale}${path}`;
