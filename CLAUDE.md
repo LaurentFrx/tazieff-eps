@@ -128,27 +128,14 @@ Les S6 (étirements) n'ont pas encore d'images — le fallback placeholder doit 
 - Messages de commit : en français, descriptifs (ex: "feat: ajouter page méthodes avec filtres par objectif")
 - Préfixes commit : `feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `test:`
 
-### 5.4 Versioning sémantique
-
-La version de l'app suit le **semver** (`MAJOR.MINOR.PATCH`) dans `package.json`. Point de départ : `0.0.0`.
-
-À chaque commit, Claude Code **DOIT** incrémenter la version dans `package.json` selon le préfixe du commit :
-
-- **`fix:`** → incrémente **PATCH** (ex: 0.2.3 → 0.2.4)
-- **`feat:`** → incrémente **MINOR** et remet PATCH à 0 (ex: 0.2.3 → 0.3.0)
-- **`refactor:`, `chore:`, `docs:`, `test:`** → incrémente **PATCH** (ex: 0.2.3 → 0.2.4)
-- **Breaking change** (changement d'API, suppression de page, restructuration majeure) → incrémente **MAJOR** et remet MINOR + PATCH à 0 (ex: 0.3.1 → 1.0.0)
-
-Le script `gen-build-info.mjs` lit automatiquement `package.json` au build — pas d'autre fichier à modifier.
-
-### 5.5 Tests
+### 5.4 Tests
 
 - Tout nouveau composant ou utilitaire → test Vitest associé
 - Tout bug corrigé → test de non-régression
 - Minimum : les tests existants ne doivent JAMAIS casser
 - Lancer `npm test` avant chaque commit
 
-### 5.6 Performance
+### 5.5 Performance
 
 - Utiliser `next/image` partout (jamais de `<img>` natif)
 - Lazy-load les composants lourds (Three.js, vidéos) avec `dynamic import`
