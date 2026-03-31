@@ -608,11 +608,11 @@ export const messages = {
           },
           techniques: {
             title: "Techniques d'entraînement",
-            description: "À compléter",
+            description: "Pré-fatigue, drop-set, rest-pause et autres techniques avancées.",
           },
           connaissances: {
             title: "Connaissances",
-            description: "À compléter",
+            description: "Énergie, contraction, respiration et biomécanique.",
           },
           calculateur: {
             title: "Calculateur 1RM",
@@ -1697,11 +1697,11 @@ export const messages = {
           },
           techniques: {
             title: "Training techniques",
-            description: "To be completed",
+            description: "Pre-fatigue, drop sets, rest-pause and other advanced techniques.",
           },
           connaissances: {
             title: "Knowledge",
-            description: "To be completed",
+            description: "Energy, contraction, breathing and biomechanics.",
           },
           calculateur: {
             title: "1RM Calculator",
@@ -2786,11 +2786,11 @@ export const messages = {
           },
           techniques: {
             title: "Técnicas de entrenamiento",
-            description: "Por completar",
+            description: "Pre-fatiga, drop-set, rest-pause y otras técnicas avanzadas.",
           },
           connaissances: {
             title: "Conocimientos",
-            description: "Por completar",
+            description: "Energía, contracción, respiración y biomecánica.",
           },
           calculateur: {
             title: "Calculadora 1RM",
