@@ -53,12 +53,42 @@ const outils = [
   { href: "/outils/carnet",         labelKey: "pages.home.outilCarnet",      gradient: "from-indigo-500 to-violet-500", icon: <IconCarnet /> },
 ];
 
+/* ── Theme SVG icons ──────────────────────────────────────────────── */
+
+function IconHeartbeat() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 12h4l3-9 4 18 3-9h4" />
+    </svg>
+  );
+}
+
+function IconBicep() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6.5 6.5L17.5 17.5" />
+      <path d="M3.5 10L10 3.5" />
+      <path d="M14 20.5L20.5 14" />
+      <path d="M2 11.5l1.5-1.5" />
+      <path d="M20.5 13L22 11.5" />
+    </svg>
+  );
+}
+
+function IconBolt() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </svg>
+  );
+}
+
 /* ── Themes data ──────────────────────────────────────────────────── */
 
 const themes = [
-  { href: "/methodes?objectif=endurance",  labelKey: "pages.home.themeEndurance", descKey: "pages.home.themeEnduranceDesc", gradient: "from-emerald-500 to-green-600", emoji: "💚" },
-  { href: "/methodes?objectif=volume",     labelKey: "pages.home.themeVolume",    descKey: "pages.home.themeVolumeDesc",    gradient: "from-blue-500 to-indigo-600",   emoji: "💙" },
-  { href: "/methodes?objectif=puissance",  labelKey: "pages.home.themePuissance", descKey: "pages.home.themePuissanceDesc", gradient: "from-orange-500 to-red-600",    emoji: "🧡" },
+  { href: "/methodes?objectif=endurance",  labelKey: "pages.home.themeEndurance", descKey: "pages.home.themeEnduranceDesc", gradient: "from-emerald-500 to-green-600", icon: <IconHeartbeat /> },
+  { href: "/methodes?objectif=volume",     labelKey: "pages.home.themeVolume",    descKey: "pages.home.themeVolumeDesc",    gradient: "from-blue-500 to-indigo-600",   icon: <IconBicep /> },
+  { href: "/methodes?objectif=puissance",  labelKey: "pages.home.themePuissance", descKey: "pages.home.themePuissanceDesc", gradient: "from-orange-500 to-red-600",    icon: <IconBolt /> },
 ];
 
 /* ── Props ────────────────────────────────────────────────────────── */
@@ -228,7 +258,7 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
               href={th.href}
               className={`rounded-2xl bg-gradient-to-br ${th.gradient} p-4 flex flex-col gap-1 shadow-md transition-all duration-300 hover:scale-[1.02] last:col-span-2 last:md:col-span-1`}
             >
-              <span className="text-2xl">{th.emoji}</span>
+              <span className="text-white/40">{th.icon}</span>
               <span className="text-base font-bold text-white drop-shadow-sm">{t(th.labelKey)}</span>
               <span className="text-xs text-white/80">{t(th.descKey)}</span>
             </Link>
