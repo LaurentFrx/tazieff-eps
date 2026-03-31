@@ -10,7 +10,7 @@ export function LearnParamTable({ rows }: Props) {
         className="flex justify-between p-[8px_12px] text-[11px] font-medium tracking-wide uppercase"
         style={{ background: "rgba(255,255,255,0.04)" }}
       >
-        <span className="text-zinc-500 dark:text-zinc-400">Param\u00e8tre</span>
+        <span className="text-zinc-500 dark:text-zinc-400">Paramètre</span>
         <span className="text-zinc-500 dark:text-zinc-400">Valeur</span>
       </div>
       {rows.map((row, i) => (

@@ -47,7 +47,7 @@ export function LearnGlossary({ terms }: Props) {
       {/* Terms */}
       <div className="rounded-2xl border border-white/[0.06] dark:border-white/[0.06] bg-white/[0.02] dark:bg-white/[0.02] overflow-hidden">
         {grouped.length === 0 && (
-          <p className="p-4 text-[12px] text-zinc-500 text-center">Aucun terme trouv\u00e9.</p>
+          <p className="p-4 text-[12px] text-zinc-500 text-center">Aucun terme trouvé.</p>
         )}
         {grouped.map(([letter, items]) => (
           <div key={letter}>
@@ -64,7 +64,7 @@ export function LearnGlossary({ terms }: Props) {
                 <p className="text-[12px] text-zinc-500 dark:text-zinc-400 leading-snug mt-1">{t.definition}</p>
                 {t.link && (
                   <LocaleLink href={t.link} className="text-[11px] text-cyan-600 dark:text-cyan-400 mt-1 inline-block hover:underline">
-                    En savoir plus \u2192
+                    En savoir plus →
                   </LocaleLink>
                 )}
               </div>

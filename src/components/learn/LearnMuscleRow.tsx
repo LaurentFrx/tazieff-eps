@@ -16,7 +16,7 @@ export function LearnMuscleRow({ name, role, antagonist }: Props) {
           className="text-[11px] rounded-full px-[8px] py-[2px] shrink-0"
           style={{ background: "rgba(123,47,255,0.08)", color: "#a070ff", border: "1px solid rgba(123,47,255,0.15)" }}
         >
-          \u2194 {antagonist}
+          ↔ {antagonist}
         </span>
       )}
     </div>

@@ -52,64 +52,64 @@ export function MusclesContent() {
       {/* Pourquoi */}
       <div className="rounded-2xl border border-white/[0.06] dark:border-white/[0.06] bg-white/[0.03] dark:bg-white/[0.03] p-4">
         <p className="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
-          S&apos;entra\u00eener sans conna\u00eetre ses muscles, c&apos;est conduire sans carte. Savoir <strong className="text-zinc-800 dark:text-zinc-200">quel muscle tu travailles</strong>, <strong className="text-zinc-800 dark:text-zinc-200">o\u00f9 il se situe</strong> et <strong className="text-zinc-800 dark:text-zinc-200">quel est son oppos\u00e9</strong> te permet de construire des s\u00e9ances \u00e9quilibr\u00e9es.
+          S&apos;entraîner sans connaître ses muscles, c&apos;est conduire sans carte. Savoir <strong className="text-zinc-800 dark:text-zinc-200">quel muscle tu travailles</strong>, <strong className="text-zinc-800 dark:text-zinc-200">où il se situe</strong> et <strong className="text-zinc-800 dark:text-zinc-200">quel est son opposé</strong> te permet de construire des séances équilibrées.
         </p>
       </div>
 
       {/* Face antérieure */}
-      <LearnAccordion title="Face ant\u00e9rieure" subtitle="Poitrine \u00b7 bras \u00b7 abdos \u00b7 cuisses avant" icon={<IconUpperBody />} accentColor="#FF006E">
+      <LearnAccordion title="Face antérieure" subtitle="Poitrine · bras · abdos · cuisses avant" icon={<IconUpperBody />} accentColor="#FF006E">
         <div className="flex flex-col gap-[6px]">
-          <LearnMuscleRow name="Pectoraux" role="Pouss\u00e9e horizontale (d\u00e9velopp\u00e9 couch\u00e9)" antagonist="Grand Dorsal" />
+          <LearnMuscleRow name="Pectoraux" role="Poussée horizontale (développé couché)" antagonist="Grand Dorsal" />
           <LearnMuscleRow name="Biceps" role="Flexion du coude (curl)" antagonist="Triceps" />
           <LearnMuscleRow name="Abdominaux" role="Flexion du tronc, gainage" />
-          <LearnMuscleRow name="Obliques" role="Rotation et flexion lat\u00e9rale" />
+          <LearnMuscleRow name="Obliques" role="Rotation et flexion latérale" />
           <LearnMuscleRow name="Quadriceps" role="Extension du genou (squat, presse)" antagonist="Ischios" />
           <LearnMuscleRow name="Adducteurs" role="Rapprochement des jambes" />
         </div>
       </LearnAccordion>
 
       {/* Face postérieure */}
-      <LearnAccordion title="Face post\u00e9rieure" subtitle="Dos \u00b7 \u00e9paules \u00b7 fessiers \u00b7 mollets" icon={<IconLowerBody />} accentColor="#00E5FF">
+      <LearnAccordion title="Face postérieure" subtitle="Dos · épaules · fessiers · mollets" icon={<IconLowerBody />} accentColor="#00E5FF">
         <div className="flex flex-col gap-[6px]">
-          <LearnMuscleRow name="Trap\u00e8zes" role="\u00c9l\u00e9vation et r\u00e9traction des \u00e9paules" />
+          <LearnMuscleRow name="Trapèzes" role="Élévation et rétraction des épaules" />
           <LearnMuscleRow name="Grand Dorsal" role="Tirage vertical et horizontal" antagonist="Pectoraux" />
           <LearnMuscleRow name="Triceps" role="Extension du coude" antagonist="Biceps" />
           <LearnMuscleRow name="Lombaires" role="Stabilisation du rachis" />
           <LearnMuscleRow name="Grand fessier" role="Extension de hanche (hip thrust)" />
           <LearnMuscleRow name="Ischios-jambiers" role="Flexion du genou" antagonist="Quadriceps" />
-          <LearnMuscleRow name="Mollets" role="Extension plantaire (mont\u00e9e sur pointes)" />
+          <LearnMuscleRow name="Mollets" role="Extension plantaire (montée sur pointes)" />
         </div>
       </LearnAccordion>
 
       {/* Agoniste / Antagoniste */}
-      <LearnAccordion title="Agoniste et antagoniste" subtitle="Muscles oppos\u00e9s \u00b7 \u00e9quilibre" icon={<IconBalance />} accentColor="#7B2FFF">
+      <LearnAccordion title="Agoniste et antagoniste" subtitle="Muscles opposés · équilibre" icon={<IconBalance />} accentColor="#7B2FFF">
         <div className="grid grid-cols-2 gap-2">
-          <LearnMiniCard label="Agoniste" accentColor="#7B2FFF">Produit le mouvement \u2014 il se contracte.</LearnMiniCard>
-          <LearnMiniCard label="Antagoniste" accentColor="#7B2FFF">S&apos;oppose et freine \u2014 il se rel\u00e2che.</LearnMiniCard>
+          <LearnMiniCard label="Agoniste" accentColor="#7B2FFF">Produit le mouvement — il se contracte.</LearnMiniCard>
+          <LearnMiniCard label="Antagoniste" accentColor="#7B2FFF">S&apos;oppose et freine — il se relâche.</LearnMiniCard>
         </div>
-        <LearnWarning>Toujours travailler les deux faces d&apos;une articulation. Biceps sans triceps = d\u00e9s\u00e9quilibre et blessure.</LearnWarning>
+        <LearnWarning>Toujours travailler les deux faces d&apos;une articulation. Biceps sans triceps = déséquilibre et blessure.</LearnWarning>
       </LearnAccordion>
 
       {/* Isolation vs Polyarticulaire */}
-      <LearnAccordion title="Isolation vs polyarticulaire" subtitle="1 muscle vs plusieurs \u00b7 strat\u00e9gie de s\u00e9ance" icon={<IconIsoVsPoly />} accentColor="#FF006E">
+      <LearnAccordion title="Isolation vs polyarticulaire" subtitle="1 muscle vs plusieurs · stratégie de séance" icon={<IconIsoVsPoly />} accentColor="#FF006E">
         <div className="grid grid-cols-2 gap-2">
-          <LearnMiniCard label="Isolation" accentColor="#FF006E">1 muscle, 1 articulation. Curl, leg extension, \u00e9cart\u00e9.</LearnMiniCard>
+          <LearnMiniCard label="Isolation" accentColor="#FF006E">1 muscle, 1 articulation. Curl, leg extension, écarté.</LearnMiniCard>
           <LearnMiniCard label="Polyarticulaire" accentColor="#FF006E">Plusieurs muscles et articulations. Squat, tractions, rowing.</LearnMiniCard>
         </div>
-        <LearnWarning>Strat\u00e9gie : commencer par les polyarticulaires (frais), finir par les isolations.</LearnWarning>
+        <LearnWarning>Stratégie : commencer par les polyarticulaires (frais), finir par les isolations.</LearnWarning>
       </LearnAccordion>
 
       {/* Équilibre musculaire */}
-      <LearnAccordion title="\u00c9quilibre musculaire" subtitle="3 \u00e9quilibres fondamentaux" icon={<IconCore />} accentColor="#00E5FF">
+      <LearnAccordion title="Équilibre musculaire" subtitle="3 équilibres fondamentaux" icon={<IconCore />} accentColor="#00E5FF">
         <div className="flex flex-col gap-[6px]">
-          <LearnMiniCard label="1. Agonistes / Antagonistes" accentColor="#00E5FF">Biceps \u2194 Triceps \u00b7 Quadriceps \u2194 Ischios \u00b7 Pectoraux \u2194 Grand Dorsal</LearnMiniCard>
-          <LearnMiniCard label="2. Stabilisateurs du tronc" accentColor="#00E5FF">Abdominaux (avant) ET lombaires (arri\u00e8re) pour prot\u00e9ger la colonne.</LearnMiniCard>
-          <LearnMiniCard label="3. Haut / Bas du corps" accentColor="#00E5FF">Ne pas n\u00e9gliger les jambes \u2014 plus grande masse musculaire du corps.</LearnMiniCard>
+          <LearnMiniCard label="1. Agonistes / Antagonistes" accentColor="#00E5FF">Biceps ↔ Triceps · Quadriceps ↔ Ischios · Pectoraux ↔ Grand Dorsal</LearnMiniCard>
+          <LearnMiniCard label="2. Stabilisateurs du tronc" accentColor="#00E5FF">Abdominaux (avant) ET lombaires (arrière) pour protéger la colonne.</LearnMiniCard>
+          <LearnMiniCard label="3. Haut / Bas du corps" accentColor="#00E5FF">Ne pas négliger les jambes — plus grande masse musculaire du corps.</LearnMiniCard>
         </div>
         <LearnMethodChips accentColor="#00E5FF" methods={[
-          { label: "Carte anatomique 3D \u2192", href: "/apprendre/anatomie" },
-          { label: "Contractions \u2192", href: "/apprendre/contractions" },
-          { label: "S\u00e9curit\u00e9 \u2192", href: "/apprendre/securite" },
+          { label: "Carte anatomique 3D →", href: "/apprendre/anatomie" },
+          { label: "Contractions →", href: "/apprendre/contractions" },
+          { label: "Sécurité →", href: "/apprendre/securite" },
         ]} />
       </LearnAccordion>
     </div>

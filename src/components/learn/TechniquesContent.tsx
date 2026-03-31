@@ -87,43 +87,43 @@ export function TechniquesContent() {
   return (
     <div className="flex flex-col gap-3">
       {/* 1 — Placements */}
-      <LearnAccordion title="Placements et postures" subtitle="Dos \u00b7 regard \u00b7 appuis \u00b7 genoux" icon={<IconCrosshair />} accentColor="#00E5FF">
+      <LearnAccordion title="Placements et postures" subtitle="Dos · regard · appuis · genoux" icon={<IconCrosshair />} accentColor="#00E5FF">
         <div className="grid grid-cols-2 gap-2">
           <LearnMiniCard label="Dos" accentColor="#00E5FF">Courbures naturelles. Jamais arrondi sous charge.</LearnMiniCard>
           <LearnMiniCard label="Regard" accentColor="#00E5FF">Fixe, horizontal. Stabilise la colonne.</LearnMiniCard>
-          <LearnMiniCard label="Appuis" accentColor="#00E5FF">Pieds largeur d&apos;\u00e9paules, poids talon + avant-pied.</LearnMiniCard>
+          <LearnMiniCard label="Appuis" accentColor="#00E5FF">Pieds largeur d&apos;épaules, poids talon + avant-pied.</LearnMiniCard>
           <LearnMiniCard label="Genoux" accentColor="#00E5FF">Axe des pieds. Pas de valgus au squat.</LearnMiniCard>
         </div>
-        <LearnWarning>Si le placement se d\u00e9grade, la charge est trop lourde. Diminue-la.</LearnWarning>
-        <LearnMethodChips accentColor="#00E5FF" methods={[{ label: "S\u00e9curit\u00e9 \u2192", href: "/apprendre/securite" }]} />
+        <LearnWarning>Si le placement se dégrade, la charge est trop lourde. Diminue-la.</LearnWarning>
+        <LearnMethodChips accentColor="#00E5FF" methods={[{ label: "Sécurité →", href: "/apprendre/securite" }]} />
       </LearnAccordion>
 
       {/* 2 — Trajectoires */}
-      <LearnAccordion title="Trajectoires motrices" subtitle="Amplitude \u00b7 contr\u00f4le \u00b7 sym\u00e9trie" icon={<IconHeartbeat />} accentColor="#7B2FFF">
+      <LearnAccordion title="Trajectoires motrices" subtitle="Amplitude · contrôle · symétrie" icon={<IconHeartbeat />} accentColor="#7B2FFF">
         <LearnCorrectIncorrect items={[
-          { label: "Amplitude", correct: "Compl\u00e8te", incorrect: "Partielle" },
-          { label: "Trajectoire", correct: "Fluide", incorrect: "\u00c9lan" },
+          { label: "Amplitude", correct: "Complète", incorrect: "Partielle" },
+          { label: "Trajectoire", correct: "Fluide", incorrect: "Élan" },
           { label: "Excentrique", correct: "Lente 2-4s", incorrect: "Chute libre" },
-          { label: "Sym\u00e9trie", correct: "Effort \u00e9gal", incorrect: "Compensation" },
+          { label: "Symétrie", correct: "Effort égal", incorrect: "Compensation" },
         ]} />
-        <LearnMethodChips accentColor="#7B2FFF" methods={[{ label: "Contractions \u2192", href: "/apprendre/contractions" }]} />
+        <LearnMethodChips accentColor="#7B2FFF" methods={[{ label: "Contractions →", href: "/apprendre/contractions" }]} />
       </LearnAccordion>
 
       {/* 3 — Rythme */}
-      <LearnAccordion title="Rythme du mouvement" subtitle="Tempo \u00b7 charge/vitesse" icon={<IconClock />} accentColor="#FF006E">
+      <LearnAccordion title="Rythme du mouvement" subtitle="Tempo · charge/vitesse" icon={<IconClock />} accentColor="#FF006E">
         <div className="flex flex-col gap-[6px]">
-          <TempoItem value="2-0-2" title="Standard polyvalent" sub="2s mont\u00e9e \u00b7 0 pause \u00b7 2s descente" />
-          <TempoItem value="1-0-3" title="Accent excentrique" sub="Hypertrophie \u2014 descente lente" />
-          <TempoItem value="2-2-2" title="Stato-dynamique" sub="Pause isom\u00e9trique \u2014 force" />
+          <TempoItem value="2-0-2" title="Standard polyvalent" sub="2s montée · 0 pause · 2s descente" />
+          <TempoItem value="1-0-3" title="Accent excentrique" sub="Hypertrophie — descente lente" />
+          <TempoItem value="2-2-2" title="Stato-dynamique" sub="Pause isométrique — force" />
         </div>
         <LearnMethodChips accentColor="#FF006E" methods={[
-          { label: "Stato-dynamique \u2192", href: "/methodes/stato-dynamique" },
-          { label: "Pliom\u00e9trie \u2192", href: "/methodes/pliometrie" },
+          { label: "Stato-dynamique →", href: "/methodes/stato-dynamique" },
+          { label: "Pliométrie →", href: "/methodes/pliometrie" },
         ]} />
       </LearnAccordion>
 
       {/* 4 — Respiration */}
-      <LearnAccordion title="Respiration" subtitle="Inspirer \u00b7 expirer \u00b7 Valsalva" icon={<IconLungs />} accentColor="#00E5FF">
+      <LearnAccordion title="Respiration" subtitle="Inspirer · expirer · Valsalva" icon={<IconLungs />} accentColor="#00E5FF">
         <div className="flex gap-2">
           <BreathCard label="Inspirer" sub="Excentrique (descente)" color="#00E5FF" down />
           <BreathCard label="Expirer" sub="Concentrique (effort)" color="#FF006E" down={false} />

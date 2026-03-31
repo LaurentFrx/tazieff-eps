@@ -36,66 +36,66 @@ export function RmRirRpeContent() {
       {/* Intro */}
       <div className="rounded-2xl border border-white/[0.06] dark:border-white/[0.06] bg-white/[0.03] dark:bg-white/[0.03] p-4">
         <p className="text-[13px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
-          Pour progresser, tu dois conna\u00eetre et contr\u00f4ler ton <strong className="text-zinc-800 dark:text-zinc-200">niveau d&apos;intensit\u00e9</strong> \u00e0 chaque s\u00e9rie. Trois outils compl\u00e9mentaires : le RM, le RIR et le RPE.
+          Pour progresser, tu dois connaître et contrôler ton <strong className="text-zinc-800 dark:text-zinc-200">niveau d&apos;intensité</strong> à chaque série. Trois outils complémentaires : le RM, le RIR et le RPE.
         </p>
       </div>
 
       {/* RM */}
-      <LearnAccordion title="RM \u2014 R\u00e9p\u00e9tition Maximale" subtitle="Charge max \u00b7 mesure objective \u00b7 % du 1RM" icon={<IconWeight />} accentColor="#00E5FF">
+      <LearnAccordion title="RM — Répétition Maximale" subtitle="Charge max · mesure objective · % du 1RM" icon={<IconWeight />} accentColor="#00E5FF">
         <div className="grid grid-cols-2 gap-2">
           <LearnMiniCard label="1RM" accentColor="#00E5FF">Charge max pour 1 seule rep avec technique correcte.</LearnMiniCard>
           <LearnMiniCard label="5RM / 10RM" accentColor="#00E5FF">Charge max pour 5 ou 10 reps.</LearnMiniCard>
         </div>
         <LearnScale accentColor="#00E5FF" levels={[
-          { value: "50-70%", label: "Endurance de force \u2014 12-20 reps", color: "#22c55e" },
-          { value: "65-80%", label: "Gain de volume \u2014 8-12 reps", color: "#3b82f6" },
-          { value: "80-95%", label: "Gain de puissance \u2014 1-6 reps", color: "#f97316" },
+          { value: "50-70%", label: "Endurance de force — 12-20 reps", color: "#22c55e" },
+          { value: "65-80%", label: "Gain de volume — 8-12 reps", color: "#3b82f6" },
+          { value: "80-95%", label: "Gain de puissance — 1-6 reps", color: "#f97316" },
         ]} />
         <div className="rounded-[10px] p-[10px_12px]" style={{ background: "rgba(0,229,255,0.04)", border: "1px solid rgba(0,229,255,0.08)" }}>
           <p className="text-[11px] font-medium text-cyan-500">Formule de Brzycki</p>
-          <p className="text-[13px] font-mono text-zinc-700 dark:text-zinc-300 mt-1">1RM \u2248 Charge \u00d7 (36 / (37 \u2212 reps))</p>
-          <p className="text-[11px] text-zinc-500 mt-1">Ex : 60 kg \u00d7 10 reps \u2192 1RM \u2248 80 kg</p>
+          <p className="text-[13px] font-mono text-zinc-700 dark:text-zinc-300 mt-1">1RM ≈ Charge × (36 / (37 − reps))</p>
+          <p className="text-[11px] text-zinc-500 mt-1">Ex : 60 kg × 10 reps → 1RM ≈ 80 kg</p>
         </div>
-        <LearnWarning>En Seconde et Premi\u00e8re, pas besoin de tester le 1RM r\u00e9el. L&apos;estimation depuis 10-12 reps est plus s\u00fbre.</LearnWarning>
-        <LearnMethodChips accentColor="#00E5FF" methods={[{ label: "Calculer mon 1RM \u2192", href: "/outils/calculateur-rm" }]} />
+        <LearnWarning>En Seconde et Première, pas besoin de tester le 1RM réel. L&apos;estimation depuis 10-12 reps est plus sûre.</LearnWarning>
+        <LearnMethodChips accentColor="#00E5FF" methods={[{ label: "Calculer mon 1RM →", href: "/outils/calculateur-rm" }]} />
       </LearnAccordion>
 
       {/* RIR */}
-      <LearnAccordion title="RIR \u2014 Reps In Reserve" subtitle="Reps restantes \u00b7 estimation subjective" icon={<IconGauge />} accentColor="#7B2FFF">
+      <LearnAccordion title="RIR — Reps In Reserve" subtitle="Reps restantes · estimation subjective" icon={<IconGauge />} accentColor="#7B2FFF">
         <LearnScale accentColor="#7B2FFF" levels={[
-          { value: "RIR 5+", label: "Trop facile \u2014 charge insuffisante", color: "#22c55e" },
-          { value: "RIR 3-4", label: "Effort notable \u2014 zone correcte", color: "#84cc16" },
+          { value: "RIR 5+", label: "Trop facile — charge insuffisante", color: "#22c55e" },
+          { value: "RIR 3-4", label: "Effort notable — zone correcte", color: "#84cc16" },
           { value: "RIR 2-3", label: "Zone de travail optimale", color: "#eab308" },
-          { value: "RIR 1", label: "Quasi-maximum \u2014 1 rep en r\u00e9serve", color: "#f97316" },
-          { value: "RIR 0", label: "\u00c9chec musculaire \u2014 impossible de continuer", color: "#ef4444" },
+          { value: "RIR 1", label: "Quasi-maximum — 1 rep en réserve", color: "#f97316" },
+          { value: "RIR 0", label: "Échec musculaire — impossible de continuer", color: "#ef4444" },
         ]} />
         <div className="grid grid-cols-2 gap-2">
           <LearnMiniCard label="RIR > 4" accentColor="#7B2FFF">Augmente la charge</LearnMiniCard>
-          <LearnMiniCard label="RIR 0-1" accentColor="#7B2FFF">Limite \u2014 ponctuellement</LearnMiniCard>
+          <LearnMiniCard label="RIR 0-1" accentColor="#7B2FFF">Limite — ponctuellement</LearnMiniCard>
         </div>
-        <LearnWarning>En Seconde, apprends d&apos;abord \u00e0 reconna\u00eetre la sensation de \u00ab\u00a0br\u00fblure\u00a0\u00bb en fin de s\u00e9rie.</LearnWarning>
+        <LearnWarning>En Seconde, apprends d&apos;abord à reconnaître la sensation de « brûlure » en fin de série.</LearnWarning>
       </LearnAccordion>
 
       {/* RPE */}
-      <LearnAccordion title="RPE \u2014 Perception de l\u2019effort" subtitle="\u00c9chelle 1-10 \u00b7 effort global ressenti" icon={<IconHeart />} accentColor="#FF006E">
+      <LearnAccordion title="RPE — Perception de l’effort" subtitle="Échelle 1-10 · effort global ressenti" icon={<IconHeart />} accentColor="#FF006E">
         <LearnScale accentColor="#FF006E" levels={[
-          { value: "1-3", label: "Tr\u00e8s facile, \u00e9chauffement", color: "#22c55e" },
-          { value: "4-5", label: "Effort mod\u00e9r\u00e9", color: "#84cc16" },
-          { value: "6-7", label: "Effort notable, respiration \u00e9lev\u00e9e", color: "#eab308" },
-          { value: "8", label: "Difficile, fin de s\u00e9rie perceptible", color: "#f97316" },
-          { value: "9", label: "Tr\u00e8s difficile, quasi-maximum", color: "#ef4444" },
+          { value: "1-3", label: "Très facile, échauffement", color: "#22c55e" },
+          { value: "4-5", label: "Effort modéré", color: "#84cc16" },
+          { value: "6-7", label: "Effort notable, respiration élevée", color: "#eab308" },
+          { value: "8", label: "Difficile, fin de série perceptible", color: "#f97316" },
+          { value: "9", label: "Très difficile, quasi-maximum", color: "#ef4444" },
           { value: "10", label: "Effort maximal absolu", color: "#dc2626" },
         ]} />
-        <LearnWarning>Le RPE tient compte de la fatigue du jour, du sommeil, du stress. Deux jours identiques peuvent donner des RPE diff\u00e9rents.</LearnWarning>
+        <LearnWarning>Le RPE tient compte de la fatigue du jour, du sommeil, du stress. Deux jours identiques peuvent donner des RPE différents.</LearnWarning>
       </LearnAccordion>
 
       {/* Comparatif */}
       <div className="rounded-2xl border border-white/[0.06] dark:border-white/[0.06] bg-white/[0.03] dark:bg-white/[0.03] p-4">
         <p className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400 tracking-wide uppercase mb-3">COMPARATIF</p>
         <div className="flex flex-col gap-[6px]">
-          <LearnMiniCard label="RM" accentColor="#00E5FF">Objectif \u00b7 charge maximale \u00b7 1\u00e8re / Terminale</LearnMiniCard>
-          <LearnMiniCard label="RIR" accentColor="#7B2FFF">Estimation \u00b7 reps restantes \u00b7 d\u00e8s la Seconde</LearnMiniCard>
-          <LearnMiniCard label="RPE" accentColor="#FF006E">Subjectif \u00b7 perception globale \u00b7 1\u00e8re / Terminale</LearnMiniCard>
+          <LearnMiniCard label="RM" accentColor="#00E5FF">Objectif · charge maximale · 1ère / Terminale</LearnMiniCard>
+          <LearnMiniCard label="RIR" accentColor="#7B2FFF">Estimation · reps restantes · dès la Seconde</LearnMiniCard>
+          <LearnMiniCard label="RPE" accentColor="#FF006E">Subjectif · perception globale · 1ère / Terminale</LearnMiniCard>
         </div>
       </div>
     </div>
