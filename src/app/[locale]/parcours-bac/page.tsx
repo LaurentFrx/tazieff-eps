@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const lang = getServerLang(locale);
   const t = getServerT(lang);
-  return { title: t("meta.parcoursBacTitle"), description: t("meta.parcoursBacDesc") };
+  return { title: t("parcours.title") };
 }
 
 export default async function ParcoursBacPage({ params }: { params: Promise<{ locale: string }> }) {

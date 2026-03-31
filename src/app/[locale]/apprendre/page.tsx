@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { getAllLearnPages } from "@/lib/content/fs";
 
@@ -6,13 +5,6 @@ const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { SectionHero } from "@/components/SectionHero";
 import { IlluBook } from "@/components/illustrations";
-
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
-  const { locale } = await params;
-  const lang = getServerLang(locale);
-  const t = getServerT(lang);
-  return { title: t("meta.apprendreTitle"), description: t("meta.apprendreDesc") };
-}
 
 export default async function ApprendrePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

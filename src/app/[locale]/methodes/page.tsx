@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const lang = getServerLang(locale);
   const t = getServerT(lang);
-  return { title: t("meta.methodesTitle"), description: t("meta.methodesDesc") };
+  return { title: t("methodes.title") };
 }
 
 const CATEGORY_ORDER: CategorieMethode[] = [

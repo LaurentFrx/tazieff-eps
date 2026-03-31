@@ -36,7 +36,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "Tazieff EPS",
-  description: "Guide complet de musculation pour le BAC EPS : exercices, m\u00e9thodes d\u2019entra\u00eenement, anatomie et parcours d\u2019\u00e9valuation.",
+  description: "Guide mobile avec navigation a quatre onglets.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
