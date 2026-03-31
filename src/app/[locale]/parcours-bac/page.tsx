@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
+
+const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale}${path}`;
 import { ParcoursDashboard } from "./ParcoursDashboard";
 import { SectionHero } from "@/components/SectionHero";
 import { IlluTrophy } from "@/components/illustrations";
@@ -26,6 +29,10 @@ export default async function ParcoursBacPage({ params }: { params: Promise<{ lo
       />
 
       <ParcoursDashboard />
+
+      <Link href={lp("/bac", locale)} className="eyebrow hover:text-[color:var(--accent)]">
+        {t("parcours.backLabel")}
+      </Link>
     </section>
   );
 }
