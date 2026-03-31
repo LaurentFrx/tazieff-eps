@@ -1,40 +1,26 @@
 import type { Metadata } from "next";
-import { getPageMdx } from "@/lib/content/reader";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
+import { TechniquesContent } from "@/components/learn/TechniquesContent";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = getServerT(getServerLang(locale));
-  return { title: `${t("pages.apprendre.cards.techniques.title")} \u2014 Tazieff EPS` };
+  return { title: `${t("pages.apprendre.cards.techniques.title")} \u2014 Apprendre \u2014 Tazieff EPS` };
 }
 
 export default async function TechniquesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  const lang = getServerLang(locale);
-  const t = getServerT(lang);
-  const { frontmatter, content, toc } = await getPageMdx("apprendre_techniques");
-  const tocItems = toc.filter((item) => item.level === 2);
+  const t = getServerT(getServerLang(locale));
 
   return (
     <section className="page">
       <header className="page-header">
         <p className="eyebrow">{t("apprendre.eyebrow")}</p>
-        <h1>{frontmatter.title}</h1>
-        <p className="lede">{frontmatter.summary ?? t("apprendre.incomplete")}</p>
+        <h1>{t("pages.apprendre.cards.techniques.title")}</h1>
+        <p className="lede">{t("pages.apprendre.cards.techniques.description")}</p>
       </header>
 
-      <nav className="card stack-md" aria-label={t("apprendre.toc")}>
-        <h2>{t("apprendre.toc")}</h2>
-        <ul>
-          {tocItems.map((item) => (
-            <li key={item.id}>
-              <a href={`#${item.id}`}>{item.title}</a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      <div className="stack-lg">{content}</div>
+      <TechniquesContent />
     </section>
   );
 }
