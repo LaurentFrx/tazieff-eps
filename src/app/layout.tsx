@@ -31,12 +31,18 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  themeColor: "#0b1020",
 };
 
 export const metadata: Metadata = {
   title: "Tazieff EPS",
   description: "Guide mobile avec navigation a quatre onglets.",
   manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Tazieff EPS",
+  },
   icons: {
     icon: [
       { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
@@ -60,6 +66,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* Anti-flash: hide body until splash.js takes over */}
+        <style id="splash-hide" dangerouslySetInnerHTML={{ __html: 'body{visibility:hidden!important}' }} />
+        <link rel="preload" href="/images/anatomy/mini-mannequin.webp" as="image" type="image/webp" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -68,6 +77,8 @@ export default function RootLayout({
         />
       </head>
       <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable} ${orbitron.variable}`} suppressHydrationWarning>
+        {/* Fallback: reveal body if JS is disabled */}
+        <noscript dangerouslySetInnerHTML={{ __html: '<style>body{visibility:visible!important}</style>' }} />
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script src="/splash.js" />
         {children}
