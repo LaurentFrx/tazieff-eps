@@ -26,7 +26,7 @@ export default async function HomePage({ params }: Props) {
     <HomepageClient
       exerciseCount={exercises.length}
       methodeCount={methodes.length}
-      learnCount={learnPages.length + 4}
+      learnCount={learnPages.length}
     />
   );
 }
