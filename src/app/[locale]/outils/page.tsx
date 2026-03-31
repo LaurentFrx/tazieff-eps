@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const lang = getServerLang(locale);
   const t = getServerT(lang);
-  return { title: t("outils.title") };
+  return { title: t("meta.outilsTitle"), description: t("meta.outilsDesc") };
 }
 
 export default async function OutilsPage({ params }: { params: Promise<{ locale: string }> }) {
