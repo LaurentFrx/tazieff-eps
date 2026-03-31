@@ -6,7 +6,6 @@ import { renderMdx } from "@/lib/mdx/render";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { DetailHeader } from "@/components/DetailHeader";
-import { ScanReveal } from "@/components/ScanReveal";
 
 const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale}${path}`;
 
@@ -126,11 +125,9 @@ export default async function LearnSlugPage({ params }: LearnPageProps) {
         </nav>
       )}
 
-      <ScanReveal>
-        <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-5 md:p-6 flex flex-col gap-5">
-          {mdxContent}
-        </div>
-      </ScanReveal>
+      <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-5 md:p-6 flex flex-col gap-5">
+        {mdxContent}
+      </div>
 
       {(prev || next) && (
         <nav className="flex items-stretch gap-3">

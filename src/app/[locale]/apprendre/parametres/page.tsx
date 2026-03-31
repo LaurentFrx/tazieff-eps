@@ -1,6 +1,5 @@
 import { getPageMdx } from "@/lib/content/reader";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
-import { ScanReveal } from "@/components/ScanReveal";
 
 export default async function ParametresPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -28,9 +27,7 @@ export default async function ParametresPage({ params }: { params: Promise<{ loc
         </ul>
       </nav>
 
-      <ScanReveal>
-        <div className="stack-lg">{content}</div>
-      </ScanReveal>
+      <div className="stack-lg">{content}</div>
     </section>
   );
 }
