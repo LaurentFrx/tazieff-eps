@@ -1,5 +1,6 @@
 import type { ComponentPropsWithoutRef } from "react";
 import { Checklist } from "@/components/mdx/Checklist";
+import { MdxLink } from "@/components/mdx/MdxLink";
 
 export const mdxComponents = {
   Checklist,
@@ -30,12 +31,5 @@ export const mdxComponents = {
   li: ({ className, ...props }: ComponentPropsWithoutRef<"li">) => (
     <li className={`text-[color:var(--muted)] ${className ?? ""}`.trim()} {...props} />
   ),
-  a: ({ className, ...props }: ComponentPropsWithoutRef<"a">) => (
-    <a
-      className={`text-[color:var(--ink)] underline decoration-[color:var(--accent)] ${
-        className ?? ""
-      }`.trim()}
-      {...props}
-    />
-  ),
+  a: MdxLink,
 };

@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import { getPageMdx } from "@/lib/content/reader";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = getServerT(getServerLang(locale));
+  return { title: `${t("pages.apprendre.cards.techniques.title")} \u2014 Tazieff EPS` };
+}
 
 export default async function TechniquesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
