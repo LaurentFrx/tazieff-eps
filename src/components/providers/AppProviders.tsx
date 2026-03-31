@@ -19,13 +19,6 @@ const THEME_STORAGE_KEY = "eps_theme";
 const THEME_COOKIE_KEY = "eps_theme";
 const ONE_YEAR_IN_SECONDS = 60 * 60 * 24 * 365;
 
-function LangSync({ lang }: { lang: Lang }) {
-  useEffect(() => {
-    document.documentElement.lang = lang;
-  }, [lang]);
-  return null;
-}
-
 function ThemeSync({ initialTheme }: { initialTheme: ThemePreference }) {
   const { theme, resolvedTheme, setTheme } = useTheme();
 
@@ -71,7 +64,6 @@ export function AppProviders({
       <I18nProvider initialLang={initialLang}>
         <AuthProvider>
           {children}
-          <LangSync lang={initialLang} />
           <ThemeSync initialTheme={initialTheme} />
           <DevServiceWorkerCleanup />
           <ServiceWorkerRegister />
