@@ -57,14 +57,18 @@ function ImageLightbox({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center"
+      style={{ background: "rgba(0,0,0,0.95)" }}
       onClick={onClose}
     >
       <button
         type="button"
         onClick={onClose}
-        className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-        style={{ top: "max(16px, env(safe-area-inset-top, 16px))" }}
+        className="absolute z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+        style={{
+          top: "max(16px, env(safe-area-inset-top, 16px))",
+          right: "max(16px, env(safe-area-inset-right, 16px))",
+        }}
         aria-label={t("media.closeLightbox")}
       >
         <svg
@@ -80,15 +84,18 @@ function ImageLightbox({
           <path d="M18 6L6 18M6 6l12 12" />
         </svg>
       </button>
-      <div onClick={(e) => e.stopPropagation()} className="max-w-full max-h-full">
-        <Image
-          src={src}
-          alt={alt}
-          sizes="100vw"
-          className="w-auto h-auto max-w-full max-h-screen object-contain"
-          {...(typeof src === "string" && width && height ? { width, height } : {})}
-        />
-      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={typeof src === "string" ? src : (src as StaticImageData).src}
+        alt={alt}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "contain",
+          touchAction: "pinch-zoom",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      />
     </div>,
     document.body,
   );
