@@ -15,6 +15,7 @@ export function brzycki(charge: number, reps: number): number {
 
 export const RM_TABLE = [
   { pct: 100, reps: 1, zone: "force_max" },
+  { pct: 95, reps: 2, zone: "force" },
   { pct: 90, reps: 4, zone: "force" },
   { pct: 85, reps: 6, zone: "force" },
   { pct: 80, reps: 8, zone: "volume" },
@@ -22,7 +23,11 @@ export const RM_TABLE = [
   { pct: 70, reps: 12, zone: "volume" },
   { pct: 65, reps: 15, zone: "endurance" },
   { pct: 60, reps: 20, zone: "endurance" },
+  { pct: 55, reps: 22, zone: "endurance" },
   { pct: 50, reps: 25, zone: "endurance_legere" },
+  { pct: 45, reps: 28, zone: "endurance_legere" },
+  { pct: 40, reps: 0, zone: "puissance_vitesse" },
+  { pct: 35, reps: 0, zone: "puissance_vitesse" },
   { pct: 30, reps: 0, zone: "puissance_vitesse" },
 ] as const;
 

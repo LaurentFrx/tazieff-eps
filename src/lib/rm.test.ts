@@ -68,8 +68,8 @@ describe("brzycki()", () => {
 });
 
 describe("RM_TABLE", () => {
-  it("has 10 rows", () => {
-    expect(RM_TABLE).toHaveLength(10);
+  it("has 15 rows (30–100% by 5)", () => {
+    expect(RM_TABLE).toHaveLength(15);
   });
 
   it("starts at 100% and ends at 30%", () => {
@@ -82,21 +82,28 @@ describe("RM_TABLE", () => {
       expect(RM_TABLE[i].pct).toBeLessThan(RM_TABLE[i - 1].pct);
     }
   });
+
+  it("includes 95% force entry", () => {
+    const row95 = RM_TABLE.find((r) => r.pct === 95);
+    expect(row95).toBeDefined();
+    expect(row95!.zone).toBe("force");
+    expect(row95!.reps).toBe(2);
+  });
 });
 
 describe("buildRmTable()", () => {
-  it("returns 10 rows with computed charges", () => {
+  it("returns 15 rows with computed charges", () => {
     const table = buildRmTable(100);
-    expect(table).toHaveLength(10);
+    expect(table).toHaveLength(15);
     expect(table[0].charge).toBe(100); // 100% of 100
-    expect(table[1].charge).toBe(90);  // 90% of 100
-    expect(table[9].charge).toBe(30);  // 30% of 100
+    expect(table[2].charge).toBe(90);  // 90% of 100
+    expect(table[14].charge).toBe(30); // 30% of 100
   });
 
   it("rounds charges correctly", () => {
     const table = buildRmTable(107);
     expect(table[0].charge).toBe(107);       // 100%
-    expect(table[1].charge).toBe(96);        // 90% of 107 = 96.3 → 96
-    expect(table[3].charge).toBe(86);        // 80% of 107 = 85.6 → 86
+    expect(table[2].charge).toBe(96);        // 90% of 107 = 96.3 → 96
+    expect(table[4].charge).toBe(86);        // 80% of 107 = 85.6 → 86
   });
 });
