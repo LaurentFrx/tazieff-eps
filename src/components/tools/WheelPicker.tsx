@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 
 export interface WheelPickerProps {
   values: number[];
@@ -13,7 +13,11 @@ export interface WheelPickerProps {
   label?: string;
 }
 
-export function WheelPicker({
+export interface WheelPickerHandle {
+  scrollToValue: (value: number) => void;
+}
+
+export const WheelPicker = forwardRef<WheelPickerHandle, WheelPickerProps>(function WheelPicker({
   values,
   defaultValue,
   unit = 's',
@@ -22,7 +26,7 @@ export function WheelPicker({
   height = 120,
   itemHeight = 40,
   label,
-}: WheelPickerProps) {
+}, ref) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
   const rafId = useRef(0);
@@ -79,13 +83,21 @@ export function WheelPicker({
 
   useEffect(() => () => cancelAnimationFrame(rafId.current), []);
 
+  // Imperative API for programmatic scrolling
+  useImperativeHandle(ref, () => ({
+    scrollToValue(value: number) {
+      const idx = values.indexOf(value);
+      if (idx === -1 || !scrollRef.current) return;
+      scrollRef.current.scrollTo({ top: idx * itemHeight, behavior: 'smooth' });
+    },
+  }), [values, itemHeight]);
+
   const visibleItems = Math.floor(height / itemHeight);
   const padItems = Math.floor(visibleItems / 2);
   const padH = padItems * itemHeight;
 
   const mask = 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)';
 
-  // Parse color for rgba usage
   const hexToRgb = (hex: string) => {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
@@ -112,20 +124,20 @@ export function WheelPicker({
         }}
       >
         <style>{`
-          .wp-container-${css(color)} {
+          .wp-container-${cssId(color)} {
             background: rgba(0,0,0,0.08);
             border: 1px solid rgba(${rgb},0.15);
           }
-          :where(.dark, .dark *) .wp-container-${css(color)} {
+          :where(.dark, .dark *) .wp-container-${cssId(color)} {
             background: rgba(0,0,0,0.25);
             border: 1px solid rgba(${rgb},0.2);
           }
-          .wp-select-${css(color)} {
+          .wp-select-${cssId(color)} {
             background: rgba(${rgb},0.08);
             border-top: 1.5px solid rgba(${rgb},0.25);
             border-bottom: 1.5px solid rgba(${rgb},0.25);
           }
-          :where(.dark, .dark *) .wp-select-${css(color)} {
+          :where(.dark, .dark *) .wp-select-${cssId(color)} {
             background: rgba(${rgb},0.1);
             border-top: 1.5px solid rgba(${rgb},0.35);
             border-bottom: 1.5px solid rgba(${rgb},0.35);
@@ -133,11 +145,11 @@ export function WheelPicker({
         `}</style>
 
         <div
-          className={`relative overflow-hidden rounded-xl w-full h-full wp-container-${css(color)}`}
+          className={`relative overflow-hidden rounded-xl w-full h-full wp-container-${cssId(color)}`}
         >
           {/* Selection zone */}
           <div
-            className={`absolute left-0 right-0 z-[2] pointer-events-none wp-select-${css(color)}`}
+            className={`absolute left-0 right-0 z-[2] pointer-events-none wp-select-${cssId(color)}`}
             style={{ top: padH, height: itemHeight }}
           />
 
@@ -183,9 +195,9 @@ export function WheelPicker({
       </div>
     </div>
   );
-}
+});
 
 /** CSS-safe class suffix from hex color */
-function css(hex: string) {
+function cssId(hex: string) {
   return hex.replace('#', '');
 }
