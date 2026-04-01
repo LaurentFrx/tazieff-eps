@@ -140,10 +140,10 @@ export function CustomTimer({ onBack }: CustomTimerProps) {
   }
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-white dark:bg-[#0a0a0a]">
+    <section className="page">
       {/* Banner */}
       <div
-        className="relative overflow-hidden px-5 pt-5 pb-4"
+        className="relative overflow-hidden rounded-2xl px-5 pt-5 pb-4"
         style={{ background: 'linear-gradient(135deg, #7c3aed, #8b5cf6)' }}
       >
         <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="absolute top-3 right-3 pointer-events-none">
@@ -159,74 +159,70 @@ export function CustomTimer({ onBack }: CustomTimerProps) {
       </div>
 
       {/* Config card */}
-      <div className="flex-1 px-4 py-4 overflow-y-auto">
-        <div className="rounded-2xl p-4 bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06]">
-          {/* Row 1: Préparation | Retour au calme */}
-          <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 1fr' }} key={`r1-${pickerKey}`}>
-            <WheelPicker values={PREPARE_VALUES} defaultValue={prepare} unit="s" color="#eab308" onChange={setPrepare} label="Préparation" />
-            <WheelPicker values={COOLDOWN_VALUES} defaultValue={cooldown} unit="s" color="#eab308" onChange={setCooldown} label="Retour calme" />
-          </div>
-
-          {/* Row 2: Travail | Repos */}
-          <div className="grid gap-3 mt-3" style={{ gridTemplateColumns: '1fr 1fr' }} key={`r2-${pickerKey}`}>
-            <WheelPicker values={WORK_VALUES} defaultValue={work} unit="s" color="#8b5cf6" onChange={setWork} label={t('timer.config.work')} />
-            <WheelPicker values={REST_VALUES} defaultValue={rest} unit="s" color="#ef4444" onChange={setRest} label={t('timer.config.rest')} />
-          </div>
-
-          {/* Row 3: Séries | Cycles */}
-          <div className="grid gap-3 mt-3" style={{ gridTemplateColumns: '1fr 1fr' }} key={`r3-${pickerKey}`}>
-            <WheelPicker values={SERIES_VALUES} defaultValue={series} unit="" color="#3b82f6" onChange={setSeries} label="Séries" />
-            <WheelPicker values={CYCLES_VALUES} defaultValue={cycles} unit="" color="#22c55e" onChange={setCycles} label="Cycles" />
-          </div>
+      <div className="rounded-2xl p-4 bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06]">
+        {/* Row 1: Préparation | Retour au calme */}
+        <div className="grid gap-3" style={{ gridTemplateColumns: '1fr 1fr' }} key={`r1-${pickerKey}`}>
+          <WheelPicker values={PREPARE_VALUES} defaultValue={prepare} unit="s" color="#eab308" onChange={setPrepare} label="Préparation" />
+          <WheelPicker values={COOLDOWN_VALUES} defaultValue={cooldown} unit="s" color="#eab308" onChange={setCooldown} label="Retour calme" />
         </div>
 
-        {/* Total duration */}
-        <div className="text-center mt-3">
-          <span className="text-[11px] text-zinc-400 dark:text-white/35">Dur&eacute;e totale</span>
-          <div className="font-mono text-[22px] font-bold text-zinc-900 dark:text-white mt-0.5">
-            {formatDuration(totalDuration)}
-          </div>
+        {/* Row 2: Travail | Repos */}
+        <div className="grid gap-3 mt-3" style={{ gridTemplateColumns: '1fr 1fr' }} key={`r2-${pickerKey}`}>
+          <WheelPicker values={WORK_VALUES} defaultValue={work} unit="s" color="#8b5cf6" onChange={setWork} label={t('timer.config.work')} />
+          <WheelPicker values={REST_VALUES} defaultValue={rest} unit="s" color="#ef4444" onChange={setRest} label={t('timer.config.rest')} />
         </div>
 
-        {/* Quick presets */}
-        <div className="flex flex-wrap gap-2 mt-3 justify-center">
-          {QUICK_PRESETS.map((qp) => (
-            <button
-              key={qp.label}
-              onClick={() => applyQuickPreset(qp)}
-              className="rounded-xl px-3 py-2 text-[12px] font-bold cursor-pointer border transition-all active:scale-95"
-              style={{
-                background: 'rgba(139,92,246,0.12)',
-                borderColor: 'rgba(139,92,246,0.2)',
-                color: '#a78bfa',
-              }}
-            >
-              {qp.label}
-            </button>
-          ))}
+        {/* Row 3: Séries | Cycles */}
+        <div className="grid gap-3 mt-3" style={{ gridTemplateColumns: '1fr 1fr' }} key={`r3-${pickerKey}`}>
+          <WheelPicker values={SERIES_VALUES} defaultValue={series} unit="" color="#3b82f6" onChange={setSeries} label="Séries" />
+          <WheelPicker values={CYCLES_VALUES} defaultValue={cycles} unit="" color="#22c55e" onChange={setCycles} label="Cycles" />
         </div>
+      </div>
+
+      {/* Total duration */}
+      <div className="text-center mt-3">
+        <span className="text-[11px] text-zinc-400 dark:text-white/35">Dur&eacute;e totale</span>
+        <div className="font-mono text-[22px] font-bold text-zinc-900 dark:text-white mt-0.5">
+          {formatDuration(totalDuration)}
+        </div>
+      </div>
+
+      {/* Quick presets */}
+      <div className="flex flex-wrap gap-2 mt-3 justify-center">
+        {QUICK_PRESETS.map((qp) => (
+          <button
+            key={qp.label}
+            onClick={() => applyQuickPreset(qp)}
+            className="rounded-xl px-3 py-2 text-[12px] font-bold cursor-pointer border transition-all active:scale-95"
+            style={{
+              background: 'rgba(139,92,246,0.12)',
+              borderColor: 'rgba(139,92,246,0.2)',
+              color: '#a78bfa',
+            }}
+          >
+            {qp.label}
+          </button>
+        ))}
       </div>
 
       {/* Start button */}
-      <div className="px-4 pb-6 shrink-0" style={{ paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 24px))' }}>
-        <button
-          onClick={handleStart}
-          className="w-full cursor-pointer border-none"
-          style={{
-            height: 56,
-            borderRadius: 14,
-            background: 'linear-gradient(135deg, #7c3aed, #8b5cf6)',
-            color: '#fff',
-            fontSize: 16,
-            fontWeight: 700,
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-          }}
-        >
-          {t('timer.controls.start')}
-        </button>
-      </div>
-    </div>
+      <button
+        onClick={handleStart}
+        className="w-full mt-4 cursor-pointer border-none"
+        style={{
+          height: 56,
+          borderRadius: 14,
+          background: 'linear-gradient(135deg, #7c3aed, #8b5cf6)',
+          color: '#fff',
+          fontSize: 16,
+          fontWeight: 700,
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+        }}
+      >
+        {t('timer.controls.start')}
+      </button>
+    </section>
   );
 }
 

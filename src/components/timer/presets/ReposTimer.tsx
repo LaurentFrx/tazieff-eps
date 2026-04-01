@@ -87,10 +87,10 @@ export function ReposTimer({ onBack }: ReposTimerProps) {
   }
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-white dark:bg-[#0a0a0a]">
+    <section className="page">
       {/* Banner */}
       <div
-        className="relative overflow-hidden px-5 pt-5 pb-4"
+        className="relative overflow-hidden rounded-2xl px-5 pt-5 pb-4"
         style={{ background: 'linear-gradient(135deg, #0891b2, #06b6d4)' }}
       >
         <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="absolute top-3 right-3 pointer-events-none">
@@ -106,64 +106,60 @@ export function ReposTimer({ onBack }: ReposTimerProps) {
       </div>
 
       {/* Config card */}
-      <div className="flex-1 px-4 py-5 flex flex-col items-center">
-        <div className="rounded-2xl p-4 bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06] w-full max-w-[280px]">
-          <div className="text-[11px] font-semibold tracking-wider text-center uppercase mb-2" style={{ color: '#06b6d4' }}>
-            Dur&eacute;e
-          </div>
-          <div className="flex justify-center">
-            <div style={{ width: 160 }}>
-              <WheelPicker
-                ref={pickerRef}
-                values={DURATION_VALUES}
-                defaultValue={60}
-                unit="s"
-                color="#06b6d4"
-                onChange={setDuration}
-              />
-            </div>
+      <div className="rounded-2xl p-4 bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06] max-w-[280px] mx-auto">
+        <div className="text-[11px] font-semibold tracking-wider text-center uppercase mb-2" style={{ color: '#06b6d4' }}>
+          Dur&eacute;e
+        </div>
+        <div className="flex justify-center">
+          <div style={{ width: 160 }}>
+            <WheelPicker
+              ref={pickerRef}
+              values={DURATION_VALUES}
+              defaultValue={60}
+              unit="s"
+              color="#06b6d4"
+              onChange={setDuration}
+            />
           </div>
         </div>
+      </div>
 
-        {/* Quick presets */}
-        <div className="flex gap-2 mt-4">
-          {QUICK_PRESETS.map((qp) => (
-            <button
-              key={qp.value}
-              onClick={() => handleQuickStart(qp.value)}
-              className="rounded-xl px-4 py-2.5 text-[14px] font-bold cursor-pointer border transition-all active:scale-95"
-              style={{
-                background: duration === qp.value ? 'rgba(6,182,212,0.3)' : 'rgba(6,182,212,0.15)',
-                borderColor: 'rgba(6,182,212,0.25)',
-                color: '#22d3ee',
-              }}
-            >
-              {qp.label}
-            </button>
-          ))}
-        </div>
+      {/* Quick presets */}
+      <div className="flex gap-2 mt-4 justify-center">
+        {QUICK_PRESETS.map((qp) => (
+          <button
+            key={qp.value}
+            onClick={() => handleQuickStart(qp.value)}
+            className="rounded-xl px-4 py-2.5 text-[14px] font-bold cursor-pointer border transition-all active:scale-95"
+            style={{
+              background: duration === qp.value ? 'rgba(6,182,212,0.3)' : 'rgba(6,182,212,0.15)',
+              borderColor: 'rgba(6,182,212,0.25)',
+              color: '#22d3ee',
+            }}
+          >
+            {qp.label}
+          </button>
+        ))}
       </div>
 
       {/* Start button */}
-      <div className="px-4 pb-6" style={{ paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 24px))' }}>
-        <button
-          onClick={handleStart}
-          className="w-full cursor-pointer border-none"
-          style={{
-            height: 56,
-            borderRadius: 14,
-            background: 'linear-gradient(135deg, #0891b2, #06b6d4)',
-            color: '#fff',
-            fontSize: 16,
-            fontWeight: 700,
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-          }}
-        >
-          {t('timer.controls.start')}
-        </button>
-      </div>
-    </div>
+      <button
+        onClick={handleStart}
+        className="w-full mt-4 cursor-pointer border-none"
+        style={{
+          height: 56,
+          borderRadius: 14,
+          background: 'linear-gradient(135deg, #0891b2, #06b6d4)',
+          color: '#fff',
+          fontSize: 16,
+          fontWeight: 700,
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+        }}
+      >
+        {t('timer.controls.start')}
+      </button>
+    </section>
   );
 }
 

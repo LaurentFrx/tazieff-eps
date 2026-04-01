@@ -83,10 +83,10 @@ export function CircuitTimer({ onBack }: CircuitTimerProps) {
   }
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-white dark:bg-[#0a0a0a]">
+    <section className="page">
       {/* Banner */}
       <div
-        className="relative overflow-hidden px-5 pt-5 pb-4"
+        className="relative overflow-hidden rounded-2xl px-5 pt-5 pb-4"
         style={{ background: 'linear-gradient(135deg, #ea580c, #f97316)' }}
       >
         <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="absolute top-3 right-3 pointer-events-none">
@@ -102,70 +102,66 @@ export function CircuitTimer({ onBack }: CircuitTimerProps) {
       </div>
 
       {/* Config card */}
-      <div className="flex-1 px-4 py-5">
-        <div className="rounded-2xl p-4 bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06]">
-          {/* Row 1: Work | Rest */}
-          <div className="grid items-start mb-1" style={{ gridTemplateColumns: '1fr auto 1fr' }}>
-            <div className="text-[11px] font-semibold tracking-wider text-center uppercase" style={{ color: '#f97316' }}>
-              {t('timer.config.work')}
-            </div>
-            <div />
-            <div className="text-[11px] font-semibold tracking-wider text-center uppercase" style={{ color: '#ef4444' }}>
-              {t('timer.config.rest')}
-            </div>
+      <div className="rounded-2xl p-4 bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06]">
+        {/* Row 1: Work | Rest */}
+        <div className="grid items-start mb-1" style={{ gridTemplateColumns: '1fr auto 1fr' }}>
+          <div className="text-[11px] font-semibold tracking-wider text-center uppercase" style={{ color: '#f97316' }}>
+            {t('timer.config.work')}
           </div>
-          <div className="grid items-center" style={{ gridTemplateColumns: '1fr auto 1fr' }}>
-            <WheelPicker values={WORK_VALUES} defaultValue={30} unit="s" color="#f97316" onChange={setWork} />
-            <div className="text-[14px] text-zinc-300 dark:text-zinc-700 px-1 self-center">|</div>
-            <WheelPicker values={REST_VALUES} defaultValue={15} unit="s" color="#ef4444" onChange={setRest} />
-          </div>
-
-          {/* Row 2: Stations × Tours */}
-          <div className="grid items-start mb-1 mt-4" style={{ gridTemplateColumns: '1fr auto 1fr' }}>
-            <div className="text-[11px] font-semibold tracking-wider text-center uppercase" style={{ color: '#3b82f6' }}>
-              Stations
-            </div>
-            <div />
-            <div className="text-[11px] font-semibold tracking-wider text-center uppercase" style={{ color: '#8b5cf6' }}>
-              Tours
-            </div>
-          </div>
-          <div className="grid items-center" style={{ gridTemplateColumns: '1fr auto 1fr' }}>
-            <WheelPicker values={STATION_VALUES} defaultValue={6} unit="" color="#3b82f6" onChange={setStations} />
-            <div className="text-[14px] text-zinc-300 dark:text-zinc-700 px-2 self-center">&times;</div>
-            <WheelPicker values={TOUR_VALUES} defaultValue={2} unit="" color="#8b5cf6" onChange={setTours} />
+          <div />
+          <div className="text-[11px] font-semibold tracking-wider text-center uppercase" style={{ color: '#ef4444' }}>
+            {t('timer.config.rest')}
           </div>
         </div>
+        <div className="grid items-center" style={{ gridTemplateColumns: '1fr auto 1fr' }}>
+          <WheelPicker values={WORK_VALUES} defaultValue={30} unit="s" color="#f97316" onChange={setWork} />
+          <div className="text-[14px] text-zinc-300 dark:text-zinc-700 px-1 self-center">|</div>
+          <WheelPicker values={REST_VALUES} defaultValue={15} unit="s" color="#ef4444" onChange={setRest} />
+        </div>
 
-        {/* Total duration */}
-        <div className="text-center mt-4">
-          <span className="text-[11px] text-zinc-400 dark:text-white/35">Dur&eacute;e totale</span>
-          <div className="font-mono text-[22px] font-bold text-zinc-900 dark:text-white mt-0.5">
-            {formatDuration(totalDuration)}
+        {/* Row 2: Stations × Tours */}
+        <div className="grid items-start mb-1 mt-4" style={{ gridTemplateColumns: '1fr auto 1fr' }}>
+          <div className="text-[11px] font-semibold tracking-wider text-center uppercase" style={{ color: '#3b82f6' }}>
+            Stations
           </div>
+          <div />
+          <div className="text-[11px] font-semibold tracking-wider text-center uppercase" style={{ color: '#8b5cf6' }}>
+            Tours
+          </div>
+        </div>
+        <div className="grid items-center" style={{ gridTemplateColumns: '1fr auto 1fr' }}>
+          <WheelPicker values={STATION_VALUES} defaultValue={6} unit="" color="#3b82f6" onChange={setStations} />
+          <div className="text-[14px] text-zinc-300 dark:text-zinc-700 px-2 self-center">&times;</div>
+          <WheelPicker values={TOUR_VALUES} defaultValue={2} unit="" color="#8b5cf6" onChange={setTours} />
+        </div>
+      </div>
+
+      {/* Total duration */}
+      <div className="text-center mt-4">
+        <span className="text-[11px] text-zinc-400 dark:text-white/35">Dur&eacute;e totale</span>
+        <div className="font-mono text-[22px] font-bold text-zinc-900 dark:text-white mt-0.5">
+          {formatDuration(totalDuration)}
         </div>
       </div>
 
       {/* Start button */}
-      <div className="px-4 pb-6" style={{ paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 24px))' }}>
-        <button
-          onClick={handleStart}
-          className="w-full cursor-pointer border-none"
-          style={{
-            height: 56,
-            borderRadius: 14,
-            background: 'linear-gradient(135deg, #ea580c, #f97316)',
-            color: '#fff',
-            fontSize: 16,
-            fontWeight: 700,
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-          }}
-        >
-          {t('timer.controls.start')}
-        </button>
-      </div>
-    </div>
+      <button
+        onClick={handleStart}
+        className="w-full mt-4 cursor-pointer border-none"
+        style={{
+          height: 56,
+          borderRadius: 14,
+          background: 'linear-gradient(135deg, #ea580c, #f97316)',
+          color: '#fff',
+          fontSize: 16,
+          fontWeight: 700,
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+        }}
+      >
+        {t('timer.controls.start')}
+      </button>
+    </section>
   );
 }
 

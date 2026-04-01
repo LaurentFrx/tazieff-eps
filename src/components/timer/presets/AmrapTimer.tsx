@@ -65,10 +65,10 @@ export function AmrapTimer({ onBack }: AmrapTimerProps) {
   }
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-white dark:bg-[#0a0a0a]">
+    <section className="page">
       {/* Banner */}
       <div
-        className="relative overflow-hidden px-5 pt-5 pb-4"
+        className="relative overflow-hidden rounded-2xl px-5 pt-5 pb-4"
         style={{ background: 'linear-gradient(135deg, #dc2626, #ef4444)' }}
       >
         <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="absolute top-3 right-3 pointer-events-none">
@@ -84,39 +84,35 @@ export function AmrapTimer({ onBack }: AmrapTimerProps) {
       </div>
 
       {/* Config card */}
-      <div className="flex-1 px-4 py-5 flex flex-col items-center">
-        <div className="rounded-2xl p-4 bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06] w-full max-w-[280px]">
-          <div className="text-[11px] font-semibold tracking-wider text-center uppercase mb-2" style={{ color: '#ef4444' }}>
-            {t('timer.config.work')}
-          </div>
-          <div className="flex justify-center">
-            <div style={{ width: 160 }}>
-              <WheelPicker values={DURATION_VALUES} defaultValue={10} unit="min" color="#ef4444" onChange={setDurationMin} />
-            </div>
+      <div className="rounded-2xl p-4 bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06] max-w-[280px] mx-auto">
+        <div className="text-[11px] font-semibold tracking-wider text-center uppercase mb-2" style={{ color: '#ef4444' }}>
+          {t('timer.config.work')}
+        </div>
+        <div className="flex justify-center">
+          <div style={{ width: 160 }}>
+            <WheelPicker values={DURATION_VALUES} defaultValue={10} unit="min" color="#ef4444" onChange={setDurationMin} />
           </div>
         </div>
       </div>
 
       {/* Start button */}
-      <div className="px-4 pb-6" style={{ paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 24px))' }}>
-        <button
-          onClick={handleStart}
-          className="w-full cursor-pointer border-none"
-          style={{
-            height: 56,
-            borderRadius: 14,
-            background: 'linear-gradient(135deg, #dc2626, #ef4444)',
-            color: '#fff',
-            fontSize: 16,
-            fontWeight: 700,
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-          }}
-        >
-          {t('timer.controls.start')}
-        </button>
-      </div>
-    </div>
+      <button
+        onClick={handleStart}
+        className="w-full mt-4 cursor-pointer border-none"
+        style={{
+          height: 56,
+          borderRadius: 14,
+          background: 'linear-gradient(135deg, #dc2626, #ef4444)',
+          color: '#fff',
+          fontSize: 16,
+          fontWeight: 700,
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+        }}
+      >
+        {t('timer.controls.start')}
+      </button>
+    </section>
   );
 }
 
