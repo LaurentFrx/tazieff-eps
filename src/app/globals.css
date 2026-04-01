@@ -2213,3 +2213,9 @@ input[type="range"].rm-slider::-moz-range-track {
   border-radius: 3px;
   background: transparent;
 }
+
+/* ---------- RM Wheel picker ---------- */
+
+.rm-wheel::-webkit-scrollbar {
+  display: none;
+}
