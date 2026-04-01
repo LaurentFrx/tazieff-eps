@@ -5,34 +5,25 @@ import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { epley, brzycki } from "@/lib/rm";
 
-/* ─── Zone data — fourchettes NSCA unifiées ─── */
+/* ─── Zone data — fourchettes NSCA, couleurs saturées ─── */
 
 const ZONE_ROWS = [
-  { pct: 100, label: "Force maximale — 1 rep",      color: "#f87171" },
-  { pct: 95,  label: "Force — 1 à 3 reps",          color: "#f87171" },
-  { pct: 90,  label: "Force — 2 à 4 reps",          color: "#f87171" },
-  { pct: 85,  label: "Force — 4 à 6 reps",          color: "#f87171" },
-  { pct: 80,  label: "Hypertrophie — 6 à 8 reps",   color: "#60a5fa" },
-  { pct: 75,  label: "Hypertrophie — 8 à 10 reps",  color: "#60a5fa" },
-  { pct: 70,  label: "Hypertrophie — 10 à 12 reps", color: "#60a5fa" },
-  { pct: 65,  label: "Endurance — 12 à 15 reps",    color: "#4ade80" },
-  { pct: 60,  label: "Endurance — 15 à 20 reps",    color: "#4ade80" },
-  { pct: 55,  label: "Endurance — 20 à 25 reps",    color: "#4ade80" },
-  { pct: 50,  label: "Endurance légère — 25+ reps",  color: "#fb923c" },
-  { pct: 45,  label: "Endurance légère — 28+ reps",  color: "#fb923c" },
-  { pct: 40,  label: "Explosif / Vitesse",           color: "#a78bfa" },
-  { pct: 35,  label: "Explosif / Vitesse",           color: "#a78bfa" },
-  { pct: 30,  label: "Explosif / Vitesse",           color: "#a78bfa" },
+  { pct: 100, label: "Force maximale — 1 rep",      bg: "#dc2626" },
+  { pct: 95,  label: "Force — 1 à 3 reps",          bg: "#dc2626" },
+  { pct: 90,  label: "Force — 2 à 4 reps",          bg: "#dc2626" },
+  { pct: 85,  label: "Force — 4 à 6 reps",          bg: "#dc2626" },
+  { pct: 80,  label: "Hypertrophie — 6 à 8 reps",   bg: "#2563eb" },
+  { pct: 75,  label: "Hypertrophie — 8 à 10 reps",  bg: "#2563eb" },
+  { pct: 70,  label: "Hypertrophie — 10 à 12 reps", bg: "#2563eb" },
+  { pct: 65,  label: "Endurance — 12 à 15 reps",    bg: "#16a34a" },
+  { pct: 60,  label: "Endurance — 15 à 20 reps",    bg: "#16a34a" },
+  { pct: 55,  label: "Endurance — 20 à 25 reps",    bg: "#16a34a" },
+  { pct: 50,  label: "Endurance légère — 25+ reps",  bg: "#ea580c" },
+  { pct: 45,  label: "Endurance légère — 28+ reps",  bg: "#ea580c" },
+  { pct: 40,  label: "Explosif / Vitesse",           bg: "#7c3aed" },
+  { pct: 35,  label: "Explosif / Vitesse",           bg: "#7c3aed" },
+  { pct: 30,  label: "Explosif / Vitesse",           bg: "#7c3aed" },
 ] as const;
-
-/* Gradients vifs par couleur accent — comme les cartes de la homepage */
-const ZONE_STYLE: Record<string, { bg: string; shadow: string }> = {
-  "#f87171": { bg: "linear-gradient(135deg,#dc2626,#ef4444)", shadow: "rgba(220,38,38,0.3)" },
-  "#60a5fa": { bg: "linear-gradient(135deg,#2563eb,#3b82f6)", shadow: "rgba(37,99,235,0.3)" },
-  "#4ade80": { bg: "linear-gradient(135deg,#16a34a,#22c55e)", shadow: "rgba(22,163,74,0.3)" },
-  "#fb923c": { bg: "linear-gradient(135deg,#ea580c,#f97316)", shadow: "rgba(234,88,12,0.3)" },
-  "#a78bfa": { bg: "linear-gradient(135deg,#7c3aed,#8b5cf6)", shadow: "rgba(124,58,237,0.3)" },
-};
 
 const PK_H = 44;
 const ZN_H = 70;
@@ -44,6 +35,16 @@ function calc1RM(charge: number, reps: number) {
   const ep = epley(charge, reps);
   const br = reps >= 37 ? ep : brzycki(charge, reps);
   return { avg: Math.round((ep + br) / 2), ep, br };
+}
+
+/** Set text colors on zone row children */
+function setZoneText(row: HTMLDivElement, main: string, label: string) {
+  row.querySelectorAll<HTMLElement>(".rm-val,.rm-wt,.rm-kg").forEach((el) => {
+    el.style.setProperty("color", main, "important");
+  });
+  row.querySelectorAll<HTMLElement>(".rm-lbl").forEach((el) => {
+    el.style.setProperty("color", label, "important");
+  });
 }
 
 /* ─── Generic Wheel Picker ─── */
@@ -59,7 +60,7 @@ function Wheel({
   containerClass?: string; containerStyle?: React.CSSProperties;
   selectClass?: string; selectStyle?: React.CSSProperties;
   maskFade: [number, number]; ariaLabel: string; idPrefix: string;
-  onStyleRow?: (row: HTMLDivElement, idx: number, isActive: boolean) => void;
+  onStyleRow?: (row: HTMLDivElement, idx: number, isActive: boolean, dist: number) => void;
 }) {
   const h = itemH * 3;
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -87,21 +88,30 @@ function Wheel({
       const row = rowRefs.current[i];
       if (!row) continue;
       const d = Math.abs(st - i * itemH);
-      let op: number;
-      let sc: number;
-      if (d < itemH * 0.6) {
-        op = 1; sc = 1;
-      } else if (d < itemH * 1.6) {
-        const p = (d - itemH * 0.6) / itemH;
-        op = 1 - p * 0.7; sc = 1 - p * 0.1;
+      const isActive = i === idx;
+
+      if (onStyleRef.current) {
+        // Custom handler takes full control of visuals
+        row.classList.toggle("rm-active", isActive);
+        row.setAttribute("aria-selected", String(isActive));
+        onStyleRef.current(row, i, isActive, d);
       } else {
-        op = 0.1; sc = 0.85;
+        // Default opacity/scale behavior
+        let op: number;
+        let sc: number;
+        if (d < itemH * 0.6) {
+          op = 1; sc = 1;
+        } else if (d < itemH * 1.6) {
+          const p = (d - itemH * 0.6) / itemH;
+          op = 1 - p * 0.7; sc = 1 - p * 0.1;
+        } else {
+          op = 0.1; sc = 0.85;
+        }
+        row.style.opacity = String(op);
+        row.style.transform = `scale(${sc})`;
+        row.setAttribute("aria-selected", String(isActive));
+        row.classList.toggle("rm-active", isActive);
       }
-      row.style.opacity = String(op);
-      row.style.transform = `scale(${sc})`;
-      row.setAttribute("aria-selected", String(i === idx));
-      row.classList.toggle("rm-active", i === idx);
-      onStyleRef.current?.(row, i, i === idx);
     }
     el.setAttribute("aria-activedescendant", `${idPrefix}-${idx}`);
   }, [count, itemH, idPrefix]);
@@ -144,8 +154,10 @@ function Wheel({
 
       <div className={`relative overflow-hidden ${containerClass ?? ""}`}
         style={{ height: h, ...containerStyle }}>
-        <div className={`absolute left-0 right-0 z-[2] pointer-events-none ${selectClass ?? ""}`}
-          style={{ top: itemH, height: itemH, ...selectStyle }} />
+        {selectStyle && (
+          <div className={`absolute left-0 right-0 z-[2] pointer-events-none ${selectClass ?? ""}`}
+            style={{ top: itemH, height: itemH, ...selectStyle }} />
+        )}
         <div ref={scrollRef} role="listbox" tabIndex={0} aria-label={ariaLabel}
           onScroll={onScroll} onKeyDown={onKey}
           className="rm-wheel h-full overflow-y-scroll outline-none"
@@ -158,7 +170,7 @@ function Wheel({
               role="option" aria-selected={i === initIdx}
               className="flex items-center justify-center"
               style={{ height: itemH, scrollSnapAlign: "center",
-                transition: "opacity .12s,transform .12s,background .1s,border-radius .1s,box-shadow .15s",
+                transition: "opacity .2s ease,transform .2s ease,box-shadow .2s ease,border-radius .2s ease",
                 willChange: "opacity,transform" }}>
               {renderItem(i)}
             </div>
@@ -204,6 +216,7 @@ export function CalculateurRM() {
     </span>
   ), []);
 
+  /* Render zone — texte blanc sur fond coloré */
   const renderZone = useCallback(
     (i: number) => {
       const r = ZONE_ROWS[i];
@@ -211,56 +224,57 @@ export function CalculateurRM() {
       return (
         <div className="flex items-center justify-between w-full px-5">
           <div className="min-w-0">
-            <span className="rm-val rm-val-lg font-mono text-[26px] font-medium" style={{ color: r.color }}>
+            <span className="rm-val rm-val-lg font-mono text-[26px] font-medium text-white">
               {r.pct}%
             </span>
-            <div className="rm-lbl text-[13px] font-medium truncate mt-0.5" style={{ color: r.color }}>
+            <div className="rm-lbl text-[13px] font-medium truncate mt-0.5 text-white/70">
               {r.label}
             </div>
           </div>
           <div className="shrink-0 pl-3 text-right">
-            <span className="rm-wt font-mono text-[22px] font-medium" style={{ color: r.color }}>
-              {w}
-            </span>
-            <span className="rm-kg text-[12px] ml-0.5" style={{ color: r.color, opacity: 0.6 }}>kg</span>
+            <span className="rm-wt font-mono text-[22px] font-medium text-white">{w}</span>
+            <span className="rm-kg text-[12px] ml-0.5 text-white/60">kg</span>
           </div>
         </div>
       );
-    }, [avg],
+    },
+    [avg],
   );
 
-  /* Callback pour fond coloré vif sur la ligne zone sélectionnée */
-  const styleZoneRow = useCallback((row: HTMLDivElement, idx: number, isActive: boolean) => {
-    const r = ZONE_ROWS[idx];
-    if (!r) return;
-    const zs = ZONE_STYLE[r.color];
-    if (!zs) return;
+  /* Callback — fond coloré saturé sur TOUTES les lignes, hiérarchie par opacité */
+  const styleZoneRow = useCallback(
+    (row: HTMLDivElement, idx: number, _isActive: boolean, dist: number) => {
+      const r = ZONE_ROWS[idx];
+      if (!r) return;
 
-    if (isActive) {
-      row.style.background = zs.bg;
-      row.style.borderRadius = "12px";
-      row.style.boxShadow = `0 4px 12px ${zs.shadow}`;
-      row.querySelectorAll<HTMLElement>(".rm-val,.rm-wt,.rm-kg").forEach((el) => {
-        el.style.setProperty("color", "#fff", "important");
-      });
-      row.querySelectorAll<HTMLElement>(".rm-kg").forEach((el) => {
-        el.style.setProperty("opacity", "1", "important");
-      });
-      row.querySelectorAll<HTMLElement>(".rm-lbl").forEach((el) => {
-        el.style.setProperty("color", "rgba(255,255,255,0.85)", "important");
-      });
-    } else {
-      row.style.background = "";
-      row.style.borderRadius = "";
-      row.style.boxShadow = "";
-      row.querySelectorAll<HTMLElement>(".rm-val,.rm-wt,.rm-lbl,.rm-kg").forEach((el) => {
-        el.style.setProperty("color", r.color, "");
-      });
-      row.querySelectorAll<HTMLElement>(".rm-kg").forEach((el) => {
-        el.style.setProperty("opacity", "0.6", "");
-      });
-    }
-  }, []);
+      // Fond coloré permanent sur chaque ligne
+      row.style.background = r.bg;
+
+      if (dist < 35) {
+        // CENTRÉ — pleine puissance
+        row.style.opacity = "1";
+        row.style.transform = "scale(1)";
+        row.style.boxShadow = "0 4px 16px rgba(0,0,0,0.3)";
+        row.style.borderRadius = "14px";
+        setZoneText(row, "#fff", "rgba(255,255,255,0.9)");
+      } else if (dist < 105) {
+        // VOISIN — couleur atténuée
+        row.style.opacity = "0.45";
+        row.style.transform = "scale(0.95)";
+        row.style.boxShadow = "none";
+        row.style.borderRadius = "0";
+        setZoneText(row, "rgba(255,255,255,0.8)", "rgba(255,255,255,0.6)");
+      } else {
+        // ÉLOIGNÉ — couleur très atténuée
+        row.style.opacity = "0.2";
+        row.style.transform = "scale(0.88)";
+        row.style.boxShadow = "none";
+        row.style.borderRadius = "0";
+        setZoneText(row, "rgba(255,255,255,0.5)", "rgba(255,255,255,0.3)");
+      }
+    },
+    [],
+  );
 
   return (
     <section className="page">
@@ -278,7 +292,6 @@ export function CalculateurRM() {
       >
         <div className="grid items-start"
           style={{ gridTemplateColumns: "1fr auto 1fr auto 1fr" }}>
-          {/* Labels */}
           <div className="text-[11px] font-semibold tracking-wider text-center mb-2" style={{ color: "#00E5FF" }}>
             {t("apprendre.calculateur.chargeLabel").toUpperCase()}
           </div>
@@ -291,7 +304,6 @@ export function CalculateurRM() {
             1RM
           </div>
 
-          {/* Pickers + result */}
           <Wheel
             count={196} itemH={PK_H} initIdx={55}
             onIdx={onChargeIdx} renderItem={renderCharge}
@@ -325,7 +337,7 @@ export function CalculateurRM() {
           <div className="flex flex-col items-center justify-center" style={{ height: PK_H * 3 }}>
             <div
               className="font-mono text-[42px] font-bold text-zinc-900 dark:text-white leading-none"
-              style={{ textShadow: "0 0 20px rgba(0,229,255,0.3)" }}
+              style={{ textShadow: "0 0 30px rgba(0,229,255,0.2)" }}
             >
               {avg}
             </div>
@@ -339,7 +351,7 @@ export function CalculateurRM() {
         </div>
       </div>
 
-      {/* ── Section 2 — Zones de travail ── */}
+      {/* ── Section 2 — Zones de travail (ruban coloré) ── */}
       <div>
         <div className="text-[12px] font-semibold text-zinc-300 tracking-wider mb-3 uppercase">
           Choisis ta charge de travail
@@ -349,11 +361,8 @@ export function CalculateurRM() {
           renderItem={renderZone}
           onStyleRow={styleZoneRow}
           containerClass="rounded-2xl"
-          containerStyle={{
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.08)",
-          }}
-          maskFade={[25, 75]} ariaLabel="Sélecteur de pourcentage de charge" idPrefix="rm-zone"
+          maskFade={[25, 75]}
+          ariaLabel="Sélecteur de pourcentage de charge" idPrefix="rm-zone"
         />
       </div>
 
