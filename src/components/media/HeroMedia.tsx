@@ -32,6 +32,68 @@ type HeroMediaProps =
       rounded?: boolean;
     };
 
+function ImageLightbox({
+  src,
+  alt,
+  width,
+  height,
+  onClose,
+}: {
+  src: string | StaticImageData;
+  alt: string;
+  width?: number;
+  height?: number;
+  onClose: () => void;
+}) {
+  const { t } = useI18n();
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+        style={{ top: "max(16px, env(safe-area-inset-top, 16px))" }}
+        aria-label={t("media.closeLightbox")}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="w-6 h-6"
+        >
+          <path d="M18 6L6 18M6 6l12 12" />
+        </svg>
+      </button>
+      <div onClick={(e) => e.stopPropagation()} className="max-w-full max-h-full">
+        <Image
+          src={src}
+          alt={alt}
+          sizes="100vw"
+          className="w-auto h-auto max-w-full max-h-screen object-contain"
+          {...(typeof src === "string" && width && height ? { width, height } : {})}
+        />
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
 export function HeroMedia(props: HeroMediaProps) {
   const { alt } = props;
   const { t } = useI18n();
@@ -84,19 +146,39 @@ export function HeroMedia(props: HeroMediaProps) {
   };
 
   if (props.type === "video") {
-    // If video failed to load and we have a fallback, show image instead
+    // If video failed to load and we have a fallback, show tappable image
     if (videoError && props.imageFallback) {
       return (
-        <div className={wrapperClass}>
-          <Image
-            src={props.imageFallback}
-            alt={alt}
-            width={800}
-            height={600}
-            sizes="(max-width: 768px) 100vw, 50vw"
-            className="w-full h-auto"
-          />
-        </div>
+        <>
+          <div
+            className={wrapperClass}
+            onClick={() => setShowLightbox(true)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") setShowLightbox(true);
+            }}
+            style={{ cursor: "pointer" }}
+          >
+            <Image
+              src={props.imageFallback}
+              alt={alt}
+              width={800}
+              height={600}
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="w-full h-auto"
+            />
+          </div>
+          {showLightbox && (
+            <ImageLightbox
+              src={props.imageFallback}
+              alt={alt}
+              width={800}
+              height={600}
+              onClose={() => setShowLightbox(false)}
+            />
+          )}
+        </>
       );
     }
 
@@ -170,9 +252,7 @@ export function HeroMedia(props: HeroMediaProps) {
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            setShowLightbox(true);
-          }
+          if (e.key === "Enter" || e.key === " ") setShowLightbox(true);
         }}
         style={{ cursor: "pointer" }}
       >
@@ -186,42 +266,13 @@ export function HeroMedia(props: HeroMediaProps) {
         />
       </div>
 
-      {/* Lightbox pour affichage plein écran */}
-      {showLightbox && typeof window !== "undefined" && createPortal(
-        <div
-          className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-4"
-          onClick={() => setShowLightbox(false)}
-        >
-          <button
-            type="button"
-            onClick={() => setShowLightbox(false)}
-            className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-            aria-label={t("media.closeLightbox")}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-6 h-6"
-            >
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-          </button>
-          <div onClick={(e) => e.stopPropagation()} className="max-w-full max-h-full">
-            <Image
-              src={src}
-              alt={alt}
-              sizes="100vw"
-              className="w-auto h-auto max-w-full max-h-screen object-contain"
-              {...dimensionProps}
-            />
-          </div>
-        </div>,
-        document.body
+      {showLightbox && (
+        <ImageLightbox
+          src={src}
+          alt={alt}
+          onClose={() => setShowLightbox(false)}
+          {...dimensionProps}
+        />
       )}
     </>
   );
