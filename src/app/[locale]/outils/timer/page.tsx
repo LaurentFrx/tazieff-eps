@@ -6,6 +6,7 @@ import { TimerDisplay } from '@/components/timer/TimerDisplay';
 import { unlockAudio, hapticFeedback, playCountdownBeep, playTransitionBeep } from '@/lib/audio/beep';
 import { speakEvent } from '@/lib/audio/speech';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { LocaleLink as Link } from '@/components/LocaleLink';
 
 // ---------- Preset definitions ----------
 
@@ -14,6 +15,9 @@ interface PresetDef {
   name: string;
   description: string;
   color: string;
+  gradient: string;
+  subtitle: string;
+  detail: string;
   preset: TimerPreset;
 }
 
@@ -23,6 +27,9 @@ const PRESETS: PresetDef[] = [
     name: 'TABATA',
     description: '20s travail / 10s repos × 8',
     color: '#22c55e',
+    gradient: 'linear-gradient(135deg, #16a34a, #22c55e)',
+    subtitle: '20s effort / 10s repos',
+    detail: '8 rounds — 4 min',
     preset: {
       name: 'TABATA',
       prepareDuration: 10,
@@ -39,6 +46,9 @@ const PRESETS: PresetDef[] = [
     name: 'EMOM',
     description: '1 minute × 10 rounds',
     color: '#3b82f6',
+    gradient: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+    subtitle: '1 exo par minute',
+    detail: 'Chaque minute, top départ',
     preset: {
       name: 'EMOM',
       prepareDuration: 10,
@@ -55,6 +65,9 @@ const PRESETS: PresetDef[] = [
     name: 'CIRCUIT',
     description: '40s travail / 20s repos × 6',
     color: '#f59e0b',
+    gradient: 'linear-gradient(135deg, #ea580c, #f97316)',
+    subtitle: 'Travail / repos par station',
+    detail: 'Enchaînement continu',
     preset: {
       name: 'CIRCUIT',
       prepareDuration: 10,
@@ -71,6 +84,9 @@ const PRESETS: PresetDef[] = [
     name: 'AMRAP',
     description: '12 minutes en continu',
     color: '#ef4444',
+    gradient: 'linear-gradient(135deg, #dc2626, #ef4444)',
+    subtitle: 'Max reps en temps limité',
+    detail: 'Intensité maximale',
     preset: {
       name: 'AMRAP',
       prepareDuration: 10,
@@ -87,6 +103,9 @@ const PRESETS: PresetDef[] = [
     name: 'REPOS',
     description: '2 min repos entre séries',
     color: '#06b6d4',
+    gradient: 'linear-gradient(135deg, #0891b2, #06b6d4)',
+    subtitle: 'Chrono entre séries',
+    detail: '30s — 1min — 2min — 5min',
     preset: {
       name: 'REPOS',
       prepareDuration: 5,
@@ -103,6 +122,9 @@ const PRESETS: PresetDef[] = [
     name: 'PERSONNALISÉ',
     description: 'Configurez vos propres temps',
     color: '#a855f7',
+    gradient: 'linear-gradient(135deg, #7c3aed, #8b5cf6)',
+    subtitle: 'Configure ton chrono',
+    detail: 'Durées personnalisées',
     preset: {
       name: 'PERSONNALISÉ',
       prepareDuration: 10,
@@ -115,6 +137,39 @@ const PRESETS: PresetDef[] = [
     },
   },
 ];
+
+const PRESET_ICONS: Record<string, React.ReactNode> = {
+  tabata: (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="absolute top-3.5 right-3.5 pointer-events-none">
+      <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+    </svg>
+  ),
+  emom: (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="absolute top-3.5 right-3.5 pointer-events-none">
+      <path d="M5 3v18M19 3v18M5 12h14M5 7h14M5 17h14"/>
+    </svg>
+  ),
+  circuit: (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="absolute top-3.5 right-3.5 pointer-events-none">
+      <path d="M12 2L2 7l10 5 10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+    </svg>
+  ),
+  amrap: (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="absolute top-3.5 right-3.5 pointer-events-none">
+      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+    </svg>
+  ),
+  repos: (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="absolute top-3.5 right-3.5 pointer-events-none">
+      <path d="M18.36 5.64a9 9 0 11-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/>
+    </svg>
+  ),
+  custom: (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="absolute top-3.5 right-3.5 pointer-events-none">
+      <circle cx="12" cy="12" r="3"/><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
+    </svg>
+  ),
+};
 
 // ---------- Number input ----------
 
@@ -186,44 +241,42 @@ export default function TimerPage() {
   // Preset selection screen
   if (!selectedPreset) {
     return (
-      <div style={{ background: '#0a0a0a', minHeight: '100dvh', padding: '20px 16px 100px' }}>
-        <div style={{ maxWidth: '560px', margin: '0 auto' }}>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>
-            {t('timer.pageTitle')}
-          </h1>
-          <p style={{ color: '#888', fontSize: '14px', marginBottom: '24px' }}>
-            {t('timer.pageSubtitle')}
-          </p>
+      <section className="page">
+        <header className="page-header">
+          <Link href="/outils" className="eyebrow hover:text-[color:var(--accent)]">
+            ← {t('outils.backLabel')}
+          </Link>
+          <h1>{t('timer.pageTitle')}</h1>
+          <p className="text-[14px] text-zinc-500 dark:text-zinc-400">{t('timer.pageSubtitle')}</p>
+        </header>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-            {PRESETS.map((def) => (
-              <button
-                key={def.id}
-                onClick={() => handleSelectPreset(def)}
-                style={{
-                  background: 'linear-gradient(180deg, #2a2a3e 0%, #1a1a2e 50%, #0a0a1e 100%)',
-                  border: '1px solid #333',
-                  borderRadius: '16px',
-                  padding: '20px 16px',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '8px',
-                }}
-              >
-                <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: def.color }} />
-                <span style={{ color: '#fff', fontSize: '16px', fontWeight: 700, fontFamily: 'var(--font-display)', letterSpacing: '0.05em' }}>
-                  {t(`timer.presets.${def.id}.name`)}
-                </span>
-                <span style={{ color: '#888', fontSize: '12px', lineHeight: 1.4 }}>
-                  {t(`timer.presets.${def.id}.desc`)}
-                </span>
-              </button>
-            ))}
-          </div>
+        <div className="grid grid-cols-2 gap-3">
+          {PRESETS.map((def) => (
+            <button
+              key={def.id}
+              onClick={() => handleSelectPreset(def)}
+              className="relative overflow-hidden rounded-2xl text-left cursor-pointer flex flex-col justify-end transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+              style={{
+                background: def.gradient,
+                padding: '20px 16px',
+                minHeight: '120px',
+                border: 'none',
+              }}
+            >
+              {PRESET_ICONS[def.id]}
+              <span className="text-[18px] font-bold text-white" style={{ letterSpacing: '0.03em' }}>
+                {t(`timer.presets.${def.id}.name`)}
+              </span>
+              <span className="text-[12px] text-white/70 mt-1">
+                {def.subtitle}
+              </span>
+              <span className="text-[11px] text-white/45 mt-0.5">
+                {def.detail}
+              </span>
+            </button>
+          ))}
         </div>
-      </div>
+      </section>
     );
   }
 
