@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback, useRef } from 'react';
-import { createPortal } from 'react-dom';
+/* createPortal removed — countdown renders inline */
 import { WheelPicker, type WheelPickerHandle } from '@/components/tools/WheelPicker';
 import { CountdownWheels } from '@/components/tools/CountdownWheels';
 import { useTimer, type TimerPreset } from '@/hooks/useTimer';
@@ -232,11 +232,11 @@ function ReposCountdown({ preset, onBack, onDone }: ReposCountdownProps) {
 
   if (isDone) { reset(); onDone(); return null; }
 
-  const content = (
-    <div className="fixed inset-0 z-[9999] flex flex-col bg-white dark:bg-[#0a0a0a]" style={{ height: '100dvh' }}>
+  return (
+    <section className="page">
       {/* Banner — always cyan */}
       <div
-        className="relative overflow-hidden px-5 pt-4 pb-3"
+        className="relative overflow-hidden rounded-2xl px-5 pt-4 pb-3"
         style={{ background: 'linear-gradient(135deg, #0891b2, #06b6d4)' }}
       >
         <div className="flex items-center justify-between mb-1">
@@ -250,7 +250,7 @@ function ReposCountdown({ preset, onBack, onDone }: ReposCountdownProps) {
       </div>
 
       {/* Countdown */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-4 px-4">
+      <div className="flex flex-col items-center gap-4 py-8">
         <CountdownWheels minutes={mins} seconds={secs} />
 
         <div className="w-full max-w-[280px] h-[6px] rounded-full overflow-hidden bg-zinc-200 dark:bg-white/10">
@@ -262,14 +262,10 @@ function ReposCountdown({ preset, onBack, onDone }: ReposCountdownProps) {
       </div>
 
       {/* Controls */}
-      <div
-        className="flex items-center gap-3 px-4"
-        style={{ paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 24px))', paddingTop: 12 }}
-      >
+      <div className="flex items-center gap-3">
         <button
           onClick={handleStop}
-          className="w-12 h-12 rounded-full flex items-center justify-center border-none cursor-pointer shrink-0"
-          style={{ background: 'rgba(239,68,68,0.15)' }}
+          className="w-12 h-12 rounded-full flex items-center justify-center border-none cursor-pointer shrink-0 bg-red-500/15"
           aria-label="Stop"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="#ef4444"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
@@ -278,8 +274,7 @@ function ReposCountdown({ preset, onBack, onDone }: ReposCountdownProps) {
         {isRunning ? (
           <button
             onClick={pause}
-            className="flex-1 h-14 rounded-[12px] border-none cursor-pointer text-[16px] font-bold tracking-widest uppercase text-white"
-            style={{ background: 'rgba(255,255,255,0.1)' }}
+            className="flex-1 h-14 rounded-[12px] border-none cursor-pointer text-[16px] font-bold tracking-widest uppercase text-zinc-700 dark:text-white bg-zinc-200 dark:bg-white/10"
           >
             {t('timer.controls.pause')}
           </button>
@@ -293,8 +288,6 @@ function ReposCountdown({ preset, onBack, onDone }: ReposCountdownProps) {
           </button>
         ) : null}
       </div>
-    </div>
+    </section>
   );
-
-  return createPortal(content, document.body);
 }
