@@ -118,7 +118,8 @@ interface ReposCountdownProps {
 }
 
 function ReposCountdown({ preset, activeDuration, onBack, onDone }: ReposCountdownProps) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  const langRef = useRef(lang); langRef.current = lang;
   const [speechOn, setSpeechOn] = useState(isSpeechEnabled());
   const toggleSpeech = () => { const n = !speechOn; setSpeechOn(n); setSpeechEnabled(n); };
 
@@ -129,16 +130,16 @@ function ReposCountdown({ preset, activeDuration, onBack, onDone }: ReposCountdo
   const callbacks = useMemo(() => ({
     onPhaseChange: (phase: { type: string }) => {
       hapticFeedback('heavy'); playTransitionBeep();
-      if (phase.type === 'prepare') speakEvent('prepare');
-      else if (phase.type === 'work') speakEvent('rest_start');
+      if (phase.type === 'prepare') speakEvent('prepare', langRef.current);
+      else if (phase.type === 'work') speakEvent('rest_start', langRef.current);
     },
     onTick: (secondsLeft: number) => {
-      if (secondsLeft >= 1 && secondsLeft <= 5) { playCountdownBeep(secondsLeft); hapticFeedback('tap'); if (secondsLeft <= 3) speakEvent(`countdown_${secondsLeft}`); }
+      if (secondsLeft >= 1 && secondsLeft <= 5) { playCountdownBeep(secondsLeft); hapticFeedback('tap'); if (secondsLeft <= 3) speakEvent(`countdown_${secondsLeft}`, langRef.current); }
       if (secondsLeft === 10) { playTransitionBeep(); hapticFeedback('tap'); }
     },
     onHalfway: () => {},
     onLastRound: () => {},
-    onDone: () => { speakEvent('done'); hapticFeedback('heavy'); playTransitionBeep(); setTimeout(() => playTransitionBeep(), 200); },
+    onDone: () => { speakEvent('done', langRef.current); hapticFeedback('heavy'); playTransitionBeep(); setTimeout(() => playTransitionBeep(), 200); },
   }), []);
 
   const { state, start, pause, resume, reset } = useTimer(preset, callbacks);

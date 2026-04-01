@@ -1,4 +1,5 @@
 // Coaching vocal — diversified speech pools with anti-repetition
+// Preferences persisted in localStorage (eps_tts_*)
 
 const SPEECH_POOLS: Record<string, Record<string, string[]>> = {
   fr: {
@@ -178,28 +179,98 @@ const SPEECH_POOLS: Record<string, Record<string, string[]>> = {
   },
 };
 
-const lastSpoken: Record<string, number> = {};
-let speechEnabled = true;
+/* ─── localStorage keys ─── */
+
+const LS_ENABLED = 'eps_tts_enabled';
+const LS_VOICE = 'eps_tts_voice';
+const LS_RATE = 'eps_tts_rate';
+
+function isBrowser() {
+  return typeof window !== 'undefined';
+}
+
+/* ─── Enabled state (persisted) ─── */
+
+let speechEnabled: boolean = (() => {
+  if (!isBrowser()) return true;
+  const raw = localStorage.getItem(LS_ENABLED);
+  return raw !== 'false'; // default true
+})();
 
 export function setSpeechEnabled(enabled: boolean): void {
   speechEnabled = enabled;
+  if (isBrowser()) localStorage.setItem(LS_ENABLED, String(enabled));
 }
 
 export function isSpeechEnabled(): boolean {
   return speechEnabled;
 }
 
-function speak(text: string, locale: string): void {
-  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+/* ─── Rate (persisted) ─── */
 
-  // Cancel any ongoing speech
+export function getSpeechRate(): number {
+  if (!isBrowser()) return 1.1;
+  const raw = localStorage.getItem(LS_RATE);
+  if (raw) {
+    const n = parseFloat(raw);
+    if (!isNaN(n) && n >= 0.5 && n <= 2) return n;
+  }
+  return 1.1;
+}
+
+export function setSpeechRate(rate: number): void {
+  if (isBrowser()) localStorage.setItem(LS_RATE, String(rate));
+}
+
+/* ─── Voice URI (persisted) ─── */
+
+export function getSpeechVoiceURI(): string | null {
+  if (!isBrowser()) return null;
+  return localStorage.getItem(LS_VOICE);
+}
+
+export function setSpeechVoiceURI(uri: string | null): void {
+  if (!isBrowser()) return;
+  if (uri) localStorage.setItem(LS_VOICE, uri);
+  else localStorage.removeItem(LS_VOICE);
+}
+
+/* ─── Voice resolution ─── */
+
+function resolveVoice(locale: string): SpeechSynthesisVoice | undefined {
+  if (!isBrowser() || !window.speechSynthesis || typeof window.speechSynthesis.getVoices !== 'function') return undefined;
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length === 0) return undefined;
+
+  // Try user-preferred voice
+  const savedURI = getSpeechVoiceURI();
+  if (savedURI) {
+    const found = voices.find((v) => v.voiceURI === savedURI);
+    if (found) return found;
+  }
+
+  // Fallback: best match for locale
+  const langTag = locale === 'es' ? 'es' : locale === 'en' ? 'en' : 'fr';
+  return voices.find((v) => v.lang.startsWith(langTag)) || undefined;
+}
+
+/* ─── Core speak function ─── */
+
+const lastSpoken: Record<string, number> = {};
+
+function speak(text: string, locale: string): void {
+  if (!isBrowser() || !window.speechSynthesis) return;
+
   window.speechSynthesis.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = locale === 'es' ? 'es-ES' : locale === 'en' ? 'en-US' : 'fr-FR';
-  utterance.rate = 1.1;
+  utterance.rate = getSpeechRate();
   utterance.pitch = 1.0;
   utterance.volume = 1.0;
+
+  const voice = resolveVoice(locale);
+  if (voice) utterance.voice = voice;
 
   window.speechSynthesis.speak(utterance);
 }
@@ -218,6 +289,11 @@ export function speakEvent(event: string, locale = 'fr'): void {
 
   lastSpoken[event] = index;
   speak(pool[index], locale);
+}
+
+/** Speak arbitrary text (for preview in settings) */
+export function speakPreview(text: string, locale = 'fr'): void {
+  speak(text, locale);
 }
 
 /** Get a random "done" message for the end screen */

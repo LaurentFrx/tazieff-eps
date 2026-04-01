@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { WheelPicker } from '@/components/tools/WheelPicker';
 import { CountdownRing, type RingPhase } from '@/components/tools/CountdownRing';
 import { useTimer, type TimerPreset } from '@/hooks/useTimer';
@@ -102,24 +102,25 @@ interface AmrapCountdownProps {
 const MILESTONES = new Set([180, 60, 30, 10]);
 
 function AmrapCountdown({ preset, ringPhases, ringTotal, onBack, onDone }: AmrapCountdownProps) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  const langRef = useRef(lang); langRef.current = lang;
   const [speechOn, setSpeechOn] = useState(isSpeechEnabled());
   const toggleSpeech = () => { const n = !speechOn; setSpeechOn(n); setSpeechEnabled(n); };
 
   const callbacks = useMemo(() => ({
     onPhaseChange: (phase: { type: string }) => {
       hapticFeedback('heavy'); playTransitionBeep();
-      if (phase.type === 'prepare') speakEvent('prepare');
-      else if (phase.type === 'work') speakEvent('work_start');
+      if (phase.type === 'prepare') speakEvent('prepare', langRef.current);
+      else if (phase.type === 'work') speakEvent('work_start', langRef.current);
     },
     onTick: (secondsLeft: number) => {
-      if (secondsLeft >= 1 && secondsLeft <= 3) { playCountdownBeep(secondsLeft); hapticFeedback('tap'); speakEvent(`countdown_${secondsLeft}`); }
+      if (secondsLeft >= 1 && secondsLeft <= 3) { playCountdownBeep(secondsLeft); hapticFeedback('tap'); speakEvent(`countdown_${secondsLeft}`, langRef.current); }
       if (MILESTONES.has(secondsLeft)) { playTransitionBeep(); hapticFeedback('tap'); }
       if (secondsLeft === 5 || secondsLeft === 4) { playCountdownBeep(secondsLeft); hapticFeedback('tap'); }
     },
-    onHalfway: () => speakEvent('halfway'),
-    onLastRound: () => { speakEvent('last_round'); hapticFeedback('double'); },
-    onDone: () => { speakEvent('done'); hapticFeedback('heavy'); },
+    onHalfway: () => speakEvent('halfway', langRef.current),
+    onLastRound: () => { speakEvent('last_round', langRef.current); hapticFeedback('double'); },
+    onDone: () => { speakEvent('done', langRef.current); hapticFeedback('heavy'); },
   }), []);
 
   const { state, start, pause, resume, reset, skip } = useTimer(preset, callbacks);
