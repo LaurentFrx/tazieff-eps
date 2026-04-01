@@ -234,7 +234,6 @@ export function CalculateurRM() {
         <span className="rm-val rm-val-sm font-mono text-[24px] font-medium text-cyan-400">
           {i + 5}
         </span>
-        <span className="rm-unit text-[12px] text-zinc-400 ml-1">kg</span>
       </>
     ),
     [],
@@ -250,9 +249,6 @@ export function CalculateurRM() {
           style={{ color: "#FF006E" }}
         >
           {v}
-        </span>
-        <span className="rm-unit text-[12px] text-zinc-400 ml-1">
-          {v > 1 ? "reps" : "rep"}
         </span>
       </>
     );
