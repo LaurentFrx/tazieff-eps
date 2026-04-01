@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
-/* createPortal removed — countdown renders inline */
 import { WheelPicker } from '@/components/tools/WheelPicker';
-import { CountdownWheels } from '@/components/tools/CountdownWheels';
+import { CountdownRing, type RingPhase } from '@/components/tools/CountdownRing';
 import { useTimer, type TimerPreset } from '@/hooks/useTimer';
 import { unlockAudio, hapticFeedback, playCountdownBeep, playTransitionBeep } from '@/lib/audio/beep';
 import { speakEvent, isSpeechEnabled, setSpeechEnabled } from '@/lib/audio/speech';
@@ -15,79 +14,67 @@ const DURATION_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 20, 25, 30];
 
 const SpeakerOnIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
   </svg>
 );
-
 const SpeakerOffIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-    <line x1="23" y1="9" x2="17" y2="15" />
-    <line x1="17" y1="9" x2="23" y2="15" />
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" />
+  </svg>
+);
+const PauseIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></svg>
+);
+const PlayIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21" /></svg>
+);
+const StopIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="#ef4444"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
+);
+const SkipIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="5 4 15 12 5 20 5 4" /><line x1="19" y1="5" x2="19" y2="19" />
   </svg>
 );
 
-/* ─── Component ─── */
+/* ─── Main ─── */
 
-interface AmrapTimerProps {
-  onBack: () => void;
-}
+interface AmrapTimerProps { onBack: () => void }
 
 export function AmrapTimer({ onBack }: AmrapTimerProps) {
   const { t } = useI18n();
   const [durationMin, setDurationMin] = useState(10);
   const [running, setRunning] = useState(false);
 
+  const ringTotal = durationMin * 60;
+
   const preset: TimerPreset = useMemo(() => ({
-    name: 'AMRAP',
-    prepareDuration: 10,
-    workDuration: durationMin * 60,
-    restDuration: 0,
-    rounds: 1,
-    cycles: 1,
-    recoveryDuration: 0,
-    cooldownDuration: 0,
-  }), [durationMin]);
+    name: 'AMRAP', prepareDuration: 10, workDuration: ringTotal,
+    restDuration: 0, rounds: 1, cycles: 1, recoveryDuration: 0, cooldownDuration: 0,
+  }), [ringTotal]);
 
-  const handleStart = () => {
-    unlockAudio();
-    setRunning(true);
-  };
+  const ringPhases: RingPhase[] = useMemo(() =>
+    [{ type: 'amrap', duration: ringTotal, color: '#ef4444' }],
+  [ringTotal]);
 
-  const handleDone = useCallback(() => {
-    setRunning(false);
-  }, []);
+  const handleStart = () => { unlockAudio(); setRunning(true); };
+  const handleDone = useCallback(() => setRunning(false), []);
 
   if (running) {
-    return <AmrapCountdown preset={preset} onBack={onBack} onDone={handleDone} />;
+    return <AmrapCountdown preset={preset} ringPhases={ringPhases} ringTotal={ringTotal} onBack={onBack} onDone={handleDone} />;
   }
 
   return (
     <section className="page">
-      {/* Banner */}
-      <div
-        className="relative overflow-hidden rounded-2xl px-5 pt-5 pb-4"
-        style={{ background: 'linear-gradient(135deg, #dc2626, #ef4444)' }}
-      >
-        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="absolute top-3 right-3 pointer-events-none">
-          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-        </svg>
-        <button onClick={onBack} className="text-[13px] text-white/70 mb-2 cursor-pointer bg-transparent border-none">
-          ← Retour
-        </button>
+      <div className="relative overflow-hidden rounded-2xl px-5 pt-5 pb-4" style={{ background: 'linear-gradient(135deg, #dc2626, #ef4444)' }}>
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="absolute top-3 right-3 pointer-events-none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        <button onClick={onBack} className="text-[13px] text-white/70 mb-2 cursor-pointer bg-transparent border-none">← Retour</button>
         <h1 className="text-[22px] font-bold text-white">AMRAP</h1>
-        <p className="text-[12px] text-white/70 mt-0.5">
-          Max de reps en {durationMin} min
-        </p>
+        <p className="text-[12px] text-white/70 mt-0.5">Max de reps en {durationMin} min</p>
       </div>
 
-      {/* Config card */}
       <div className="rounded-2xl p-4 bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06] max-w-[280px] mx-auto">
-        <div className="text-[11px] font-semibold tracking-wider text-center uppercase mb-2" style={{ color: '#ef4444' }}>
-          {t('timer.config.work')}
-        </div>
+        <div className="text-[11px] font-semibold tracking-wider text-center uppercase mb-2" style={{ color: '#ef4444' }}>{t('timer.config.work')}</div>
         <div className="flex justify-center">
           <div style={{ width: 160 }}>
             <WheelPicker values={DURATION_VALUES} defaultValue={10} unit="min" color="#ef4444" onChange={setDurationMin} />
@@ -95,21 +82,7 @@ export function AmrapTimer({ onBack }: AmrapTimerProps) {
         </div>
       </div>
 
-      {/* Start button */}
-      <button
-        onClick={handleStart}
-        className="w-full mt-4 cursor-pointer border-none"
-        style={{
-          height: 56,
-          borderRadius: 14,
-          background: 'linear-gradient(135deg, #dc2626, #ef4444)',
-          color: '#fff',
-          fontSize: 16,
-          fontWeight: 700,
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase',
-        }}
-      >
+      <button onClick={handleStart} className="w-full mt-4 cursor-pointer border-none" style={{ height: 56, borderRadius: 14, background: 'linear-gradient(135deg, #dc2626, #ef4444)', color: '#fff', fontSize: 16, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
         {t('timer.controls.start')}
       </button>
     </section>
@@ -120,47 +93,29 @@ export function AmrapTimer({ onBack }: AmrapTimerProps) {
 
 interface AmrapCountdownProps {
   preset: TimerPreset;
+  ringPhases: RingPhase[];
+  ringTotal: number;
   onBack: () => void;
   onDone: () => void;
 }
 
-// Milestone seconds for extra beeps in AMRAP
 const MILESTONES = new Set([180, 60, 30, 10]);
 
-function AmrapCountdown({ preset, onBack, onDone }: AmrapCountdownProps) {
+function AmrapCountdown({ preset, ringPhases, ringTotal, onBack, onDone }: AmrapCountdownProps) {
   const { t } = useI18n();
   const [speechOn, setSpeechOn] = useState(isSpeechEnabled());
-
-  const toggleSpeech = () => {
-    const next = !speechOn;
-    setSpeechOn(next);
-    setSpeechEnabled(next);
-  };
+  const toggleSpeech = () => { const n = !speechOn; setSpeechOn(n); setSpeechEnabled(n); };
 
   const callbacks = useMemo(() => ({
     onPhaseChange: (phase: { type: string }) => {
-      hapticFeedback('heavy');
-      playTransitionBeep();
+      hapticFeedback('heavy'); playTransitionBeep();
       if (phase.type === 'prepare') speakEvent('prepare');
       else if (phase.type === 'work') speakEvent('work_start');
     },
     onTick: (secondsLeft: number) => {
-      // Standard countdown beeps at 3-2-1
-      if (secondsLeft >= 1 && secondsLeft <= 3) {
-        playCountdownBeep(secondsLeft);
-        hapticFeedback('tap');
-        speakEvent(`countdown_${secondsLeft}`);
-      }
-      // AMRAP milestone beeps at 3:00, 1:00, 30s, 10s
-      if (MILESTONES.has(secondsLeft)) {
-        playTransitionBeep();
-        hapticFeedback('tap');
-      }
-      // 5-4 also get beeps
-      if (secondsLeft === 5 || secondsLeft === 4) {
-        playCountdownBeep(secondsLeft);
-        hapticFeedback('tap');
-      }
+      if (secondsLeft >= 1 && secondsLeft <= 3) { playCountdownBeep(secondsLeft); hapticFeedback('tap'); speakEvent(`countdown_${secondsLeft}`); }
+      if (MILESTONES.has(secondsLeft)) { playTransitionBeep(); hapticFeedback('tap'); }
+      if (secondsLeft === 5 || secondsLeft === 4) { playCountdownBeep(secondsLeft); hapticFeedback('tap'); }
     },
     onHalfway: () => speakEvent('halfway'),
     onLastRound: () => { speakEvent('last_round'); hapticFeedback('double'); },
@@ -169,36 +124,27 @@ function AmrapCountdown({ preset, onBack, onDone }: AmrapCountdownProps) {
 
   const { state, start, pause, resume, reset, skip } = useTimer(preset, callbacks);
 
-  const didStart = useMemo(() => {
-    if (state.status === 'idle') setTimeout(() => start(), 50);
-    return true;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  void didStart;
+  useMemo(() => { if (state.status === 'idle') setTimeout(() => start(), 50); return true; /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
 
   const isRunning = state.status === 'running';
   const isPaused = state.status === 'paused';
   const isDone = state.status === 'done';
-
   const activePhase = state.phases[state.activePhaseIndex];
-  const mins = Math.floor(state.secondsLeft / 60);
-  const secs = state.secondsLeft % 60;
-  const progress = activePhase ? 1 - state.secondsLeft / activePhase.duration : 0;
+  const isPrepare = activePhase?.type === 'prepare';
 
   const handleStop = () => { reset(); onDone(); };
-
   if (isDone) { reset(); onDone(); return null; }
+
+  const prepareOffset = state.phases.length > 0 && state.phases[0].type === 'prepare' ? 1 : 0;
+  const prepareTime = prepareOffset > 0 ? state.phases[0].duration : 0;
+  const ringElapsed = Math.max(0, state.elapsedSeconds - prepareTime);
 
   return (
     <section className="page">
-      {/* Banner — always red */}
-      <div
-        className="relative overflow-hidden rounded-2xl px-5 pt-4 pb-3"
-        style={{ background: 'linear-gradient(135deg, #dc2626, #ef4444)' }}
-      >
+      <div className="relative overflow-hidden rounded-2xl px-5 pt-4 pb-3" style={{ background: 'linear-gradient(135deg, #dc2626, #ef4444)' }}>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[14px] font-bold tracking-widest text-white uppercase">
-            {activePhase?.type === 'prepare' ? t('timer.phases.prepare') : 'EN COURS'}
+          <span className="text-[16px] font-bold tracking-widest text-white uppercase">
+            {isPrepare ? t('timer.phases.prepare') : 'EN COURS'}
           </span>
           <button onClick={toggleSpeech} className="bg-transparent border-none cursor-pointer p-1" style={{ color: speechOn ? '#fff' : 'rgba(255,255,255,0.4)' }}>
             {speechOn ? <SpeakerOnIcon /> : <SpeakerOffIcon />}
@@ -206,58 +152,26 @@ function AmrapCountdown({ preset, onBack, onDone }: AmrapCountdownProps) {
         </div>
       </div>
 
-      {/* Countdown */}
-      <div className="flex flex-col items-center gap-4 py-8">
-        <CountdownWheels minutes={mins} seconds={secs} />
-
-        <div className="w-full max-w-[280px] h-[6px] rounded-full overflow-hidden bg-zinc-200 dark:bg-white/10">
-          <div
-            className="h-full rounded-full transition-all duration-1000 ease-linear"
-            style={{ width: `${progress * 100}%`, background: '#ef4444' }}
-          />
-        </div>
-
-        <span className="text-[11px] text-zinc-400 dark:text-white/30 font-mono">
-          {Math.floor(state.totalSecondsLeft / 60)}:{String(state.totalSecondsLeft % 60).padStart(2, '0')} restant
-        </span>
+      <div className="flex flex-col items-center py-6">
+        <CountdownRing
+          currentSeconds={state.secondsLeft}
+          totalPhaseSeconds={activePhase?.duration ?? 1}
+          totalElapsed={isPrepare ? 0 : ringElapsed}
+          totalDuration={ringTotal}
+          phases={ringPhases}
+          currentPhaseIndex={0}
+          phaseColor={isPrepare ? '#6366f1' : '#ef4444'}
+        />
       </div>
 
-      {/* Controls */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={handleStop}
-          className="w-12 h-12 rounded-full flex items-center justify-center border-none cursor-pointer shrink-0 bg-red-500/15"
-          aria-label="Stop"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="#ef4444"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
-        </button>
-
+      <div className="flex items-center justify-center gap-4">
+        <button onClick={handleStop} className="w-14 h-14 rounded-full flex items-center justify-center border-none cursor-pointer bg-red-500/15" aria-label="Stop"><StopIcon /></button>
         {isRunning ? (
-          <button
-            onClick={pause}
-            className="flex-1 h-14 rounded-[12px] border-none cursor-pointer text-[16px] font-bold tracking-widest uppercase text-zinc-700 dark:text-white bg-zinc-200 dark:bg-white/10"
-          >
-            {t('timer.controls.pause')}
-          </button>
+          <button onClick={pause} className="w-[72px] h-[72px] rounded-full flex items-center justify-center border-none cursor-pointer text-white shadow-lg" style={{ background: '#ef4444' }} aria-label="Pause"><PauseIcon /></button>
         ) : isPaused ? (
-          <button
-            onClick={resume}
-            className="flex-1 h-14 rounded-[12px] border-none cursor-pointer text-[16px] font-bold tracking-widest uppercase text-white"
-            style={{ background: 'linear-gradient(135deg, #dc2626, #ef4444)' }}
-          >
-            {t('timer.controls.resume')}
-          </button>
+          <button onClick={resume} className="w-[72px] h-[72px] rounded-full flex items-center justify-center border-none cursor-pointer text-white shadow-lg" style={{ background: '#ef4444' }} aria-label="Resume"><PlayIcon /></button>
         ) : null}
-
-        <button
-          onClick={skip}
-          className="w-12 h-12 rounded-full flex items-center justify-center border-none cursor-pointer shrink-0 bg-zinc-200 dark:bg-white/10"
-          aria-label="Skip"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polygon points="5 4 15 12 5 20 5 4" /><line x1="19" y1="5" x2="19" y2="19" />
-          </svg>
-        </button>
+        <button onClick={skip} className="w-14 h-14 rounded-full flex items-center justify-center border-none cursor-pointer bg-zinc-200 dark:bg-white/10" aria-label="Skip"><SkipIcon /></button>
       </div>
     </section>
   );
