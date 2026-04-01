@@ -204,14 +204,14 @@ export function CalculateurRM() {
   const renderCharge = useCallback(
     (i: number) => (
       <>
-        <span className="rm-val rm-val-sm font-mono text-[22px] font-medium text-cyan-400">{i + 5}</span>
-        <span className="rm-unit font-mono text-[13px] ml-1" style={{ color: "rgba(255,255,255,0.4)" }}>kg</span>
+        <span className="rm-val rm-val-sm font-mono text-[22px] font-medium text-zinc-900 dark:text-cyan-400">{i + 5}</span>
+        <span className="rm-unit font-mono text-[13px] ml-1 text-zinc-400 dark:text-white/40">kg</span>
       </>
     ), [],
   );
 
   const renderReps = useCallback((i: number) => (
-    <span className="rm-val rm-val-sm font-mono text-[22px] font-medium" style={{ color: "#FF006E" }}>
+    <span className="rm-val rm-val-sm font-mono text-[22px] font-medium text-zinc-900 dark:text-[#FF006E]">
       {i + 1}
     </span>
   ), []);
@@ -278,6 +278,32 @@ export function CalculateurRM() {
 
   return (
     <section className="page">
+      <style>{`
+        .rm-card {
+          background: linear-gradient(135deg, rgba(0,229,255,0.08) 0%, rgba(123,47,255,0.06) 100%);
+          border: 1px solid rgba(0,229,255,0.15);
+          box-shadow: 0 4px 20px rgba(0,229,255,0.04);
+        }
+        :where(.dark, .dark *) .rm-card {
+          background: linear-gradient(135deg, rgba(0,229,255,0.15) 0%, rgba(123,47,255,0.12) 100%);
+          border: 1px solid rgba(0,229,255,0.2);
+          box-shadow: 0 4px 20px rgba(0,229,255,0.08);
+        }
+        .rm-picker-charge {
+          background: rgba(255,255,255,0.7);
+          border: 1px solid rgba(0,229,255,0.2);
+        }
+        :where(.dark, .dark *) .rm-picker-charge {
+          background: rgba(0,0,0,0.25);
+        }
+        .rm-picker-reps {
+          background: rgba(255,255,255,0.7);
+          border: 1px solid rgba(255,0,110,0.2);
+        }
+        :where(.dark, .dark *) .rm-picker-reps {
+          background: rgba(0,0,0,0.25);
+        }
+      `}</style>
       <header className="page-header">
         <Link href="/outils" className="eyebrow hover:text-[color:var(--accent)]">
           ← {t("outils.backLabel")}
@@ -286,64 +312,61 @@ export function CalculateurRM() {
       </header>
 
       {/* ── Section 1 — Carte d'entrée ── */}
-      <div
-        className="rounded-2xl p-5 bg-black/[0.03] dark:bg-white/[0.06]"
-        style={{ border: "1px solid rgba(255,255,255,0.12)" }}
-      >
+      <div className="rounded-2xl p-5 rm-card">
         <div className="grid items-start"
           style={{ gridTemplateColumns: "1fr auto 1fr auto 1fr" }}>
-          <div className="text-[11px] font-semibold tracking-wider text-center mb-2" style={{ color: "#00E5FF" }}>
+          <div className="text-[11px] font-semibold tracking-wider text-center mb-2" style={{ color: "#00E5FF", textShadow: "0 0 10px rgba(0,229,255,0.3)" }}>
             {t("apprendre.calculateur.chargeLabel").toUpperCase()}
           </div>
           <div />
-          <div className="text-[11px] font-semibold tracking-wider text-center mb-2" style={{ color: "#FF006E" }}>
+          <div className="text-[11px] font-semibold tracking-wider text-center mb-2" style={{ color: "#FF006E", textShadow: "0 0 10px rgba(255,0,110,0.3)" }}>
             REPS
           </div>
           <div />
-          <div className="text-[11px] font-semibold tracking-wider text-center mb-2" style={{ color: "rgba(255,255,255,0.5)" }}>
+          <div className="text-[11px] font-semibold tracking-wider text-center mb-2 text-zinc-500 dark:text-white/70">
             1RM
           </div>
 
           <Wheel
             count={196} itemH={PK_H} initIdx={55}
             onIdx={onChargeIdx} renderItem={renderCharge}
-            containerClass="rounded-xl"
+            containerClass="rounded-xl rm-picker-charge"
             selectClass="rounded-lg"
             selectStyle={{
-              borderTop: "1px solid rgba(0,229,255,0.3)",
-              borderBottom: "1px solid rgba(0,229,255,0.3)",
-              background: "rgba(0,229,255,0.12)",
+              borderTop: "1.5px solid rgba(0,229,255,0.4)",
+              borderBottom: "1.5px solid rgba(0,229,255,0.4)",
+              background: "rgba(0,229,255,0.15)",
             }}
             maskFade={[20, 80]} ariaLabel="Sélecteur de charge" idPrefix="rm-charge"
           />
 
-          <div className="self-center text-[16px] text-zinc-500 px-1">×</div>
+          <div className="self-center text-[16px] px-1 text-zinc-400 dark:text-white/30">×</div>
 
           <Wheel
             count={30} itemH={PK_H} initIdx={9}
             onIdx={onRepsIdx} renderItem={renderReps}
-            containerClass="rounded-xl"
+            containerClass="rounded-xl rm-picker-reps"
             selectClass="rounded-lg"
             selectStyle={{
-              borderTop: "1px solid rgba(255,0,110,0.3)",
-              borderBottom: "1px solid rgba(255,0,110,0.3)",
-              background: "rgba(255,0,110,0.12)",
+              borderTop: "1.5px solid rgba(255,0,110,0.4)",
+              borderBottom: "1.5px solid rgba(255,0,110,0.4)",
+              background: "rgba(255,0,110,0.15)",
             }}
             maskFade={[20, 80]} ariaLabel="Sélecteur de répétitions" idPrefix="rm-reps"
           />
 
-          <div className="self-center text-[16px] text-zinc-500 px-1">=</div>
+          <div className="self-center text-[16px] px-1 text-zinc-400 dark:text-white/30">=</div>
 
           <div className="flex flex-col items-center justify-center" style={{ height: PK_H * 3 }}>
             <div
               className="font-mono text-[42px] font-bold text-zinc-900 dark:text-white leading-none"
-              style={{ textShadow: "0 0 30px rgba(0,229,255,0.2)" }}
+              style={{ textShadow: "0 0 30px rgba(0,229,255,0.3), 0 2px 4px rgba(0,0,0,0.3)" }}
             >
               {avg}
             </div>
-            <div className="text-[15px] -mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>kg</div>
-            <div className="my-2 mx-auto" style={{ height: 1, width: "60%", background: "rgba(255,255,255,0.06)" }} />
-            <div className="text-[11px] text-center leading-relaxed" style={{ color: "rgba(255,255,255,0.35)" }}>
+            <div className="text-[15px] -mt-0.5 text-zinc-500 dark:text-white/50">kg</div>
+            <div className="my-2 mx-auto bg-zinc-200 dark:bg-white/[0.06]" style={{ height: 1, width: "60%" }} />
+            <div className="text-[11px] text-center leading-relaxed text-zinc-400 dark:text-white/40">
               <div>Epley {ep}</div>
               <div>Brzycki {br}</div>
             </div>
