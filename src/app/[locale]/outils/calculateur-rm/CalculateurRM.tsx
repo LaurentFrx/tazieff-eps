@@ -35,16 +35,7 @@ const ZONE_I18N: Record<string, string> = {
   puissance_vitesse: "outils.rm.zonePuissanceVitesse",
 };
 
-const ROW_H = 70;
-const PICKER_H = ROW_H * 3; // 210px — 3 lignes visibles
-const INIT_IDX = 7; // 65% — zone pertinente pour un débutant
-
 /* ─── Helpers ─── */
-
-function sliderBg(val: number, min: number, max: number, left: string, right: string) {
-  const r = ((val - min) / (max - min)) * 100;
-  return `linear-gradient(to right,${left} 0%,${left} ${r}%,${right} ${r}%,${right} 100%)`;
-}
 
 function calc1RM(charge: number, reps: number) {
   if (reps === 1) return { avg: charge, ep: charge, br: charge };
@@ -53,69 +44,107 @@ function calc1RM(charge: number, reps: number) {
   return { avg: Math.round((ep + br) / 2), ep, br };
 }
 
-/* ─── Wheel Picker (style iOS UIPickerView) ─── */
+/* ─── Generic Wheel Picker (iOS UIPickerView style) ─── */
 
-function WheelPicker({ rm1, t }: { rm1: number; t: (k: string) => string }) {
+function Wheel({
+  count,
+  itemH,
+  initIdx,
+  onIdx,
+  renderItem,
+  containerClass,
+  containerStyle,
+  selectClass,
+  selectStyle,
+  maskFade,
+  ariaLabel,
+  idPrefix,
+}: {
+  count: number;
+  itemH: number;
+  initIdx: number;
+  onIdx?: (i: number) => void;
+  renderItem: (i: number) => React.ReactNode;
+  containerClass?: string;
+  containerStyle?: React.CSSProperties;
+  selectClass?: string;
+  selectStyle?: React.CSSProperties;
+  maskFade: [number, number];
+  ariaLabel: string;
+  idPrefix: string;
+}) {
+  const h = itemH * 3;
   const scrollRef = useRef<HTMLDivElement>(null);
   const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
   const rafId = useRef(0);
+  const onIdxRef = useRef(onIdx);
+  onIdxRef.current = onIdx;
+  const lastIdx = useRef(-1);
+  const didInit = useRef(false);
 
-  const updateVisuals = useCallback(() => {
+  const applyVisuals = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
     const st = el.scrollTop;
-    const activeIdx = Math.round(st / ROW_H);
+    const idx = Math.min(Math.max(Math.round(st / itemH), 0), count - 1);
+
+    if (idx !== lastIdx.current) {
+      lastIdx.current = idx;
+      onIdxRef.current?.(idx);
+    }
 
     for (let i = 0; i < rowRefs.current.length; i++) {
       const row = rowRefs.current[i];
       if (!row) continue;
-      const d = Math.abs(st - i * ROW_H);
-
+      const d = Math.abs(st - i * itemH);
       let op: number;
       let sc: number;
-      if (d < 15) {
+      if (d < itemH * 0.6) {
         op = 1;
         sc = 1;
-      } else if (d < ROW_H * 1.5) {
-        const progress = (d - 15) / (ROW_H * 1.5 - 15);
-        op = 1 - progress * 0.6;
-        sc = 1 - progress * 0.08;
+      } else if (d < itemH * 1.6) {
+        const p = (d - itemH * 0.6) / itemH;
+        op = 1 - p * 0.65;
+        sc = 1 - p * 0.1;
       } else {
-        op = 0.15;
-        sc = 0.85;
+        op = 0.12;
+        sc = 0.82;
       }
-
       row.style.opacity = String(op);
       row.style.transform = `scale(${sc})`;
-      row.setAttribute("aria-selected", String(i === activeIdx));
+      row.setAttribute("aria-selected", String(i === idx));
     }
 
-    // Update aria-activedescendant
-    if (ZONE_ROWS[activeIdx]) {
-      el.setAttribute("aria-activedescendant", `rm-zone-${ZONE_ROWS[activeIdx].pct}`);
-    }
-  }, []);
+    el.setAttribute("aria-activedescendant", `${idPrefix}-${idx}`);
+  }, [count, itemH, idPrefix]);
 
   const onScroll = useCallback(() => {
     cancelAnimationFrame(rafId.current);
-    rafId.current = requestAnimationFrame(updateVisuals);
-  }, [updateVisuals]);
+    rafId.current = requestAnimationFrame(applyVisuals);
+  }, [applyVisuals]);
 
-  // Position initiale sur 65% + apply transforms
   useEffect(() => {
+    if (didInit.current) return;
+    didInit.current = true;
     const el = scrollRef.current;
     if (!el) return;
-    el.scrollTop = INIT_IDX * ROW_H;
-    updateVisuals();
-  }, [updateVisuals]);
+    el.scrollTop = initIdx * itemH;
+    applyVisuals();
+  }, [initIdx, itemH, applyVisuals]);
 
-  const step = (delta: number) =>
-    scrollRef.current?.scrollBy({ top: delta * ROW_H, behavior: "smooth" });
+  useEffect(() => {
+    return () => cancelAnimationFrame(rafId.current);
+  }, []);
+
+  const step = (d: number) =>
+    scrollRef.current?.scrollBy({ top: d * itemH, behavior: "smooth" });
 
   const onKey = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowUp") { e.preventDefault(); step(-1); }
     if (e.key === "ArrowDown") { e.preventDefault(); step(1); }
   };
+
+  const mask = `linear-gradient(to bottom,transparent 0%,black ${maskFade[0]}%,black ${maskFade[1]}%,transparent 100%)`;
 
   return (
     <div className="relative">
@@ -123,23 +152,23 @@ function WheelPicker({ rm1, t }: { rm1: number; t: (k: string) => string }) {
       <button
         type="button"
         onClick={() => step(-1)}
-        className="absolute -top-1 left-1/2 -translate-x-1/2 z-10 p-1 text-zinc-500 opacity-30 hover:opacity-60 transition-opacity"
-        aria-label="Pourcentage supérieur"
+        className="absolute -top-0.5 left-1/2 -translate-x-1/2 z-10 w-6 h-6 flex items-center justify-center text-zinc-500 opacity-25 hover:opacity-50 transition-opacity"
+        aria-label="Valeur précédente"
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
           <polyline points="18 15 12 9 6 15" />
         </svg>
       </button>
 
-      {/* Picker container */}
+      {/* Container */}
       <div
-        className="relative rounded-2xl overflow-hidden bg-black/[0.02] dark:bg-white/[0.02] border border-black/[0.06] dark:border-white/[0.06]"
-        style={{ height: PICKER_H }}
+        className={`relative overflow-hidden ${containerClass ?? ""}`}
+        style={{ height: h, ...containerStyle }}
       >
-        {/* Indicateur central (zone de sélection) */}
+        {/* Indicateur central */}
         <div
-          className="absolute left-0 right-0 z-[2] pointer-events-none bg-black/[0.03] dark:bg-white/[0.03] border-y border-black/10 dark:border-white/10"
-          style={{ top: ROW_H, height: ROW_H }}
+          className={`absolute left-0 right-0 z-[2] pointer-events-none ${selectClass ?? ""}`}
+          style={{ top: itemH, height: itemH, ...selectStyle }}
         />
 
         {/* Liste scrollable */}
@@ -147,7 +176,7 @@ function WheelPicker({ rm1, t }: { rm1: number; t: (k: string) => string }) {
           ref={scrollRef}
           role="listbox"
           tabIndex={0}
-          aria-label="Sélecteur de pourcentage de charge"
+          aria-label={ariaLabel}
           onScroll={onScroll}
           onKeyDown={onKey}
           className="rm-wheel h-full overflow-y-scroll outline-none"
@@ -155,62 +184,30 @@ function WheelPicker({ rm1, t }: { rm1: number; t: (k: string) => string }) {
             scrollSnapType: "y mandatory",
             WebkitOverflowScrolling: "touch",
             scrollbarWidth: "none",
-            maskImage:
-              "linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%)",
-            WebkitMaskImage:
-              "linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%)",
+            maskImage: mask,
+            WebkitMaskImage: mask,
           }}
         >
-          {/* Padding haut — permet au 1er élément d'être centré */}
-          <div style={{ height: ROW_H }} aria-hidden="true" />
-
-          {ZONE_ROWS.map((r, i) => {
-            const weight = Math.round((rm1 * r.pct) / 100);
-            return (
-              <div
-                key={r.pct}
-                id={`rm-zone-${r.pct}`}
-                ref={(el) => { rowRefs.current[i] = el; }}
-                role="option"
-                aria-selected={i === INIT_IDX}
-                className="flex items-center justify-between px-5"
-                style={{
-                  height: ROW_H,
-                  scrollSnapAlign: "center",
-                  transition: "opacity .15s, transform .15s",
-                  willChange: "opacity, transform",
-                }}
-              >
-                {/* Gauche : pourcentage + reps + zone */}
-                <div className="min-w-0">
-                  <div className="flex items-baseline gap-2">
-                    <span
-                      className="font-mono text-[28px] font-medium"
-                      style={{ color: r.color }}
-                    >
-                      {r.pct}%
-                    </span>
-                    <span className="text-[12px] text-zinc-500">{r.reps}</span>
-                  </div>
-                  <div className="text-[12px] truncate" style={{ color: r.color }}>
-                    {t(ZONE_I18N[r.zone])}
-                  </div>
-                </div>
-
-                {/* Droite : poids calculé */}
-                <div
-                  className="shrink-0 pl-3 font-mono text-[24px] font-medium"
-                  style={{ color: r.color }}
-                >
-                  {weight}
-                  <span className="text-[13px] text-zinc-500 ml-0.5">kg</span>
-                </div>
-              </div>
-            );
-          })}
-
-          {/* Padding bas — permet au dernier élément d'être centré */}
-          <div style={{ height: ROW_H }} aria-hidden="true" />
+          <div style={{ height: itemH }} aria-hidden="true" />
+          {Array.from({ length: count }, (_, i) => (
+            <div
+              key={i}
+              id={`${idPrefix}-${i}`}
+              ref={(el) => { rowRefs.current[i] = el; }}
+              role="option"
+              aria-selected={i === initIdx}
+              className="flex items-center justify-center"
+              style={{
+                height: itemH,
+                scrollSnapAlign: "center",
+                transition: "opacity .15s, transform .15s",
+                willChange: "opacity, transform",
+              }}
+            >
+              {renderItem(i)}
+            </div>
+          ))}
+          <div style={{ height: itemH }} aria-hidden="true" />
         </div>
       </div>
 
@@ -218,10 +215,10 @@ function WheelPicker({ rm1, t }: { rm1: number; t: (k: string) => string }) {
       <button
         type="button"
         onClick={() => step(1)}
-        className="absolute -bottom-1 left-1/2 -translate-x-1/2 z-10 p-1 text-zinc-500 opacity-30 hover:opacity-60 transition-opacity"
-        aria-label="Pourcentage inférieur"
+        className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 z-10 w-6 h-6 flex items-center justify-center text-zinc-500 opacity-25 hover:opacity-50 transition-opacity"
+        aria-label="Valeur suivante"
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
@@ -237,6 +234,73 @@ export function CalculateurRM() {
   const [reps, setReps] = useState(10);
   const { avg, ep, br } = useMemo(() => calc1RM(charge, reps), [charge, reps]);
 
+  /* Callbacks stables — pas de re-render des pickers charge/reps */
+  const onChargeIdx = useCallback((i: number) => setCharge(i + 5), []);
+  const onRepsIdx = useCallback((i: number) => setReps(i + 1), []);
+
+  /* Render functions */
+  const renderCharge = useCallback(
+    (i: number) => (
+      <>
+        <span className="font-mono text-[24px] font-medium text-cyan-400">
+          {i + 5}
+        </span>
+        <span className="text-[12px] text-zinc-500 ml-1">kg</span>
+      </>
+    ),
+    [],
+  );
+
+  const renderReps = useCallback((i: number) => {
+    const v = i + 1;
+    return (
+      <>
+        <span
+          className="font-mono text-[24px] font-medium"
+          style={{ color: "#FF006E" }}
+        >
+          {v}
+        </span>
+        <span className="text-[12px] text-zinc-500 ml-1">
+          {v > 1 ? "reps" : "rep"}
+        </span>
+      </>
+    );
+  }, []);
+
+  const renderZone = useCallback(
+    (i: number) => {
+      const r = ZONE_ROWS[i];
+      const w = Math.round((avg * r.pct) / 100);
+      return (
+        <div className="flex items-center justify-between w-full px-5">
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-2">
+              <span
+                className="font-mono text-[28px] font-medium"
+                style={{ color: r.color }}
+              >
+                {r.pct}%
+              </span>
+              <span className="text-[12px] text-zinc-500">{r.reps}</span>
+            </div>
+            <div className="text-[12px] truncate" style={{ color: r.color }}>
+              {t(ZONE_I18N[r.zone])}
+            </div>
+          </div>
+          <div
+            className="shrink-0 pl-3 font-mono text-[24px] font-medium"
+            style={{ color: r.color }}
+          >
+            {w}
+            <span className="text-[13px] text-zinc-500 ml-0.5">kg</span>
+          </div>
+        </div>
+      );
+    },
+    [avg, t],
+  );
+
   return (
     <section className="page">
       {/* Header */}
@@ -247,126 +311,129 @@ export function CalculateurRM() {
         <h1>{t("apprendre.calculateur.title")}</h1>
       </header>
 
-      {/* Section 1 — Sliders d'entrée */}
+      {/* ── Carte combinée — Entrée + Résultat ── */}
       <div
-        className="rounded-2xl p-5 flex flex-col gap-6"
+        className="rounded-2xl p-4"
         style={{
-          background: "rgba(0,229,255,0.04)",
+          background: "rgba(0,229,255,0.03)",
           border: "1px solid rgba(0,229,255,0.08)",
         }}
       >
-        {/* Charge */}
-        <div>
-          <div className="flex items-baseline justify-between mb-2">
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-zinc-500">
-              {t("apprendre.calculateur.chargeLabel")}
-            </span>
-            <span className="font-mono text-[28px] font-medium text-cyan-400">
-              {charge}
-              <span className="text-[14px] text-zinc-500 ml-1">kg</span>
-            </span>
-          </div>
-          <input
-            type="range"
-            min={5}
-            max={200}
-            step={1}
-            value={charge}
-            onChange={(e) => setCharge(+e.target.value)}
-            className="rm-slider w-full"
-            style={{
-              background: sliderBg(
-                charge, 5, 200,
-                "rgba(0,229,255,0.35)",
-                "rgba(255,255,255,0.06)",
-              ),
-            }}
-          />
-          <div className="flex justify-between text-[11px] text-zinc-700 mt-0.5">
-            <span>5 kg</span>
-            <span>200 kg</span>
-          </div>
-        </div>
-
-        {/* Répétitions */}
-        <div>
-          <div className="flex items-baseline justify-between mb-2">
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-zinc-500">
-              {t("apprendre.calculateur.repsLabel")}
-            </span>
-            <span className="font-mono text-[28px] font-medium text-pink-500">
-              {reps}
-              <span className="text-[14px] text-zinc-500 ml-1">
-                rep{reps > 1 ? "s" : ""}
-              </span>
-            </span>
-          </div>
-          <input
-            type="range"
-            min={1}
-            max={30}
-            step={1}
-            value={reps}
-            onChange={(e) => setReps(+e.target.value)}
-            className="rm-slider w-full"
-            style={{
-              background: sliderBg(
-                reps, 1, 30,
-                "rgba(255,0,110,0.35)",
-                "rgba(255,255,255,0.06)",
-              ),
-            }}
-          />
-          <div className="flex justify-between text-[11px] text-zinc-700 mt-0.5">
-            <span>1 rep</span>
-            <span>30 reps</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Section 2 — Résultat 1RM */}
-      <div className="rounded-2xl p-5 text-center bg-black/[0.02] dark:bg-white/[0.02] border border-black/[0.06] dark:border-white/[0.06]">
-        <div className="text-[11px] text-zinc-500 tracking-widest font-medium uppercase mb-1">
-          {t("apprendre.calculateur.resultLabel")}
-        </div>
-        <div className="flex items-baseline justify-center gap-2">
-          <span className="font-mono text-[52px] font-medium text-zinc-800 dark:text-zinc-100 leading-none">
-            {avg}
-          </span>
-          <span className="text-[18px] text-zinc-500">kg</span>
-        </div>
-        <div className="flex items-center justify-center gap-3 mt-3">
-          <div>
-            <div className="text-[11px] text-zinc-500">Epley</div>
-            <div className="text-[14px] font-mono font-medium text-zinc-600 dark:text-zinc-400">
-              {ep} kg
+        {/* Pickers côte à côte */}
+        <div className="flex gap-3">
+          {/* Charge picker */}
+          <div className="flex-1 flex flex-col items-center">
+            <div className="text-[11px] font-medium text-cyan-400 text-center tracking-wide mb-2">
+              {t("apprendre.calculateur.chargeLabel").toUpperCase()}
             </div>
+            <Wheel
+              count={196}
+              itemH={50}
+              initIdx={55}
+              onIdx={onChargeIdx}
+              renderItem={renderCharge}
+              containerClass="bg-black/[0.04] dark:bg-black/20 rounded-xl"
+              containerStyle={{ border: "1px solid rgba(0,229,255,0.1)" }}
+              selectStyle={{
+                borderTop: "1px solid rgba(0,229,255,0.2)",
+                borderBottom: "1px solid rgba(0,229,255,0.2)",
+                background: "rgba(0,229,255,0.05)",
+              }}
+              maskFade={[25, 75]}
+              ariaLabel="Sélecteur de charge"
+              idPrefix="rm-charge"
+            />
           </div>
-          <div className="w-px h-7 bg-zinc-300 dark:bg-zinc-700" />
-          <div>
-            <div className="text-[11px] text-zinc-500">Brzycki</div>
-            <div className="text-[14px] font-mono font-medium text-zinc-600 dark:text-zinc-400">
-              {br} kg
+
+          {/* × séparateur */}
+          <div className="flex items-center pt-[22px]">
+            <span className="text-[20px] text-zinc-700 dark:text-zinc-500">×</span>
+          </div>
+
+          {/* Reps picker */}
+          <div className="flex-1 flex flex-col items-center">
+            <div
+              className="text-[11px] font-medium text-center tracking-wide mb-2"
+              style={{ color: "#FF006E" }}
+            >
+              REPS
+            </div>
+            <Wheel
+              count={30}
+              itemH={50}
+              initIdx={9}
+              onIdx={onRepsIdx}
+              renderItem={renderReps}
+              containerClass="bg-black/[0.04] dark:bg-black/20 rounded-xl"
+              containerStyle={{ border: "1px solid rgba(255,0,110,0.1)" }}
+              selectStyle={{
+                borderTop: "1px solid rgba(255,0,110,0.2)",
+                borderBottom: "1px solid rgba(255,0,110,0.2)",
+                background: "rgba(255,0,110,0.05)",
+              }}
+              maskFade={[25, 75]}
+              ariaLabel="Sélecteur de répétitions"
+              idPrefix="rm-reps"
+            />
+          </div>
+        </div>
+
+        {/* Résultat 1RM */}
+        <div
+          className="pt-3 mt-4 text-center border-t border-black/[0.06] dark:border-white/[0.04]"
+        >
+          <div className="text-[11px] text-zinc-500 tracking-widest font-medium uppercase mb-1">
+            {t("apprendre.calculateur.resultLabel")}
+          </div>
+          <div className="flex items-baseline justify-center gap-2">
+            <span className="font-mono text-[52px] font-medium text-zinc-800 dark:text-zinc-100 leading-none">
+              {avg}
+            </span>
+            <span className="text-[18px] text-zinc-500">kg</span>
+          </div>
+          <div className="flex items-center justify-center gap-3 mt-3">
+            <div>
+              <div className="text-[11px] text-zinc-500">Epley</div>
+              <div className="text-[14px] font-mono font-medium text-zinc-600 dark:text-zinc-400">
+                {ep} kg
+              </div>
+            </div>
+            <div className="w-px h-7 bg-zinc-300 dark:bg-zinc-700" />
+            <div>
+              <div className="text-[11px] text-zinc-500">Brzycki</div>
+              <div className="text-[14px] font-mono font-medium text-zinc-600 dark:text-zinc-400">
+                {br} kg
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Section 3 — Wheel Picker zones de travail */}
+      {/* ── Wheel Picker — Zones de travail ── */}
       <div>
         <div className="text-[12px] font-medium text-zinc-400 tracking-wide mb-3 uppercase">
           Choisis ta charge de travail
         </div>
-        <WheelPicker rm1={avg} t={t} />
+        <Wheel
+          count={15}
+          itemH={70}
+          initIdx={7}
+          renderItem={renderZone}
+          containerClass="bg-black/[0.02] dark:bg-white/[0.02] border border-black/[0.06] dark:border-white/[0.06] rounded-2xl"
+          selectClass="border-y border-black/10 dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.03]"
+          maskFade={[30, 70]}
+          ariaLabel="Sélecteur de pourcentage de charge"
+          idPrefix="rm-zone"
+        />
       </div>
 
-      {/* Section 4 — Warning sécurité */}
+      {/* ── Warning sécurité ── */}
       <LearnWarning>
         Le 1RM est une estimation. Ne tente jamais un vrai max sans pareur et
         sans maîtriser la technique.
       </LearnWarning>
 
-      {/* Section 5 — Chips de liens */}
+      {/* ── Chips de liens ── */}
       <div className="flex flex-wrap gap-2">
         <Link
           href="/apprendre/rm-rir-rpe"
