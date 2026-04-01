@@ -7,6 +7,9 @@ import { unlockAudio, hapticFeedback, playCountdownBeep, playTransitionBeep } fr
 import { speakEvent } from '@/lib/audio/speech';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LocaleLink as Link } from '@/components/LocaleLink';
+import { TabataTimer } from '@/components/timer/presets/TabataTimer';
+import { EmomTimer } from '@/components/timer/presets/EmomTimer';
+import { CircuitTimer } from '@/components/timer/presets/CircuitTimer';
 
 // ---------- Preset definitions ----------
 
@@ -238,6 +241,21 @@ export default function TimerPage() {
     setCustomPreset(null);
   }, []);
 
+  // Refactored timers — single-page with wheel pickers
+  const REFACTORED_IDS = ['tabata', 'emom', 'circuit'];
+
+  if (selectedPreset && REFACTORED_IDS.includes(selectedPreset.id)) {
+    const handleBackFromRefactored = () => {
+      setSelectedPreset(null);
+      setCustomPreset(null);
+      setShowTimer(false);
+    };
+
+    if (selectedPreset.id === 'tabata') return <TabataTimer onBack={handleBackFromRefactored} />;
+    if (selectedPreset.id === 'emom') return <EmomTimer onBack={handleBackFromRefactored} />;
+    if (selectedPreset.id === 'circuit') return <CircuitTimer onBack={handleBackFromRefactored} />;
+  }
+
   // Preset selection screen
   if (!selectedPreset) {
     return (
@@ -280,7 +298,7 @@ export default function TimerPage() {
     );
   }
 
-  // Config screen
+  // Config screen (legacy — AMRAP, Repos, Custom)
   if (!showTimer && customPreset) {
     return (
       <div style={{ background: '#0a0a0a', minHeight: '100dvh', padding: '20px 16px 100px' }}>
