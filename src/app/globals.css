@@ -2219,3 +2219,11 @@ input[type="range"].rm-slider::-moz-range-track {
 .rm-wheel::-webkit-scrollbar {
   display: none;
 }
+
+/* Active wheel row — selected value in max contrast */
+.rm-active .rm-val {
+  color: #111 !important;
+}
+.dark .rm-active .rm-val {
+  color: #fff !important;
+}

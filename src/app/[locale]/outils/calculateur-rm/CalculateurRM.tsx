@@ -35,6 +35,10 @@ const ZONE_I18N: Record<string, string> = {
   puissance_vitesse: "outils.rm.zonePuissanceVitesse",
 };
 
+const PICKER_ITEM_H = 50;
+const PICKER_H = PICKER_ITEM_H * 3; // 150px
+const ZONE_ITEM_H = 70;
+
 /* ─── Helpers ─── */
 
 function calc1RM(charge: number, reps: number) {
@@ -113,6 +117,7 @@ function Wheel({
       row.style.opacity = String(op);
       row.style.transform = `scale(${sc})`;
       row.setAttribute("aria-selected", String(i === idx));
+      row.classList.toggle("rm-active", i === idx);
     }
 
     el.setAttribute("aria-activedescendant", `${idPrefix}-${idx}`);
@@ -148,14 +153,14 @@ function Wheel({
 
   return (
     <div className="relative">
-      {/* Bouton ▲ */}
+      {/* Bouton ▲ — 44px tap target */}
       <button
         type="button"
         onClick={() => step(-1)}
-        className="absolute -top-0.5 left-1/2 -translate-x-1/2 z-10 w-6 h-6 flex items-center justify-center text-zinc-500 opacity-25 hover:opacity-50 transition-opacity"
+        className="absolute -top-1 left-1/2 -translate-x-1/2 z-10 w-11 h-11 flex items-center justify-center text-zinc-400 opacity-40 hover:opacity-70 active:opacity-100 transition-opacity"
         aria-label="Valeur précédente"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
           <polyline points="18 15 12 9 6 15" />
         </svg>
       </button>
@@ -211,14 +216,14 @@ function Wheel({
         </div>
       </div>
 
-      {/* Bouton ▼ */}
+      {/* Bouton ▼ — 44px tap target */}
       <button
         type="button"
         onClick={() => step(1)}
-        className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 z-10 w-6 h-6 flex items-center justify-center text-zinc-500 opacity-25 hover:opacity-50 transition-opacity"
+        className="absolute -bottom-1 left-1/2 -translate-x-1/2 z-10 w-11 h-11 flex items-center justify-center text-zinc-400 opacity-40 hover:opacity-70 active:opacity-100 transition-opacity"
         aria-label="Valeur suivante"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
@@ -234,40 +239,42 @@ export function CalculateurRM() {
   const [reps, setReps] = useState(10);
   const { avg, ep, br } = useMemo(() => calc1RM(charge, reps), [charge, reps]);
 
-  /* Callbacks stables — pas de re-render des pickers charge/reps */
+  /* Callbacks stables */
   const onChargeIdx = useCallback((i: number) => setCharge(i + 5), []);
   const onRepsIdx = useCallback((i: number) => setReps(i + 1), []);
 
-  /* Render functions */
+  /* Render — charge : valeur blanc quand active via .rm-val CSS */
   const renderCharge = useCallback(
     (i: number) => (
       <>
-        <span className="font-mono text-[24px] font-medium text-cyan-400">
+        <span className="rm-val font-mono text-[24px] font-medium text-cyan-400">
           {i + 5}
         </span>
-        <span className="text-[12px] text-zinc-500 ml-1">kg</span>
+        <span className="text-[12px] text-zinc-400 ml-1">kg</span>
       </>
     ),
     [],
   );
 
+  /* Render — reps */
   const renderReps = useCallback((i: number) => {
     const v = i + 1;
     return (
       <>
         <span
-          className="font-mono text-[24px] font-medium"
+          className="rm-val font-mono text-[24px] font-medium"
           style={{ color: "#FF006E" }}
         >
           {v}
         </span>
-        <span className="text-[12px] text-zinc-500 ml-1">
+        <span className="text-[12px] text-zinc-400 ml-1">
           {v > 1 ? "reps" : "rep"}
         </span>
       </>
     );
   }, []);
 
+  /* Render — zone : pourcentage blanc quand active, poids en accent */
   const renderZone = useCallback(
     (i: number) => {
       const r = ZONE_ROWS[i];
@@ -277,23 +284,26 @@ export function CalculateurRM() {
           <div className="min-w-0">
             <div className="flex items-baseline gap-2">
               <span
-                className="font-mono text-[28px] font-medium"
+                className="rm-val font-mono text-[32px] font-medium"
                 style={{ color: r.color }}
               >
                 {r.pct}%
               </span>
               <span className="text-[12px] text-zinc-500">{r.reps}</span>
             </div>
-            <div className="text-[12px] truncate" style={{ color: r.color }}>
+            <div
+              className="text-[12px] font-medium truncate"
+              style={{ color: r.color }}
+            >
               {t(ZONE_I18N[r.zone])}
             </div>
           </div>
           <div
-            className="shrink-0 pl-3 font-mono text-[24px] font-medium"
+            className="shrink-0 pl-3 font-mono text-[28px] font-medium"
             style={{ color: r.color }}
           >
             {w}
-            <span className="text-[13px] text-zinc-500 ml-0.5">kg</span>
+            <span className="text-[13px] text-zinc-400 ml-0.5">kg</span>
           </div>
         </div>
       );
@@ -311,33 +321,33 @@ export function CalculateurRM() {
         <h1>{t("apprendre.calculateur.title")}</h1>
       </header>
 
-      {/* ── Carte combinée — Entrée + Résultat ── */}
+      {/* ── Carte combinée — Charge × Reps = 1RM ── */}
       <div
         className="rounded-2xl p-4"
         style={{
           background: "rgba(0,229,255,0.03)",
-          border: "1px solid rgba(0,229,255,0.08)",
+          border: "1px solid rgba(0,229,255,0.12)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
         }}
       >
-        {/* Pickers côte à côte */}
-        <div className="flex gap-3">
-          {/* Charge picker */}
-          <div className="flex-1 flex flex-col items-center">
+        <div className="flex gap-2 items-start">
+          {/* Col 1 — Charge picker */}
+          <div className="flex-1 min-w-0 flex flex-col items-center">
             <div className="text-[11px] font-medium text-cyan-400 text-center tracking-wide mb-2">
               {t("apprendre.calculateur.chargeLabel").toUpperCase()}
             </div>
             <Wheel
               count={196}
-              itemH={50}
+              itemH={PICKER_ITEM_H}
               initIdx={55}
               onIdx={onChargeIdx}
               renderItem={renderCharge}
-              containerClass="bg-black/[0.04] dark:bg-black/20 rounded-xl"
-              containerStyle={{ border: "1px solid rgba(0,229,255,0.1)" }}
+              containerClass="bg-black/[0.03] dark:bg-white/[0.03] rounded-xl"
+              containerStyle={{ border: "1px solid rgba(0,0,0,0.08)" }}
               selectStyle={{
-                borderTop: "1px solid rgba(0,229,255,0.2)",
-                borderBottom: "1px solid rgba(0,229,255,0.2)",
-                background: "rgba(0,229,255,0.05)",
+                borderTop: "1.5px solid rgba(0,229,255,0.35)",
+                borderBottom: "1.5px solid rgba(0,229,255,0.35)",
+                background: "rgba(0,229,255,0.1)",
               }}
               maskFade={[25, 75]}
               ariaLabel="Sélecteur de charge"
@@ -346,12 +356,15 @@ export function CalculateurRM() {
           </div>
 
           {/* × séparateur */}
-          <div className="flex items-center pt-[22px]">
-            <span className="text-[20px] text-zinc-700 dark:text-zinc-500">×</span>
+          <div className="flex flex-col items-center">
+            <div className="text-[11px] tracking-wide mb-2 opacity-0 select-none" aria-hidden="true">&nbsp;</div>
+            <div className="flex items-center" style={{ height: PICKER_H }}>
+              <span className="text-[18px] text-zinc-600">×</span>
+            </div>
           </div>
 
-          {/* Reps picker */}
-          <div className="flex-1 flex flex-col items-center">
+          {/* Col 2 — Reps picker */}
+          <div className="flex-1 min-w-0 flex flex-col items-center">
             <div
               className="text-[11px] font-medium text-center tracking-wide mb-2"
               style={{ color: "#FF006E" }}
@@ -360,49 +373,47 @@ export function CalculateurRM() {
             </div>
             <Wheel
               count={30}
-              itemH={50}
+              itemH={PICKER_ITEM_H}
               initIdx={9}
               onIdx={onRepsIdx}
               renderItem={renderReps}
-              containerClass="bg-black/[0.04] dark:bg-black/20 rounded-xl"
-              containerStyle={{ border: "1px solid rgba(255,0,110,0.1)" }}
+              containerClass="bg-black/[0.03] dark:bg-white/[0.03] rounded-xl"
+              containerStyle={{ border: "1px solid rgba(0,0,0,0.08)" }}
               selectStyle={{
-                borderTop: "1px solid rgba(255,0,110,0.2)",
-                borderBottom: "1px solid rgba(255,0,110,0.2)",
-                background: "rgba(255,0,110,0.05)",
+                borderTop: "1.5px solid rgba(255,0,110,0.35)",
+                borderBottom: "1.5px solid rgba(255,0,110,0.35)",
+                background: "rgba(255,0,110,0.1)",
               }}
               maskFade={[25, 75]}
               ariaLabel="Sélecteur de répétitions"
               idPrefix="rm-reps"
             />
           </div>
-        </div>
 
-        {/* Résultat 1RM */}
-        <div
-          className="pt-3 mt-4 text-center border-t border-black/[0.06] dark:border-white/[0.04]"
-        >
-          <div className="text-[11px] text-zinc-500 tracking-widest font-medium uppercase mb-1">
-            {t("apprendre.calculateur.resultLabel")}
-          </div>
-          <div className="flex items-baseline justify-center gap-2">
-            <span className="font-mono text-[52px] font-medium text-zinc-800 dark:text-zinc-100 leading-none">
-              {avg}
-            </span>
-            <span className="text-[18px] text-zinc-500">kg</span>
-          </div>
-          <div className="flex items-center justify-center gap-3 mt-3">
-            <div>
-              <div className="text-[11px] text-zinc-500">Epley</div>
-              <div className="text-[14px] font-mono font-medium text-zinc-600 dark:text-zinc-400">
-                {ep} kg
-              </div>
+          {/* = séparateur */}
+          <div className="flex flex-col items-center">
+            <div className="text-[11px] tracking-wide mb-2 opacity-0 select-none" aria-hidden="true">&nbsp;</div>
+            <div className="flex items-center" style={{ height: PICKER_H }}>
+              <span className="text-[18px] text-zinc-600">=</span>
             </div>
-            <div className="w-px h-7 bg-zinc-300 dark:bg-zinc-700" />
-            <div>
-              <div className="text-[11px] text-zinc-500">Brzycki</div>
-              <div className="text-[14px] font-mono font-medium text-zinc-600 dark:text-zinc-400">
-                {br} kg
+          </div>
+
+          {/* Col 3 — Résultat 1RM */}
+          <div className="flex-1 min-w-0 flex flex-col items-center">
+            <div className="text-[11px] font-medium text-zinc-400 text-center tracking-wide mb-2">
+              1RM
+            </div>
+            <div
+              className="flex flex-col items-center justify-center rounded-xl w-full"
+              style={{ height: PICKER_H }}
+            >
+              <div className="font-mono text-[36px] font-medium text-zinc-900 dark:text-white leading-none">
+                {avg}
+              </div>
+              <div className="text-[14px] text-zinc-400 mt-0.5">kg</div>
+              <div className="mt-2 text-[11px] text-zinc-400 text-center leading-relaxed">
+                <div>Epley {ep}</div>
+                <div>Brzycki {br}</div>
               </div>
             </div>
           </div>
@@ -416,11 +427,11 @@ export function CalculateurRM() {
         </div>
         <Wheel
           count={15}
-          itemH={70}
+          itemH={ZONE_ITEM_H}
           initIdx={7}
           renderItem={renderZone}
           containerClass="bg-black/[0.02] dark:bg-white/[0.02] border border-black/[0.06] dark:border-white/[0.06] rounded-2xl"
-          selectClass="border-y border-black/10 dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.03]"
+          selectClass="border-y border-black/15 dark:border-white/15 bg-black/[0.06] dark:bg-white/[0.06]"
           maskFade={[30, 70]}
           ariaLabel="Sélecteur de pourcentage de charge"
           idPrefix="rm-zone"
