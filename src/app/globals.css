@@ -2220,10 +2220,25 @@ input[type="range"].rm-slider::-moz-range-track {
   display: none;
 }
 
-/* Active wheel row — selected value in max contrast */
+/* Active wheel row — selected value highlights */
 .rm-active .rm-val {
   color: #111 !important;
+  font-weight: 700 !important;
+}
+.rm-active .rm-unit {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+.rm-active .rm-val-sm {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+}
+.rm-active .rm-val-lg {
+  font-size: 32px !important;
+  font-weight: 700 !important;
 }
 .dark .rm-active .rm-val {
   color: #fff !important;
+}
+.dark .rm-active .rm-unit {
+  color: rgba(255, 255, 255, 0.6) !important;
 }

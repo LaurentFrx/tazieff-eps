@@ -4,39 +4,29 @@ import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { epley, brzycki } from "@/lib/rm";
-import { LearnWarning } from "@/components/learn/LearnWarning";
 
-/* ─── Zone data (NSCA Training Load Chart) ─── */
+/* ─── Zone data — fourchettes NSCA unifiées ─── */
 
 const ZONE_ROWS = [
-  { pct: 100, reps: "~1 rep",   zone: "force_max",         color: "#f87171" },
-  { pct: 95,  reps: "~2 reps",  zone: "force",             color: "#f87171" },
-  { pct: 90,  reps: "~4 reps",  zone: "force",             color: "#f87171" },
-  { pct: 85,  reps: "~6 reps",  zone: "force",             color: "#f87171" },
-  { pct: 80,  reps: "~8 reps",  zone: "volume",            color: "#60a5fa" },
-  { pct: 75,  reps: "~10 reps", zone: "volume",            color: "#60a5fa" },
-  { pct: 70,  reps: "~12 reps", zone: "volume",            color: "#60a5fa" },
-  { pct: 65,  reps: "~15 reps", zone: "endurance",         color: "#4ade80" },
-  { pct: 60,  reps: "~20 reps", zone: "endurance",         color: "#4ade80" },
-  { pct: 55,  reps: "~22 reps", zone: "endurance",         color: "#4ade80" },
-  { pct: 50,  reps: "~25 reps", zone: "endurance_legere",  color: "#fb923c" },
-  { pct: 45,  reps: "~28 reps", zone: "endurance_legere",  color: "#fb923c" },
-  { pct: 40,  reps: "explosif", zone: "puissance_vitesse", color: "#a78bfa" },
-  { pct: 35,  reps: "explosif", zone: "puissance_vitesse", color: "#a78bfa" },
-  { pct: 30,  reps: "explosif", zone: "puissance_vitesse", color: "#a78bfa" },
+  { pct: 100, label: "Force maximale — 1 rep",          color: "#f87171" },
+  { pct: 95,  label: "Force — 1 à 3 reps",              color: "#f87171" },
+  { pct: 90,  label: "Force — 2 à 4 reps",              color: "#f87171" },
+  { pct: 85,  label: "Force — 4 à 6 reps",              color: "#f87171" },
+  { pct: 80,  label: "Hypertrophie — 6 à 8 reps",       color: "#60a5fa" },
+  { pct: 75,  label: "Hypertrophie — 8 à 10 reps",      color: "#60a5fa" },
+  { pct: 70,  label: "Hypertrophie — 10 à 12 reps",     color: "#60a5fa" },
+  { pct: 65,  label: "Endurance — 12 à 15 reps",        color: "#4ade80" },
+  { pct: 60,  label: "Endurance — 15 à 20 reps",        color: "#4ade80" },
+  { pct: 55,  label: "Endurance — 20 à 25 reps",        color: "#4ade80" },
+  { pct: 50,  label: "Endurance légère — 25+ reps",     color: "#fb923c" },
+  { pct: 45,  label: "Endurance légère — 28+ reps",     color: "#fb923c" },
+  { pct: 40,  label: "Explosif / Vitesse",               color: "#a78bfa" },
+  { pct: 35,  label: "Explosif / Vitesse",               color: "#a78bfa" },
+  { pct: 30,  label: "Explosif / Vitesse",               color: "#a78bfa" },
 ] as const;
 
-const ZONE_I18N: Record<string, string> = {
-  force_max: "outils.rm.zoneForceMax",
-  force: "outils.rm.zoneForce",
-  volume: "outils.rm.zoneVolume",
-  endurance: "outils.rm.zoneEndurance",
-  endurance_legere: "outils.rm.zoneEnduranceLegere",
-  puissance_vitesse: "outils.rm.zonePuissanceVitesse",
-};
-
 const PICKER_ITEM_H = 50;
-const PICKER_H = PICKER_ITEM_H * 3; // 150px
+const PICKER_H = PICKER_ITEM_H * 3;
 const ZONE_ITEM_H = 70;
 
 /* ─── Helpers ─── */
@@ -153,7 +143,6 @@ function Wheel({
 
   return (
     <div className="relative">
-      {/* Bouton ▲ — 44px tap target */}
       <button
         type="button"
         onClick={() => step(-1)}
@@ -165,18 +154,15 @@ function Wheel({
         </svg>
       </button>
 
-      {/* Container */}
       <div
         className={`relative overflow-hidden ${containerClass ?? ""}`}
         style={{ height: h, ...containerStyle }}
       >
-        {/* Indicateur central */}
         <div
           className={`absolute left-0 right-0 z-[2] pointer-events-none ${selectClass ?? ""}`}
           style={{ top: itemH, height: itemH, ...selectStyle }}
         />
 
-        {/* Liste scrollable */}
         <div
           ref={scrollRef}
           role="listbox"
@@ -216,7 +202,6 @@ function Wheel({
         </div>
       </div>
 
-      {/* Bouton ▼ — 44px tap target */}
       <button
         type="button"
         onClick={() => step(1)}
@@ -239,18 +224,17 @@ export function CalculateurRM() {
   const [reps, setReps] = useState(10);
   const { avg, ep, br } = useMemo(() => calc1RM(charge, reps), [charge, reps]);
 
-  /* Callbacks stables */
   const onChargeIdx = useCallback((i: number) => setCharge(i + 5), []);
   const onRepsIdx = useCallback((i: number) => setReps(i + 1), []);
 
-  /* Render — charge : valeur blanc quand active via .rm-val CSS */
+  /* Render — charge (24px → 28px bold blanc quand actif via CSS) */
   const renderCharge = useCallback(
     (i: number) => (
       <>
-        <span className="rm-val font-mono text-[24px] font-medium text-cyan-400">
+        <span className="rm-val rm-val-sm font-mono text-[24px] font-medium text-cyan-400">
           {i + 5}
         </span>
-        <span className="text-[12px] text-zinc-400 ml-1">kg</span>
+        <span className="rm-unit text-[12px] text-zinc-400 ml-1">kg</span>
       </>
     ),
     [],
@@ -262,19 +246,19 @@ export function CalculateurRM() {
     return (
       <>
         <span
-          className="rm-val font-mono text-[24px] font-medium"
+          className="rm-val rm-val-sm font-mono text-[24px] font-medium"
           style={{ color: "#FF006E" }}
         >
           {v}
         </span>
-        <span className="text-[12px] text-zinc-400 ml-1">
+        <span className="rm-unit text-[12px] text-zinc-400 ml-1">
           {v > 1 ? "reps" : "rep"}
         </span>
       </>
     );
   }, []);
 
-  /* Render — zone : pourcentage blanc quand active, poids en accent */
+  /* Render — zone : label NSCA unifié (plus de doublon ~reps) */
   const renderZone = useCallback(
     (i: number) => {
       const r = ZONE_ROWS[i];
@@ -282,33 +266,32 @@ export function CalculateurRM() {
       return (
         <div className="flex items-center justify-between w-full px-5">
           <div className="min-w-0">
-            <div className="flex items-baseline gap-2">
-              <span
-                className="rm-val font-mono text-[32px] font-medium"
-                style={{ color: r.color }}
-              >
-                {r.pct}%
-              </span>
-              <span className="text-[12px] text-zinc-500">{r.reps}</span>
-            </div>
-            <div
-              className="text-[12px] font-medium truncate"
+            <span
+              className="rm-val rm-val-lg font-mono text-[28px] font-medium"
               style={{ color: r.color }}
             >
-              {t(ZONE_I18N[r.zone])}
+              {r.pct}%
+            </span>
+            <div
+              className="text-[12px] font-medium truncate mt-0.5"
+              style={{ color: r.color }}
+            >
+              {r.label}
             </div>
           </div>
-          <div
-            className="shrink-0 pl-3 font-mono text-[28px] font-medium"
-            style={{ color: r.color }}
-          >
-            {w}
+          <div className="shrink-0 pl-3 text-right">
+            <span
+              className="rm-val-sm font-mono text-[24px] font-medium"
+              style={{ color: r.color }}
+            >
+              {w}
+            </span>
             <span className="text-[13px] text-zinc-400 ml-0.5">kg</span>
           </div>
         </div>
       );
     },
-    [avg, t],
+    [avg],
   );
 
   return (
@@ -325,15 +308,18 @@ export function CalculateurRM() {
       <div
         className="rounded-2xl p-4"
         style={{
-          background: "rgba(0,229,255,0.03)",
-          border: "1px solid rgba(0,229,255,0.12)",
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+          background: "rgba(0,229,255,0.06)",
+          border: "1px solid rgba(0,229,255,0.15)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
         }}
       >
         <div className="flex gap-2 items-start">
           {/* Col 1 — Charge picker */}
           <div className="flex-1 min-w-0 flex flex-col items-center">
-            <div className="text-[11px] font-medium text-cyan-400 text-center tracking-wide mb-2">
+            <div
+              className="text-[11px] font-medium text-cyan-400 text-center tracking-wide mb-2 rounded-md px-2 py-0.5"
+              style={{ background: "rgba(0,229,255,0.08)" }}
+            >
               {t("apprendre.calculateur.chargeLabel").toUpperCase()}
             </div>
             <Wheel
@@ -342,12 +328,15 @@ export function CalculateurRM() {
               initIdx={55}
               onIdx={onChargeIdx}
               renderItem={renderCharge}
-              containerClass="bg-black/[0.03] dark:bg-white/[0.03] rounded-xl"
-              containerStyle={{ border: "1px solid rgba(0,0,0,0.08)" }}
+              containerClass="rounded-xl"
+              containerStyle={{
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
               selectStyle={{
-                borderTop: "1.5px solid rgba(0,229,255,0.35)",
-                borderBottom: "1.5px solid rgba(0,229,255,0.35)",
-                background: "rgba(0,229,255,0.1)",
+                borderTop: "1.5px solid rgba(0,229,255,0.4)",
+                borderBottom: "1.5px solid rgba(0,229,255,0.4)",
+                background: "rgba(0,229,255,0.15)",
               }}
               maskFade={[25, 75]}
               ariaLabel="Sélecteur de charge"
@@ -355,7 +344,7 @@ export function CalculateurRM() {
             />
           </div>
 
-          {/* × séparateur */}
+          {/* × */}
           <div className="flex flex-col items-center">
             <div className="text-[11px] tracking-wide mb-2 opacity-0 select-none" aria-hidden="true">&nbsp;</div>
             <div className="flex items-center" style={{ height: PICKER_H }}>
@@ -366,8 +355,8 @@ export function CalculateurRM() {
           {/* Col 2 — Reps picker */}
           <div className="flex-1 min-w-0 flex flex-col items-center">
             <div
-              className="text-[11px] font-medium text-center tracking-wide mb-2"
-              style={{ color: "#FF006E" }}
+              className="text-[11px] font-medium text-center tracking-wide mb-2 rounded-md px-2 py-0.5"
+              style={{ color: "#FF006E", background: "rgba(255,0,110,0.08)" }}
             >
               REPS
             </div>
@@ -377,12 +366,15 @@ export function CalculateurRM() {
               initIdx={9}
               onIdx={onRepsIdx}
               renderItem={renderReps}
-              containerClass="bg-black/[0.03] dark:bg-white/[0.03] rounded-xl"
-              containerStyle={{ border: "1px solid rgba(0,0,0,0.08)" }}
+              containerClass="rounded-xl"
+              containerStyle={{
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
               selectStyle={{
-                borderTop: "1.5px solid rgba(255,0,110,0.35)",
-                borderBottom: "1.5px solid rgba(255,0,110,0.35)",
-                background: "rgba(255,0,110,0.1)",
+                borderTop: "1.5px solid rgba(255,0,110,0.4)",
+                borderBottom: "1.5px solid rgba(255,0,110,0.4)",
+                background: "rgba(255,0,110,0.15)",
               }}
               maskFade={[25, 75]}
               ariaLabel="Sélecteur de répétitions"
@@ -390,7 +382,7 @@ export function CalculateurRM() {
             />
           </div>
 
-          {/* = séparateur */}
+          {/* = */}
           <div className="flex flex-col items-center">
             <div className="text-[11px] tracking-wide mb-2 opacity-0 select-none" aria-hidden="true">&nbsp;</div>
             <div className="flex items-center" style={{ height: PICKER_H }}>
@@ -400,17 +392,22 @@ export function CalculateurRM() {
 
           {/* Col 3 — Résultat 1RM */}
           <div className="flex-1 min-w-0 flex flex-col items-center">
-            <div className="text-[11px] font-medium text-zinc-400 text-center tracking-wide mb-2">
+            <div
+              className="text-[11px] font-medium text-zinc-300 text-center tracking-wide mb-2 rounded-md px-2 py-0.5"
+              style={{ background: "rgba(255,255,255,0.06)" }}
+            >
               1RM
             </div>
             <div
               className="flex flex-col items-center justify-center rounded-xl w-full"
               style={{ height: PICKER_H }}
             >
-              <div className="font-mono text-[36px] font-medium text-zinc-900 dark:text-white leading-none">
+              <div className="font-mono text-[40px] font-bold text-zinc-900 dark:text-white leading-none">
                 {avg}
               </div>
-              <div className="text-[14px] text-zinc-400 mt-0.5">kg</div>
+              <div className="text-[16px] text-zinc-900/60 dark:text-white/60 mt-0.5">
+                kg
+              </div>
               <div className="mt-2 text-[11px] text-zinc-400 text-center leading-relaxed">
                 <div>Epley {ep}</div>
                 <div>Brzycki {br}</div>
@@ -422,7 +419,7 @@ export function CalculateurRM() {
 
       {/* ── Wheel Picker — Zones de travail ── */}
       <div>
-        <div className="text-[12px] font-medium text-zinc-400 tracking-wide mb-3 uppercase">
+        <div className="text-[12px] font-medium text-zinc-300 tracking-wide mb-3 uppercase">
           Choisis ta charge de travail
         </div>
         <Wheel
@@ -430,19 +427,50 @@ export function CalculateurRM() {
           itemH={ZONE_ITEM_H}
           initIdx={7}
           renderItem={renderZone}
-          containerClass="bg-black/[0.02] dark:bg-white/[0.02] border border-black/[0.06] dark:border-white/[0.06] rounded-2xl"
-          selectClass="border-y border-black/15 dark:border-white/15 bg-black/[0.06] dark:bg-white/[0.06]"
+          containerClass="rounded-2xl"
+          containerStyle={{
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.1)",
+          }}
+          selectStyle={{
+            borderTop: "1.5px solid rgba(255,255,255,0.2)",
+            borderBottom: "1.5px solid rgba(255,255,255,0.2)",
+            background: "rgba(255,255,255,0.08)",
+          }}
           maskFade={[30, 70]}
           ariaLabel="Sélecteur de pourcentage de charge"
           idPrefix="rm-zone"
         />
       </div>
 
-      {/* ── Warning sécurité ── */}
-      <LearnWarning>
-        Le 1RM est une estimation. Ne tente jamais un vrai max sans pareur et
-        sans maîtriser la technique.
-      </LearnWarning>
+      {/* ── Warning sécurité (version lumineuse) ── */}
+      <div
+        className="flex gap-[10px] items-start rounded-[10px] p-[10px_12px]"
+        style={{
+          background: "rgba(255,160,0,0.1)",
+          border: "1px solid rgba(255,160,0,0.2)",
+        }}
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#ffaa00"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="shrink-0 mt-px"
+        >
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+          <line x1="12" y1="9" x2="12" y2="13" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+        <p className="text-[11px] leading-snug" style={{ color: "#eeb850" }}>
+          Le 1RM est une estimation. Ne tente jamais un vrai max sans pareur et
+          sans maîtriser la technique.
+        </p>
+      </div>
 
       {/* ── Chips de liens ── */}
       <div className="flex flex-wrap gap-2">
@@ -450,9 +478,9 @@ export function CalculateurRM() {
           href="/apprendre/rm-rir-rpe"
           className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-medium transition-colors"
           style={{
-            background: "rgba(0,229,255,0.08)",
-            border: "1px solid rgba(0,229,255,0.15)",
-            color: "#00e5ff",
+            background: "rgba(0,229,255,0.12)",
+            border: "1px solid rgba(0,229,255,0.25)",
+            color: "#33eeff",
           }}
         >
           RM, RIR et RPE →
@@ -461,9 +489,9 @@ export function CalculateurRM() {
           href="/apprendre/connaissances"
           className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-medium transition-colors"
           style={{
-            background: "rgba(167,139,250,0.08)",
-            border: "1px solid rgba(167,139,250,0.15)",
-            color: "#a78bfa",
+            background: "rgba(167,139,250,0.12)",
+            border: "1px solid rgba(167,139,250,0.25)",
+            color: "#b8a4fb",
           }}
         >
           Connaissances →
