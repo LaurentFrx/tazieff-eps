@@ -25,8 +25,17 @@ const ZONE_ROWS = [
   { pct: 30,  label: "Explosif / Vitesse",           color: "#a78bfa" },
 ] as const;
 
-const PK_H = 44; // item height charge/reps
-const ZN_H = 70; // item height zones
+/* Gradients vifs par couleur accent — comme les cartes de la homepage */
+const ZONE_STYLE: Record<string, { bg: string; shadow: string }> = {
+  "#f87171": { bg: "linear-gradient(135deg,#dc2626,#ef4444)", shadow: "rgba(220,38,38,0.3)" },
+  "#60a5fa": { bg: "linear-gradient(135deg,#2563eb,#3b82f6)", shadow: "rgba(37,99,235,0.3)" },
+  "#4ade80": { bg: "linear-gradient(135deg,#16a34a,#22c55e)", shadow: "rgba(22,163,74,0.3)" },
+  "#fb923c": { bg: "linear-gradient(135deg,#ea580c,#f97316)", shadow: "rgba(234,88,12,0.3)" },
+  "#a78bfa": { bg: "linear-gradient(135deg,#7c3aed,#8b5cf6)", shadow: "rgba(124,58,237,0.3)" },
+};
+
+const PK_H = 44;
+const ZN_H = 70;
 
 /* ─── Helpers ─── */
 
@@ -42,7 +51,7 @@ function calc1RM(charge: number, reps: number) {
 function Wheel({
   count, itemH, initIdx, onIdx, renderItem,
   containerClass, containerStyle, selectClass, selectStyle,
-  maskFade, ariaLabel, idPrefix,
+  maskFade, ariaLabel, idPrefix, onStyleRow,
 }: {
   count: number; itemH: number; initIdx: number;
   onIdx?: (i: number) => void;
@@ -50,6 +59,7 @@ function Wheel({
   containerClass?: string; containerStyle?: React.CSSProperties;
   selectClass?: string; selectStyle?: React.CSSProperties;
   maskFade: [number, number]; ariaLabel: string; idPrefix: string;
+  onStyleRow?: (row: HTMLDivElement, idx: number, isActive: boolean) => void;
 }) {
   const h = itemH * 3;
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -57,6 +67,8 @@ function Wheel({
   const rafId = useRef(0);
   const onIdxRef = useRef(onIdx);
   onIdxRef.current = onIdx;
+  const onStyleRef = useRef(onStyleRow);
+  onStyleRef.current = onStyleRow;
   const lastIdx = useRef(-1);
   const didInit = useRef(false);
 
@@ -89,6 +101,7 @@ function Wheel({
       row.style.transform = `scale(${sc})`;
       row.setAttribute("aria-selected", String(i === idx));
       row.classList.toggle("rm-active", i === idx);
+      onStyleRef.current?.(row, i, i === idx);
     }
     el.setAttribute("aria-activedescendant", `${idPrefix}-${idx}`);
   }, [count, itemH, idPrefix]);
@@ -145,7 +158,8 @@ function Wheel({
               role="option" aria-selected={i === initIdx}
               className="flex items-center justify-center"
               style={{ height: itemH, scrollSnapAlign: "center",
-                transition: "opacity .12s, transform .12s", willChange: "opacity, transform" }}>
+                transition: "opacity .12s,transform .12s,background .1s,border-radius .1s,box-shadow .15s",
+                willChange: "opacity,transform" }}>
               {renderItem(i)}
             </div>
           ))}
@@ -208,12 +222,45 @@ export function CalculateurRM() {
             <span className="rm-wt font-mono text-[22px] font-medium" style={{ color: r.color }}>
               {w}
             </span>
-            <span className="text-[12px] ml-0.5" style={{ color: r.color, opacity: 0.6 }}>kg</span>
+            <span className="rm-kg text-[12px] ml-0.5" style={{ color: r.color, opacity: 0.6 }}>kg</span>
           </div>
         </div>
       );
     }, [avg],
   );
+
+  /* Callback pour fond coloré vif sur la ligne zone sélectionnée */
+  const styleZoneRow = useCallback((row: HTMLDivElement, idx: number, isActive: boolean) => {
+    const r = ZONE_ROWS[idx];
+    if (!r) return;
+    const zs = ZONE_STYLE[r.color];
+    if (!zs) return;
+
+    if (isActive) {
+      row.style.background = zs.bg;
+      row.style.borderRadius = "12px";
+      row.style.boxShadow = `0 4px 12px ${zs.shadow}`;
+      row.querySelectorAll<HTMLElement>(".rm-val,.rm-wt,.rm-kg").forEach((el) => {
+        el.style.setProperty("color", "#fff", "important");
+      });
+      row.querySelectorAll<HTMLElement>(".rm-kg").forEach((el) => {
+        el.style.setProperty("opacity", "1", "important");
+      });
+      row.querySelectorAll<HTMLElement>(".rm-lbl").forEach((el) => {
+        el.style.setProperty("color", "rgba(255,255,255,0.85)", "important");
+      });
+    } else {
+      row.style.background = "";
+      row.style.borderRadius = "";
+      row.style.boxShadow = "";
+      row.querySelectorAll<HTMLElement>(".rm-val,.rm-wt,.rm-lbl,.rm-kg").forEach((el) => {
+        el.style.setProperty("color", r.color, "");
+      });
+      row.querySelectorAll<HTMLElement>(".rm-kg").forEach((el) => {
+        el.style.setProperty("opacity", "0.6", "");
+      });
+    }
+  }, []);
 
   return (
     <section className="page">
@@ -226,14 +273,12 @@ export function CalculateurRM() {
 
       {/* ── Section 1 — Carte d'entrée ── */}
       <div
-        className="rounded-2xl p-5 bg-black/[0.03] dark:bg-white/[0.04]"
-        style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+        className="rounded-2xl p-5 bg-black/[0.03] dark:bg-white/[0.06]"
+        style={{ border: "1px solid rgba(255,255,255,0.12)" }}
       >
-        <div
-          className="grid items-start"
-          style={{ gridTemplateColumns: "1fr auto 1fr auto 1fr" }}
-        >
-          {/* Row 1 — Labels */}
+        <div className="grid items-start"
+          style={{ gridTemplateColumns: "1fr auto 1fr auto 1fr" }}>
+          {/* Labels */}
           <div className="text-[11px] font-semibold tracking-wider text-center mb-2" style={{ color: "#00E5FF" }}>
             {t("apprendre.calculateur.chargeLabel").toUpperCase()}
           </div>
@@ -246,16 +291,16 @@ export function CalculateurRM() {
             1RM
           </div>
 
-          {/* Row 2 — Pickers + result */}
+          {/* Pickers + result */}
           <Wheel
             count={196} itemH={PK_H} initIdx={55}
             onIdx={onChargeIdx} renderItem={renderCharge}
             containerClass="rounded-xl"
             selectClass="rounded-lg"
             selectStyle={{
-              borderTop: "1px solid rgba(0,229,255,0.25)",
-              borderBottom: "1px solid rgba(0,229,255,0.25)",
-              background: "rgba(0,229,255,0.08)",
+              borderTop: "1px solid rgba(0,229,255,0.3)",
+              borderBottom: "1px solid rgba(0,229,255,0.3)",
+              background: "rgba(0,229,255,0.12)",
             }}
             maskFade={[20, 80]} ariaLabel="Sélecteur de charge" idPrefix="rm-charge"
           />
@@ -268,23 +313,23 @@ export function CalculateurRM() {
             containerClass="rounded-xl"
             selectClass="rounded-lg"
             selectStyle={{
-              borderTop: "1px solid rgba(255,0,110,0.25)",
-              borderBottom: "1px solid rgba(255,0,110,0.25)",
-              background: "rgba(255,0,110,0.08)",
+              borderTop: "1px solid rgba(255,0,110,0.3)",
+              borderBottom: "1px solid rgba(255,0,110,0.3)",
+              background: "rgba(255,0,110,0.12)",
             }}
             maskFade={[20, 80]} ariaLabel="Sélecteur de répétitions" idPrefix="rm-reps"
           />
 
           <div className="self-center text-[16px] text-zinc-500 px-1">=</div>
 
-          {/* Résultat 1RM */}
           <div className="flex flex-col items-center justify-center" style={{ height: PK_H * 3 }}>
-            <div className="font-mono text-[42px] font-bold text-zinc-900 dark:text-white leading-none">
+            <div
+              className="font-mono text-[42px] font-bold text-zinc-900 dark:text-white leading-none"
+              style={{ textShadow: "0 0 20px rgba(0,229,255,0.3)" }}
+            >
               {avg}
             </div>
-            <div className="text-[15px] -mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
-              kg
-            </div>
+            <div className="text-[15px] -mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>kg</div>
             <div className="my-2 mx-auto" style={{ height: 1, width: "60%", background: "rgba(255,255,255,0.06)" }} />
             <div className="text-[11px] text-center leading-relaxed" style={{ color: "rgba(255,255,255,0.35)" }}>
               <div>Epley {ep}</div>
@@ -302,15 +347,11 @@ export function CalculateurRM() {
         <Wheel
           count={15} itemH={ZN_H} initIdx={7}
           renderItem={renderZone}
+          onStyleRow={styleZoneRow}
           containerClass="rounded-2xl"
           containerStyle={{
             background: "rgba(255,255,255,0.04)",
             border: "1px solid rgba(255,255,255,0.08)",
-          }}
-          selectStyle={{
-            borderTop: "1px solid rgba(255,255,255,0.15)",
-            borderBottom: "1px solid rgba(255,255,255,0.15)",
-            background: "rgba(255,255,255,0.06)",
           }}
           maskFade={[25, 75]} ariaLabel="Sélecteur de pourcentage de charge" idPrefix="rm-zone"
         />
@@ -319,7 +360,7 @@ export function CalculateurRM() {
       {/* ── Section 3 — Warning ── */}
       <div
         className="flex gap-2.5 items-start rounded-xl p-3"
-        style={{ background: "rgba(255,180,0,0.08)", border: "1px solid rgba(255,180,0,0.18)" }}
+        style={{ background: "rgba(255,180,0,0.12)", border: "1px solid rgba(255,180,0,0.18)" }}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eeb850"
           strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-px">
@@ -336,12 +377,12 @@ export function CalculateurRM() {
       <div className="flex flex-wrap gap-2">
         <Link href="/apprendre/rm-rir-rpe"
           className="inline-flex items-center rounded-full px-4 py-2 text-[12px] font-medium transition-colors"
-          style={{ background: "rgba(0,229,255,0.1)", border: "1px solid rgba(0,229,255,0.2)", color: "#00E5FF" }}>
+          style={{ background: "rgba(0,229,255,0.15)", border: "1px solid rgba(0,229,255,0.3)", color: "#00E5FF" }}>
           RM, RIR et RPE →
         </Link>
         <Link href="/apprendre/connaissances"
           className="inline-flex items-center rounded-full px-4 py-2 text-[12px] font-medium transition-colors"
-          style={{ background: "rgba(123,47,255,0.1)", border: "1px solid rgba(123,47,255,0.2)", color: "#a070ff" }}>
+          style={{ background: "rgba(123,47,255,0.15)", border: "1px solid rgba(123,47,255,0.3)", color: "#a070ff" }}>
           Connaissances →
         </Link>
       </div>
