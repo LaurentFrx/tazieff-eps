@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { WheelPicker } from '@/components/tools/WheelPicker';
 import { CountdownRing, type RingPhase } from '@/components/tools/CountdownRing';
-import { useTimer, type TimerPreset } from '@/hooks/useTimer';
-import { unlockAudio, hapticFeedback, playCountdownBeep, playTransitionBeep, playFinishSound } from '@/lib/audio/beep';
-import { speakEvent, isSpeechEnabled, setSpeechEnabled } from '@/lib/audio/speech';
+import { useTimerContext, type TimerDisplayConfig } from '@/contexts/TimerContext';
+import type { TimerPreset } from '@/hooks/useTimer';
+import { unlockAudio } from '@/lib/audio/beep';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
 const WORK_VALUES = Array.from({ length: 11 }, (_, i) => (i + 2) * 5);
@@ -56,12 +56,12 @@ const SkipIcon = () => (
 interface CircuitTimerProps { onBack: () => void }
 
 export function CircuitTimer({ onBack }: CircuitTimerProps) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  const ctx = useTimerContext();
   const [work, setWork] = useState(30);
   const [rest, setRest] = useState(15);
   const [stations, setStations] = useState(6);
   const [tours, setTours] = useState(2);
-  const [running, setRunning] = useState(false);
 
   const totalDuration = (work + rest) * stations * tours;
 
@@ -81,18 +81,28 @@ export function CircuitTimer({ onBack }: CircuitTimerProps) {
     return p;
   }, [work, rest, stations, tours]);
 
-  const handleStart = () => { unlockAudio(); setRunning(true); };
-  const handleDone = useCallback(() => setRunning(false), []);
+  const displayConfig: TimerDisplayConfig = useMemo(() => ({
+    ringPhases, ringTotal: totalDuration,
+    phaseColorMap: { prepare: '#6366f1', work: '#f97316', rest: '#ef4444', recovery: '#ef4444' },
+    phaseGradientMap: {
+      prepare: 'linear-gradient(135deg, #4f46e5, #6366f1)',
+      work: 'linear-gradient(135deg, #ea580c, #f97316)',
+      rest: 'linear-gradient(135deg, #dc2626, #ef4444)',
+      recovery: 'linear-gradient(135deg, #dc2626, #ef4444)',
+    },
+  }), [ringPhases, totalDuration]);
 
-  if (running) {
-    return <CircuitCountdown preset={preset} ringPhases={ringPhases} ringTotal={totalDuration} stations={stations} tours={tours} onBack={onBack} onDone={handleDone} />;
+  const handleStart = () => { unlockAudio(); ctx?.startTimer('circuit', preset, displayConfig, lang); };
+
+  if (ctx?.isActive && ctx.timerType === 'circuit') {
+    return <CircuitCountdown stations={stations} tours={tours} onBack={onBack} />;
   }
 
   return (
     <section className="page">
       <div className="relative overflow-hidden rounded-2xl px-5 pt-5 pb-4" style={{ background: 'linear-gradient(135deg, #ea580c, #f97316)' }}>
         <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="absolute top-3 right-3 pointer-events-none"><path d="M12 2L2 7l10 5 10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-        <button onClick={onBack} className="text-[13px] text-white/70 mb-2 cursor-pointer bg-transparent border-none">← Retour</button>
+        <button onClick={onBack} className="text-[13px] text-white/70 mb-2 cursor-pointer bg-transparent border-none">&larr; Retour</button>
         <h1 className="text-[22px] font-bold text-white">Circuit Training</h1>
         <p className="text-[12px] text-white/70 mt-0.5">{stations} stations &times; {tours} tour{tours > 1 ? 's' : ''}</p>
       </div>
@@ -135,76 +145,52 @@ export function CircuitTimer({ onBack }: CircuitTimerProps) {
 /* ─── Countdown ─── */
 
 interface CircuitCountdownProps {
-  preset: TimerPreset;
-  ringPhases: RingPhase[];
-  ringTotal: number;
   stations: number;
   tours: number;
   onBack: () => void;
-  onDone: () => void;
 }
 
-function CircuitCountdown({ preset, ringPhases, ringTotal, stations, tours, onBack, onDone }: CircuitCountdownProps) {
-  const { t, lang } = useI18n();
-  const langRef = useRef(lang); langRef.current = lang;
-  const [speechOn, setSpeechOn] = useState(isSpeechEnabled());
-  const toggleSpeech = () => { const n = !speechOn; setSpeechOn(n); setSpeechEnabled(n); };
+function CircuitCountdown({ stations, tours, onBack }: CircuitCountdownProps) {
+  const { t } = useI18n();
+  const ctx = useTimerContext()!;
+  const { state, displayConfig, speechEnabled, toggleSpeech, pause, resume, stop, skip } = ctx;
 
-  const callbacks = useMemo(() => ({
-    onPhaseChange: (phase: { type: string }) => {
-      hapticFeedback('heavy'); playTransitionBeep();
-      if (phase.type === 'prepare') speakEvent('prepare', langRef.current);
-      else if (phase.type === 'work') speakEvent('work_start', langRef.current);
-      else if (phase.type === 'rest' || phase.type === 'recovery') speakEvent('rest_start', langRef.current);
-    },
-    onTick: (secondsLeft: number) => {
-      if (secondsLeft >= 1 && secondsLeft <= 5) { playCountdownBeep(secondsLeft); hapticFeedback('tap'); if (secondsLeft <= 3) speakEvent(`countdown_${secondsLeft}`, langRef.current); }
-    },
-    onHalfway: () => speakEvent('halfway', langRef.current),
-    onLastRound: () => { speakEvent('last_round', langRef.current); hapticFeedback('double'); },
-    onDone: () => { playFinishSound(); speakEvent('done', langRef.current); hapticFeedback('heavy'); },
-  }), []);
+  if (state.status === 'done') return null;
 
-  const { state, start, pause, resume, reset, skip } = useTimer(preset, callbacks);
-
-  useMemo(() => { if (state.status === 'idle') setTimeout(() => start(), 50); return true; /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
-
-  const isRunning = state.status === 'running';
-  const isPaused = state.status === 'paused';
-  const isDone = state.status === 'done';
   const activePhase = state.phases[state.activePhaseIndex];
   const phaseType = activePhase?.type ?? 'work';
   const isWork = phaseType === 'work';
-  const isRest = phaseType === 'rest';
   const isPrepare = phaseType === 'prepare';
 
-  const handleStop = () => { reset(); onDone(); };
-  if (isDone) { reset(); onDone(); return null; }
-
-  const bannerGradient = isRest
-    ? 'linear-gradient(135deg, #dc2626, #ef4444)'
-    : 'linear-gradient(135deg, #ea580c, #f97316)';
-  const phaseColor = isRest ? '#ef4444' : '#f97316';
+  const phaseColor = displayConfig?.phaseColorMap[phaseType] ?? '#f97316';
+  const bannerGradient = displayConfig?.phaseGradientMap[phaseType] ?? 'linear-gradient(135deg, #ea580c, #f97316)';
 
   const stationLabel = isWork
-    ? `${t('timer.phases.work')} — Station ${state.currentRound}`
+    ? `${t('timer.phases.work')} \u2014 Station ${state.currentRound}`
     : isPrepare ? t('timer.phases.prepare')
-    : phaseType === 'recovery' ? 'Récupération'
+    : phaseType === 'recovery' ? 'R\u00e9cup\u00e9ration'
     : t('timer.phases.rest');
 
   const prepareOffset = state.phases.length > 0 && state.phases[0].type === 'prepare' ? 1 : 0;
-  // Ring phases don't include prepare or recovery — approximate mapping
   const ringPhaseIndex = Math.max(0, state.activePhaseIndex - prepareOffset);
   const prepareTime = prepareOffset > 0 ? state.phases[0].duration : 0;
   const ringElapsed = Math.max(0, state.elapsedSeconds - prepareTime);
+
+  const isRunning = state.status === 'running';
+  const isPaused = state.status === 'paused';
 
   return (
     <section className="page">
       <div className="relative overflow-hidden rounded-2xl px-5 pt-4 pb-3 transition-all duration-500" style={{ background: bannerGradient }}>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[14px] font-bold tracking-widest text-white uppercase">{stationLabel}</span>
-          <button onClick={toggleSpeech} className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: speechOn ? 'rgba(255,255,255,0.15)' : 'rgba(255,0,0,0.15)', color: '#fff' }}>
-            {speechOn ? <MicOnIcon /> : <MicOffIcon />}
+          <div className="flex items-center gap-1">
+            <button onClick={onBack} className="flex items-center text-white/70 bg-transparent border-none cursor-pointer p-2 -ml-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <span className="text-[14px] font-bold tracking-widest text-white uppercase">{stationLabel}</span>
+          </div>
+          <button onClick={toggleSpeech} className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: speechEnabled ? 'rgba(255,255,255,0.15)' : 'rgba(255,0,0,0.15)', color: '#fff' }}>
+            {speechEnabled ? <MicOnIcon /> : <MicOffIcon />}
           </button>
         </div>
         {tours > 1 && <span className="text-[12px] text-white/60">Tour {state.currentCycle} / {tours}</span>}
@@ -215,15 +201,15 @@ function CircuitCountdown({ preset, ringPhases, ringTotal, stations, tours, onBa
           currentSeconds={state.secondsLeft}
           totalPhaseSeconds={activePhase?.duration ?? 1}
           totalElapsed={isPrepare ? 0 : ringElapsed}
-          totalDuration={ringTotal}
-          phases={ringPhases}
-          currentPhaseIndex={isPrepare ? 0 : Math.min(ringPhaseIndex, ringPhases.length - 1)}
+          totalDuration={displayConfig?.ringTotal ?? 1}
+          phases={displayConfig?.ringPhases ?? []}
+          currentPhaseIndex={isPrepare ? 0 : Math.min(ringPhaseIndex, (displayConfig?.ringPhases ?? []).length - 1)}
           phaseColor={isPrepare ? '#6366f1' : phaseColor}
         />
       </div>
 
       <div className="flex items-center justify-center gap-4">
-        <button onClick={handleStop} className="w-14 h-14 rounded-full flex items-center justify-center border-none cursor-pointer bg-red-500/15" aria-label="Stop"><StopIcon /></button>
+        <button onClick={stop} className="w-14 h-14 rounded-full flex items-center justify-center border-none cursor-pointer bg-red-500/15" aria-label="Stop"><StopIcon /></button>
         {isRunning ? (
           <button onClick={pause} className="w-[72px] h-[72px] rounded-full flex items-center justify-center border-none cursor-pointer text-white shadow-lg" style={{ background: phaseColor }} aria-label="Pause"><PauseIcon /></button>
         ) : isPaused ? (

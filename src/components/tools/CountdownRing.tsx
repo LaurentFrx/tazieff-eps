@@ -1,8 +1,9 @@
 'use client';
 
 /* ─── CountdownRing ───
- * SVG circular ring showing phase segments + progress arc,
- * with central time display and a linear phase bar underneath.
+ * SVG circular ring showing progress arc for the current phase,
+ * with central time display (countdown pulse at 3-2-1)
+ * and a linear phase bar underneath.
  */
 
 export interface RingPhase {
@@ -57,8 +58,17 @@ export function CountdownRing({
   // Total remaining
   const totalRemaining = Math.max(0, totalDuration - totalElapsed);
 
+  // Countdown pulse at 3, 2, 1
+  const isCountdown = currentSeconds > 0 && currentSeconds <= 3;
+
   return (
     <div className="flex flex-col items-center gap-4">
+      {/* Keyframes for countdown pulse */}
+      <style>{`
+        @keyframes cdp{0%,100%{transform:scale(1)}40%{transform:scale(1.3)}}
+        @keyframes cdp0{0%,100%{transform:scale(1)}30%{transform:scale(1.5)}}
+      `}</style>
+
       {/* Ring */}
       <div className="relative" style={{ width: SIZE, height: SIZE }}>
         <svg
@@ -75,7 +85,8 @@ export function CountdownRing({
             fill="none"
             stroke="currentColor"
             strokeWidth={STROKE}
-            strokeOpacity={0.08}
+            strokeOpacity={isCountdown ? 0.15 : 0.08}
+            style={{ transition: 'stroke-opacity 0.3s ease' }}
           />
 
           {/* Progress arc (current phase only) */}
@@ -90,7 +101,7 @@ export function CountdownRing({
             strokeDasharray={C}
             strokeDashoffset={C * (1 - phaseFraction)}
             style={{
-              transition: 'stroke-dashoffset 0.3s linear, stroke 0.3s ease',
+              transition: isCountdown ? 'stroke 0.3s ease' : 'stroke-dashoffset 0.3s linear, stroke 0.3s ease',
             }}
           />
         </svg>
@@ -99,9 +110,16 @@ export function CountdownRing({
         <div
           className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
         >
-          <span className="font-mono text-[64px] font-bold leading-none text-zinc-900 dark:text-white">
-            {formatTime(currentSeconds)}
-          </span>
+          <div
+            key={isCountdown ? `cd-${currentSeconds}` : 'stable'}
+            style={{
+              animation: isCountdown ? 'cdp 0.3s ease-out' : currentSeconds === 0 ? 'cdp0 0.4s ease-out' : undefined,
+            }}
+          >
+            <span className="font-mono text-[64px] font-bold leading-none text-zinc-900 dark:text-white">
+              {formatTime(currentSeconds)}
+            </span>
+          </div>
           <span className="font-mono text-[12px] mt-1 text-zinc-400 dark:text-white/35">
             {formatTime(totalRemaining)} restant
           </span>
@@ -113,8 +131,8 @@ export function CountdownRing({
         {phases.map((p, i) => {
           let opacity: number;
           if (i < currentPhaseIndex) opacity = 1;
-          else if (i === currentPhaseIndex) opacity = 0.7;
-          else opacity = 0.2;
+          else if (i === currentPhaseIndex) opacity = 0.25;
+          else opacity = 0.15;
 
           return (
             <div

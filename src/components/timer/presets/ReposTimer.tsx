@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { WheelPicker, type WheelPickerHandle } from '@/components/tools/WheelPicker';
 import { CountdownRing, type RingPhase } from '@/components/tools/CountdownRing';
-import { useTimer, type TimerPreset } from '@/hooks/useTimer';
-import { unlockAudio, hapticFeedback, playCountdownBeep, playTransitionBeep, playFinishSound } from '@/lib/audio/beep';
-import { speakEvent, isSpeechEnabled, setSpeechEnabled } from '@/lib/audio/speech';
+import { useTimerContext, type TimerDisplayConfig } from '@/contexts/TimerContext';
+import type { TimerPreset } from '@/hooks/useTimer';
+import { unlockAudio } from '@/lib/audio/beep';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
 const DURATION_VALUES = [10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 300];
@@ -47,33 +47,43 @@ const StopIcon = () => (
 interface ReposTimerProps { onBack: () => void }
 
 export function ReposTimer({ onBack }: ReposTimerProps) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  const ctx = useTimerContext();
   const [duration, setDuration] = useState(60);
-  const [running, setRunning] = useState(false);
-  const [quickStartDuration, setQuickStartDuration] = useState<number | null>(null);
   const pickerRef = useRef<WheelPickerHandle>(null);
 
-  const activeDuration = quickStartDuration ?? duration;
-
   const preset: TimerPreset = useMemo(() => ({
-    name: 'REPOS', prepareDuration: 3, workDuration: activeDuration,
+    name: 'REPOS', prepareDuration: 3, workDuration: duration,
     restDuration: 0, rounds: 1, cycles: 1, recoveryDuration: 0, cooldownDuration: 0,
-  }), [activeDuration]);
+  }), [duration]);
 
-  const handleStart = () => { unlockAudio(); setQuickStartDuration(null); setRunning(true); };
+  const displayConfig: TimerDisplayConfig = useMemo(() => ({
+    ringPhases: [{ type: 'rest', duration, color: '#06b6d4' }],
+    ringTotal: duration,
+    phaseColorMap: { prepare: '#6366f1', work: '#06b6d4' },
+    phaseGradientMap: {
+      prepare: 'linear-gradient(135deg, #4f46e5, #6366f1)',
+      work: 'linear-gradient(135deg, #0891b2, #06b6d4)',
+    },
+  }), [duration]);
+
+  const handleStart = () => {
+    unlockAudio();
+    ctx?.startTimer('repos', preset, displayConfig, lang);
+  };
 
   const handleQuickStart = (value: number) => {
     unlockAudio();
     pickerRef.current?.scrollToValue(value);
     setDuration(value);
-    setQuickStartDuration(value);
-    setTimeout(() => setRunning(true), 60);
+    const qPreset: TimerPreset = { name: 'REPOS', prepareDuration: 3, workDuration: value, restDuration: 0, rounds: 1, cycles: 1, recoveryDuration: 0, cooldownDuration: 0 };
+    const qPhases: RingPhase[] = [{ type: 'rest', duration: value, color: '#06b6d4' }];
+    const qConfig: TimerDisplayConfig = { ringPhases: qPhases, ringTotal: value, phaseColorMap: { prepare: '#6366f1', work: '#06b6d4' }, phaseGradientMap: { prepare: 'linear-gradient(135deg, #4f46e5, #6366f1)', work: 'linear-gradient(135deg, #0891b2, #06b6d4)' } };
+    ctx?.startTimer('repos', qPreset, qConfig, lang);
   };
 
-  const handleDone = useCallback(() => { setRunning(false); setQuickStartDuration(null); }, []);
-
-  if (running) {
-    return <ReposCountdown preset={preset} activeDuration={activeDuration} onBack={onBack} onDone={handleDone} />;
+  if (ctx?.isActive && ctx.timerType === 'repos') {
+    return <ReposCountdown onBack={onBack} />;
   }
 
   return (
@@ -113,64 +123,42 @@ export function ReposTimer({ onBack }: ReposTimerProps) {
 
 /* ─── Countdown ─── */
 
-interface ReposCountdownProps {
-  preset: TimerPreset;
-  activeDuration: number;
-  onBack: () => void;
-  onDone: () => void;
-}
+function ReposCountdown({ onBack }: { onBack: () => void }) {
+  const { t } = useI18n();
+  const ctx = useTimerContext()!;
+  const { state, displayConfig, speechEnabled, toggleSpeech, pause, resume, stop } = ctx;
 
-function ReposCountdown({ preset, activeDuration, onBack, onDone }: ReposCountdownProps) {
-  const { t, lang } = useI18n();
-  const langRef = useRef(lang); langRef.current = lang;
-  const [speechOn, setSpeechOn] = useState(isSpeechEnabled());
-  const toggleSpeech = () => { const n = !speechOn; setSpeechOn(n); setSpeechEnabled(n); };
+  if (state.status === 'done') return null;
 
-  const ringPhases: RingPhase[] = useMemo(() =>
-    [{ type: 'rest', duration: activeDuration, color: '#06b6d4' }],
-  [activeDuration]);
-
-  const callbacks = useMemo(() => ({
-    onPhaseChange: (phase: { type: string }) => {
-      hapticFeedback('heavy'); playTransitionBeep();
-      if (phase.type === 'prepare') speakEvent('prepare', langRef.current);
-      else if (phase.type === 'work') speakEvent('rest_start', langRef.current);
-    },
-    onTick: (secondsLeft: number) => {
-      if (secondsLeft >= 1 && secondsLeft <= 5) { playCountdownBeep(secondsLeft); hapticFeedback('tap'); if (secondsLeft <= 3) speakEvent(`countdown_${secondsLeft}`, langRef.current); }
-      if (secondsLeft === 10) { playTransitionBeep(); hapticFeedback('tap'); }
-    },
-    onHalfway: () => {},
-    onLastRound: () => {},
-    onDone: () => { playFinishSound(); speakEvent('done', langRef.current); hapticFeedback('heavy'); },
-  }), []);
-
-  const { state, start, pause, resume, reset } = useTimer(preset, callbacks);
-
-  useMemo(() => { if (state.status === 'idle') setTimeout(() => start(), 50); return true; /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
-
-  const isRunning = state.status === 'running';
-  const isPaused = state.status === 'paused';
-  const isDone = state.status === 'done';
   const activePhase = state.phases[state.activePhaseIndex];
   const isPrepare = activePhase?.type === 'prepare';
 
-  const handleStop = () => { reset(); onDone(); };
-  if (isDone) { reset(); onDone(); return null; }
+  const phaseColor = isPrepare ? '#6366f1' : '#06b6d4';
+  const bannerGradient = isPrepare
+    ? 'linear-gradient(135deg, #4f46e5, #6366f1)'
+    : 'linear-gradient(135deg, #0891b2, #06b6d4)';
 
   const prepareOffset = state.phases.length > 0 && state.phases[0].type === 'prepare' ? 1 : 0;
   const prepareTime = prepareOffset > 0 ? state.phases[0].duration : 0;
   const ringElapsed = Math.max(0, state.elapsedSeconds - prepareTime);
 
+  const isRunning = state.status === 'running';
+  const isPaused = state.status === 'paused';
+
   return (
     <section className="page">
-      <div className="relative overflow-hidden rounded-2xl px-5 pt-4 pb-3" style={{ background: 'linear-gradient(135deg, #0891b2, #06b6d4)' }}>
+      <div className="relative overflow-hidden rounded-2xl px-5 pt-4 pb-3 transition-all duration-500" style={{ background: bannerGradient }}>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[16px] font-bold tracking-widest text-white uppercase">
-            {isPrepare ? t('timer.phases.prepare') : 'REPOS'}
-          </span>
-          <button onClick={toggleSpeech} className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: speechOn ? 'rgba(255,255,255,0.15)' : 'rgba(255,0,0,0.15)', color: '#fff' }}>
-            {speechOn ? <MicOnIcon /> : <MicOffIcon />}
+          <div className="flex items-center gap-1">
+            <button onClick={onBack} className="flex items-center text-white/70 bg-transparent border-none cursor-pointer p-2 -ml-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <span className="text-[14px] font-bold tracking-widest text-white uppercase">
+              {isPrepare ? t('timer.phases.prepare') : 'REPOS'}
+            </span>
+          </div>
+          <button onClick={toggleSpeech} className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: speechEnabled ? 'rgba(255,255,255,0.15)' : 'rgba(255,0,0,0.15)', color: '#fff' }}>
+            {speechEnabled ? <MicOnIcon /> : <MicOffIcon />}
           </button>
         </div>
       </div>
@@ -180,15 +168,15 @@ function ReposCountdown({ preset, activeDuration, onBack, onDone }: ReposCountdo
           currentSeconds={state.secondsLeft}
           totalPhaseSeconds={activePhase?.duration ?? 1}
           totalElapsed={isPrepare ? 0 : ringElapsed}
-          totalDuration={activeDuration}
-          phases={ringPhases}
+          totalDuration={displayConfig?.ringTotal ?? 1}
+          phases={displayConfig?.ringPhases ?? []}
           currentPhaseIndex={0}
-          phaseColor={isPrepare ? '#6366f1' : '#06b6d4'}
+          phaseColor={phaseColor}
         />
       </div>
 
       <div className="flex items-center justify-center gap-4">
-        <button onClick={handleStop} className="w-14 h-14 rounded-full flex items-center justify-center border-none cursor-pointer bg-red-500/15" aria-label="Stop"><StopIcon /></button>
+        <button onClick={stop} className="w-14 h-14 rounded-full flex items-center justify-center border-none cursor-pointer bg-red-500/15" aria-label="Stop"><StopIcon /></button>
         {isRunning ? (
           <button onClick={pause} className="w-[72px] h-[72px] rounded-full flex items-center justify-center border-none cursor-pointer text-white shadow-lg" style={{ background: '#06b6d4' }} aria-label="Pause"><PauseIcon /></button>
         ) : isPaused ? (

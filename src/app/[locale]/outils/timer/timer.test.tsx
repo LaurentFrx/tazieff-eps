@@ -14,6 +14,8 @@ vi.mock("@/lib/audio/beep", () => ({
   hapticFeedback: vi.fn(),
   playCountdownBeep: vi.fn(),
   playTransitionBeep: vi.fn(),
+  playFinishSound: vi.fn(),
+  playRoundEndBeep: vi.fn(),
   playBeep: vi.fn(),
 }));
 

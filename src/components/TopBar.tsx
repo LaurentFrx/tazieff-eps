@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useTeacherMode } from "@/hooks/useTeacherMode";
 import { SearchModal } from "@/components/SearchModal";
+import { useTimerContext } from "@/contexts/TimerContext";
 
 /* ── Inline SVG icons (20×20) ────────────────────────────────────── */
 
@@ -48,10 +49,17 @@ function IconTeacher() {
 
 /* ── Component ───────────────────────────────────────────────────── */
 
+function formatBadgeTime(s: number) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${String(sec).padStart(2, '0')}`;
+}
+
 export function TopBar() {
   const { t } = useI18n();
   const { unlocked: teacherUnlocked } = useTeacherMode();
   const [searchOpen, setSearchOpen] = useState(false);
+  const timerCtx = useTimerContext();
 
   /* ── Cmd/Ctrl+K shortcut ──────────────────────────────────────── */
   useEffect(() => {
@@ -83,6 +91,31 @@ export function TopBar() {
               Tazieff&apos;EPS
             </span>
           </Link>
+
+          {/* ── Timer badge (when active) ────────────────────────── */}
+          {timerCtx?.isActive && (() => {
+            const ap = timerCtx.state.phases[timerCtx.state.activePhaseIndex];
+            const color = timerCtx.displayConfig?.phaseColorMap[ap?.type ?? 'work'] ?? '#8b5cf6';
+            const running = timerCtx.state.status === 'running';
+            return (
+              <Link
+                href="/outils/timer"
+                className="flex items-center gap-2 px-2.5 py-1 rounded-full no-underline shrink-0"
+                style={{ background: `${color}33`, border: `1px solid ${color}4d` }}
+              >
+                <span
+                  className="block w-2 h-2 rounded-full"
+                  style={{
+                    background: color,
+                    animation: running ? 'timer-badge-pulse 1.5s ease-in-out infinite' : undefined,
+                  }}
+                />
+                <span className="font-mono text-[12px] font-bold text-zinc-900 dark:text-white">
+                  {formatBadgeTime(timerCtx.state.secondsLeft)}
+                </span>
+              </Link>
+            );
+          })()}
 
           {/* ── Right: Action icons ───────────────────────────────── */}
           <div className="flex items-center gap-0.5 shrink-0">
@@ -129,6 +162,9 @@ export function TopBar() {
       </header>
 
       {searchOpen && <SearchModal onClose={() => setSearchOpen(false)} />}
+
+      {/* Badge pulse animation */}
+      <style>{`@keyframes timer-badge-pulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.3);opacity:1}}`}</style>
     </>
   );
 }

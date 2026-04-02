@@ -6,6 +6,7 @@ import { I18nProvider, type Lang } from "@/lib/i18n/I18nProvider";
 import { AuthProvider } from "@/lib/supabase/AuthProvider";
 import { DevServiceWorkerCleanup } from "@/components/DevServiceWorkerCleanup";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { TimerProvider } from "@/contexts/TimerContext";
 
 type ThemePreference = "system" | "light" | "dark";
 
@@ -70,7 +71,9 @@ export function AppProviders({
     >
       <I18nProvider initialLang={initialLang}>
         <AuthProvider>
+          <TimerProvider>
           {children}
+          </TimerProvider>
           <LangSync lang={initialLang} />
           <ThemeSync initialTheme={initialTheme} />
           <DevServiceWorkerCleanup />

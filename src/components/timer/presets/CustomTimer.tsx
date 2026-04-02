@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { WheelPicker } from '@/components/tools/WheelPicker';
 import { CountdownRing, type RingPhase } from '@/components/tools/CountdownRing';
-import { useTimer, type TimerPreset } from '@/hooks/useTimer';
-import { unlockAudio, hapticFeedback, playCountdownBeep, playTransitionBeep, playFinishSound } from '@/lib/audio/beep';
-import { speakEvent, isSpeechEnabled, setSpeechEnabled } from '@/lib/audio/speech';
+import { useTimerContext, type TimerDisplayConfig } from '@/contexts/TimerContext';
+import type { TimerPreset } from '@/hooks/useTimer';
+import { unlockAudio } from '@/lib/audio/beep';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
 const PREPARE_VALUES = [0, 3, 5, 10, 15, 20, 30];
@@ -100,14 +100,14 @@ const PHASE_LABELS: Record<string, string> = {
 interface CustomTimerProps { onBack: () => void }
 
 export function CustomTimer({ onBack }: CustomTimerProps) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  const ctx = useTimerContext();
   const [prepare, setPrepare] = useState(10);
   const [cooldown, setCooldown] = useState(0);
   const [work, setWork] = useState(30);
   const [rest, setRest] = useState(15);
   const [series, setSeries] = useState(8);
   const [cycles, setCycles] = useState(1);
-  const [running, setRunning] = useState(false);
   const [pickerKey, setPickerKey] = useState(0);
 
   const totalDuration = prepare + (work + rest) * series * cycles + cooldown;
@@ -135,8 +135,13 @@ export function CustomTimer({ onBack }: CustomTimerProps) {
 
   const ringTotal = ringPhases.reduce((s, p) => s + p.duration, 0);
 
-  const handleStart = () => { unlockAudio(); setRunning(true); };
-  const handleDone = useCallback(() => setRunning(false), []);
+  const displayConfig: TimerDisplayConfig = useMemo(() => ({
+    ringPhases, ringTotal,
+    phaseColorMap: { prepare: '#eab308', work: '#8b5cf6', rest: '#ef4444', recovery: '#ef4444', cooldown: '#eab308' },
+    phaseGradientMap: PHASE_GRADIENTS,
+  }), [ringPhases, ringTotal]);
+
+  const handleStart = () => { unlockAudio(); ctx?.startTimer('custom', preset, displayConfig, lang); };
 
   const applyQuickPreset = (qp: PresetQuick) => {
     setPrepare(qp.prepare); setWork(qp.work); setRest(qp.rest);
@@ -144,8 +149,8 @@ export function CustomTimer({ onBack }: CustomTimerProps) {
     setPickerKey((k) => k + 1);
   };
 
-  if (running) {
-    return <CustomCountdown preset={preset} ringPhases={ringPhases} ringTotal={ringTotal} series={series} cycles={cycles} onBack={onBack} onDone={handleDone} />;
+  if (ctx?.isActive && ctx.timerType === 'custom') {
+    return <CustomCountdown onBack={onBack} />;
   }
 
   return (
@@ -200,70 +205,41 @@ export function CustomTimer({ onBack }: CustomTimerProps) {
 
 /* ─── Countdown ─── */
 
-interface CustomCountdownProps {
-  preset: TimerPreset;
-  ringPhases: RingPhase[];
-  ringTotal: number;
-  series: number;
-  cycles: number;
-  onBack: () => void;
-  onDone: () => void;
-}
+function CustomCountdown({ onBack }: { onBack: () => void }) {
+  const ctx = useTimerContext()!;
+  const { state, displayConfig, speechEnabled, toggleSpeech, pause, resume, stop, skip } = ctx;
 
-function CustomCountdown({ preset, ringPhases, ringTotal, series, cycles, onBack, onDone }: CustomCountdownProps) {
-  const { t, lang } = useI18n();
-  const langRef = useRef(lang); langRef.current = lang;
-  const [speechOn, setSpeechOn] = useState(isSpeechEnabled());
-  const toggleSpeech = () => { const n = !speechOn; setSpeechOn(n); setSpeechEnabled(n); };
+  if (state.status === 'done') return null;
 
-  const callbacks = useMemo(() => ({
-    onPhaseChange: (phase: { type: string }) => {
-      hapticFeedback('heavy'); playTransitionBeep();
-      if (phase.type === 'prepare') speakEvent('prepare', langRef.current);
-      else if (phase.type === 'work') speakEvent('work_start', langRef.current);
-      else if (phase.type === 'rest' || phase.type === 'recovery') speakEvent('rest_start', langRef.current);
-      else if (phase.type === 'cooldown') speakEvent('rest_start', langRef.current);
-    },
-    onTick: (secondsLeft: number) => {
-      if (secondsLeft >= 1 && secondsLeft <= 5) { playCountdownBeep(secondsLeft); hapticFeedback('tap'); if (secondsLeft <= 3) speakEvent(`countdown_${secondsLeft}`, langRef.current); }
-    },
-    onHalfway: () => speakEvent('halfway', langRef.current),
-    onLastRound: () => { speakEvent('last_round', langRef.current); hapticFeedback('double'); },
-    onDone: () => { playFinishSound(); speakEvent('done', langRef.current); hapticFeedback('heavy'); },
-  }), []);
-
-  const { state, start, pause, resume, reset, skip } = useTimer(preset, callbacks);
-
-  useMemo(() => { if (state.status === 'idle') setTimeout(() => start(), 50); return true; /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
-
-  const isRunning = state.status === 'running';
-  const isPaused = state.status === 'paused';
-  const isDone = state.status === 'done';
   const activePhase = state.phases[state.activePhaseIndex];
   const phaseType = activePhase?.type ?? 'work';
 
-  const handleStop = () => { reset(); onDone(); };
-  if (isDone) { reset(); onDone(); return null; }
-
-  const bannerGradient = PHASE_GRADIENTS[phaseType] ?? PHASE_GRADIENTS.work;
-  const phaseColor = PHASE_COLORS[phaseType] ?? '#8b5cf6';
+  const phaseColor = displayConfig?.phaseColorMap[phaseType] ?? PHASE_COLORS[phaseType] ?? '#8b5cf6';
+  const bannerGradient = displayConfig?.phaseGradientMap[phaseType] ?? PHASE_GRADIENTS[phaseType] ?? PHASE_GRADIENTS.work;
   const phaseLabel = PHASE_LABELS[phaseType] ?? phaseType.toUpperCase();
 
-  const roundInfo = phaseType === 'work' || phaseType === 'rest'
-    ? `Série ${state.currentRound} / ${series}${cycles > 1 ? ` — Cycle ${state.currentCycle} / ${cycles}` : ''}`
+  const roundInfo = (phaseType === 'work' || phaseType === 'rest')
+    ? `Série ${state.currentRound} / ${state.totalRounds}${state.totalCycles > 1 ? ` — Cycle ${state.currentCycle} / ${state.totalCycles}` : ''}`
     : null;
 
-  // Map useTimer phase index to ring phase index
-  // Ring phases are built identically to useTimer phases so index matches directly
-  const ringPhaseIndex = Math.min(state.activePhaseIndex, ringPhases.length - 1);
+  // Ring phases match useTimer phases exactly for custom timer (both include prepare/cooldown)
+  const ringPhaseIndex = Math.min(state.activePhaseIndex, (displayConfig?.ringPhases.length ?? 1) - 1);
+
+  const isRunning = state.status === 'running';
+  const isPaused = state.status === 'paused';
 
   return (
     <section className="page">
       <div className="relative overflow-hidden rounded-2xl px-5 pt-4 pb-3 transition-all duration-500" style={{ background: bannerGradient }}>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[14px] font-bold tracking-widest text-white uppercase">{phaseLabel}</span>
-          <button onClick={toggleSpeech} className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: speechOn ? 'rgba(255,255,255,0.15)' : 'rgba(255,0,0,0.15)', color: '#fff' }}>
-            {speechOn ? <MicOnIcon /> : <MicOffIcon />}
+          <div className="flex items-center gap-1">
+            <button onClick={onBack} className="flex items-center text-white/70 bg-transparent border-none cursor-pointer p-2 -ml-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <span className="text-[14px] font-bold tracking-widest text-white uppercase">{phaseLabel}</span>
+          </div>
+          <button onClick={toggleSpeech} className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: speechEnabled ? 'rgba(255,255,255,0.15)' : 'rgba(255,0,0,0.15)', color: '#fff' }}>
+            {speechEnabled ? <MicOnIcon /> : <MicOffIcon />}
           </button>
         </div>
         {roundInfo && <span className="text-[12px] text-white/60">{roundInfo}</span>}
@@ -274,15 +250,15 @@ function CustomCountdown({ preset, ringPhases, ringTotal, series, cycles, onBack
           currentSeconds={state.secondsLeft}
           totalPhaseSeconds={activePhase?.duration ?? 1}
           totalElapsed={state.elapsedSeconds}
-          totalDuration={ringTotal}
-          phases={ringPhases}
+          totalDuration={displayConfig?.ringTotal ?? 1}
+          phases={displayConfig?.ringPhases ?? []}
           currentPhaseIndex={ringPhaseIndex}
           phaseColor={phaseColor}
         />
       </div>
 
       <div className="flex items-center justify-center gap-4">
-        <button onClick={handleStop} className="w-14 h-14 rounded-full flex items-center justify-center border-none cursor-pointer bg-red-500/15" aria-label="Stop"><StopIcon /></button>
+        <button onClick={stop} className="w-14 h-14 rounded-full flex items-center justify-center border-none cursor-pointer bg-red-500/15" aria-label="Stop"><StopIcon /></button>
         {isRunning ? (
           <button onClick={pause} className="w-[72px] h-[72px] rounded-full flex items-center justify-center border-none cursor-pointer text-white shadow-lg" style={{ background: phaseColor }} aria-label="Pause"><PauseIcon /></button>
         ) : isPaused ? (

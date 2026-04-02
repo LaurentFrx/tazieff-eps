@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { useTimerContext } from '@/contexts/TimerContext';
 import { LocaleLink as Link } from '@/components/LocaleLink';
 import { TabataTimer } from '@/components/timer/presets/TabataTimer';
 import { EmomTimer } from '@/components/timer/presets/EmomTimer';
@@ -76,7 +77,17 @@ const TIMER_COMPONENTS: Record<string, React.ComponentType<{ onBack: () => void 
 
 export default function TimerPage() {
   const { t } = useI18n();
+  const ctx = useTimerContext();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Auto-select active timer on mount (not on back navigation within page)
+  const mountedRef = useRef(false);
+  useEffect(() => {
+    if (!mountedRef.current && ctx?.isActive && ctx.timerType) {
+      setSelectedId(ctx.timerType);
+    }
+    mountedRef.current = true;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Render selected timer
   if (selectedId) {

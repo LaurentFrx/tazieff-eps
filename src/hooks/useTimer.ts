@@ -50,7 +50,7 @@ export interface TimerCallbacks {
 
 // ---------- Build phase list ----------
 
-function buildPhases(preset: TimerPreset): PhaseEntry[] {
+export function buildPhases(preset: TimerPreset): PhaseEntry[] {
   const phases: PhaseEntry[] = [];
 
   if (preset.prepareDuration > 0) {
@@ -110,7 +110,7 @@ function buildPhases(preset: TimerPreset): PhaseEntry[] {
   return phases;
 }
 
-function computeTotalRemaining(phases: PhaseEntry[], activeIndex: number, secondsLeft: number): number {
+export function computeTotalRemaining(phases: PhaseEntry[], activeIndex: number, secondsLeft: number): number {
   let total = secondsLeft;
   for (let i = activeIndex + 1; i < phases.length; i++) {
     total += phases[i].duration;
@@ -118,7 +118,7 @@ function computeTotalRemaining(phases: PhaseEntry[], activeIndex: number, second
   return total;
 }
 
-function getCurrentRoundCycle(phases: PhaseEntry[], activeIndex: number) {
+export function getCurrentRoundCycle(phases: PhaseEntry[], activeIndex: number) {
   const phase = phases[activeIndex];
   return {
     currentRound: phase?.roundIndex ?? 1,
