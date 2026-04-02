@@ -40,8 +40,6 @@ const IDLE_STATE: TimerState = {
   currentCycle: 1, totalCycles: 1, elapsedSeconds: 0,
 };
 
-const MILESTONES = new Set([180, 60, 30, 10]);
-
 /* ─── Context ─── */
 
 const TimerContext = createContext<TimerContextValue | null>(null);
@@ -141,8 +139,6 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         playCountdownBeep(sl); hapticFeedback('tap');
         if (sl <= 3) speakEvent(`countdown_${sl}`, langRef.current);
       }
-      if (MILESTONES.has(sl) && sl > 5) { playTransitionBeep(); hapticFeedback('tap'); }
-
       if (sl <= 0) return advancePhase({ ...prev, secondsLeft: 0, elapsedSeconds: el });
       return { ...prev, secondsLeft: sl, totalSecondsLeft: prev.totalSecondsLeft - 1, elapsedSeconds: el };
     });
