@@ -50,16 +50,6 @@ export function CountdownRing({
   currentPhaseIndex,
   phaseColor,
 }: CountdownRingProps) {
-  // Precompute cumulative offsets for background segments
-  const segments: { offset: number; len: number; color: string }[] = [];
-  let cumulative = 0;
-  for (const p of phases) {
-    const frac = p.duration / totalDuration;
-    const len = frac * C;
-    segments.push({ offset: cumulative, len, color: p.color });
-    cumulative += len;
-  }
-
   // Progress arc: fraction of the CURRENT PHASE only
   const phaseElapsed = totalPhaseSeconds - currentSeconds;
   const phaseFraction = totalPhaseSeconds > 0 ? phaseElapsed / totalPhaseSeconds : 0;
@@ -77,23 +67,18 @@ export function CountdownRing({
           viewBox={`0 0 ${SIZE} ${SIZE}`}
           style={{ transform: 'rotate(-90deg)' }}
         >
-          {/* Layer 1 — Background segments (low opacity) */}
-          {segments.map((seg, i) => (
-            <circle
-              key={i}
-              cx={CX}
-              cy={CY}
-              r={R}
-              fill="none"
-              stroke={seg.color}
-              strokeWidth={STROKE}
-              strokeOpacity={0.15}
-              strokeDasharray={`${seg.len} ${C - seg.len}`}
-              strokeDashoffset={-seg.offset}
-            />
-          ))}
+          {/* Background track — simple gray ring */}
+          <circle
+            cx={CX}
+            cy={CY}
+            r={R}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={STROKE}
+            strokeOpacity={0.08}
+          />
 
-          {/* Layer 2 — Progress arc (current phase only) */}
+          {/* Progress arc (current phase only) */}
           <circle
             cx={CX}
             cy={CY}
@@ -124,17 +109,17 @@ export function CountdownRing({
       </div>
 
       {/* Phase bar — linear */}
-      <div className="flex w-full max-w-[260px] gap-[3px]">
+      <div className="flex w-full max-w-[260px] gap-[4px]">
         {phases.map((p, i) => {
           let opacity: number;
           if (i < currentPhaseIndex) opacity = 1;
           else if (i === currentPhaseIndex) opacity = 0.7;
-          else opacity = 0.15;
+          else opacity = 0.2;
 
           return (
             <div
               key={i}
-              className="h-[8px] rounded-[4px]"
+              className="h-[24px] rounded-[12px]"
               style={{
                 flex: p.duration,
                 background: p.color,

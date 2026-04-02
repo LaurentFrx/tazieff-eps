@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback, useRef } from 'react';
 import { WheelPicker } from '@/components/tools/WheelPicker';
 import { CountdownRing, type RingPhase } from '@/components/tools/CountdownRing';
 import { useTimer, type TimerPreset } from '@/hooks/useTimer';
-import { unlockAudio, hapticFeedback, playCountdownBeep, playTransitionBeep } from '@/lib/audio/beep';
+import { unlockAudio, hapticFeedback, playCountdownBeep, playTransitionBeep, playFinishSound } from '@/lib/audio/beep';
 import { speakEvent, isSpeechEnabled, setSpeechEnabled } from '@/lib/audio/speech';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
@@ -23,14 +23,17 @@ function formatDuration(totalSeconds: number) {
 
 /* ─── Icons ─── */
 
-const SpeakerOnIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+const MicOnIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" />
+    <path d="M19 10v2a7 7 0 01-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" />
   </svg>
 );
-const SpeakerOffIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" />
+const MicOffIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" />
+    <path d="M19 10v2a7 7 0 01-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" />
+    <line x1="1" y1="1" x2="23" y2="23" />
   </svg>
 );
 const PauseIcon = () => (
@@ -155,11 +158,11 @@ function CircuitCountdown({ preset, ringPhases, ringTotal, stations, tours, onBa
       else if (phase.type === 'rest' || phase.type === 'recovery') speakEvent('rest_start', langRef.current);
     },
     onTick: (secondsLeft: number) => {
-      if (secondsLeft >= 1 && secondsLeft <= 3) { playCountdownBeep(secondsLeft); hapticFeedback('tap'); speakEvent(`countdown_${secondsLeft}`, langRef.current); }
+      if (secondsLeft >= 1 && secondsLeft <= 5) { playCountdownBeep(secondsLeft); hapticFeedback('tap'); if (secondsLeft <= 3) speakEvent(`countdown_${secondsLeft}`, langRef.current); }
     },
     onHalfway: () => speakEvent('halfway', langRef.current),
     onLastRound: () => { speakEvent('last_round', langRef.current); hapticFeedback('double'); },
-    onDone: () => { speakEvent('done', langRef.current); hapticFeedback('heavy'); },
+    onDone: () => { playFinishSound(); speakEvent('done', langRef.current); hapticFeedback('heavy'); },
   }), []);
 
   const { state, start, pause, resume, reset, skip } = useTimer(preset, callbacks);
@@ -200,8 +203,8 @@ function CircuitCountdown({ preset, ringPhases, ringTotal, stations, tours, onBa
       <div className="relative overflow-hidden rounded-2xl px-5 pt-4 pb-3 transition-all duration-500" style={{ background: bannerGradient }}>
         <div className="flex items-center justify-between mb-1">
           <span className="text-[14px] font-bold tracking-widest text-white uppercase">{stationLabel}</span>
-          <button onClick={toggleSpeech} className="bg-transparent border-none cursor-pointer p-1" style={{ color: speechOn ? '#fff' : 'rgba(255,255,255,0.4)' }}>
-            {speechOn ? <SpeakerOnIcon /> : <SpeakerOffIcon />}
+          <button onClick={toggleSpeech} className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: speechOn ? 'rgba(255,255,255,0.15)' : 'rgba(255,0,0,0.15)', color: '#fff' }}>
+            {speechOn ? <MicOnIcon /> : <MicOffIcon />}
           </button>
         </div>
         {tours > 1 && <span className="text-[12px] text-white/60">Tour {state.currentCycle} / {tours}</span>}

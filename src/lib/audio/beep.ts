@@ -103,16 +103,46 @@ export function hapticFeedback(pattern: 'tap' | 'double' | 'heavy'): void {
   }
 }
 
-/** Countdown beeps — high pitch for 3/2/1, higher for GO */
+/** Countdown beeps — pitch rises as we approach 0 */
 export function playCountdownBeep(secondsLeft: number): void {
-  if (secondsLeft > 0 && secondsLeft <= 3) {
-    playBeep(660, 0.12, 0.4);
-  } else if (secondsLeft === 0) {
-    playBeep(1200, 0.25, 0.6);
-  }
+  if (secondsLeft === 5) playBeep(520, 0.1, 0.35);
+  else if (secondsLeft === 4) playBeep(580, 0.1, 0.4);
+  else if (secondsLeft === 3) playBeep(660, 0.12, 0.45);
+  else if (secondsLeft === 2) playBeep(740, 0.12, 0.5);
+  else if (secondsLeft === 1) playBeep(880, 0.15, 0.55);
+  else if (secondsLeft === 0) playBeep(1200, 0.25, 0.6);
 }
 
-/** Phase transition beep */
+/** Phase transition beep — slightly louder */
 export function playTransitionBeep(): void {
-  playBeep(1000, 0.2, 0.55);
+  playBeep(1000, 0.2, 0.65);
+}
+
+/** Double beep at end of a round */
+export function playRoundEndBeep(): void {
+  playBeep(880, 0.12, 0.5);
+  setTimeout(() => playBeep(1100, 0.12, 0.5), 150);
+}
+
+/** Expressive finish sound — ascending triad Do5-Mi5-Sol5 */
+export function playFinishSound(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const ctx = getAudioContext();
+    const freqs = [523, 659, 784]; // C5, E5, G5
+    freqs.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.6, ctx.currentTime + i * 0.2);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.2 + 0.4);
+      osc.start(ctx.currentTime + i * 0.2);
+      osc.stop(ctx.currentTime + i * 0.2 + 0.4);
+    });
+  } catch {
+    // Audio not available
+  }
 }
