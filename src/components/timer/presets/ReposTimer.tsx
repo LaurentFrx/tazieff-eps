@@ -5,7 +5,7 @@ import { WheelPicker, type WheelPickerHandle } from '@/components/tools/WheelPic
 import { CountdownRing, type RingPhase } from '@/components/tools/CountdownRing';
 import { useTimerContext, type TimerDisplayConfig } from '@/contexts/TimerContext';
 import type { TimerPreset } from '@/hooks/useTimer';
-import { unlockAudio } from '@/lib/audio/beep';
+import { unlockAudio } from '@/lib/timer-audio';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
 const DURATION_VALUES = [10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 300];
@@ -27,7 +27,7 @@ const VoiceOnIcon = () => (
 const VoiceOffIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-    <line x1="1" y1="1" x2="23" y2="23" />
+    <line x1="2" y1="2" x2="22" y2="22" />
   </svg>
 );
 const PauseIcon = () => (
@@ -45,7 +45,7 @@ const StopIcon = () => (
 interface ReposTimerProps { onBack: () => void }
 
 export function ReposTimer({ onBack }: ReposTimerProps) {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const ctx = useTimerContext();
   const [duration, setDuration] = useState(60);
   const pickerRef = useRef<WheelPickerHandle>(null);
@@ -67,7 +67,7 @@ export function ReposTimer({ onBack }: ReposTimerProps) {
 
   const handleStart = () => {
     unlockAudio();
-    ctx?.startTimer('repos', preset, displayConfig, lang);
+    ctx?.startTimer('repos', preset, displayConfig);
   };
 
   const handleQuickStart = (value: number) => {
@@ -77,7 +77,7 @@ export function ReposTimer({ onBack }: ReposTimerProps) {
     const qPreset: TimerPreset = { name: 'REPOS', prepareDuration: 3, workDuration: value, restDuration: 0, rounds: 1, cycles: 1, recoveryDuration: 0, cooldownDuration: 0 };
     const qPhases: RingPhase[] = [{ type: 'rest', duration: value, color: '#06b6d4' }];
     const qConfig: TimerDisplayConfig = { ringPhases: qPhases, ringTotal: value, phaseColorMap: { prepare: '#6366f1', work: '#06b6d4' }, phaseGradientMap: { prepare: 'linear-gradient(135deg, #4f46e5, #6366f1)', work: 'linear-gradient(135deg, #0891b2, #06b6d4)' } };
-    ctx?.startTimer('repos', qPreset, qConfig, lang);
+    ctx?.startTimer('repos', qPreset, qConfig);
   };
 
   if (ctx?.isActive && ctx.timerType === 'repos') {
@@ -87,7 +87,9 @@ export function ReposTimer({ onBack }: ReposTimerProps) {
   return (
     <section className="page">
       <div className="relative overflow-hidden rounded-2xl px-5 pt-5 pb-4" style={{ background: 'linear-gradient(135deg, #0891b2, #06b6d4)' }}>
-        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="absolute top-3 right-3 pointer-events-none"><path d="M18.36 5.64a9 9 0 11-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+        <button onClick={() => ctx?.toggleVoice()} className="absolute top-3 right-3 flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}>
+          {ctx?.voiceOn ? <VoiceOnIcon /> : <VoiceOffIcon />}
+        </button>
         <button onClick={onBack} className="text-[13px] text-white/70 mb-2 cursor-pointer bg-transparent border-none">← Retour</button>
         <h1 className="text-[22px] font-bold text-white">Repos</h1>
         <p className="text-[12px] text-white/70 mt-0.5">Chrono de repos entre s&eacute;ries</p>
@@ -124,7 +126,7 @@ export function ReposTimer({ onBack }: ReposTimerProps) {
 function ReposCountdown({ onBack }: { onBack: () => void }) {
   const { t } = useI18n();
   const ctx = useTimerContext()!;
-  const { state, displayConfig, speechEnabled, toggleSpeech, pause, resume, stop } = ctx;
+  const { state, displayConfig, voiceOn, toggleVoice, pause, resume, stop } = ctx;
 
   if (state.status === 'done') return null;
 
@@ -158,8 +160,8 @@ function ReposCountdown({ onBack }: { onBack: () => void }) {
               </div>
             </div>
           </div>
-          <button onClick={toggleSpeech} className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: speechEnabled ? 'rgba(255,255,255,0.15)' : 'rgba(255,80,80,0.15)', color: speechEnabled ? '#fff' : 'rgba(255,120,120,0.8)' }}>
-            {speechEnabled ? <VoiceOnIcon /> : <VoiceOffIcon />}
+          <button onClick={toggleVoice} className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}>
+            {voiceOn ? <VoiceOnIcon /> : <VoiceOffIcon />}
           </button>
         </div>
       </div>

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { PhaseEntry, TimerState } from '@/hooks/useTimer';
-import { isSpeechEnabled, setSpeechEnabled } from '@/lib/audio/speech';
+import { isVoiceEnabled, toggleVoice as toggleVoiceFn } from '@/lib/timer-audio';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
 // ---------- Phase gradients (Sport Vibrant) ----------
@@ -505,14 +505,13 @@ export function TimerDisplay({
   onBack,
 }: TimerDisplayProps) {
   const { t } = useI18n();
-  const [speechOn, setSpeechOn] = useState(isSpeechEnabled());
+  const [speechOn, setSpeechOn] = useState(isVoiceEnabled());
   const bandsContainerRef = useRef<HTMLDivElement>(null);
 
   // Toggle speech
   const toggleSpeech = () => {
-    const next = !speechOn;
-    setSpeechOn(next);
-    setSpeechEnabled(next);
+    const newState = toggleVoiceFn();
+    setSpeechOn(newState);
   };
 
   // Auto-scroll active phase into view

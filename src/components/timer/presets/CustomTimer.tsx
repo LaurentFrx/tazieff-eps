@@ -5,7 +5,7 @@ import { WheelPicker } from '@/components/tools/WheelPicker';
 import { CountdownRing, type RingPhase } from '@/components/tools/CountdownRing';
 import { useTimerContext, type TimerDisplayConfig } from '@/contexts/TimerContext';
 import type { TimerPreset } from '@/hooks/useTimer';
-import { unlockAudio } from '@/lib/audio/beep';
+import { unlockAudio } from '@/lib/timer-audio';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
 const PREPARE_VALUES = [0, 3, 5, 10, 15, 20, 30];
@@ -49,7 +49,7 @@ const VoiceOnIcon = () => (
 const VoiceOffIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-    <line x1="1" y1="1" x2="23" y2="23" />
+    <line x1="2" y1="2" x2="22" y2="22" />
   </svg>
 );
 const PauseIcon = () => (
@@ -98,7 +98,7 @@ const PHASE_LABELS: Record<string, string> = {
 interface CustomTimerProps { onBack: () => void }
 
 export function CustomTimer({ onBack }: CustomTimerProps) {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const ctx = useTimerContext();
   const [prepare, setPrepare] = useState(10);
   const [cooldown, setCooldown] = useState(0);
@@ -139,7 +139,7 @@ export function CustomTimer({ onBack }: CustomTimerProps) {
     phaseGradientMap: PHASE_GRADIENTS,
   }), [ringPhases, ringTotal]);
 
-  const handleStart = () => { unlockAudio(); ctx?.startTimer('custom', preset, displayConfig, lang); };
+  const handleStart = () => { unlockAudio(); ctx?.startTimer('custom', preset, displayConfig); };
 
   const applyQuickPreset = (qp: PresetQuick) => {
     setPrepare(qp.prepare); setWork(qp.work); setRest(qp.rest);
@@ -154,9 +154,9 @@ export function CustomTimer({ onBack }: CustomTimerProps) {
   return (
     <section className="page">
       <div className="relative overflow-hidden rounded-2xl px-5 pt-5 pb-4" style={{ background: 'linear-gradient(135deg, #7c3aed, #8b5cf6)' }}>
-        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="absolute top-3 right-3 pointer-events-none">
-          <circle cx="12" cy="12" r="3"/><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
-        </svg>
+        <button onClick={() => ctx?.toggleVoice()} className="absolute top-3 right-3 flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}>
+          {ctx?.voiceOn ? <VoiceOnIcon /> : <VoiceOffIcon />}
+        </button>
         <button onClick={onBack} className="text-[13px] text-white/70 mb-2 cursor-pointer bg-transparent border-none">← Retour</button>
         <h1 className="text-[22px] font-bold text-white">Personnalis&eacute;</h1>
         <p className="text-[12px] text-white/70 mt-0.5">
@@ -205,7 +205,7 @@ export function CustomTimer({ onBack }: CustomTimerProps) {
 
 function CustomCountdown({ onBack }: { onBack: () => void }) {
   const ctx = useTimerContext()!;
-  const { state, displayConfig, speechEnabled, toggleSpeech, pause, resume, stop, skip } = ctx;
+  const { state, displayConfig, voiceOn, toggleVoice, pause, resume, stop, skip } = ctx;
 
   if (state.status === 'done') return null;
 
@@ -241,8 +241,8 @@ function CustomCountdown({ onBack }: { onBack: () => void }) {
               </div>
             </div>
           </div>
-          <button onClick={toggleSpeech} className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: speechEnabled ? 'rgba(255,255,255,0.15)' : 'rgba(255,80,80,0.15)', color: speechEnabled ? '#fff' : 'rgba(255,120,120,0.8)' }}>
-            {speechEnabled ? <VoiceOnIcon /> : <VoiceOffIcon />}
+          <button onClick={toggleVoice} className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}>
+            {voiceOn ? <VoiceOnIcon /> : <VoiceOffIcon />}
           </button>
         </div>
       </div>

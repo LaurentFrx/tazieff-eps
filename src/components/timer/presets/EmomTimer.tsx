@@ -5,7 +5,7 @@ import { WheelPicker } from '@/components/tools/WheelPicker';
 import { CountdownRing, type RingPhase } from '@/components/tools/CountdownRing';
 import { useTimerContext, type TimerDisplayConfig } from '@/contexts/TimerContext';
 import type { TimerPreset } from '@/hooks/useTimer';
-import { unlockAudio } from '@/lib/audio/beep';
+import { unlockAudio } from '@/lib/timer-audio';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
 const DURATION_VALUES = [30, 40, 45, 50, 55, 60];
@@ -21,7 +21,7 @@ const VoiceOnIcon = () => (
 const VoiceOffIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-    <line x1="1" y1="1" x2="23" y2="23" />
+    <line x1="2" y1="2" x2="22" y2="22" />
   </svg>
 );
 const PauseIcon = () => (<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></svg>);
@@ -34,7 +34,7 @@ const SkipIcon = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="no
 interface EmomTimerProps { onBack: () => void }
 
 export function EmomTimer({ onBack }: EmomTimerProps) {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const ctx = useTimerContext();
   const [duration, setDuration] = useState(60);
   const [minutes, setMinutes] = useState(10);
@@ -59,7 +59,7 @@ export function EmomTimer({ onBack }: EmomTimerProps) {
     },
   }), [ringPhases, ringTotal]);
 
-  const handleStart = () => { unlockAudio(); ctx?.startTimer('emom', preset, displayConfig, lang); };
+  const handleStart = () => { unlockAudio(); ctx?.startTimer('emom', preset, displayConfig); };
 
   if (ctx?.isActive && ctx.timerType === 'emom') {
     return <EmomCountdown onBack={onBack} />;
@@ -68,7 +68,9 @@ export function EmomTimer({ onBack }: EmomTimerProps) {
   return (
     <section className="page">
       <div className="relative overflow-hidden rounded-2xl px-5 pt-5 pb-4" style={{ background: 'linear-gradient(135deg, #2563eb, #3b82f6)' }}>
-        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="absolute top-3 right-3 pointer-events-none"><path d="M5 3v18M19 3v18M5 12h14M5 7h14M5 17h14"/></svg>
+        <button onClick={() => ctx?.toggleVoice()} className="absolute top-3 right-3 flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}>
+          {ctx?.voiceOn ? <VoiceOnIcon /> : <VoiceOffIcon />}
+        </button>
         <button onClick={onBack} className="text-[13px] text-white/70 mb-2 cursor-pointer bg-transparent border-none">← Retour</button>
         <h1 className="text-[22px] font-bold text-white">EMOM</h1>
         <p className="text-[12px] text-white/70 mt-0.5">Chaque minute pendant {minutes} min</p>
@@ -104,7 +106,7 @@ export function EmomTimer({ onBack }: EmomTimerProps) {
 function EmomCountdown({ onBack }: { onBack: () => void }) {
   const { t } = useI18n();
   const ctx = useTimerContext()!;
-  const { state, displayConfig, speechEnabled, toggleSpeech, pause, resume, stop, skip } = ctx;
+  const { state, displayConfig, voiceOn, toggleVoice, pause, resume, stop, skip } = ctx;
 
   if (state.status === 'done') return null;
 
@@ -135,8 +137,8 @@ function EmomCountdown({ onBack }: { onBack: () => void }) {
               </div>
             </div>
           </div>
-          <button onClick={toggleSpeech} className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: speechEnabled ? 'rgba(255,255,255,0.15)' : 'rgba(255,80,80,0.15)', color: speechEnabled ? '#fff' : 'rgba(255,120,120,0.8)' }}>
-            {speechEnabled ? <VoiceOnIcon /> : <VoiceOffIcon />}
+          <button onClick={toggleVoice} className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}>
+            {voiceOn ? <VoiceOnIcon /> : <VoiceOffIcon />}
           </button>
         </div>
       </div>

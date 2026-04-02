@@ -9,14 +9,14 @@ vi.mock("next/navigation", () => ({
 }));
 
 // Mock audio modules
-vi.mock("@/lib/audio/beep", () => ({
+vi.mock("@/lib/timer-audio", () => ({
   unlockAudio: vi.fn(),
-  hapticFeedback: vi.fn(),
   playCountdownBeep: vi.fn(),
-  playTransitionBeep: vi.fn(),
+  speakCountdown: vi.fn(),
   playFinishSound: vi.fn(),
-  playRoundEndBeep: vi.fn(),
-  playBeep: vi.fn(),
+  playSkipBeep: vi.fn(),
+  isVoiceEnabled: () => true,
+  toggleVoice: vi.fn(() => false),
 }));
 
 vi.mock("@/lib/audio/speech", () => ({

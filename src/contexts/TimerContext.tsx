@@ -4,8 +4,7 @@ import { createContext, useContext, useState, useRef, useCallback, useEffect, ty
 import type { RingPhase } from '@/components/tools/CountdownRing';
 import type { TimerPreset, TimerState, PhaseEntry } from '@/hooks/useTimer';
 import { buildPhases, computeTotalRemaining, getCurrentRoundCycle } from '@/hooks/useTimer';
-import { hapticFeedback, playCountdownBeep, playTransitionBeep, playFinishSound } from '@/lib/audio/beep';
-import { speakEvent, isSpeechEnabled, setSpeechEnabled } from '@/lib/audio/speech';
+import { playCountdownBeep, speakCountdown, playFinishSound, playSkipBeep, isVoiceEnabled, toggleVoice as toggleVoiceFn } from '@/lib/timer-audio';
 
 /* ─── Display config passed by each timer preset ─── */
 
@@ -23,13 +22,13 @@ export interface TimerContextValue {
   timerType: string | null;
   displayConfig: TimerDisplayConfig | null;
   isActive: boolean;
-  startTimer: (type: string, preset: TimerPreset, config: TimerDisplayConfig, lang: string) => void;
+  startTimer: (type: string, preset: TimerPreset, config: TimerDisplayConfig) => void;
   pause: () => void;
   resume: () => void;
   stop: () => void;
   skip: () => void;
-  speechEnabled: boolean;
-  toggleSpeech: () => void;
+  voiceOn: boolean;
+  toggleVoice: () => void;
 }
 
 /* ─── Idle state ─── */
@@ -51,15 +50,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   const [timerType, setTimerType] = useState<string | null>(null);
   const [displayConfig, setDisplayConfig] = useState<TimerDisplayConfig | null>(null);
   const [state, setState] = useState<TimerState>(IDLE_STATE);
-  const [speechOn, setSpeechOnState] = useState(() =>
-    typeof window !== 'undefined' ? isSpeechEnabled() : true,
+  const [voiceOn, setVoiceOn] = useState(() =>
+    typeof window !== 'undefined' ? isVoiceEnabled() : true,
   );
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
-  const langRef = useRef('fr');
-  const halfwayRef = useRef(false);
-  const lastRoundRef = useRef(false);
   const presetRef = useRef<TimerPreset | null>(null);
 
   /* ── helpers ── */
@@ -79,44 +75,25 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     wakeLockRef.current?.release(); wakeLockRef.current = null;
   }, []);
 
-  const firePhaseAudio = useCallback((phase: PhaseEntry) => {
-    hapticFeedback('heavy'); playTransitionBeep();
-    if (phase.type === 'prepare') speakEvent('prepare', langRef.current);
-    else if (phase.type === 'work') speakEvent('work_start', langRef.current);
-    else speakEvent('rest_start', langRef.current);
-  }, []);
-
   /* ── advance to next phase ── */
 
   const advancePhase = useCallback((cur: TimerState): TimerState => {
     const nextIdx = cur.activePhaseIndex + 1;
-    const newPhases = cur.phases.map((p, i) =>
+    const newPhases = cur.phases.map((p: PhaseEntry, i: number) =>
       i === cur.activePhaseIndex ? { ...p, status: 'done' as const }
         : i === nextIdx ? { ...p, status: 'active' as const }
         : p,
     );
 
     if (nextIdx >= cur.phases.length) {
-      playFinishSound(); speakEvent('done', langRef.current); hapticFeedback('heavy');
+      playFinishSound();
       return { ...cur, status: 'done', phases: newPhases, secondsLeft: 0, totalSecondsLeft: 0 };
     }
 
     const next = newPhases[nextIdx];
-    firePhaseAudio(next);
-
     const preset = presetRef.current;
     if (preset) {
-      const totalR = preset.rounds * preset.cycles;
       const { currentRound, currentCycle } = getCurrentRoundCycle(newPhases, nextIdx);
-      const globalR = (currentCycle - 1) * preset.rounds + currentRound;
-
-      if (!halfwayRef.current && next.type === 'work' && totalR > 2 && globalR === Math.ceil(totalR / 2)) {
-        halfwayRef.current = true; speakEvent('halfway', langRef.current);
-      }
-      if (!lastRoundRef.current && next.type === 'work' && globalR === totalR) {
-        lastRoundRef.current = true; speakEvent('last_round', langRef.current); hapticFeedback('double');
-      }
-
       return {
         ...cur, phases: newPhases, activePhaseIndex: nextIdx,
         secondsLeft: next.duration,
@@ -125,7 +102,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       };
     }
     return cur;
-  }, [firePhaseAudio]);
+  }, []);
 
   /* ── tick ── */
 
@@ -135,10 +112,11 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       const sl = prev.secondsLeft - 1;
       const el = prev.elapsedSeconds + 1;
 
-      if (sl >= 0 && sl <= 2) {
-        playCountdownBeep(sl); hapticFeedback('tap');
-        if (sl >= 1) speakEvent(`countdown_${sl}`, langRef.current);
+      if (sl >= 0 && sl <= 3) {
+        playCountdownBeep(sl);
+        speakCountdown(sl);
       }
+
       if (sl <= 0) return advancePhase({ ...prev, secondsLeft: 0, elapsedSeconds: el });
       return { ...prev, secondsLeft: sl, totalSecondsLeft: prev.totalSecondsLeft - 1, elapsedSeconds: el };
     });
@@ -148,7 +126,6 @@ export function TimerProvider({ children }: { children: ReactNode }) {
 
   const stop = useCallback(() => {
     clearInt(); releaseWL();
-    halfwayRef.current = false; lastRoundRef.current = false;
     setTimerType(null); setDisplayConfig(null);
     presetRef.current = null; setState(IDLE_STATE);
   }, [clearInt, releaseWL]);
@@ -161,11 +138,10 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     }
   }, [state.status, stop]);
 
-  const startTimer = useCallback((type: string, preset: TimerPreset, config: TimerDisplayConfig, lang: string) => {
+  const startTimer = useCallback((type: string, preset: TimerPreset, config: TimerDisplayConfig) => {
     clearInt(); releaseWL();
     setTimerType(type); setDisplayConfig(config);
-    langRef.current = lang; presetRef.current = preset;
-    halfwayRef.current = false; lastRoundRef.current = false;
+    presetRef.current = preset;
 
     const phases = buildPhases(preset);
     const activated = phases.map((p, i) => i === 0 ? { ...p, status: 'active' as const } : p);
@@ -178,10 +154,9 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       currentCycle: 1, totalCycles: preset.cycles, elapsedSeconds: 0,
     });
 
-    if (phases[0]) firePhaseAudio(phases[0]);
     acquireWL();
     intervalRef.current = setInterval(tick, 1000);
-  }, [clearInt, releaseWL, acquireWL, tick, firePhaseAudio]);
+  }, [clearInt, releaseWL, acquireWL, tick]);
 
   const pause = useCallback(() => {
     setState(p => p.status === 'running' ? { ...p, status: 'paused' } : p);
@@ -194,12 +169,14 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   }, [tick, clearInt]);
 
   const skip = useCallback(() => {
+    playSkipBeep();
     setState(p => (p.status === 'running' || p.status === 'paused')
       ? advancePhase({ ...p, secondsLeft: 0 }) : p);
   }, [advancePhase]);
 
-  const toggleSpeech = useCallback(() => {
-    setSpeechOnState(p => { const n = !p; setSpeechEnabled(n); return n; });
+  const handleToggleVoice = useCallback(() => {
+    const newState = toggleVoiceFn();
+    setVoiceOn(newState);
   }, []);
 
   // Cleanup on unmount
@@ -211,7 +188,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     <TimerContext.Provider value={{
       state, timerType, displayConfig, isActive,
       startTimer, pause, resume, stop, skip,
-      speechEnabled: speechOn, toggleSpeech,
+      voiceOn, toggleVoice: handleToggleVoice,
     }}>
       {children}
     </TimerContext.Provider>
