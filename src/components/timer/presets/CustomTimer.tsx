@@ -229,18 +229,22 @@ function CustomCountdown({ onBack }: { onBack: () => void }) {
   return (
     <section className="page">
       <div className="relative overflow-hidden rounded-2xl px-5 pt-4 pb-3 transition-all duration-500" style={{ background: bannerGradient }}>
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
             <button onClick={onBack} className="flex items-center text-white/70 bg-transparent border-none cursor-pointer p-2 -ml-2">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
-            <span className="text-[14px] font-bold tracking-widest text-white uppercase">{phaseLabel}</span>
+            <div>
+              <div className="text-[18px] font-bold text-white">Personnalis\u00e9</div>
+              <div className="text-[13px] font-semibold tracking-wider text-white/80">
+                {phaseLabel}{roundInfo ? ` \u2014 ${roundInfo}` : ''}
+              </div>
+            </div>
           </div>
           <button onClick={toggleSpeech} className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: speechEnabled ? 'rgba(255,255,255,0.15)' : 'rgba(255,80,80,0.15)', color: speechEnabled ? '#fff' : 'rgba(255,120,120,0.8)' }}>
             {speechEnabled ? <VoiceOnIcon /> : <VoiceOffIcon />}
           </button>
         </div>
-        {roundInfo && <span className="text-[12px] text-white/60">{roundInfo}</span>}
       </div>
 
       <div className="flex flex-col items-center py-6">
