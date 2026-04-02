@@ -44,19 +44,16 @@ const SkipIcon = () => (
   </svg>
 );
 
-const SpeakerOnIcon = () => (
+const VoiceOnIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
   </svg>
 );
 
-const SpeakerOffIcon = () => (
+const VoiceOffIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-    <line x1="23" y1="9" x2="17" y2="15" />
-    <line x1="17" y1="9" x2="23" y2="15" />
+    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+    <line x1="1" y1="1" x2="23" y2="23" />
   </svg>
 );
 
@@ -597,9 +594,10 @@ export function TimerDisplay({
         <button
           onClick={toggleSpeech}
           style={{
-            background: 'none',
+            background: speechOn ? 'rgba(255,255,255,0.15)' : 'rgba(255,80,80,0.15)',
             border: 'none',
-            color: speechOn ? '#fff' : '#555',
+            borderRadius: '50%',
+            color: speechOn ? '#fff' : 'rgba(255,120,120,0.8)',
             cursor: 'pointer',
             padding: '4px',
             display: 'flex',
@@ -607,7 +605,7 @@ export function TimerDisplay({
           }}
           aria-label={speechOn ? t('timer.voiceOn') : t('timer.voiceOff')}
         >
-          {speechOn ? <SpeakerOnIcon /> : <SpeakerOffIcon />}
+          {speechOn ? <VoiceOnIcon /> : <VoiceOffIcon />}
         </button>
       </div>
 

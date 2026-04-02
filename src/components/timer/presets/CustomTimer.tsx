@@ -236,7 +236,7 @@ function CustomCountdown({ onBack }: { onBack: () => void }) {
             </button>
             <span className="text-[14px] font-bold tracking-widest text-white uppercase">{phaseLabel}</span>
           </div>
-          <button onClick={toggleSpeech} className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: speechEnabled ? 'rgba(255,255,255,0.15)' : 'rgba(255,80,80,0.15)', color: '#fff' }}>
+          <button onClick={toggleSpeech} className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: speechEnabled ? 'rgba(255,255,255,0.15)' : 'rgba(255,80,80,0.15)', color: speechEnabled ? '#fff' : 'rgba(255,120,120,0.8)' }}>
             {speechEnabled ? <VoiceOnIcon /> : <VoiceOffIcon />}
           </button>
         </div>
