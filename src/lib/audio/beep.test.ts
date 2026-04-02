@@ -72,9 +72,11 @@ describe("playCountdownBeep", () => {
     expect(mockStart).toHaveBeenCalled();
   });
 
-  it("plays higher pitch for GO (0)", () => {
+  it("does not play beep outside 3-2-1 range", () => {
     playCountdownBeep(0);
-    expect(mockStart).toHaveBeenCalled();
+    expect(mockStart).not.toHaveBeenCalled();
+    playCountdownBeep(5);
+    expect(mockStart).not.toHaveBeenCalled();
   });
 });
 

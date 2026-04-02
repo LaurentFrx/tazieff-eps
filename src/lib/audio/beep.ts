@@ -103,14 +103,11 @@ export function hapticFeedback(pattern: 'tap' | 'double' | 'heavy'): void {
   }
 }
 
-/** Countdown beeps — pitch rises as we approach 0 */
+/** Countdown beeps — pitch rises as we approach 0 (3-2-1) */
 export function playCountdownBeep(secondsLeft: number): void {
-  if (secondsLeft === 5) playBeep(520, 0.1, 0.35);
-  else if (secondsLeft === 4) playBeep(580, 0.1, 0.4);
-  else if (secondsLeft === 3) playBeep(660, 0.12, 0.45);
-  else if (secondsLeft === 2) playBeep(740, 0.12, 0.5);
-  else if (secondsLeft === 1) playBeep(880, 0.15, 0.55);
-  else if (secondsLeft === 0) playBeep(1200, 0.25, 0.6);
+  if (secondsLeft === 3) playBeep(600, 0.1, 0.4);
+  else if (secondsLeft === 2) playBeep(800, 0.1, 0.5);
+  else if (secondsLeft === 1) playBeep(1000, 0.15, 0.6);
 }
 
 /** Phase transition beep — slightly louder */
