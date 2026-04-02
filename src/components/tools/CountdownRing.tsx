@@ -60,8 +60,9 @@ export function CountdownRing({
     cumulative += len;
   }
 
-  // Progress arc: how much of the total ring is filled
-  const progressLen = totalDuration > 0 ? (totalElapsed / totalDuration) * C : 0;
+  // Progress arc: fraction of the CURRENT PHASE only
+  const phaseElapsed = totalPhaseSeconds - currentSeconds;
+  const phaseFraction = totalPhaseSeconds > 0 ? phaseElapsed / totalPhaseSeconds : 0;
 
   // Total remaining
   const totalRemaining = Math.max(0, totalDuration - totalElapsed);
@@ -92,7 +93,7 @@ export function CountdownRing({
             />
           ))}
 
-          {/* Layer 2 — Progress arc (filled portion) */}
+          {/* Layer 2 — Progress arc (current phase only) */}
           <circle
             cx={CX}
             cy={CY}
@@ -102,9 +103,9 @@ export function CountdownRing({
             strokeWidth={STROKE}
             strokeLinecap="round"
             strokeDasharray={C}
-            strokeDashoffset={C - progressLen}
+            strokeDashoffset={C * (1 - phaseFraction)}
             style={{
-              transition: 'stroke-dashoffset 0.3s linear, stroke 0.4s ease',
+              transition: 'stroke-dashoffset 0.3s linear, stroke 0.3s ease',
             }}
           />
         </svg>
@@ -123,7 +124,7 @@ export function CountdownRing({
       </div>
 
       {/* Phase bar — linear */}
-      <div className="flex w-full max-w-[260px] gap-[2px]">
+      <div className="flex w-full max-w-[260px] gap-[3px]">
         {phases.map((p, i) => {
           let opacity: number;
           if (i < currentPhaseIndex) opacity = 1;
@@ -133,7 +134,7 @@ export function CountdownRing({
           return (
             <div
               key={i}
-              className="h-[4px] rounded-[2px]"
+              className="h-[8px] rounded-[4px]"
               style={{
                 flex: p.duration,
                 background: p.color,
