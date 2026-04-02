@@ -67,13 +67,19 @@ describe("hapticFeedback", () => {
 });
 
 describe("playCountdownBeep", () => {
-  it("plays beep for seconds 1-3", () => {
-    playCountdownBeep(3);
+  it("plays beep for seconds 0-2", () => {
+    playCountdownBeep(2);
     expect(mockStart).toHaveBeenCalled();
   });
 
-  it("does not play beep outside 3-2-1 range", () => {
+  it("plays GO beep at 0", () => {
     playCountdownBeep(0);
+    expect(mockStart).toHaveBeenCalled();
+  });
+
+  it("does not play beep outside 2-1-0 range", () => {
+    mockStart.mockClear();
+    playCountdownBeep(3);
     expect(mockStart).not.toHaveBeenCalled();
     playCountdownBeep(5);
     expect(mockStart).not.toHaveBeenCalled();

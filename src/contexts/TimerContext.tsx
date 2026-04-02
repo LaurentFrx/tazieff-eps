@@ -135,9 +135,9 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       const sl = prev.secondsLeft - 1;
       const el = prev.elapsedSeconds + 1;
 
-      if (sl >= 1 && sl <= 3) {
+      if (sl >= 0 && sl <= 2) {
         playCountdownBeep(sl); hapticFeedback('tap');
-        speakEvent(`countdown_${sl}`, langRef.current);
+        if (sl >= 1) speakEvent(`countdown_${sl}`, langRef.current);
       }
       if (sl <= 0) return advancePhase({ ...prev, secondsLeft: 0, elapsedSeconds: el });
       return { ...prev, secondsLeft: sl, totalSecondsLeft: prev.totalSecondsLeft - 1, elapsedSeconds: el };
