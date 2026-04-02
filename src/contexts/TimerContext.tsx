@@ -4,7 +4,9 @@ import { createContext, useContext, useState, useRef, useCallback, useEffect, ty
 import type { RingPhase } from '@/components/tools/CountdownRing';
 import type { TimerPreset, TimerState, PhaseEntry } from '@/hooks/useTimer';
 import { buildPhases, computeTotalRemaining, getCurrentRoundCycle } from '@/hooks/useTimer';
-import { playCountdownBeep, speakCountdown, playFinishSound, playSkipBeep, isVoiceEnabled, toggleVoice as toggleVoiceFn } from '@/lib/timer-audio';
+import { playCountdownBeep, playFinishSound, playSkipBeep } from '@/lib/timer-audio';
+import { speakEvent, isSpeechEnabled, setSpeechEnabled } from '@/lib/audio/speech';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 /* ─── Display config passed by each timer preset ─── */
 
@@ -47,11 +49,15 @@ export function useTimerContext() { return useContext(TimerContext); }
 /* ─── Provider ─── */
 
 export function TimerProvider({ children }: { children: ReactNode }) {
+  const { lang } = useI18n();
+  const langRef = useRef(lang);
+  useEffect(() => { langRef.current = lang; }, [lang]);
+
   const [timerType, setTimerType] = useState<string | null>(null);
   const [displayConfig, setDisplayConfig] = useState<TimerDisplayConfig | null>(null);
   const [state, setState] = useState<TimerState>(IDLE_STATE);
   const [voiceOn, setVoiceOn] = useState(() =>
-    typeof window !== 'undefined' ? isVoiceEnabled() : true,
+    typeof window !== 'undefined' ? isSpeechEnabled() : true,
   );
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -87,6 +93,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
 
     if (nextIdx >= cur.phases.length) {
       playFinishSound();
+      speakEvent('done', langRef.current);
       return { ...cur, status: 'done', phases: newPhases, secondsLeft: 0, totalSecondsLeft: 0 };
     }
 
@@ -94,6 +101,28 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     const preset = presetRef.current;
     if (preset) {
       const { currentRound, currentCycle } = getCurrentRoundCycle(newPhases, nextIdx);
+      const locale = langRef.current;
+
+      // === COACHING VOCAL ===
+      if (next.type === 'prepare') {
+        speakEvent('prepare', locale);
+      } else if (next.type === 'work') {
+        const isLastRound = currentRound === preset.rounds && currentCycle === preset.cycles;
+        if (isLastRound) {
+          speakEvent('last_round', locale);
+        } else {
+          speakEvent('work_start', locale);
+        }
+        // Mi-parcours
+        const totalRounds = preset.rounds * preset.cycles;
+        const currentTotalRound = (currentCycle - 1) * preset.rounds + currentRound;
+        if (totalRounds > 2 && currentTotalRound === Math.ceil(totalRounds / 2)) {
+          setTimeout(() => speakEvent('halfway', locale), 1500);
+        }
+      } else if (next.type === 'rest' || next.type === 'recovery') {
+        speakEvent('rest_start', locale);
+      }
+
       return {
         ...cur, phases: newPhases, activePhaseIndex: nextIdx,
         secondsLeft: next.duration,
@@ -114,7 +143,9 @@ export function TimerProvider({ children }: { children: ReactNode }) {
 
       if (sl >= 0 && sl <= 3) {
         playCountdownBeep(sl);
-        speakCountdown(sl);
+        if (sl === 3) speakEvent('countdown_3', langRef.current);
+        else if (sl === 2) speakEvent('countdown_2', langRef.current);
+        else if (sl === 1) speakEvent('countdown_1', langRef.current);
       }
 
       if (sl <= 0) return advancePhase({ ...prev, secondsLeft: 0, elapsedSeconds: el });
@@ -175,7 +206,8 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   }, [advancePhase]);
 
   const handleToggleVoice = useCallback(() => {
-    const newState = toggleVoiceFn();
+    const newState = !isSpeechEnabled();
+    setSpeechEnabled(newState);
     setVoiceOn(newState);
   }, []);
 

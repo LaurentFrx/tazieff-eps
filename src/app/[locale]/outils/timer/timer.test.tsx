@@ -12,11 +12,8 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/lib/timer-audio", () => ({
   unlockAudio: vi.fn(),
   playCountdownBeep: vi.fn(),
-  speakCountdown: vi.fn(),
   playFinishSound: vi.fn(),
   playSkipBeep: vi.fn(),
-  isVoiceEnabled: () => true,
-  toggleVoice: vi.fn(() => false),
 }));
 
 vi.mock("@/lib/audio/speech", () => ({

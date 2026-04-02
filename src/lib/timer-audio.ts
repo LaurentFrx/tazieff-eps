@@ -1,5 +1,7 @@
-// Timer audio system — single source of truth
-// 5 functions + 1 state: playCountdownBeep, speakCountdown, playFinishSound, playSkipBeep, unlockAudio + voiceEnabled
+// Timer audio system — beeps & tones only
+// Voice coaching is handled by @/lib/audio/speech
+
+import { isSpeechEnabled } from '@/lib/audio/speech';
 
 /* ─── Singleton AudioContext ─── */
 
@@ -13,19 +15,6 @@ function getAudioContext(): AudioContext {
     audioCtx.resume();
   }
   return audioCtx;
-}
-
-/* ─── State : voiceEnabled ─── */
-
-let voiceEnabled = true;
-
-export function isVoiceEnabled(): boolean {
-  return voiceEnabled;
-}
-
-export function toggleVoice(): boolean {
-  voiceEnabled = !voiceEnabled;
-  return voiceEnabled;
 }
 
 /** Unlock AudioContext on first user gesture (required for iOS Safari) */
@@ -61,40 +50,13 @@ function playTone(frequency: number, duration: number, volume: number): void {
 
 /* ─── Countdown beeps (voix OFF uniquement) ─── */
 
-const GO_PHRASES = ["Go!", "C'est parti!", "Allez!", "On y va!", "Top!"];
-
 export function playCountdownBeep(secondsRemaining: number): void {
-  if (voiceEnabled) return;
+  if (isSpeechEnabled()) return; // voix ON = pas de bips
   if (typeof window === 'undefined') return;
   if (secondsRemaining === 3) playTone(660, 0.12, 0.4);
   else if (secondsRemaining === 2) playTone(880, 0.12, 0.5);
   else if (secondsRemaining === 1) playTone(1100, 0.12, 0.55);
   else if (secondsRemaining === 0) playTone(1320, 0.25, 0.6);
-}
-
-/* ─── Speak countdown (voix ON uniquement) ─── */
-
-export function speakCountdown(secondsRemaining: number): void {
-  if (!voiceEnabled) return;
-  if (typeof window === 'undefined' || !window.speechSynthesis) return;
-
-  let text = '';
-  if (secondsRemaining === 3) text = '3';
-  else if (secondsRemaining === 2) text = '2';
-  else if (secondsRemaining === 1) text = '1';
-  else if (secondsRemaining === 0) {
-    text = GO_PHRASES[Math.floor(Math.random() * GO_PHRASES.length)];
-  } else {
-    return;
-  }
-
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'fr-FR';
-  utterance.rate = 1.1;
-  utterance.pitch = 1.0;
-  utterance.volume = 1.0;
-  window.speechSynthesis.speak(utterance);
 }
 
 /* ─── Finish sound (toujours) ─── */
