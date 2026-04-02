@@ -1,10 +1,18 @@
 // Timer audio system — single source of truth
 // 5 functions + 1 state: playCountdownBeep, speakCountdown, playFinishSound, playSkipBeep, unlockAudio + voiceEnabled
 
-type AnyAudioContext = typeof AudioContext;
+/* ─── Singleton AudioContext ─── */
 
-function getCtxClass(): AnyAudioContext {
-  return window.AudioContext || (window as unknown as { webkitAudioContext: AnyAudioContext }).webkitAudioContext;
+let audioCtx: AudioContext | null = null;
+
+function getAudioContext(): AudioContext {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
 }
 
 /* ─── State : voiceEnabled ─── */
@@ -24,13 +32,30 @@ export function toggleVoice(): boolean {
 export function unlockAudio(): void {
   if (typeof window === 'undefined') return;
   try {
-    const ctx = new (getCtxClass())();
+    const ctx = getAudioContext();
     const buf = ctx.createBuffer(1, 1, 22050);
     const src = ctx.createBufferSource();
     src.buffer = buf;
     src.connect(ctx.destination);
     src.start(0);
-    setTimeout(() => ctx.close(), 100);
+  } catch { /* ignore */ }
+}
+
+/* ─── Helper: play a sine tone on the singleton ctx ─── */
+
+function playTone(frequency: number, duration: number, volume: number): void {
+  try {
+    const ctx = getAudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(frequency, ctx.currentTime);
+    gain.gain.setValueAtTime(volume, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration);
   } catch { /* ignore */ }
 }
 
@@ -41,44 +66,10 @@ const GO_PHRASES = ["Go!", "C'est parti!", "Allez!", "On y va!", "Top!"];
 export function playCountdownBeep(secondsRemaining: number): void {
   if (voiceEnabled) return;
   if (typeof window === 'undefined') return;
-  try {
-    const ctx = new (getCtxClass())();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'sine';
-
-    if (secondsRemaining === 3) {
-      osc.frequency.value = 660;
-      gain.gain.value = 0.4;
-      osc.start(ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
-      osc.stop(ctx.currentTime + 0.12);
-    } else if (secondsRemaining === 2) {
-      osc.frequency.value = 880;
-      gain.gain.value = 0.5;
-      osc.start(ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
-      osc.stop(ctx.currentTime + 0.12);
-    } else if (secondsRemaining === 1) {
-      osc.frequency.value = 1100;
-      gain.gain.value = 0.55;
-      osc.start(ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
-      osc.stop(ctx.currentTime + 0.12);
-    } else if (secondsRemaining === 0) {
-      osc.frequency.value = 1320;
-      gain.gain.value = 0.6;
-      osc.start(ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
-      osc.stop(ctx.currentTime + 0.25);
-    } else {
-      ctx.close();
-      return;
-    }
-    setTimeout(() => ctx.close(), 300);
-  } catch { /* ignore */ }
+  if (secondsRemaining === 3) playTone(660, 0.12, 0.4);
+  else if (secondsRemaining === 2) playTone(880, 0.12, 0.5);
+  else if (secondsRemaining === 1) playTone(1100, 0.12, 0.55);
+  else if (secondsRemaining === 0) playTone(1320, 0.25, 0.6);
 }
 
 /* ─── Speak countdown (voix ON uniquement) ─── */
@@ -111,7 +102,7 @@ export function speakCountdown(secondsRemaining: number): void {
 export function playFinishSound(): void {
   if (typeof window === 'undefined') return;
   try {
-    const ctx = new (getCtxClass())();
+    const ctx = getAudioContext();
     const freqs = [523, 659, 784]; // Do5, Mi5, Sol5
     freqs.forEach((freq, i) => {
       const osc = ctx.createOscillator();
@@ -119,13 +110,12 @@ export function playFinishSound(): void {
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.type = 'sine';
-      osc.frequency.value = freq;
-      gain.gain.value = 0.5;
-      osc.start(ctx.currentTime + i * 0.2);
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.2);
+      gain.gain.setValueAtTime(0.5, ctx.currentTime + i * 0.2);
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.2 + 0.35);
+      osc.start(ctx.currentTime + i * 0.2);
       osc.stop(ctx.currentTime + i * 0.2 + 0.35);
     });
-    setTimeout(() => ctx.close(), 1000);
   } catch { /* ignore */ }
 }
 
@@ -133,18 +123,5 @@ export function playFinishSound(): void {
 
 export function playSkipBeep(): void {
   if (typeof window === 'undefined') return;
-  try {
-    const ctx = new (getCtxClass())();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.value = 880;
-    gain.gain.value = 0.4;
-    osc.start(ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
-    osc.stop(ctx.currentTime + 0.15);
-    setTimeout(() => ctx.close(), 200);
-  } catch { /* ignore */ }
+  playTone(880, 0.15, 0.4);
 }
