@@ -25,8 +25,8 @@ AVANT l'hydratation React.
 - Le script crée les éléments DOM dynamiquement en vanilla JS/CSS
 
 ### Fichier source
-Le IIFE vit dans `src/app/layout.tsx` en tant que `<script
-dangerouslySetInnerHTML>` dans le `<head>`.
+Le IIFE vit dans `public/splash.js` (fichier externe), chargé via
+`<script src="/splash.js" />` dans le `<head>` de `src/app/layout.tsx`.
 
 C'est un FICHIER PROTÉGÉ — ne jamais modifier le splash sans
 demande explicite.
@@ -99,7 +99,7 @@ const greeting = hour < 18 ? 'Bonjour' : 'Bonsoir';
 
 ## Pattern général pour animations complexes
 
-1. Vérifier si c'est pré-hydratation → IIFE dans `<head>`
+1. Vérifier si c'est pré-hydratation → IIFE dans `<head>` (fichier externe dans `public/`)
 2. Vérifier si c'est client-only → `useEffect` + state
 3. Vérifier si c'est une préférence persistante → `localStorage`
 4. Vérifier `prefers-reduced-motion` → skip si activé
