@@ -404,6 +404,8 @@ export function SessionGenerator({
         <div className="flex flex-col gap-4">
           {/* Print-only header */}
           <div className="print-only print-header">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/media/branding/logo-eps.webp" alt="Tazieff EPS" className="print-logo" />
             <h1>{t("maSeance.result.heading")}</h1>
             <p>
               {t("maSeance.result.objectifLabel")} : {categoryLabels[objectif] ?? objectif}

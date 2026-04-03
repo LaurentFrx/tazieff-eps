@@ -2061,6 +2061,13 @@ body:has(.anatomy-page) nav {
     margin-bottom: 8px;
   }
 
+  .print-logo {
+    display: block;
+    width: 120px;
+    height: auto;
+    margin: 0 auto 8px;
+  }
+
   .print-header h1 {
     font-size: 22px !important;
     margin-bottom: 4px;
