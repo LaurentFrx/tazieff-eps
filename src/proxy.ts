@@ -67,6 +67,6 @@ export const config = {
   matcher: [
     "/admin",
     "/admin/:path*",
-    "/((?!_next|api|auth|callback|images|models|fonts|media|manifest\\.webmanifest|sw\\.js|swe-worker|favicon\\.ico|favicon-16\\.png|favicon-32\\.png|apple-touch-icon\\.png|.*\\..*).*)",
+    "/((?!_next|api|auth|callback|legal|images|models|fonts|media|manifest\\.webmanifest|sw\\.js|swe-worker|favicon\\.ico|favicon-16\\.png|favicon-32\\.png|apple-touch-icon\\.png|.*\\..*).*)",
   ],
 };

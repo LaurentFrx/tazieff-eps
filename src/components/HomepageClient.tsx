@@ -312,6 +312,17 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
           {t("pages.home.shareApp")}
         </Link>
       </div>
+
+      {/* ── Footer légal ─────────────────────────────────────────── */}
+      <div className="text-center pb-6 pt-2">
+        <nav className="inline-flex gap-2 text-[11px] text-zinc-500">
+          <a href="/legal/mentions-legales" className="hover:text-zinc-400 transition-colors">Mentions l&eacute;gales</a>
+          <span aria-hidden="true">&middot;</span>
+          <a href="/legal/confidentialite" className="hover:text-zinc-400 transition-colors">Confidentialit&eacute;</a>
+          <span aria-hidden="true">&middot;</span>
+          <a href="/legal/cgu" className="hover:text-zinc-400 transition-colors">CGU</a>
+        </nav>
+      </div>
     </section>
   );
 }
