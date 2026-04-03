@@ -100,7 +100,8 @@ export function TimerProvider({ children }: { children: ReactNode }) {
 
     if (nextIdx >= cur.phases.length) {
       playFinishSound();
-      playCoachEvent('done', langRef.current);
+      // Retarder la voix de fin après le triple Do-Mi-Sol (~0.8s)
+      setTimeout(() => playCoachEvent('done', langRef.current), 1000);
       return { ...cur, status: 'done', phases: newPhases, secondsLeft: 0, totalSecondsLeft: 0 };
     }
 
@@ -244,7 +245,21 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     acquireWL();
     intervalRef.current = setInterval(tick, 1000);
 
-    // Précharger les voix pour les premières phases
+    // Annoncer la première phase
+    const firstPhaseType = phases[0]?.type;
+    if (firstPhaseType) {
+      const phaseToCategory: Record<string, string> = {
+        prepare: 'prepare',
+        work: 'work_start',
+        rest: 'rest_start',
+        recovery: 'rest_start',
+        cooldown: 'rest_start',
+      };
+      const category = phaseToCategory[firstPhaseType];
+      if (category) playCoachEvent(category, langRef.current);
+    }
+
+    // Précharger les voix pour les prochaines phases
     preloadNextEvents(['prepare', 'work_start', 'countdown_3', 'countdown_2', 'countdown_1'], langRef.current);
   }, [clearInt, releaseWL, acquireWL, tick]);
 
