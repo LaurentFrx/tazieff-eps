@@ -1,332 +1,209 @@
 "use client";
 
-import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useCallback, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Dumbbell, Target, Zap } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { getZone, type Zone } from "@/lib/exercices/zoneMap";
 
-/* ── Types ──────────────────────────────────────────────────────────── */
+/* ── Types & constants ─────────────────────────────────────────────── */
 
-type Methode = { slug: string; titre: string; categorie: string };
-type Exercice = { slug: string; title: string; muscles: string[] };
+type Level = "seconde" | "premiere" | "terminale";
 type Objectif = "endurance" | "volume" | "puissance";
-type Step = 1 | 2 | 3 | 4 | 5;
+type Step = 1 | 2 | 3;
 
-const MAX_EXERCICES = 6;
+const LS_LEVEL = "eps_onboarding_level";
+const LS_GOAL = "eps_onboarding_goal";
+const LS_DONE = "eps_onboarding_done";
 
-const OBJECTIF_CATEGORIES: Record<Objectif, string[]> = {
-  endurance: ["endurance-de-force"],
-  volume: ["gain-de-volume"],
-  puissance: ["gain-de-puissance"],
-};
+const LEVELS: { value: Level; labelKey: string; descKey: string; color: string }[] = [
+  { value: "seconde", labelKey: "onboarding.levelSeconde", descKey: "onboarding.levelSecondeDesc", color: "#22c55e" },
+  { value: "premiere", labelKey: "onboarding.levelPremiere", descKey: "onboarding.levelPremiereDesc", color: "#3b82f6" },
+  { value: "terminale", labelKey: "onboarding.levelTerminale", descKey: "onboarding.levelTerminaleDesc", color: "#f97316" },
+];
 
-const OBJECTIF_ICONS: Record<Objectif, typeof Target> = {
-  endurance: Target,
-  volume: Dumbbell,
-  puissance: Zap,
-};
+const GOALS: { value: Objectif; labelKey: string; descKey: string; gradient: string; icon: () => React.ReactNode }[] = [
+  {
+    value: "endurance", labelKey: "onboarding.objEndurance", descKey: "onboarding.objEnduranceDesc",
+    gradient: "linear-gradient(135deg, #059669, #34d399)",
+    icon: () => (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 12h4l3-9 4 18 3-9h4" />
+      </svg>
+    ),
+  },
+  {
+    value: "volume", labelKey: "onboarding.objVolume", descKey: "onboarding.objVolumeDesc",
+    gradient: "linear-gradient(135deg, #3b82f6, #6366f1)",
+    icon: () => (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6.5 6.5L17.5 17.5" /><path d="M3.5 10L10 3.5" /><path d="M14 20.5L20.5 14" /><path d="M2 11.5l1.5-1.5" /><path d="M20.5 13L22 11.5" />
+      </svg>
+    ),
+  },
+  {
+    value: "puissance", labelKey: "onboarding.objPuissance", descKey: "onboarding.objPuissanceDesc",
+    gradient: "linear-gradient(135deg, #f97316, #ef4444)",
+    icon: () => (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+      </svg>
+    ),
+  },
+];
 
-const STORAGE_DONE = "tazieff-onboarding-done";
+/* ── Component ─────────────────────────────────────────────────────── */
 
-type Props = {
-  methodes: Methode[];
-  exercices: Exercice[];
-};
-
-export function OnboardingWizard({ methodes, exercices }: Props) {
+export function OnboardingWizard() {
   const { t } = useI18n();
+  const router = useRouter();
   const [step, setStep] = useState<Step>(1);
-  const [objectif, setObjectif] = useState<Objectif | null>(null);
-  const [selectedMethodes, setSelectedMethodes] = useState<string[]>([]);
-  const [selectedExercices, setSelectedExercices] = useState<string[]>([]);
-
-  /* ── Derived data ─────────────────────────────────────────────────── */
-
-  const filteredMethodes = objectif
-    ? methodes.filter((m) => OBJECTIF_CATEGORIES[objectif].includes(m.categorie))
-    : methodes.slice(0, 3);
-
-  // Zone balance feedback
-  const selectedExoData = exercices.filter((e) => selectedExercices.includes(e.slug));
-  const zoneCounts: Record<Zone, number> = { haut: 0, milieu: 0, bas: 0 };
-  for (const exo of selectedExoData) {
-    const zones = new Set(exo.muscles.map(getZone));
-    for (const z of zones) zoneCounts[z]++;
-  }
-
-  const objectifLabels: Record<Objectif, { title: string; desc: string }> = {
-    endurance: { title: t("onboarding.objEndurance"), desc: t("onboarding.objEnduranceDesc") },
-    volume: { title: t("onboarding.objVolume"), desc: t("onboarding.objVolumeDesc") },
-    puissance: { title: t("onboarding.objPuissance"), desc: t("onboarding.objPuissanceDesc") },
-  };
-
-  /* ── Handlers ─────────────────────────────────────────────────────── */
-
-  const toggleMethode = useCallback((slug: string) => {
-    setSelectedMethodes((prev) =>
-      prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug],
-    );
-  }, []);
-
-  const toggleExercice = useCallback((slug: string) => {
-    setSelectedExercices((prev) => {
-      if (prev.includes(slug)) return prev.filter((s) => s !== slug);
-      if (prev.length >= MAX_EXERCICES) return prev;
-      return [...prev, slug];
-    });
-  }, []);
+  const [level, setLevel] = useState<Level | null>(null);
+  const [goal, setGoal] = useState<Objectif | null>(null);
 
   const finish = useCallback(() => {
-    try { localStorage.setItem(STORAGE_DONE, "true"); } catch { /* ignore */ }
-    setStep(5);
-  }, []);
+    try {
+      if (level) localStorage.setItem(LS_LEVEL, level);
+      if (goal) localStorage.setItem(LS_GOAL, goal);
+      localStorage.setItem(LS_DONE, "true");
+    } catch { /* ignore */ }
+    router.push("/");
+  }, [level, goal, router]);
 
-  /* ── Step labels ──────────────────────────────────────────────────── */
-
-  const stepLabels = [
-    { num: 1 as Step, label: t("onboarding.step1") },
-    { num: 2 as Step, label: t("onboarding.step2") },
-    { num: 3 as Step, label: t("onboarding.step3") },
-    { num: 4 as Step, label: t("onboarding.step4") },
-    { num: 5 as Step, label: t("onboarding.step5") },
-  ];
-
-  /* ── Render ───────────────────────────────────────────────────────── */
+  const levelLabel = level ? t(LEVELS.find((l) => l.value === level)!.labelKey) : "";
+  const goalLabel = goal ? t(GOALS.find((g) => g.value === goal)!.labelKey) : "";
 
   return (
-    <section className="page">
-      {/* Progress bar */}
-      <div className="flex items-center gap-1 mb-6">
-        {stepLabels.map(({ num, label }) => (
-          <div key={num} className="flex flex-1 flex-col items-center gap-1">
-            <div
-              className={`h-1 w-full rounded-full transition-colors ${
-                num <= step ? "bg-[color:var(--accent)]" : "bg-[color:var(--border)]"
-              }`}
-            />
-            <span
-              className={`text-xs font-semibold ${
-                num === step ? "text-[color:var(--accent)]" : "text-[color:var(--muted)]"
-              }`}
-            >
-              {num}. {label}
-            </span>
-          </div>
+    <div className="fixed inset-0 z-[9999] flex flex-col bg-[#04040A]">
+      {/* Progress dots */}
+      <div className="flex items-center justify-center gap-2 pt-6 pb-4" style={{ paddingTop: "calc(24px + env(safe-area-inset-top, 0px))" }}>
+        {[1, 2, 3].map((s) => (
+          <div
+            key={s}
+            className="h-2 rounded-full transition-all duration-300"
+            style={{
+              width: s === step ? 32 : 8,
+              background: s <= step ? "#00E5FF" : "rgba(255,255,255,0.15)",
+            }}
+          />
         ))}
       </div>
 
-      {/* ── Step 1: Bienvenue ──────────────────────────────────────────── */}
-      {step === 1 && (
-        <div className="onboarding-step">
-          <h1 className="text-2xl font-bold text-[color:var(--ink)]">{t("onboarding.welcomeTitle")}</h1>
-          <p className="text-[color:var(--muted)] text-sm mt-2">{t("onboarding.welcomeBody")}</p>
-          <button type="button" className="primary-button mt-6" onClick={() => setStep(2)}>
-            {t("onboarding.letsGo")} <ArrowRight size={16} />
-          </button>
-        </div>
-      )}
+      {/* Content area */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 overflow-y-auto">
 
-      {/* ── Step 2: Objectif ───────────────────────────────────────────── */}
-      {step === 2 && (
-        <div className="onboarding-step">
-          <h2 className="text-xl font-bold text-[color:var(--ink)]">{t("onboarding.chooseObjectif")}</h2>
-          <div className="grid gap-3 mt-4 sm:grid-cols-3">
-            {(["endurance", "volume", "puissance"] as Objectif[]).map((o) => {
-              const Icon = OBJECTIF_ICONS[o];
-              const selected = objectif === o;
-              return (
-                <button
-                  key={o}
-                  type="button"
-                  className={`card flex flex-col items-center gap-2 p-5 text-center transition-colors ${
-                    selected ? "border-[color:var(--accent)] bg-[color:var(--accent-soft)]" : ""
-                  }`}
-                  onClick={() => setObjectif(o)}
-                >
-                  <Icon size={28} className={selected ? "text-[color:var(--accent)]" : "text-[color:var(--muted)]"} />
-                  <span className="font-semibold text-[color:var(--ink)]">{objectifLabels[o].title}</span>
-                  <span className="text-xs text-[color:var(--muted)]">{objectifLabels[o].desc}</span>
-                </button>
-              );
-            })}
-          </div>
-          <div className="flex gap-2 mt-6">
-            <button type="button" className="pill" onClick={() => setStep(1)}>
-              <ArrowLeft size={14} /> {t("onboarding.back")}
-            </button>
-            <button
-              type="button"
-              className="primary-button"
-              disabled={!objectif}
-              onClick={() => setStep(3)}
-            >
-              {t("onboarding.next")} <ArrowRight size={16} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── Step 3: Méthode ────────────────────────────────────────────── */}
-      {step === 3 && (
-        <div className="onboarding-step">
-          <h2 className="text-xl font-bold text-[color:var(--ink)]">{t("onboarding.chooseMethode")}</h2>
-          <p className="text-sm text-[color:var(--muted)] mt-1">{t("onboarding.methodeHint")}</p>
-          <div className="stack-sm mt-4">
-            {filteredMethodes.map((m) => {
-              const selected = selectedMethodes.includes(m.slug);
-              return (
-                <button
-                  key={m.slug}
-                  type="button"
-                  className={`card flex items-center gap-3 p-3 text-left transition-colors ${
-                    selected ? "border-[color:var(--accent)] bg-[color:var(--accent-soft)]" : ""
-                  }`}
-                  onClick={() => toggleMethode(m.slug)}
-                >
-                  <span
-                    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${
-                      selected
-                        ? "border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
-                        : "border-[color:var(--border)] text-[color:var(--muted)]"
-                    }`}
+        {/* ── Écran 1 : Niveau ──────────────────────────────────────── */}
+        {step === 1 && (
+          <div className="w-full max-w-sm flex flex-col items-center gap-6 animate-[fade-slide_0.4s_ease_both]">
+            <h1 className="text-2xl font-bold text-white text-center">{t("onboarding.chooseLevel")}</h1>
+            <div className="w-full flex flex-col gap-3">
+              {LEVELS.map((l) => {
+                const selected = level === l.value;
+                return (
+                  <button
+                    key={l.value}
+                    type="button"
+                    onClick={() => setLevel(l.value)}
+                    className="w-full rounded-2xl p-4 text-left transition-all duration-200 border-2 cursor-pointer"
+                    style={{
+                      background: selected ? `${l.color}15` : "rgba(255,255,255,0.04)",
+                      borderColor: selected ? l.color : "rgba(255,255,255,0.08)",
+                    }}
                   >
-                    {selected ? <Check size={12} /> : ""}
-                  </span>
-                  <span className="font-semibold text-sm text-[color:var(--ink)]">{m.titre}</span>
-                </button>
-              );
-            })}
-          </div>
-          <div className="flex gap-2 mt-6">
-            <button type="button" className="pill" onClick={() => setStep(2)}>
-              <ArrowLeft size={14} /> {t("onboarding.back")}
-            </button>
-            <button
-              type="button"
-              className="primary-button"
-              disabled={selectedMethodes.length === 0}
-              onClick={() => setStep(4)}
-            >
-              {t("onboarding.next")} <ArrowRight size={16} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── Step 4: Exercices ──────────────────────────────────────────── */}
-      {step === 4 && (
-        <div className="onboarding-step">
-          <h2 className="text-xl font-bold text-[color:var(--ink)]">{t("onboarding.chooseExercices")}</h2>
-          <p className="text-sm text-[color:var(--muted)] mt-1">
-            {t("onboarding.exerciceHint")} ({selectedExercices.length}/{MAX_EXERCICES})
-          </p>
-
-          {/* Zone balance indicator */}
-          {selectedExercices.length > 0 && (
-            <div className="flex gap-3 mt-3 text-xs">
-              {(["haut", "milieu", "bas"] as Zone[]).map((z) => (
-                <span
-                  key={z}
-                  className={`pill text-xs ${zoneCounts[z] > 0 ? "pill-active" : ""}`}
-                >
-                  {t(`onboarding.zone${z.charAt(0).toUpperCase() + z.slice(1)}` as string)} : {zoneCounts[z]}
-                </span>
-              ))}
-            </div>
-          )}
-
-          <div className="grid gap-2 mt-4 sm:grid-cols-2">
-            {exercices.map((ex) => {
-              const selected = selectedExercices.includes(ex.slug);
-              const disabled = !selected && selectedExercices.length >= MAX_EXERCICES;
-              return (
-                <button
-                  key={ex.slug}
-                  type="button"
-                  disabled={disabled}
-                  className={`card flex items-center gap-3 p-3 text-left transition-colors disabled:opacity-40 ${
-                    selected ? "border-[color:var(--accent)] bg-[color:var(--accent-soft)]" : ""
-                  }`}
-                  onClick={() => toggleExercice(ex.slug)}
-                >
-                  <span
-                    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${
-                      selected
-                        ? "border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
-                        : "border-[color:var(--border)] text-[color:var(--muted)]"
-                    }`}
-                  >
-                    {selected ? <Check size={12} /> : ""}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-[color:var(--ink)]">{ex.title}</p>
-                    <p className="mt-0.5 truncate text-xs text-[color:var(--muted)]">
-                      {ex.muscles.join(", ")}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-          <div className="flex gap-2 mt-6">
-            <button type="button" className="pill" onClick={() => setStep(3)}>
-              <ArrowLeft size={14} /> {t("onboarding.back")}
-            </button>
-            <button
-              type="button"
-              className="primary-button"
-              disabled={selectedExercices.length < 4}
-              onClick={finish}
-            >
-              {t("onboarding.finish")} <Check size={16} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── Step 5: Récap ──────────────────────────────────────────────── */}
-      {step === 5 && (
-        <div className="onboarding-step">
-          <h2 className="text-xl font-bold text-[color:var(--ink)]">{t("onboarding.recapTitle")}</h2>
-          <div className="card mt-4">
-            <p className="text-sm font-semibold text-[color:var(--muted)]">{t("onboarding.recapObjectif")}</p>
-            <p className="text-[color:var(--ink)] font-semibold">
-              {objectif ? objectifLabels[objectif].title : ""}
-            </p>
-          </div>
-          <div className="card mt-3">
-            <p className="text-sm font-semibold text-[color:var(--muted)]">{t("onboarding.recapMethodes")}</p>
-            <div className="flex gap-2 flex-wrap mt-1">
-              {selectedMethodes.map((slug) => {
-                const m = methodes.find((me) => me.slug === slug);
-                return <span key={slug} className="pill pill-active text-xs">{m?.titre ?? slug}</span>;
+                    <span className="text-base font-bold text-white">{t(l.labelKey)}</span>
+                    <span className="block text-xs mt-0.5" style={{ color: selected ? l.color : "rgba(255,255,255,0.5)" }}>
+                      {t(l.descKey)}
+                    </span>
+                  </button>
+                );
               })}
             </div>
+            <button
+              type="button"
+              disabled={!level}
+              onClick={() => setStep(2)}
+              className="w-full h-14 rounded-xl border-none text-base font-bold cursor-pointer transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+              style={{ background: "#00E5FF", color: "#04040A" }}
+            >
+              {t("onboarding.next")}
+            </button>
           </div>
-          <div className="card mt-3">
-            <p className="text-sm font-semibold text-[color:var(--muted)]">{t("onboarding.recapExercices")}</p>
-            <ul className="mt-1 space-y-1">
-              {selectedExoData.map((ex) => (
-                <li key={ex.slug} className="text-sm text-[color:var(--ink)]">
-                  {ex.title} <span className="text-[color:var(--muted)]">— {ex.muscles.join(", ")}</span>
-                </li>
-              ))}
-            </ul>
+        )}
+
+        {/* ── Écran 2 : Objectif ────────────────────────────────────── */}
+        {step === 2 && (
+          <div className="w-full max-w-sm flex flex-col items-center gap-6 animate-[fade-slide_0.4s_ease_both]">
+            <h1 className="text-2xl font-bold text-white text-center">{t("onboarding.chooseObjectif")}</h1>
+            <div className="w-full flex flex-col gap-3">
+              {GOALS.map((g) => {
+                const selected = goal === g.value;
+                const Icon = g.icon;
+                return (
+                  <button
+                    key={g.value}
+                    type="button"
+                    onClick={() => setGoal(g.value)}
+                    className="w-full rounded-2xl p-4 text-left transition-all duration-200 border-2 cursor-pointer flex items-center gap-4"
+                    style={{
+                      background: selected ? g.gradient : "rgba(255,255,255,0.04)",
+                      borderColor: selected ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    <span className="text-white/60 shrink-0"><Icon /></span>
+                    <div>
+                      <span className="text-base font-bold text-white">{t(g.labelKey)}</span>
+                      <span className="block text-xs text-white/60 mt-0.5">{t(g.descKey)}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="w-full flex gap-3">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="h-14 px-6 rounded-xl border border-white/15 bg-transparent text-white text-sm font-medium cursor-pointer"
+              >
+                {t("onboarding.back")}
+              </button>
+              <button
+                type="button"
+                disabled={!goal}
+                onClick={() => setStep(3)}
+                className="flex-1 h-14 rounded-xl border-none text-base font-bold cursor-pointer transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                style={{ background: "#00E5FF", color: "#04040A" }}
+              >
+                {t("onboarding.next")}
+              </button>
+            </div>
           </div>
-          <div className="flex gap-3 mt-6 flex-wrap">
-            <Link href="/outils/timer" className="primary-button">
-              {t("onboarding.goTimer")}
-            </Link>
-            <Link href="/outils/carnet" className="pill">
-              {t("onboarding.goCarnet")}
-            </Link>
-            <Link href="/exercices" className="pill">
-              {t("onboarding.goExercices")}
-            </Link>
+        )}
+
+        {/* ── Écran 3 : Bienvenue + résumé ──────────────────────────── */}
+        {step === 3 && (
+          <div className="w-full max-w-sm flex flex-col items-center gap-6 animate-[fade-slide_0.4s_ease_both]">
+            <div className="text-5xl">&#x1F3CB;&#xFE0F;</div>
+            <h1 className="text-3xl font-bold text-white text-center">{t("onboarding.welcomeTitle")}</h1>
+            <p className="text-sm text-white/50 text-center px-4">
+              {t("onboarding.welcomeSummary").replace("{level}", levelLabel).replace("{goal}", goalLabel)}
+            </p>
+            <p className="text-sm text-white/70 text-center px-4">{t("onboarding.welcomeBody")}</p>
+            <button
+              type="button"
+              onClick={finish}
+              className="w-full h-14 rounded-xl border-none text-lg font-bold cursor-pointer transition-all duration-200"
+              style={{ background: "linear-gradient(135deg, #00E5FF, #7B2FFF)", color: "#fff" }}
+            >
+              {t("onboarding.letsGo")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setStep(2)}
+              className="text-sm text-white/40 bg-transparent border-none cursor-pointer"
+            >
+              ← {t("onboarding.back")}
+            </button>
           </div>
-        </div>
-      )}
-    </section>
+        )}
+      </div>
+    </div>
   );
 }

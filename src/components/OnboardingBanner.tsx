@@ -2,11 +2,10 @@
 
 import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useEffect, useState } from "react";
-import { ArrowRight, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
-const STORAGE_DONE = "tazieff-onboarding-done";
-const STORAGE_DISMISSED = "tazieff-onboarding-dismissed";
+const LS_DONE = "eps_onboarding_done";
+const LS_DISMISSED = "eps_onboarding_dismissed";
 
 export function OnboardingBanner() {
   const { t } = useI18n();
@@ -14,8 +13,8 @@ export function OnboardingBanner() {
 
   useEffect(() => {
     try {
-      const done = localStorage.getItem(STORAGE_DONE);
-      const dismissed = localStorage.getItem(STORAGE_DISMISSED);
+      const done = localStorage.getItem(LS_DONE);
+      const dismissed = localStorage.getItem(LS_DISMISSED);
       if (!done && !dismissed) setVisible(true);
     } catch { /* ignore */ }
   }, []);
@@ -24,7 +23,7 @@ export function OnboardingBanner() {
 
   const dismiss = () => {
     setVisible(false);
-    try { localStorage.setItem(STORAGE_DISMISSED, "true"); } catch { /* ignore */ }
+    try { localStorage.setItem(LS_DISMISSED, "true"); } catch { /* ignore */ }
   };
 
   return (
@@ -34,10 +33,11 @@ export function OnboardingBanner() {
         <p className="text-xs text-[color:var(--muted)] mt-1">{t("onboarding.bannerBody")}</p>
       </div>
       <Link href="/onboarding" className="primary-button text-xs" onClick={dismiss}>
-        {t("onboarding.bannerCta")} <ArrowRight size={14} />
+        {t("onboarding.bannerCta")}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M12 5l7 7-7 7" /></svg>
       </Link>
       <button type="button" className="onboarding-banner-close" onClick={dismiss} aria-label={t("onboarding.bannerClose")}>
-        <X size={16} />
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
       </button>
     </div>
   );

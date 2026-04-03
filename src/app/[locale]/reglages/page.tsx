@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -166,6 +166,16 @@ export default function ReglagesPage() {
     setPinValue("");
     setPinError(null);
   };
+
+  const handleResetOnboarding = useCallback(() => {
+    try {
+      localStorage.removeItem("eps_onboarding_done");
+      localStorage.removeItem("eps_onboarding_dismissed");
+      localStorage.removeItem("eps_onboarding_level");
+      localStorage.removeItem("eps_onboarding_goal");
+    } catch { /* ignore */ }
+    router.push("/onboarding");
+  }, [router]);
 
   const handleCopy = async () => {
     try { await navigator?.clipboard?.writeText(buildInfo.label); } catch { /* ignore */ }
@@ -336,6 +346,20 @@ export default function ReglagesPage() {
                 }`}
               />
             </span>
+          </button>
+
+          <div className="border-b border-[color:var(--border)] my-3" />
+
+          {/* Relancer l'onboarding */}
+          <button
+            type="button"
+            className="flex w-full items-center justify-between py-0.5"
+            onClick={handleResetOnboarding}
+          >
+            <span className="text-sm font-medium text-[color:var(--ink)]">{t("onboarding.resetOnboarding")}</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[color:var(--muted)]">
+              <path d="M3 12a9 9 0 1 1 9 9" /><polyline points="1 7 3 12 8 10" />
+            </svg>
           </button>
         </div>
 

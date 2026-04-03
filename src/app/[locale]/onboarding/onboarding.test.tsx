@@ -1,209 +1,146 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("next/link");
-vi.mock("@/lib/i18n/I18nProvider", () => ({
-  useI18n: () => ({ t: (key: string) => key, lang: "fr", setLang: () => {} }),
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
+  usePathname: () => "/fr/onboarding",
 }));
 
-// Mock lucide-react icons
-vi.mock("lucide-react", () => ({
-  ArrowLeft: () => <span>←</span>,
-  ArrowRight: () => <span>→</span>,
-  Check: () => <span>✓</span>,
-  Dumbbell: () => <span>🏋</span>,
-  Target: () => <span>🎯</span>,
-  Zap: () => <span>⚡</span>,
-  X: () => <span>✕</span>,
+vi.mock("@/lib/i18n/I18nProvider", () => ({
+  useI18n: () => ({ t: (key: string) => key, lang: "fr", setLang: () => {} }),
 }));
 
 import { OnboardingWizard } from "./OnboardingWizard";
 import { OnboardingBanner } from "@/components/OnboardingBanner";
 
-const STORAGE_DONE = "tazieff-onboarding-done";
-const STORAGE_DISMISSED = "tazieff-onboarding-dismissed";
-
-const mockMethodes = [
-  { slug: "charge-constante", titre: "Charge constante", categorie: "endurance-de-force" },
-  { slug: "circuit-training", titre: "Circuit training", categorie: "endurance-de-force" },
-  { slug: "pyramide", titre: "Pyramide", categorie: "gain-de-volume" },
-  { slug: "bulgare", titre: "Bulgare", categorie: "gain-de-puissance" },
-];
-
-const mockExercices = [
-  { slug: "developpe-couche", title: "Développé couché", muscles: ["pectoraux", "triceps"] },
-  { slug: "squat", title: "Squat", muscles: ["quadriceps", "fessiers"] },
-  { slug: "traction", title: "Traction", muscles: ["dorsaux", "biceps"] },
-  { slug: "rowing", title: "Rowing", muscles: ["dorsaux", "trapèze"] },
-  { slug: "presse", title: "Presse à cuisses", muscles: ["quadriceps", "ischio-jambiers"] },
-  { slug: "curl", title: "Curl biceps", muscles: ["biceps"] },
-];
+const LS_DONE = "eps_onboarding_done";
+const LS_DISMISSED = "eps_onboarding_dismissed";
+const LS_LEVEL = "eps_onboarding_level";
+const LS_GOAL = "eps_onboarding_goal";
 
 /* ── localStorage flags ──────────────────────────────────────────── */
 
 describe("Onboarding — localStorage flags", () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
+  beforeEach(() => localStorage.clear());
 
   it("onboarding-done absent → onboarding not done", () => {
-    expect(localStorage.getItem(STORAGE_DONE)).toBeNull();
+    expect(localStorage.getItem(LS_DONE)).toBeNull();
   });
 
   it("onboarding-done = 'true' → onboarding completed", () => {
-    localStorage.setItem(STORAGE_DONE, "true");
-    expect(localStorage.getItem(STORAGE_DONE)).toBe("true");
+    localStorage.setItem(LS_DONE, "true");
+    expect(localStorage.getItem(LS_DONE)).toBe("true");
   });
 
   it("onboarding-dismissed = 'true' → banner dismissed", () => {
-    localStorage.setItem(STORAGE_DISMISSED, "true");
-    expect(localStorage.getItem(STORAGE_DISMISSED)).toBe("true");
+    localStorage.setItem(LS_DISMISSED, "true");
+    expect(localStorage.getItem(LS_DISMISSED)).toBe("true");
   });
 });
 
-/* ── OnboardingWizard component ──────────────────────────────────── */
+/* ── OnboardingWizard — 3 écrans ─────────────────────────────────── */
 
 describe("OnboardingWizard", () => {
-  beforeEach(() => {
-    localStorage.clear();
+  beforeEach(() => localStorage.clear());
+
+  it("renders step 1 (chooseLevel) by default", () => {
+    render(<OnboardingWizard />);
+    expect(screen.getByText("onboarding.chooseLevel")).toBeDefined();
   });
 
-  it("renders step 1 (welcome) by default", () => {
-    render(<OnboardingWizard methodes={mockMethodes} exercices={mockExercices} />);
-    expect(screen.getByText("onboarding.welcomeTitle")).toBeDefined();
-    expect(screen.getByText(/onboarding\.letsGo/)).toBeDefined();
+  it("shows 3 level options", () => {
+    render(<OnboardingWizard />);
+    expect(screen.getByText("onboarding.levelSeconde")).toBeDefined();
+    expect(screen.getByText("onboarding.levelPremiere")).toBeDefined();
+    expect(screen.getByText("onboarding.levelTerminale")).toBeDefined();
   });
 
-  it("shows 5 step indicators in progress bar", () => {
-    render(<OnboardingWizard methodes={mockMethodes} exercices={mockExercices} />);
-    // Each step has a label "N. stepLabel"
-    for (let i = 1; i <= 5; i++) {
-      expect(screen.getByText(new RegExp(`${i}\\. onboarding\\.step${i}`))).toBeDefined();
-    }
+  it("Next disabled until level selected", () => {
+    render(<OnboardingWizard />);
+    const nextBtn = screen.getByText("onboarding.next").closest("button")!;
+    expect(nextBtn.hasAttribute("disabled")).toBe(true);
   });
 
-  it("clicking 'Let's go' navigates to step 2 (objectif)", () => {
-    render(<OnboardingWizard methodes={mockMethodes} exercices={mockExercices} />);
-    const letsGoBtn = screen.getByText(/onboarding\.letsGo/).closest("button")!;
-    fireEvent.click(letsGoBtn);
+  it("selecting a level enables Next", () => {
+    render(<OnboardingWizard />);
+    fireEvent.click(screen.getByText("onboarding.levelSeconde").closest("button")!);
+    const nextBtn = screen.getByText("onboarding.next").closest("button")!;
+    expect(nextBtn.hasAttribute("disabled")).toBe(false);
+  });
+
+  it("step 2 shows 3 objectif choices", () => {
+    render(<OnboardingWizard />);
+    fireEvent.click(screen.getByText("onboarding.levelSeconde").closest("button")!);
+    fireEvent.click(screen.getByText("onboarding.next").closest("button")!);
     expect(screen.getByText("onboarding.chooseObjectif")).toBeDefined();
-  });
-
-  it("step 2 shows 3 objectif cards", () => {
-    render(<OnboardingWizard methodes={mockMethodes} exercices={mockExercices} />);
-    // Navigate to step 2
-    fireEvent.click(screen.getByText(/onboarding\.letsGo/).closest("button")!);
     expect(screen.getByText("onboarding.objEndurance")).toBeDefined();
     expect(screen.getByText("onboarding.objVolume")).toBeDefined();
     expect(screen.getByText("onboarding.objPuissance")).toBeDefined();
   });
 
-  it("'Next' button is disabled on step 2 until objectif is selected", () => {
-    render(<OnboardingWizard methodes={mockMethodes} exercices={mockExercices} />);
-    fireEvent.click(screen.getByText(/onboarding\.letsGo/).closest("button")!);
-    const nextBtn = screen.getByText(/onboarding\.next/).closest("button")!;
-    expect(nextBtn.hasAttribute("disabled")).toBe(true);
+  it("step 3 shows welcome + letsGo button", () => {
+    render(<OnboardingWizard />);
+    // Step 1 → select level → next
+    fireEvent.click(screen.getByText("onboarding.levelSeconde").closest("button")!);
+    fireEvent.click(screen.getByText("onboarding.next").closest("button")!);
+    // Step 2 → select goal → next
+    fireEvent.click(screen.getByText("onboarding.objEndurance").closest("button")!);
+    // Find the second "next" button (step 2 has back + next)
+    const buttons = screen.getAllByText("onboarding.next");
+    fireEvent.click(buttons[buttons.length - 1].closest("button")!);
+    // Step 3
+    expect(screen.getByText("onboarding.welcomeTitle")).toBeDefined();
+    expect(screen.getByText("onboarding.letsGo")).toBeDefined();
   });
 
-  it("selecting objectif enables Next button on step 2", () => {
-    render(<OnboardingWizard methodes={mockMethodes} exercices={mockExercices} />);
-    fireEvent.click(screen.getByText(/onboarding\.letsGo/).closest("button")!);
-    // Click endurance
-    fireEvent.click(screen.getByText("onboarding.objEndurance").closest("button")!);
-    const nextBtn = screen.getByText(/onboarding\.next/).closest("button")!;
-    expect(nextBtn.hasAttribute("disabled")).toBe(false);
-  });
-
-  it("step 3 filters méthodes by selected objectif", () => {
-    render(<OnboardingWizard methodes={mockMethodes} exercices={mockExercices} />);
-    // Step 1 → 2
-    fireEvent.click(screen.getByText(/onboarding\.letsGo/).closest("button")!);
-    // Select endurance → step 3
-    fireEvent.click(screen.getByText("onboarding.objEndurance").closest("button")!);
-    fireEvent.click(screen.getByText(/onboarding\.next/).closest("button")!);
-    // Should show endurance-de-force methods
-    expect(screen.getByText("Charge constante")).toBeDefined();
-    expect(screen.getByText("Circuit training")).toBeDefined();
-    // Should NOT show gain-de-volume/puissance methods
-    expect(screen.queryByText("Pyramide")).toBeNull();
-    expect(screen.queryByText("Bulgare")).toBeNull();
-  });
-
-  it("finish sets localStorage flag and shows recap (step 5)", () => {
-    render(<OnboardingWizard methodes={mockMethodes} exercices={mockExercices} />);
-    // Step 1 → 2
-    fireEvent.click(screen.getByText(/onboarding\.letsGo/).closest("button")!);
-    // Select endurance → step 3
-    fireEvent.click(screen.getByText("onboarding.objEndurance").closest("button")!);
-    fireEvent.click(screen.getByText(/onboarding\.next/).closest("button")!);
-    // Select a method → step 4
-    fireEvent.click(screen.getByText("Charge constante").closest("button")!);
-    fireEvent.click(screen.getByText(/onboarding\.next/).closest("button")!);
-    // Select 4 exercises (minimum required)
-    fireEvent.click(screen.getByText("Développé couché").closest("button")!);
-    fireEvent.click(screen.getByText("Squat").closest("button")!);
-    fireEvent.click(screen.getByText("Traction").closest("button")!);
-    fireEvent.click(screen.getByText("Rowing").closest("button")!);
-    // Click finish
-    fireEvent.click(screen.getByText(/onboarding\.finish/).closest("button")!);
-    // Should be on step 5 (recap)
-    expect(screen.getByText("onboarding.recapTitle")).toBeDefined();
-    // localStorage flag should be set
-    expect(localStorage.getItem(STORAGE_DONE)).toBe("true");
-  });
-
-  it("step 4 limits exercise selection to 6 max", () => {
-    render(<OnboardingWizard methodes={mockMethodes} exercices={mockExercices} />);
-    // Navigate to step 4
-    fireEvent.click(screen.getByText(/onboarding\.letsGo/).closest("button")!);
-    fireEvent.click(screen.getByText("onboarding.objEndurance").closest("button")!);
-    fireEvent.click(screen.getByText(/onboarding\.next/).closest("button")!);
-    fireEvent.click(screen.getByText("Charge constante").closest("button")!);
-    fireEvent.click(screen.getByText(/onboarding\.next/).closest("button")!);
-    // Select all 6 exercises
-    for (const ex of mockExercices) {
-      fireEvent.click(screen.getByText(ex.title).closest("button")!);
-    }
-    // Counter should show 6/6
-    expect(screen.getByText(/6\/6/)).toBeDefined();
+  it("finishing stores level, goal and done flag", () => {
+    render(<OnboardingWizard />);
+    // Step 1
+    fireEvent.click(screen.getByText("onboarding.levelTerminale").closest("button")!);
+    fireEvent.click(screen.getByText("onboarding.next").closest("button")!);
+    // Step 2
+    fireEvent.click(screen.getByText("onboarding.objPuissance").closest("button")!);
+    const buttons = screen.getAllByText("onboarding.next");
+    fireEvent.click(buttons[buttons.length - 1].closest("button")!);
+    // Step 3 — finish
+    fireEvent.click(screen.getByText("onboarding.letsGo").closest("button")!);
+    expect(localStorage.getItem(LS_LEVEL)).toBe("terminale");
+    expect(localStorage.getItem(LS_GOAL)).toBe("puissance");
+    expect(localStorage.getItem(LS_DONE)).toBe("true");
   });
 });
 
-/* ── OnboardingBanner component ──────────────────────────────────── */
+/* ── OnboardingBanner ────────────────────────────────────────────── */
 
 describe("OnboardingBanner", () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
+  beforeEach(() => localStorage.clear());
 
   it("renders banner when onboarding not done and not dismissed", () => {
     render(<OnboardingBanner />);
     expect(screen.getByText("onboarding.bannerTitle")).toBeDefined();
-    expect(screen.getByText("onboarding.bannerBody")).toBeDefined();
   });
 
   it("does not render when onboarding is done", () => {
-    localStorage.setItem(STORAGE_DONE, "true");
+    localStorage.setItem(LS_DONE, "true");
     const { container } = render(<OnboardingBanner />);
     expect(container.innerHTML).toBe("");
   });
 
   it("does not render when banner was dismissed", () => {
-    localStorage.setItem(STORAGE_DISMISSED, "true");
+    localStorage.setItem(LS_DISMISSED, "true");
     const { container } = render(<OnboardingBanner />);
     expect(container.innerHTML).toBe("");
   });
 
-  it("close button sets dismissed flag in localStorage", () => {
+  it("close button sets dismissed flag", () => {
     render(<OnboardingBanner />);
-    const closeBtn = screen.getByLabelText("onboarding.bannerClose");
-    fireEvent.click(closeBtn);
-    expect(localStorage.getItem(STORAGE_DISMISSED)).toBe("true");
+    fireEvent.click(screen.getByLabelText("onboarding.bannerClose"));
+    expect(localStorage.getItem(LS_DISMISSED)).toBe("true");
   });
 
-  it("CTA link points to /onboarding", () => {
+  it("CTA links to /onboarding", () => {
     render(<OnboardingBanner />);
-    const ctaLink = screen.getByText(/onboarding\.bannerCta/).closest("a");
-    expect(ctaLink?.getAttribute("href")).toBe("/onboarding");
+    const cta = screen.getByText(/onboarding\.bannerCta/).closest("a");
+    expect(cta?.getAttribute("href")).toBe("/onboarding");
   });
 });
