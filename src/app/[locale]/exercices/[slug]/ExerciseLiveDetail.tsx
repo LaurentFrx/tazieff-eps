@@ -19,6 +19,7 @@ import type { ExerciseFrontmatter } from "@/lib/content/schema";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Lang } from "@/lib/i18n/messages";
 import { translateTerms } from "@/lib/i18n/terms/translate";
+import { getMuscleGroup, type MuscleGroupId } from "@/lib/exercices/muscleGroups";
 const MarkdownRenderer = dynamic(
   () => import("@/components/MarkdownRenderer"),
   {
@@ -2641,6 +2642,36 @@ export function ExerciseLiveDetail({
           slug={slug}
         />
       </div>
+
+      {/* Muscles cliquables → filtre exercices par groupe musculaire */}
+      {merged.frontmatter.muscles.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {merged.frontmatter.muscles.map((muscle, i) => {
+            const group = getMuscleGroup(muscle);
+            const translated = translateTerms([muscle], "muscles", lang)[0];
+            if (!group) {
+              return (
+                <span
+                  key={muscle}
+                  className="inline-flex items-center rounded-full bg-orange-500/15 text-orange-400 px-3 py-1.5 text-xs font-medium"
+                >
+                  {translated}
+                </span>
+              );
+            }
+            return (
+              <Link
+                key={muscle}
+                href={`/exercices?muscle=${group}`}
+                className="inline-flex items-center rounded-full bg-cyan-500/15 text-cyan-400 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-cyan-500/25"
+                title={t("exerciseDetail.filterByMuscle")}
+              >
+                {translated}
+              </Link>
+            );
+          })}
+        </div>
+      )}
 
       {teacherUnlocked ? (
         <div className="teacher-panel">

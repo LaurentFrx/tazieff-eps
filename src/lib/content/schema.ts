@@ -18,6 +18,9 @@ export const ExerciseFrontmatterSchema = z.object({
     .min(1, "Ajoutez au moins un muscle."),
   equipment: z.array(z.string().min(1, "Matériel invalide.")).optional(),
   media: z.string().min(1, "Lien média invalide.").optional(),
+  methodes_compatibles: z.array(z.string()).optional().default([]),
+  exercices_similaires: z.array(z.string()).optional().default([]),
+  consignes_securite: z.string().optional().default(""),
 });
 
 export type ExerciseFrontmatter = z.infer<typeof ExerciseFrontmatterSchema>;

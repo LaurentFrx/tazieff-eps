@@ -1,15 +1,29 @@
 "use client";
 
+import { LocaleLink as Link } from "@/components/LocaleLink";
+
 type Props = {
   name: string;
   role: string;
   antagonist?: string;
+  href?: string;
 };
 
-export function LearnMuscleRow({ name, role, antagonist }: Props) {
+export function LearnMuscleRow({ name, role, antagonist, href }: Props) {
+  const nameEl = href ? (
+    <Link
+      href={href}
+      className="text-[13px] font-medium text-cyan-400 hover:text-cyan-300 transition-colors min-w-[100px] shrink-0"
+    >
+      {name}
+    </Link>
+  ) : (
+    <span className="text-[13px] font-medium text-zinc-700 dark:text-zinc-200 min-w-[100px] shrink-0">{name}</span>
+  );
+
   return (
     <div className="flex items-center gap-3 p-[10px_12px] rounded-[10px] bg-white/[0.02] dark:bg-white/[0.02] border border-white/[0.04] dark:border-white/[0.04]">
-      <span className="text-[13px] font-medium text-zinc-700 dark:text-zinc-200 min-w-[100px] shrink-0">{name}</span>
+      {nameEl}
       <span className="text-[11px] text-zinc-500 dark:text-zinc-400 flex-1">{role}</span>
       {antagonist && (
         <span

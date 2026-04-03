@@ -359,6 +359,9 @@ export const messages = {
       noEquipment: "Sans matériel spécifique.",
       teacherMode: "👨‍🏫 Mode enseignant",
       editExercise: "Modifier l'exercice",
+      sessionExercises: "Autres exercices de cette séance",
+      musclesWorked: "Muscles travaillés",
+      filterByMuscle: "Filtrer par ce muscle",
       sections: {
         resume: "Résumé",
         execution: "Exécution",
@@ -1463,6 +1466,9 @@ export const messages = {
       noEquipment: "No specific equipment.",
       teacherMode: "👨‍🏫 Teacher mode",
       editExercise: "Edit exercise",
+      sessionExercises: "Other exercises in this session",
+      musclesWorked: "Muscles worked",
+      filterByMuscle: "Filter by this muscle",
       sections: {
         resume: "Summary",
         execution: "Execution",
@@ -2567,6 +2573,9 @@ export const messages = {
       noEquipment: "Sin material específico.",
       teacherMode: "👨‍🏫 Modo profesor",
       editExercise: "Editar ejercicio",
+      sessionExercises: "Otros ejercicios de esta sesión",
+      musclesWorked: "Músculos trabajados",
+      filterByMuscle: "Filtrar por este músculo",
       sections: {
         resume: "Resumen",
         execution: "Ejecución",

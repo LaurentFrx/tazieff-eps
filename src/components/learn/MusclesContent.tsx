@@ -59,25 +59,25 @@ export function MusclesContent() {
       {/* Face antérieure */}
       <LearnAccordion title="Face antérieure" subtitle="Poitrine · bras · abdos · cuisses avant" icon={<IconUpperBody />} accentColor="#FF006E">
         <div className="flex flex-col gap-[6px]">
-          <LearnMuscleRow name="Pectoraux" role="Poussée horizontale (développé couché)" antagonist="Grand Dorsal" />
-          <LearnMuscleRow name="Biceps" role="Flexion du coude (curl)" antagonist="Triceps" />
-          <LearnMuscleRow name="Abdominaux" role="Flexion du tronc, gainage" />
-          <LearnMuscleRow name="Obliques" role="Rotation et flexion latérale" />
-          <LearnMuscleRow name="Quadriceps" role="Extension du genou (squat, presse)" antagonist="Ischios" />
-          <LearnMuscleRow name="Adducteurs" role="Rapprochement des jambes" />
+          <LearnMuscleRow name="Pectoraux" role="Poussée horizontale (développé couché)" antagonist="Grand Dorsal" href="/exercices?muscle=pectoraux" />
+          <LearnMuscleRow name="Biceps" role="Flexion du coude (curl)" antagonist="Triceps" href="/exercices?muscle=membres-superieurs" />
+          <LearnMuscleRow name="Abdominaux" role="Flexion du tronc, gainage" href="/exercices?muscle=abdominaux" />
+          <LearnMuscleRow name="Obliques" role="Rotation et flexion latérale" href="/exercices?muscle=abdominaux" />
+          <LearnMuscleRow name="Quadriceps" role="Extension du genou (squat, presse)" antagonist="Ischios" href="/exercices?muscle=membres-inferieurs" />
+          <LearnMuscleRow name="Adducteurs" role="Rapprochement des jambes" href="/exercices?muscle=membres-inferieurs" />
         </div>
       </LearnAccordion>
 
       {/* Face postérieure */}
       <LearnAccordion title="Face postérieure" subtitle="Dos · épaules · fessiers · mollets" icon={<IconLowerBody />} accentColor="#00E5FF">
         <div className="flex flex-col gap-[6px]">
-          <LearnMuscleRow name="Trapèzes" role="Élévation et rétraction des épaules" />
-          <LearnMuscleRow name="Grand Dorsal" role="Tirage vertical et horizontal" antagonist="Pectoraux" />
-          <LearnMuscleRow name="Triceps" role="Extension du coude" antagonist="Biceps" />
-          <LearnMuscleRow name="Lombaires" role="Stabilisation du rachis" />
-          <LearnMuscleRow name="Grand fessier" role="Extension de hanche (hip thrust)" />
-          <LearnMuscleRow name="Ischios-jambiers" role="Flexion du genou" antagonist="Quadriceps" />
-          <LearnMuscleRow name="Mollets" role="Extension plantaire (montée sur pointes)" />
+          <LearnMuscleRow name="Trapèzes" role="Élévation et rétraction des épaules" href="/exercices?muscle=dos" />
+          <LearnMuscleRow name="Grand Dorsal" role="Tirage vertical et horizontal" antagonist="Pectoraux" href="/exercices?muscle=dos" />
+          <LearnMuscleRow name="Triceps" role="Extension du coude" antagonist="Biceps" href="/exercices?muscle=membres-superieurs" />
+          <LearnMuscleRow name="Lombaires" role="Stabilisation du rachis" href="/exercices?muscle=dos" />
+          <LearnMuscleRow name="Grand fessier" role="Extension de hanche (hip thrust)" href="/exercices?muscle=membres-inferieurs" />
+          <LearnMuscleRow name="Ischios-jambiers" role="Flexion du genou" antagonist="Quadriceps" href="/exercices?muscle=membres-inferieurs" />
+          <LearnMuscleRow name="Mollets" role="Extension plantaire (montée sur pointes)" href="/exercices?muscle=membres-inferieurs" />
         </div>
       </LearnAccordion>
 

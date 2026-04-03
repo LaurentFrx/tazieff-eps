@@ -12,7 +12,9 @@ import { ExerciseLiveDetail } from "@/app/[locale]/exercices/[slug]/ExerciseLive
 // RSC: useI18n() unavailable — read lang from cookie via getServerLang()
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { MethodeCard } from "@/components/methodes/MethodeCard";
+import { SessionExercises } from "@/app/[locale]/exercices/[slug]/SessionExercises";
 
 type ExercicePageProps = {
   params: Promise<{ locale: string; slug: string }>;
@@ -193,8 +195,25 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
 
   const exerciseTitle = (baseFrontmatter as { title?: string }).title ?? slug;
 
+  // Session prefix for "similar exercises" (e.g. "s3" from "s3-01")
+  const sessionPrefix = slug.match(/^(s\d+)-/)?.[1] ?? null;
+  const allExercises = await getExercisesIndex(locale);
+  const sessionExercises = sessionPrefix
+    ? allExercises
+        .filter((e) => e.slug.startsWith(`${sessionPrefix}-`) && e.slug !== slug)
+        .slice(0, 6)
+    : [];
+
   return (
     <section className="page">
+      <Breadcrumbs
+        items={[
+          { label: t("nav.home.label"), href: "/" },
+          { label: t("breadcrumbs.exercices"), href: "/exercices" },
+          { label: exerciseTitle },
+        ]}
+      />
+
       <ExerciseLiveDetail
         key={`${slug}-${locale}`}
         slug={slug}
@@ -226,6 +245,13 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
             ))}
           </div>
         </div>
+      ) : null}
+
+      {sessionExercises.length > 0 ? (
+        <SessionExercises
+          exercises={sessionExercises.map((e) => ({ slug: e.slug, title: e.title }))}
+          heading={t("exerciseDetail.sessionExercises")}
+        />
       ) : null}
     </section>
   );
