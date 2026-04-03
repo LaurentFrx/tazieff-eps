@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useBuildInfo } from "@/components/BuildStamp";
@@ -99,6 +100,7 @@ export default function ReglagesPage() {
   const buildInfo = useBuildInfo();
   const { user, isAnonymous } = useAuth();
   const { isPro } = usePlan();
+  const router = useRouter();
 
   const [fieldTheme, setLocalFieldTheme] = useState<ThemePreference>(getTheme());
   const [anatomyAnim, setLocalAnatomyAnim] = useState(getAnatomyAnim());
@@ -249,6 +251,12 @@ export default function ReglagesPage() {
   return (
     <section className="page pb-32">
       <div className="mx-auto max-w-lg space-y-4">
+        <button
+          onClick={() => router.back()}
+          className="text-[13px] text-[color:var(--muted)] mb-2 cursor-pointer bg-transparent border-none"
+        >
+          ← {t("header.back")}
+        </button>
         <h1 className="text-2xl font-bold text-[color:var(--ink)] mb-6">{t("settings.title")}</h1>
 
         {/* ── SECTION 1 : Préférences ─────────────────────────── */}
