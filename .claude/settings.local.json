@@ -58,18 +58,5 @@
       "Bash(npx @gltf-transform/cli:*)",
       "Skill(commit-commands:commit)"
     ]
-  },
-  "hooks": {
-  "PreToolUse": [
-    {
-      "matcher": "Edit|Write",
-      "hooks": [
-        {
-          "type": "command",
-          "command": "INPUT=$(cat); echo \"$INPUT\" | grep -q 'page\\.tsx' && echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"page.tsx est protégé — demande explicite requise\"}}' || echo '{}'"
-        }
-      ]
-    }
-  ]
-}
+  }
 }
