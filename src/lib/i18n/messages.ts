@@ -556,6 +556,8 @@ export const messages = {
         heroBacSub: "Suis ta progression vers le BAC",
         heroOutilsSub: "Tout pour ta séance",
         shareApp: "Partager l\u2019app avec un ami",
+        searchPlaceholder: "Chercher un exercice, une méthode...",
+        startTitle: "Pour bien commencer",
       },
       exos: {
         eyebrow: "Exos",
@@ -1649,6 +1651,8 @@ export const messages = {
         heroBacSub: "Track your progress toward the BAC",
         heroOutilsSub: "Everything for your session",
         shareApp: "Share the app with a friend",
+        searchPlaceholder: "Search an exercise, a method...",
+        startTitle: "Getting started",
       },
       exos: {
         eyebrow: "Exercises",
@@ -2742,6 +2746,8 @@ export const messages = {
         heroBacSub: "Sigue tu progreso hacia el BAC",
         heroOutilsSub: "Todo para tu sesión",
         shareApp: "Compartir la app con un amigo",
+        searchPlaceholder: "Buscar un ejercicio, un método...",
+        startTitle: "Para empezar bien",
       },
       exos: {
         eyebrow: "Ejercicios",
