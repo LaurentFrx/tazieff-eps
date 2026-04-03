@@ -1,5 +1,6 @@
 (function(){
-if(window.__splashStarted)return;window.__splashStarted=true;
+try{if(sessionStorage.getItem("splash_shown"))return}catch(e){}
+try{sessionStorage.setItem("splash_shown","1")}catch(e){}
 
 /* ── Step 1: Hide body immediately (no DOM change = no React #418) ── */
 var hideStyle=document.createElement("style");

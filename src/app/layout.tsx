@@ -60,6 +60,8 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script src="/splash.js" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -68,8 +70,6 @@ export default function RootLayout({
         />
       </head>
       <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable} ${orbitron.variable}`} suppressHydrationWarning>
-        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
-        <script src="/splash.js" />
         {children}
       </body>
     </html>
