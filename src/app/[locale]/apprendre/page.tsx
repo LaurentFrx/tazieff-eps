@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getAllLearnPages } from "@/lib/content/fs";
-
-const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale}${path}`;
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { SectionHero } from "@/components/SectionHero";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { IlluBook } from "@/components/illustrations";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -48,6 +47,7 @@ export default async function ApprendrePage({ params }: { params: Promise<{ loca
 
   return (
     <section className="page">
+      <Breadcrumbs items={[{ label: t("nav.home.label"), href: "/" }, { label: t("pages.home.apprendreLabel") }]} />
       <SectionHero
         title={t("pages.home.apprendreLabel")}
         count={allCards.length}
@@ -57,7 +57,7 @@ export default async function ApprendrePage({ params }: { params: Promise<{ loca
       />
       <div className="card-grid">
         {allCards.map((card) => (
-          <Link key={card.href} href={lp(card.href, locale)} className="card">
+          <Link key={card.href} href={card.href} className="card">
             <h2>{card.title}</h2>
             <p>{card.description}</p>
           </Link>

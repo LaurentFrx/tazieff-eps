@@ -7,6 +7,7 @@ import { ExerciseListClient } from "@/app/[locale]/exercices/ExerciseListClient"
 import { fetchLiveExercises } from "@/lib/live/queries";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { SectionHero } from "@/components/SectionHero";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { IlluDumbbell } from "@/components/illustrations";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -26,6 +27,7 @@ export default async function ExercicesPage({ params }: { params: Promise<{ loca
 
   return (
     <section className="page">
+      <Breadcrumbs items={[{ label: t("nav.home.label"), href: "/" }, { label: t("pages.home.exercicesLabel") }]} />
       <SectionHero
         title={t("pages.home.exercicesLabel")}
         count={exercises.length}

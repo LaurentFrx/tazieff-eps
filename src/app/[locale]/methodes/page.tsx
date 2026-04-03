@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getAllMethodes } from "@/lib/content/fs";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
-
-const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale}${path}`;
 import { CategoryBadge } from "@/components/methodes/CategoryBadge";
 import { MethodeCard } from "@/components/methodes/MethodeCard";
 import type { CategorieMethode } from "@/lib/content/schema";
 import { SectionHero } from "@/components/SectionHero";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { IlluClipboard } from "@/components/illustrations";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -70,6 +69,7 @@ export default async function MethodesPage({
 
   return (
     <section className="page">
+      <Breadcrumbs items={[{ label: t("nav.home.label"), href: "/" }, { label: t("pages.home.methodesLabel") }]} />
       <SectionHero
         title={
           activeCategory
@@ -85,7 +85,7 @@ export default async function MethodesPage({
       {activeCategory && (
         <div className="mb-4">
           <Link
-            href={lp("/methodes", locale)}
+            href="/methodes"
             className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
           >
             ← {t("methodes.showAll")}
