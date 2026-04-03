@@ -1,0 +1,3197 @@
+{
+  "fr": {
+    "prepare": [
+      {
+        "file": "prepare-01.mp3",
+        "rarity": "normal",
+        "text": "Préparez-vous"
+      },
+      {
+        "file": "prepare-02.mp3",
+        "rarity": "normal",
+        "text": "On se met en place"
+      },
+      {
+        "file": "prepare-03.mp3",
+        "rarity": "normal",
+        "text": "C'est bientôt à vous"
+      },
+      {
+        "file": "prepare-04.mp3",
+        "rarity": "normal",
+        "text": "Concentration"
+      },
+      {
+        "file": "prepare-05.mp3",
+        "rarity": "normal",
+        "text": "Allez, on y va bientôt"
+      },
+      {
+        "file": "prepare-06.mp3",
+        "rarity": "normal",
+        "text": "Positionnez-vous"
+      },
+      {
+        "file": "prepare-07.mp3",
+        "rarity": "normal",
+        "text": "Attention, ça démarre"
+      },
+      {
+        "file": "prepare-08.mp3",
+        "rarity": "normal",
+        "text": "En position"
+      },
+      {
+        "file": "prepare-09.mp3",
+        "rarity": "normal",
+        "text": "Focus, on se concentre"
+      },
+      {
+        "file": "prepare-10.mp3",
+        "rarity": "normal",
+        "text": "C'est le moment"
+      },
+      {
+        "file": "prepare-11.mp3",
+        "rarity": "normal",
+        "text": "On respire un bon coup"
+      },
+      {
+        "file": "prepare-12.mp3",
+        "rarity": "normal",
+        "text": "Installez-vous"
+      },
+      {
+        "file": "prepare-13.mp3",
+        "rarity": "normal",
+        "text": "Plus que quelques secondes"
+      },
+      {
+        "file": "prepare-14.mp3",
+        "rarity": "normal",
+        "text": "On se prépare mentalement"
+      },
+      {
+        "file": "prepare-15.mp3",
+        "rarity": "normal",
+        "text": "Tenez-vous prêts"
+      }
+    ],
+    "work_start": [
+      {
+        "file": "work_start-01.mp3",
+        "rarity": "normal",
+        "text": "C'est parti !"
+      },
+      {
+        "file": "work_start-02.mp3",
+        "rarity": "normal",
+        "text": "Go go go !"
+      },
+      {
+        "file": "work_start-03.mp3",
+        "rarity": "normal",
+        "text": "Allez, on donne tout !"
+      },
+      {
+        "file": "work_start-04.mp3",
+        "rarity": "normal",
+        "text": "Envoyez !"
+      },
+      {
+        "file": "work_start-05.mp3",
+        "rarity": "normal",
+        "text": "C'est maintenant !"
+      },
+      {
+        "file": "work_start-06.mp3",
+        "rarity": "normal",
+        "text": "À fond !"
+      },
+      {
+        "file": "work_start-07.mp3",
+        "rarity": "normal",
+        "text": "On y va !"
+      },
+      {
+        "file": "work_start-08.mp3",
+        "rarity": "normal",
+        "text": "Top départ !"
+      },
+      {
+        "file": "work_start-09.mp3",
+        "rarity": "normal",
+        "text": "Lâchez rien !"
+      },
+      {
+        "file": "work_start-10.mp3",
+        "rarity": "normal",
+        "text": "Poussez !"
+      },
+      {
+        "file": "work_start-11.mp3",
+        "rarity": "normal",
+        "text": "On attaque !"
+      },
+      {
+        "file": "work_start-12.mp3",
+        "rarity": "normal",
+        "text": "Donnez tout ce que vous avez !"
+      },
+      {
+        "file": "work_start-13.mp3",
+        "rarity": "normal",
+        "text": "Explosez !"
+      },
+      {
+        "file": "work_start-14.mp3",
+        "rarity": "normal",
+        "text": "À vous de jouer !"
+      },
+      {
+        "file": "work_start-15.mp3",
+        "rarity": "normal",
+        "text": "C'est votre moment !"
+      },
+      {
+        "file": "work_start-16.mp3",
+        "rarity": "normal",
+        "text": "On met le turbo !"
+      },
+      {
+        "file": "work_start-17.mp3",
+        "rarity": "normal",
+        "text": "Full power !"
+      },
+      {
+        "file": "work_start-18.mp3",
+        "rarity": "normal",
+        "text": "Allez, tout donner !"
+      },
+      {
+        "file": "work_start-19.mp3",
+        "rarity": "normal",
+        "text": "On envoie du lourd !"
+      },
+      {
+        "file": "work_start-20.mp3",
+        "rarity": "normal",
+        "text": "Feu !"
+      }
+    ],
+    "rest_start": [
+      {
+        "file": "rest_start-01.mp3",
+        "rarity": "normal",
+        "text": "Repos"
+      },
+      {
+        "file": "rest_start-02.mp3",
+        "rarity": "normal",
+        "text": "Soufflez"
+      },
+      {
+        "file": "rest_start-03.mp3",
+        "rarity": "normal",
+        "text": "Récupérez"
+      },
+      {
+        "file": "rest_start-04.mp3",
+        "rarity": "normal",
+        "text": "Pause bien méritée"
+      },
+      {
+        "file": "rest_start-05.mp3",
+        "rarity": "normal",
+        "text": "On reprend son souffle"
+      },
+      {
+        "file": "rest_start-06.mp3",
+        "rarity": "normal",
+        "text": "Relâchez"
+      },
+      {
+        "file": "rest_start-07.mp3",
+        "rarity": "normal",
+        "text": "Hydratez-vous"
+      },
+      {
+        "file": "rest_start-08.mp3",
+        "rarity": "normal",
+        "text": "Détendez-vous"
+      },
+      {
+        "file": "rest_start-09.mp3",
+        "rarity": "normal",
+        "text": "Respirez profondément"
+      },
+      {
+        "file": "rest_start-10.mp3",
+        "rarity": "normal",
+        "text": "Relâchez la pression"
+      },
+      {
+        "file": "rest_start-11.mp3",
+        "rarity": "normal",
+        "text": "Secouez les bras"
+      },
+      {
+        "file": "rest_start-12.mp3",
+        "rarity": "normal",
+        "text": "Profitez de cette pause"
+      },
+      {
+        "file": "rest_start-13.mp3",
+        "rarity": "normal",
+        "text": "On récupère tranquille"
+      },
+      {
+        "file": "rest_start-14.mp3",
+        "rarity": "normal",
+        "text": "Calmez le rythme"
+      },
+      {
+        "file": "rest_start-15.mp3",
+        "rarity": "normal",
+        "text": "Petite pause"
+      }
+    ],
+    "last_round": [
+      {
+        "file": "last_round-01.mp3",
+        "rarity": "normal",
+        "text": "Dernière série !"
+      },
+      {
+        "file": "last_round-02.mp3",
+        "rarity": "normal",
+        "text": "C'est la dernière !"
+      },
+      {
+        "file": "last_round-03.mp3",
+        "rarity": "normal",
+        "text": "Plus qu'une !"
+      },
+      {
+        "file": "last_round-04.mp3",
+        "rarity": "normal",
+        "text": "Ultime round !"
+      },
+      {
+        "file": "last_round-05.mp3",
+        "rarity": "normal",
+        "text": "La der des der !"
+      },
+      {
+        "file": "last_round-06.mp3",
+        "rarity": "normal",
+        "text": "Tout donner, c'est la dernière !"
+      },
+      {
+        "file": "last_round-07.mp3",
+        "rarity": "normal",
+        "text": "Allez, dernier effort !"
+      },
+      {
+        "file": "last_round-08.mp3",
+        "rarity": "normal",
+        "text": "On finit en beauté !"
+      },
+      {
+        "file": "last_round-09.mp3",
+        "rarity": "normal",
+        "text": "La dernière, la meilleure !"
+      },
+      {
+        "file": "last_round-10.mp3",
+        "rarity": "normal",
+        "text": "Un dernier round et c'est fini !"
+      },
+      {
+        "file": "last_round-11.mp3",
+        "rarity": "normal",
+        "text": "Toute votre énergie maintenant !"
+      },
+      {
+        "file": "last_round-12.mp3",
+        "rarity": "normal",
+        "text": "C'est le moment de tout lâcher !"
+      },
+      {
+        "file": "last_round-13.mp3",
+        "rarity": "normal",
+        "text": "Plus rien à garder !"
+      },
+      {
+        "file": "last_round-14.mp3",
+        "rarity": "normal",
+        "text": "Videz le réservoir !"
+      },
+      {
+        "file": "last_round-15.mp3",
+        "rarity": "normal",
+        "text": "Le final, à fond !"
+      }
+    ],
+    "halfway": [
+      {
+        "file": "halfway-01.mp3",
+        "rarity": "normal",
+        "text": "Mi-parcours !"
+      },
+      {
+        "file": "halfway-02.mp3",
+        "rarity": "normal",
+        "text": "La moitié, bravo !"
+      },
+      {
+        "file": "halfway-03.mp3",
+        "rarity": "normal",
+        "text": "On est à la moitié, courage !"
+      },
+      {
+        "file": "halfway-04.mp3",
+        "rarity": "normal",
+        "text": "Cinquante pourcent, continuez !"
+      },
+      {
+        "file": "halfway-05.mp3",
+        "rarity": "normal",
+        "text": "Déjà la moitié !"
+      },
+      {
+        "file": "halfway-06.mp3",
+        "rarity": "normal",
+        "text": "Bien joué, on continue !"
+      },
+      {
+        "file": "halfway-07.mp3",
+        "rarity": "normal",
+        "text": "Le plus dur est passé !"
+      },
+      {
+        "file": "halfway-08.mp3",
+        "rarity": "normal",
+        "text": "On tient le bon bout !"
+      },
+      {
+        "file": "halfway-09.mp3",
+        "rarity": "normal",
+        "text": "Moitié faite, moitié à faire !"
+      },
+      {
+        "file": "halfway-10.mp3",
+        "rarity": "normal",
+        "text": "Vous êtes à mi-chemin !"
+      },
+      {
+        "file": "halfway-11.mp3",
+        "rarity": "normal",
+        "text": "Beau travail, on lâche rien !"
+      },
+      {
+        "file": "halfway-12.mp3",
+        "rarity": "normal",
+        "text": "La moitié est derrière vous !"
+      }
+    ],
+    "done": [
+      {
+        "file": "done-01.mp3",
+        "rarity": "normal",
+        "text": "Bravo, c'est fini !"
+      },
+      {
+        "file": "done-02.mp3",
+        "rarity": "normal",
+        "text": "Excellent travail !"
+      },
+      {
+        "file": "done-03.mp3",
+        "rarity": "normal",
+        "text": "Séance terminée, bien joué !"
+      },
+      {
+        "file": "done-04.mp3",
+        "rarity": "normal",
+        "text": "Vous avez tout donné !"
+      },
+      {
+        "file": "done-05.mp3",
+        "rarity": "normal",
+        "text": "C'est dans la boîte !"
+      },
+      {
+        "file": "done-06.mp3",
+        "rarity": "normal",
+        "text": "Chapeau, belle séance !"
+      },
+      {
+        "file": "done-07.mp3",
+        "rarity": "normal",
+        "text": "Mission accomplie !"
+      },
+      {
+        "file": "done-08.mp3",
+        "rarity": "normal",
+        "text": "Félicitations, c'est terminé !"
+      },
+      {
+        "file": "done-09.mp3",
+        "rarity": "normal",
+        "text": "Séance bouclée !"
+      },
+      {
+        "file": "done-10.mp3",
+        "rarity": "normal",
+        "text": "Vous êtes des champions !"
+      },
+      {
+        "file": "done-11.mp3",
+        "rarity": "normal",
+        "text": "Quel effort, bravo !"
+      },
+      {
+        "file": "done-12.mp3",
+        "rarity": "normal",
+        "text": "C'est validé !"
+      },
+      {
+        "file": "done-13.mp3",
+        "rarity": "normal",
+        "text": "Fier de vous !"
+      },
+      {
+        "file": "done-14.mp3",
+        "rarity": "normal",
+        "text": "Objectif atteint !"
+      },
+      {
+        "file": "done-15.mp3",
+        "rarity": "normal",
+        "text": "Magnifique séance !"
+      }
+    ],
+    "countdown_3": [
+      {
+        "file": "countdown_3-01.mp3",
+        "rarity": "normal",
+        "text": "Trois"
+      }
+    ],
+    "countdown_2": [
+      {
+        "file": "countdown_2-01.mp3",
+        "rarity": "normal",
+        "text": "Deux"
+      }
+    ],
+    "countdown_1": [
+      {
+        "file": "countdown_1-01.mp3",
+        "rarity": "normal",
+        "text": "Un"
+      }
+    ],
+    "mid_work": [
+      {
+        "file": "mid_work-01.mp3",
+        "rarity": "normal",
+        "text": "Tenez bon !"
+      },
+      {
+        "file": "mid_work-02.mp3",
+        "rarity": "normal",
+        "text": "Gardez le rythme !"
+      },
+      {
+        "file": "mid_work-03.mp3",
+        "rarity": "normal",
+        "text": "On continue !"
+      },
+      {
+        "file": "mid_work-04.mp3",
+        "rarity": "normal",
+        "text": "Restez concentrés !"
+      },
+      {
+        "file": "mid_work-05.mp3",
+        "rarity": "normal",
+        "text": "Encore un effort !"
+      },
+      {
+        "file": "mid_work-06.mp3",
+        "rarity": "normal",
+        "text": "Vous êtes solides !"
+      },
+      {
+        "file": "mid_work-07.mp3",
+        "rarity": "normal",
+        "text": "C'est bien, continuez !"
+      },
+      {
+        "file": "mid_work-08.mp3",
+        "rarity": "normal",
+        "text": "Allez, on maintient !"
+      },
+      {
+        "file": "mid_work-09.mp3",
+        "rarity": "normal",
+        "text": "Courage, c'est bientôt fini !"
+      },
+      {
+        "file": "mid_work-10.mp3",
+        "rarity": "normal",
+        "text": "On lâche rien !"
+      },
+      {
+        "file": "mid_work-11.mp3",
+        "rarity": "normal",
+        "text": "Bon travail !"
+      },
+      {
+        "file": "mid_work-12.mp3",
+        "rarity": "normal",
+        "text": "Le rythme est bon !"
+      },
+      {
+        "file": "mid_work-13.mp3",
+        "rarity": "normal",
+        "text": "On reste dans l'effort !"
+      },
+      {
+        "file": "mid_work-14.mp3",
+        "rarity": "normal",
+        "text": "Continuez comme ça !"
+      },
+      {
+        "file": "mid_work-15.mp3",
+        "rarity": "normal",
+        "text": "Encore, encore, encore !"
+      },
+      {
+        "file": "mid_work-16.mp3",
+        "rarity": "normal",
+        "text": "Bravo, c'est du solide !"
+      },
+      {
+        "file": "mid_work-17.mp3",
+        "rarity": "normal",
+        "text": "Vous assurez !"
+      },
+      {
+        "file": "mid_work-18.mp3",
+        "rarity": "normal",
+        "text": "Ça c'est de l'engagement !"
+      },
+      {
+        "file": "mid_work-19.mp3",
+        "rarity": "normal",
+        "text": "Très bien, on garde la cadence !"
+      },
+      {
+        "file": "mid_work-20.mp3",
+        "rarity": "normal",
+        "text": "On pousse jusqu'au bout !"
+      },
+      {
+        "file": "mid_work-21.mp3",
+        "rarity": "normal",
+        "text": "Vous êtes sur la bonne voie !"
+      },
+      {
+        "file": "mid_work-22.mp3",
+        "rarity": "normal",
+        "text": "Ne ralentissez pas !"
+      },
+      {
+        "file": "mid_work-23.mp3",
+        "rarity": "normal",
+        "text": "L'effort paie, continuez !"
+      },
+      {
+        "file": "mid_work-24.mp3",
+        "rarity": "normal",
+        "text": "Chaque seconde compte !"
+      },
+      {
+        "file": "mid_work-25.mp3",
+        "rarity": "normal",
+        "text": "On donne le meilleur de soi !"
+      },
+      {
+        "file": "mid_work-26.mp3",
+        "rarity": "normal",
+        "text": "Régulier, constant, solide !"
+      },
+      {
+        "file": "mid_work-27.mp3",
+        "rarity": "normal",
+        "text": "Gardez cette énergie !"
+      },
+      {
+        "file": "mid_work-28.mp3",
+        "rarity": "normal",
+        "text": "Le travail paie toujours !"
+      },
+      {
+        "file": "mid_work-29.mp3",
+        "rarity": "normal",
+        "text": "On est dans le dur, c'est normal !"
+      },
+      {
+        "file": "mid_work-30.mp3",
+        "rarity": "normal",
+        "text": "Serrez les dents, ça vient !"
+      },
+      {
+        "file": "mid_work-31.mp3",
+        "rarity": "normal",
+        "text": "Vous y êtes presque !"
+      },
+      {
+        "file": "mid_work-32.mp3",
+        "rarity": "normal",
+        "text": "Persévérez !"
+      },
+      {
+        "file": "mid_work-33.mp3",
+        "rarity": "normal",
+        "text": "Chaque rep est une victoire !"
+      },
+      {
+        "file": "mid_work-34.mp3",
+        "rarity": "normal",
+        "text": "On ne recule pas !"
+      },
+      {
+        "file": "mid_work-35.mp3",
+        "rarity": "normal",
+        "text": "Allez, on s'accroche !"
+      },
+      {
+        "file": "mid_work-rare-36.mp3",
+        "rarity": "rare",
+        "text": "Les courbatures de demain, c'est toi qui les fabriques là"
+      },
+      {
+        "file": "mid_work-rare-37.mp3",
+        "rarity": "rare",
+        "text": "T'as pas payé un abonnement pour regarder les machines"
+      },
+      {
+        "file": "mid_work-rare-38.mp3",
+        "rarity": "rare",
+        "text": "La barre va pas se soulever toute seule"
+      },
+      {
+        "file": "mid_work-rare-39.mp3",
+        "rarity": "rare",
+        "text": "Ton binôme te regarde, fais pas semblant"
+      },
+      {
+        "file": "mid_work-rare-40.mp3",
+        "rarity": "rare",
+        "text": "Le banc est pas un lit, on pousse"
+      },
+      {
+        "file": "mid_work-rare-41.mp3",
+        "rarity": "rare",
+        "text": "La gravité est ton ennemie, combats-la"
+      },
+      {
+        "file": "mid_work-rare-42.mp3",
+        "rarity": "rare",
+        "text": "Les muscles poussent pas sur le canapé"
+      },
+      {
+        "file": "mid_work-rare-43.mp3",
+        "rarity": "rare",
+        "text": "Si tu parles encore, c'est que c'est pas assez lourd"
+      },
+      {
+        "file": "mid_work-rare-44.mp3",
+        "rarity": "rare",
+        "text": "Ton téléphone peut attendre, pas tes muscles"
+      },
+      {
+        "file": "mid_work-rare-45.mp3",
+        "rarity": "rare",
+        "text": "La fonte, ça se mérite"
+      },
+      {
+        "file": "mid_work-rare-46.mp3",
+        "rarity": "rare",
+        "text": "Chaque rep te sépare du commun des mortels"
+      },
+      {
+        "file": "mid_work-rare-47.mp3",
+        "rarity": "rare",
+        "text": "Le miroir ne ment jamais"
+      },
+      {
+        "file": "mid_work-rare-48.mp3",
+        "rarity": "rare",
+        "text": "La douleur est temporaire, la fierté reste"
+      },
+      {
+        "file": "mid_work-rare-49.mp3",
+        "rarity": "rare",
+        "text": "Tu seras content de l'avoir fait"
+      },
+      {
+        "file": "mid_work-rare-50.mp3",
+        "rarity": "rare",
+        "text": "Plus dur que tes devoirs de maths, non ?"
+      },
+      {
+        "file": "mid_work-epic-51.mp3",
+        "rarity": "epic",
+        "text": "Si c'était facile, tout le monde aurait des pecs"
+      },
+      {
+        "file": "mid_work-epic-52.mp3",
+        "rarity": "epic",
+        "text": "Imagine la tête du jury au BAC"
+      },
+      {
+        "file": "mid_work-epic-53.mp3",
+        "rarity": "epic",
+        "text": "Ce rep-là, il compte double. J'ai décidé."
+      },
+      {
+        "file": "mid_work-epic-54.mp3",
+        "rarity": "epic",
+        "text": "La fonte ne juge pas. Elle, au moins."
+      },
+      {
+        "file": "mid_work-epic-55.mp3",
+        "rarity": "epic",
+        "text": "Tu sues ? Bien. C'est ton corps qui applaudit."
+      },
+      {
+        "file": "mid_work-epic-56.mp3",
+        "rarity": "epic",
+        "text": "Quelque part, quelqu'un soulève plus léger que toi et abandonne. Pas toi."
+      },
+      {
+        "file": "mid_work-epic-57.mp3",
+        "rarity": "epic",
+        "text": "T'es pas là pour faire joli, t'es là pour progresser"
+      },
+      {
+        "file": "mid_work-epic-58.mp3",
+        "rarity": "epic",
+        "text": "Ton futur toi te remercie en ce moment"
+      },
+      {
+        "file": "mid_work-epic-59.mp3",
+        "rarity": "epic",
+        "text": "Le RIR parfait c'est quand tu souris en grimaçant"
+      },
+      {
+        "file": "mid_work-epic-60.mp3",
+        "rarity": "epic",
+        "text": "Là tu construis ta légende, rep par rep"
+      },
+      {
+        "file": "mid_work-epic-61.mp3",
+        "rarity": "epic",
+        "text": "Le jour du BAC, tu repenseras à ce moment"
+      },
+      {
+        "file": "mid_work-epic-62.mp3",
+        "rarity": "epic",
+        "text": "Les poids ne savent pas que t'as cours dans une heure"
+      },
+      {
+        "file": "mid_work-epic-63.mp3",
+        "rarity": "epic",
+        "text": "Ta note au BAC se fabrique ici, maintenant"
+      },
+      {
+        "file": "mid_work-epic-64.mp3",
+        "rarity": "epic",
+        "text": "Rappelle-toi pourquoi t'as commencé"
+      },
+      {
+        "file": "mid_work-epic-65.mp3",
+        "rarity": "epic",
+        "text": "T'es pas là pour faire de la figuration"
+      },
+      {
+        "file": "mid_work-super-epic-66.mp3",
+        "rarity": "super-epic",
+        "text": "Pousse comme si le dernier bus partait dans 30 secondes"
+      },
+      {
+        "file": "mid_work-super-epic-67.mp3",
+        "rarity": "super-epic",
+        "text": "C'est pas une salle de muscu ici, c'est une forge à champions"
+      },
+      {
+        "file": "mid_work-super-epic-68.mp3",
+        "rarity": "super-epic",
+        "text": "Les abdos sont comme les devoirs. Personne aime en faire, mais tout le monde veut le résultat"
+      },
+      {
+        "file": "mid_work-super-epic-69.mp3",
+        "rarity": "super-epic",
+        "text": "Si la barre pouvait parler, elle dirait : encore"
+      },
+      {
+        "file": "mid_work-super-epic-70.mp3",
+        "rarity": "super-epic",
+        "text": "Ton prof d'EPS a mis un 20 dans une enveloppe. Faut juste aller le chercher"
+      },
+      {
+        "file": "mid_work-super-epic-71.mp3",
+        "rarity": "super-epic",
+        "text": "On est pas au yoga. Enfin si, mais en plus lourd"
+      },
+      {
+        "file": "mid_work-super-epic-72.mp3",
+        "rarity": "super-epic",
+        "text": "Tu transpires du talent là"
+      },
+      {
+        "file": "mid_work-super-epic-73.mp3",
+        "rarity": "super-epic",
+        "text": "La barre tremble ? C'est elle qui a peur, pas toi"
+      },
+      {
+        "file": "mid_work-super-epic-74.mp3",
+        "rarity": "super-epic",
+        "text": "Je suis une appli et même moi je suis impressionné"
+      },
+      {
+        "file": "mid_work-super-epic-75.mp3",
+        "rarity": "super-epic",
+        "text": "Quelque part, Schwarzenegger hoche la tête"
+      },
+      {
+        "file": "mid_work-super-epic-76.mp3",
+        "rarity": "super-epic",
+        "text": "Ce rep vaut au moins trois stories Instagram"
+      },
+      {
+        "file": "mid_work-super-epic-77.mp3",
+        "rarity": "super-epic",
+        "text": "Le canapé t'envoie un texto. Ne réponds pas."
+      },
+      {
+        "file": "mid_work-super-epic-78.mp3",
+        "rarity": "super-epic",
+        "text": "En fait t'es un super-héros, mais avec un survêtement"
+      },
+      {
+        "file": "mid_work-super-epic-79.mp3",
+        "rarity": "super-epic",
+        "text": "Pousse ! C'est pas une suggestion, c'est un ordre bienveillant"
+      },
+      {
+        "file": "mid_work-super-epic-80.mp3",
+        "rarity": "super-epic",
+        "text": "Ta sueur d'aujourd'hui, c'est la confiance de demain"
+      },
+      {
+        "file": "mid_work-super-epic-81.mp3",
+        "rarity": "super-epic",
+        "text": "Si les muscles parlaient, ils diraient merci. Enfin, après les courbatures."
+      },
+      {
+        "file": "mid_work-super-epic-82.mp3",
+        "rarity": "super-epic",
+        "text": "Le secret pour être fort ? Être là. Et pousser. C'est tout."
+      },
+      {
+        "file": "mid_work-super-epic-83.mp3",
+        "rarity": "super-epic",
+        "text": "Tu fais ça mieux que 90% des gens. Les 10% restants, c'est la semaine prochaine."
+      }
+    ],
+    "technique": [
+      {
+        "file": "technique-01.mp3",
+        "rarity": "normal",
+        "text": "Contrôlez le mouvement"
+      },
+      {
+        "file": "technique-02.mp3",
+        "rarity": "normal",
+        "text": "Dos droit !"
+      },
+      {
+        "file": "technique-03.mp3",
+        "rarity": "normal",
+        "text": "Gainez le tronc"
+      },
+      {
+        "file": "technique-04.mp3",
+        "rarity": "normal",
+        "text": "Soufflez en poussant"
+      },
+      {
+        "file": "technique-05.mp3",
+        "rarity": "normal",
+        "text": "Inspirez à la descente"
+      },
+      {
+        "file": "technique-06.mp3",
+        "rarity": "normal",
+        "text": "Amplitude complète"
+      },
+      {
+        "file": "technique-07.mp3",
+        "rarity": "normal",
+        "text": "Ne verrouillez pas les coudes"
+      },
+      {
+        "file": "technique-08.mp3",
+        "rarity": "normal",
+        "text": "Gardez les épaules basses"
+      },
+      {
+        "file": "technique-09.mp3",
+        "rarity": "normal",
+        "text": "Contractez en haut du mouvement"
+      },
+      {
+        "file": "technique-10.mp3",
+        "rarity": "normal",
+        "text": "Contrôlez la phase négative"
+      },
+      {
+        "file": "technique-11.mp3",
+        "rarity": "normal",
+        "text": "Pieds bien ancrés au sol"
+      },
+      {
+        "file": "technique-12.mp3",
+        "rarity": "normal",
+        "text": "Regard droit devant"
+      },
+      {
+        "file": "technique-13.mp3",
+        "rarity": "normal",
+        "text": "Serrez les abdos"
+      },
+      {
+        "file": "technique-14.mp3",
+        "rarity": "normal",
+        "text": "Mouvement fluide, pas d'à-coups"
+      },
+      {
+        "file": "technique-15.mp3",
+        "rarity": "normal",
+        "text": "Pensez à la respiration"
+      },
+      {
+        "file": "technique-16.mp3",
+        "rarity": "normal",
+        "text": "Gardez les genoux dans l'axe des pieds"
+      },
+      {
+        "file": "technique-17.mp3",
+        "rarity": "normal",
+        "text": "Ne cambrez pas le dos"
+      },
+      {
+        "file": "technique-18.mp3",
+        "rarity": "normal",
+        "text": "Épaules en arrière, poitrine ouverte"
+      },
+      {
+        "file": "technique-19.mp3",
+        "rarity": "normal",
+        "text": "Ralentissez la descente"
+      },
+      {
+        "file": "technique-20.mp3",
+        "rarity": "normal",
+        "text": "Concentrez-vous sur le muscle ciblé"
+      }
+    ],
+    "time_30": [
+      {
+        "file": "time_30-01.mp3",
+        "rarity": "normal",
+        "text": "Plus que trente secondes"
+      }
+    ],
+    "time_10": [
+      {
+        "file": "time_10-01.mp3",
+        "rarity": "normal",
+        "text": "Dix secondes, tenez bon !"
+      }
+    ],
+    "time_5": [
+      {
+        "file": "time_5-01.mp3",
+        "rarity": "normal",
+        "text": "Cinq secondes !"
+      }
+    ],
+    "round_1": [
+      {
+        "file": "round_1-01.mp3",
+        "rarity": "normal",
+        "text": "Première série"
+      }
+    ],
+    "round_2": [
+      {
+        "file": "round_2-01.mp3",
+        "rarity": "normal",
+        "text": "Deuxième série"
+      }
+    ],
+    "round_3": [
+      {
+        "file": "round_3-01.mp3",
+        "rarity": "normal",
+        "text": "Troisième série"
+      }
+    ],
+    "round_4": [
+      {
+        "file": "round_4-01.mp3",
+        "rarity": "normal",
+        "text": "Quatrième série"
+      }
+    ],
+    "round_5": [
+      {
+        "file": "round_5-01.mp3",
+        "rarity": "normal",
+        "text": "Cinquième série"
+      }
+    ],
+    "round_6": [
+      {
+        "file": "round_6-01.mp3",
+        "rarity": "normal",
+        "text": "Sixième série"
+      }
+    ],
+    "round_7": [
+      {
+        "file": "round_7-01.mp3",
+        "rarity": "normal",
+        "text": "Septième série"
+      }
+    ],
+    "round_8": [
+      {
+        "file": "round_8-01.mp3",
+        "rarity": "normal",
+        "text": "Huitième série"
+      }
+    ],
+    "round_9": [
+      {
+        "file": "round_9-01.mp3",
+        "rarity": "normal",
+        "text": "Neuvième série"
+      }
+    ],
+    "round_10": [
+      {
+        "file": "round_10-01.mp3",
+        "rarity": "normal",
+        "text": "Dixième série"
+      }
+    ]
+  },
+  "en": {
+    "prepare": [
+      {
+        "file": "prepare-01.mp3",
+        "rarity": "normal",
+        "text": "Get ready"
+      },
+      {
+        "file": "prepare-02.mp3",
+        "rarity": "normal",
+        "text": "Here we go soon"
+      },
+      {
+        "file": "prepare-03.mp3",
+        "rarity": "normal",
+        "text": "Stand by"
+      },
+      {
+        "file": "prepare-04.mp3",
+        "rarity": "normal",
+        "text": "Focus up"
+      },
+      {
+        "file": "prepare-05.mp3",
+        "rarity": "normal",
+        "text": "Almost time"
+      },
+      {
+        "file": "prepare-06.mp3",
+        "rarity": "normal",
+        "text": "Get in position"
+      },
+      {
+        "file": "prepare-07.mp3",
+        "rarity": "normal",
+        "text": "Brace yourself"
+      },
+      {
+        "file": "prepare-08.mp3",
+        "rarity": "normal",
+        "text": "Lock in"
+      },
+      {
+        "file": "prepare-09.mp3",
+        "rarity": "normal",
+        "text": "Take a deep breath"
+      },
+      {
+        "file": "prepare-10.mp3",
+        "rarity": "normal",
+        "text": "Eyes forward"
+      },
+      {
+        "file": "prepare-11.mp3",
+        "rarity": "normal",
+        "text": "Get set"
+      },
+      {
+        "file": "prepare-12.mp3",
+        "rarity": "normal",
+        "text": "Prepare yourself"
+      },
+      {
+        "file": "prepare-13.mp3",
+        "rarity": "normal",
+        "text": "Just a few seconds"
+      },
+      {
+        "file": "prepare-14.mp3",
+        "rarity": "normal",
+        "text": "Time to focus"
+      },
+      {
+        "file": "prepare-15.mp3",
+        "rarity": "normal",
+        "text": "Ready up"
+      }
+    ],
+    "work_start": [
+      {
+        "file": "work_start-01.mp3",
+        "rarity": "normal",
+        "text": "Go!"
+      },
+      {
+        "file": "work_start-02.mp3",
+        "rarity": "normal",
+        "text": "Let's go!"
+      },
+      {
+        "file": "work_start-03.mp3",
+        "rarity": "normal",
+        "text": "Push it!"
+      },
+      {
+        "file": "work_start-04.mp3",
+        "rarity": "normal",
+        "text": "Send it!"
+      },
+      {
+        "file": "work_start-05.mp3",
+        "rarity": "normal",
+        "text": "Time to work!"
+      },
+      {
+        "file": "work_start-06.mp3",
+        "rarity": "normal",
+        "text": "Give it all!"
+      },
+      {
+        "file": "work_start-07.mp3",
+        "rarity": "normal",
+        "text": "Now!"
+      },
+      {
+        "file": "work_start-08.mp3",
+        "rarity": "normal",
+        "text": "Full power!"
+      },
+      {
+        "file": "work_start-09.mp3",
+        "rarity": "normal",
+        "text": "Attack!"
+      },
+      {
+        "file": "work_start-10.mp3",
+        "rarity": "normal",
+        "text": "Hit it!"
+      },
+      {
+        "file": "work_start-11.mp3",
+        "rarity": "normal",
+        "text": "Move it!"
+      },
+      {
+        "file": "work_start-12.mp3",
+        "rarity": "normal",
+        "text": "Game on!"
+      },
+      {
+        "file": "work_start-13.mp3",
+        "rarity": "normal",
+        "text": "Bring it!"
+      },
+      {
+        "file": "work_start-14.mp3",
+        "rarity": "normal",
+        "text": "Go hard!"
+      },
+      {
+        "file": "work_start-15.mp3",
+        "rarity": "normal",
+        "text": "All out!"
+      },
+      {
+        "file": "work_start-16.mp3",
+        "rarity": "normal",
+        "text": "Crush it!"
+      },
+      {
+        "file": "work_start-17.mp3",
+        "rarity": "normal",
+        "text": "Let's get it!"
+      },
+      {
+        "file": "work_start-18.mp3",
+        "rarity": "normal",
+        "text": "Fire away!"
+      },
+      {
+        "file": "work_start-19.mp3",
+        "rarity": "normal",
+        "text": "Beast mode!"
+      },
+      {
+        "file": "work_start-20.mp3",
+        "rarity": "normal",
+        "text": "Unleash it!"
+      }
+    ],
+    "rest_start": [
+      {
+        "file": "rest_start-01.mp3",
+        "rarity": "normal",
+        "text": "Rest"
+      },
+      {
+        "file": "rest_start-02.mp3",
+        "rarity": "normal",
+        "text": "Breathe"
+      },
+      {
+        "file": "rest_start-03.mp3",
+        "rarity": "normal",
+        "text": "Take a break"
+      },
+      {
+        "file": "rest_start-04.mp3",
+        "rarity": "normal",
+        "text": "Easy now"
+      },
+      {
+        "file": "rest_start-05.mp3",
+        "rarity": "normal",
+        "text": "Recover"
+      },
+      {
+        "file": "rest_start-06.mp3",
+        "rarity": "normal",
+        "text": "Shake it off"
+      },
+      {
+        "file": "rest_start-07.mp3",
+        "rarity": "normal",
+        "text": "Catch your breath"
+      },
+      {
+        "file": "rest_start-08.mp3",
+        "rarity": "normal",
+        "text": "Chill for a sec"
+      },
+      {
+        "file": "rest_start-09.mp3",
+        "rarity": "normal",
+        "text": "Take it easy"
+      },
+      {
+        "file": "rest_start-10.mp3",
+        "rarity": "normal",
+        "text": "Slow it down"
+      },
+      {
+        "file": "rest_start-11.mp3",
+        "rarity": "normal",
+        "text": "Deep breaths"
+      },
+      {
+        "file": "rest_start-12.mp3",
+        "rarity": "normal",
+        "text": "Relax and recover"
+      },
+      {
+        "file": "rest_start-13.mp3",
+        "rarity": "normal",
+        "text": "Let it go"
+      },
+      {
+        "file": "rest_start-14.mp3",
+        "rarity": "normal",
+        "text": "Reset"
+      },
+      {
+        "file": "rest_start-15.mp3",
+        "rarity": "normal",
+        "text": "Quick break"
+      }
+    ],
+    "last_round": [
+      {
+        "file": "last_round-01.mp3",
+        "rarity": "normal",
+        "text": "Last round!"
+      },
+      {
+        "file": "last_round-02.mp3",
+        "rarity": "normal",
+        "text": "Final push!"
+      },
+      {
+        "file": "last_round-03.mp3",
+        "rarity": "normal",
+        "text": "One more!"
+      },
+      {
+        "file": "last_round-04.mp3",
+        "rarity": "normal",
+        "text": "This is it!"
+      },
+      {
+        "file": "last_round-05.mp3",
+        "rarity": "normal",
+        "text": "Finish strong!"
+      },
+      {
+        "file": "last_round-06.mp3",
+        "rarity": "normal",
+        "text": "The last one!"
+      },
+      {
+        "file": "last_round-07.mp3",
+        "rarity": "normal",
+        "text": "Everything you've got!"
+      },
+      {
+        "file": "last_round-08.mp3",
+        "rarity": "normal",
+        "text": "Leave nothing behind!"
+      },
+      {
+        "file": "last_round-09.mp3",
+        "rarity": "normal",
+        "text": "Empty the tank!"
+      },
+      {
+        "file": "last_round-10.mp3",
+        "rarity": "normal",
+        "text": "Make it count!"
+      },
+      {
+        "file": "last_round-11.mp3",
+        "rarity": "normal",
+        "text": "Last one, best one!"
+      },
+      {
+        "file": "last_round-12.mp3",
+        "rarity": "normal",
+        "text": "No holding back!"
+      },
+      {
+        "file": "last_round-13.mp3",
+        "rarity": "normal",
+        "text": "The home stretch!"
+      },
+      {
+        "file": "last_round-14.mp3",
+        "rarity": "normal",
+        "text": "Go all in!"
+      },
+      {
+        "file": "last_round-15.mp3",
+        "rarity": "normal",
+        "text": "Grand finale!"
+      }
+    ],
+    "halfway": [
+      {
+        "file": "halfway-01.mp3",
+        "rarity": "normal",
+        "text": "Halfway there!"
+      },
+      {
+        "file": "halfway-02.mp3",
+        "rarity": "normal",
+        "text": "Fifty percent done!"
+      },
+      {
+        "file": "halfway-03.mp3",
+        "rarity": "normal",
+        "text": "Half done, keep going!"
+      },
+      {
+        "file": "halfway-04.mp3",
+        "rarity": "normal",
+        "text": "Midpoint, nice work!"
+      },
+      {
+        "file": "halfway-05.mp3",
+        "rarity": "normal",
+        "text": "Already halfway!"
+      },
+      {
+        "file": "halfway-06.mp3",
+        "rarity": "normal",
+        "text": "Killing it, keep pushing!"
+      },
+      {
+        "file": "halfway-07.mp3",
+        "rarity": "normal",
+        "text": "The hard part's over!"
+      },
+      {
+        "file": "halfway-08.mp3",
+        "rarity": "normal",
+        "text": "You're on track!"
+      },
+      {
+        "file": "halfway-09.mp3",
+        "rarity": "normal",
+        "text": "Half in the bag!"
+      },
+      {
+        "file": "halfway-10.mp3",
+        "rarity": "normal",
+        "text": "Keep that energy up!"
+      },
+      {
+        "file": "halfway-11.mp3",
+        "rarity": "normal",
+        "text": "Solid work, stay strong!"
+      },
+      {
+        "file": "halfway-12.mp3",
+        "rarity": "normal",
+        "text": "The finish line is closer now!"
+      }
+    ],
+    "done": [
+      {
+        "file": "done-01.mp3",
+        "rarity": "normal",
+        "text": "Great job, you're done!"
+      },
+      {
+        "file": "done-02.mp3",
+        "rarity": "normal",
+        "text": "Awesome workout!"
+      },
+      {
+        "file": "done-03.mp3",
+        "rarity": "normal",
+        "text": "Session complete!"
+      },
+      {
+        "file": "done-04.mp3",
+        "rarity": "normal",
+        "text": "Crushed it!"
+      },
+      {
+        "file": "done-05.mp3",
+        "rarity": "normal",
+        "text": "You did it!"
+      },
+      {
+        "file": "done-06.mp3",
+        "rarity": "normal",
+        "text": "Beast mode complete!"
+      },
+      {
+        "file": "done-07.mp3",
+        "rarity": "normal",
+        "text": "Nailed it!"
+      },
+      {
+        "file": "done-08.mp3",
+        "rarity": "normal",
+        "text": "Champion effort!"
+      },
+      {
+        "file": "done-09.mp3",
+        "rarity": "normal",
+        "text": "That's a wrap!"
+      },
+      {
+        "file": "done-10.mp3",
+        "rarity": "normal",
+        "text": "What a session!"
+      },
+      {
+        "file": "done-11.mp3",
+        "rarity": "normal",
+        "text": "Absolutely smashed it!"
+      },
+      {
+        "file": "done-12.mp3",
+        "rarity": "normal",
+        "text": "You're a warrior!"
+      },
+      {
+        "file": "done-13.mp3",
+        "rarity": "normal",
+        "text": "Mission accomplished!"
+      },
+      {
+        "file": "done-14.mp3",
+        "rarity": "normal",
+        "text": "Well earned rest!"
+      },
+      {
+        "file": "done-15.mp3",
+        "rarity": "normal",
+        "text": "Outstanding work!"
+      }
+    ],
+    "countdown_3": [
+      {
+        "file": "countdown_3-01.mp3",
+        "rarity": "normal",
+        "text": "Three"
+      }
+    ],
+    "countdown_2": [
+      {
+        "file": "countdown_2-01.mp3",
+        "rarity": "normal",
+        "text": "Two"
+      }
+    ],
+    "countdown_1": [
+      {
+        "file": "countdown_1-01.mp3",
+        "rarity": "normal",
+        "text": "One"
+      }
+    ],
+    "mid_work": [
+      {
+        "file": "mid_work-01.mp3",
+        "rarity": "normal",
+        "text": "Keep going!"
+      },
+      {
+        "file": "mid_work-02.mp3",
+        "rarity": "normal",
+        "text": "Stay strong!"
+      },
+      {
+        "file": "mid_work-03.mp3",
+        "rarity": "normal",
+        "text": "Hold the pace!"
+      },
+      {
+        "file": "mid_work-04.mp3",
+        "rarity": "normal",
+        "text": "You've got this!"
+      },
+      {
+        "file": "mid_work-05.mp3",
+        "rarity": "normal",
+        "text": "One more effort!"
+      },
+      {
+        "file": "mid_work-06.mp3",
+        "rarity": "normal",
+        "text": "Looking solid!"
+      },
+      {
+        "file": "mid_work-07.mp3",
+        "rarity": "normal",
+        "text": "Nice work, keep it up!"
+      },
+      {
+        "file": "mid_work-08.mp3",
+        "rarity": "normal",
+        "text": "Maintain the rhythm!"
+      },
+      {
+        "file": "mid_work-09.mp3",
+        "rarity": "normal",
+        "text": "Hang in there!"
+      },
+      {
+        "file": "mid_work-10.mp3",
+        "rarity": "normal",
+        "text": "Don't stop now!"
+      },
+      {
+        "file": "mid_work-11.mp3",
+        "rarity": "normal",
+        "text": "Great effort!"
+      },
+      {
+        "file": "mid_work-12.mp3",
+        "rarity": "normal",
+        "text": "The pace is good!"
+      },
+      {
+        "file": "mid_work-13.mp3",
+        "rarity": "normal",
+        "text": "Stay in it!"
+      },
+      {
+        "file": "mid_work-14.mp3",
+        "rarity": "normal",
+        "text": "Keep pushing!"
+      },
+      {
+        "file": "mid_work-15.mp3",
+        "rarity": "normal",
+        "text": "More, more, more!"
+      },
+      {
+        "file": "mid_work-16.mp3",
+        "rarity": "normal",
+        "text": "That's solid work!"
+      },
+      {
+        "file": "mid_work-17.mp3",
+        "rarity": "normal",
+        "text": "You're nailing this!"
+      },
+      {
+        "file": "mid_work-18.mp3",
+        "rarity": "normal",
+        "text": "Commitment right there!"
+      },
+      {
+        "file": "mid_work-19.mp3",
+        "rarity": "normal",
+        "text": "Keep that cadence!"
+      },
+      {
+        "file": "mid_work-20.mp3",
+        "rarity": "normal",
+        "text": "Push through to the end!"
+      },
+      {
+        "file": "mid_work-21.mp3",
+        "rarity": "normal",
+        "text": "You're on the right track!"
+      },
+      {
+        "file": "mid_work-22.mp3",
+        "rarity": "normal",
+        "text": "Don't slow down!"
+      },
+      {
+        "file": "mid_work-23.mp3",
+        "rarity": "normal",
+        "text": "The effort pays off!"
+      },
+      {
+        "file": "mid_work-24.mp3",
+        "rarity": "normal",
+        "text": "Every second counts!"
+      },
+      {
+        "file": "mid_work-25.mp3",
+        "rarity": "normal",
+        "text": "Give your best!"
+      },
+      {
+        "file": "mid_work-26.mp3",
+        "rarity": "normal",
+        "text": "Steady, consistent, strong!"
+      },
+      {
+        "file": "mid_work-27.mp3",
+        "rarity": "normal",
+        "text": "Keep that energy!"
+      },
+      {
+        "file": "mid_work-28.mp3",
+        "rarity": "normal",
+        "text": "Hard work always pays!"
+      },
+      {
+        "file": "mid_work-29.mp3",
+        "rarity": "normal",
+        "text": "It's supposed to be hard!"
+      },
+      {
+        "file": "mid_work-30.mp3",
+        "rarity": "normal",
+        "text": "Grit your teeth, it's coming!"
+      },
+      {
+        "file": "mid_work-31.mp3",
+        "rarity": "normal",
+        "text": "Almost there!"
+      },
+      {
+        "file": "mid_work-32.mp3",
+        "rarity": "normal",
+        "text": "Stay committed!"
+      },
+      {
+        "file": "mid_work-33.mp3",
+        "rarity": "normal",
+        "text": "Every rep is a win!"
+      },
+      {
+        "file": "mid_work-34.mp3",
+        "rarity": "normal",
+        "text": "No stepping back!"
+      },
+      {
+        "file": "mid_work-35.mp3",
+        "rarity": "normal",
+        "text": "Dig deep!"
+      },
+      {
+        "file": "mid_work-rare-36.mp3",
+        "rarity": "rare",
+        "text": "The barbell doesn't lift itself"
+      },
+      {
+        "file": "mid_work-rare-37.mp3",
+        "rarity": "rare",
+        "text": "Your couch misses you. Don't go back."
+      },
+      {
+        "file": "mid_work-rare-38.mp3",
+        "rarity": "rare",
+        "text": "If you can talk, you can add weight"
+      },
+      {
+        "file": "mid_work-rare-39.mp3",
+        "rarity": "rare",
+        "text": "Your phone can wait, your gains can't"
+      },
+      {
+        "file": "mid_work-rare-40.mp3",
+        "rarity": "rare",
+        "text": "The mirror sees everything"
+      },
+      {
+        "file": "mid_work-rare-41.mp3",
+        "rarity": "rare",
+        "text": "Sweat now, flex later"
+      },
+      {
+        "file": "mid_work-rare-42.mp3",
+        "rarity": "rare",
+        "text": "Gravity is the enemy. You're winning."
+      },
+      {
+        "file": "mid_work-rare-43.mp3",
+        "rarity": "rare",
+        "text": "Rest is for the rest period"
+      },
+      {
+        "file": "mid_work-rare-44.mp3",
+        "rarity": "rare",
+        "text": "Pain is temporary, pride is forever"
+      },
+      {
+        "file": "mid_work-rare-45.mp3",
+        "rarity": "rare",
+        "text": "You'll be glad you did this"
+      },
+      {
+        "file": "mid_work-rare-46.mp3",
+        "rarity": "rare",
+        "text": "Harder than your math homework, right?"
+      },
+      {
+        "file": "mid_work-rare-47.mp3",
+        "rarity": "rare",
+        "text": "The iron doesn't lie"
+      },
+      {
+        "file": "mid_work-epic-48.mp3",
+        "rarity": "epic",
+        "text": "If it were easy, it'd be called Netflix"
+      },
+      {
+        "file": "mid_work-epic-49.mp3",
+        "rarity": "epic",
+        "text": "This rep right here? Legend status."
+      },
+      {
+        "file": "mid_work-epic-50.mp3",
+        "rarity": "epic",
+        "text": "Your future self is watching. Impress them."
+      },
+      {
+        "file": "mid_work-epic-51.mp3",
+        "rarity": "epic",
+        "text": "Somewhere, someone lighter than you just quit. Not you."
+      },
+      {
+        "file": "mid_work-epic-52.mp3",
+        "rarity": "epic",
+        "text": "You're not here to look pretty, you're here to get strong"
+      },
+      {
+        "file": "mid_work-epic-53.mp3",
+        "rarity": "epic",
+        "text": "The weights don't know you have class in an hour"
+      },
+      {
+        "file": "mid_work-epic-54.mp3",
+        "rarity": "epic",
+        "text": "Pain is just weakness leaving the body. Dramatically."
+      },
+      {
+        "file": "mid_work-epic-55.mp3",
+        "rarity": "epic",
+        "text": "You're building your highlight reel right now"
+      },
+      {
+        "file": "mid_work-epic-56.mp3",
+        "rarity": "epic",
+        "text": "Remember why you started"
+      },
+      {
+        "file": "mid_work-epic-57.mp3",
+        "rarity": "epic",
+        "text": "Rep by rep, you're writing your story"
+      },
+      {
+        "file": "mid_work-epic-58.mp3",
+        "rarity": "epic",
+        "text": "You're not here to blend in"
+      },
+      {
+        "file": "mid_work-epic-59.mp3",
+        "rarity": "epic",
+        "text": "This is where champions are made"
+      },
+      {
+        "file": "mid_work-super-epic-60.mp3",
+        "rarity": "super-epic",
+        "text": "Push like the last bus leaves in 30 seconds"
+      },
+      {
+        "file": "mid_work-super-epic-61.mp3",
+        "rarity": "super-epic",
+        "text": "This isn't a gym, it's a champion factory"
+      },
+      {
+        "file": "mid_work-super-epic-62.mp3",
+        "rarity": "super-epic",
+        "text": "I'm just an app and even I'm impressed"
+      },
+      {
+        "file": "mid_work-super-epic-63.mp3",
+        "rarity": "super-epic",
+        "text": "Somewhere, a bodybuilder just nodded with respect"
+      },
+      {
+        "file": "mid_work-super-epic-64.mp3",
+        "rarity": "super-epic",
+        "text": "This rep is worth at least three Instagram stories"
+      },
+      {
+        "file": "mid_work-super-epic-65.mp3",
+        "rarity": "super-epic",
+        "text": "The couch just texted you. Don't answer."
+      },
+      {
+        "file": "mid_work-super-epic-66.mp3",
+        "rarity": "super-epic",
+        "text": "You're basically a superhero in a tracksuit"
+      },
+      {
+        "file": "mid_work-super-epic-67.mp3",
+        "rarity": "super-epic",
+        "text": "If muscles could talk, they'd say thank you. After the soreness."
+      },
+      {
+        "file": "mid_work-super-epic-68.mp3",
+        "rarity": "super-epic",
+        "text": "You're outperforming 90 percent of humanity right now"
+      },
+      {
+        "file": "mid_work-super-epic-69.mp3",
+        "rarity": "super-epic",
+        "text": "Your sweat today is tomorrow's confidence"
+      },
+      {
+        "file": "mid_work-super-epic-70.mp3",
+        "rarity": "super-epic",
+        "text": "The secret to being strong? Show up. And push. That's it."
+      },
+      {
+        "file": "mid_work-super-epic-71.mp3",
+        "rarity": "super-epic",
+        "text": "You're doing this better than 90 percent of people. The other 10? Next week."
+      }
+    ],
+    "technique": [
+      {
+        "file": "technique-01.mp3",
+        "rarity": "normal",
+        "text": "Control the movement"
+      },
+      {
+        "file": "technique-02.mp3",
+        "rarity": "normal",
+        "text": "Straight back!"
+      },
+      {
+        "file": "technique-03.mp3",
+        "rarity": "normal",
+        "text": "Engage your core"
+      },
+      {
+        "file": "technique-04.mp3",
+        "rarity": "normal",
+        "text": "Breathe out on the push"
+      },
+      {
+        "file": "technique-05.mp3",
+        "rarity": "normal",
+        "text": "Inhale on the way down"
+      },
+      {
+        "file": "technique-06.mp3",
+        "rarity": "normal",
+        "text": "Full range of motion"
+      },
+      {
+        "file": "technique-07.mp3",
+        "rarity": "normal",
+        "text": "Don't lock your elbows"
+      },
+      {
+        "file": "technique-08.mp3",
+        "rarity": "normal",
+        "text": "Keep your shoulders down"
+      },
+      {
+        "file": "technique-09.mp3",
+        "rarity": "normal",
+        "text": "Squeeze at the top"
+      },
+      {
+        "file": "technique-10.mp3",
+        "rarity": "normal",
+        "text": "Control the negative"
+      },
+      {
+        "file": "technique-11.mp3",
+        "rarity": "normal",
+        "text": "Feet flat on the ground"
+      },
+      {
+        "file": "technique-12.mp3",
+        "rarity": "normal",
+        "text": "Eyes straight ahead"
+      },
+      {
+        "file": "technique-13.mp3",
+        "rarity": "normal",
+        "text": "Tighten your abs"
+      },
+      {
+        "file": "technique-14.mp3",
+        "rarity": "normal",
+        "text": "Smooth movement, no jerking"
+      },
+      {
+        "file": "technique-15.mp3",
+        "rarity": "normal",
+        "text": "Focus on your breathing"
+      },
+      {
+        "file": "technique-16.mp3",
+        "rarity": "normal",
+        "text": "Keep your knees over your toes"
+      },
+      {
+        "file": "technique-17.mp3",
+        "rarity": "normal",
+        "text": "Don't arch your back"
+      },
+      {
+        "file": "technique-18.mp3",
+        "rarity": "normal",
+        "text": "Shoulders back, chest up"
+      },
+      {
+        "file": "technique-19.mp3",
+        "rarity": "normal",
+        "text": "Slow down the descent"
+      },
+      {
+        "file": "technique-20.mp3",
+        "rarity": "normal",
+        "text": "Focus on the target muscle"
+      }
+    ],
+    "time_30": [
+      {
+        "file": "time_30-01.mp3",
+        "rarity": "normal",
+        "text": "Thirty seconds left"
+      }
+    ],
+    "time_10": [
+      {
+        "file": "time_10-01.mp3",
+        "rarity": "normal",
+        "text": "Ten seconds, hold on!"
+      }
+    ],
+    "time_5": [
+      {
+        "file": "time_5-01.mp3",
+        "rarity": "normal",
+        "text": "Five seconds!"
+      }
+    ],
+    "round_1": [
+      {
+        "file": "round_1-01.mp3",
+        "rarity": "normal",
+        "text": "Round one"
+      }
+    ],
+    "round_2": [
+      {
+        "file": "round_2-01.mp3",
+        "rarity": "normal",
+        "text": "Round two"
+      }
+    ],
+    "round_3": [
+      {
+        "file": "round_3-01.mp3",
+        "rarity": "normal",
+        "text": "Round three"
+      }
+    ],
+    "round_4": [
+      {
+        "file": "round_4-01.mp3",
+        "rarity": "normal",
+        "text": "Round four"
+      }
+    ],
+    "round_5": [
+      {
+        "file": "round_5-01.mp3",
+        "rarity": "normal",
+        "text": "Round five"
+      }
+    ],
+    "round_6": [
+      {
+        "file": "round_6-01.mp3",
+        "rarity": "normal",
+        "text": "Round six"
+      }
+    ],
+    "round_7": [
+      {
+        "file": "round_7-01.mp3",
+        "rarity": "normal",
+        "text": "Round seven"
+      }
+    ],
+    "round_8": [
+      {
+        "file": "round_8-01.mp3",
+        "rarity": "normal",
+        "text": "Round eight"
+      }
+    ],
+    "round_9": [
+      {
+        "file": "round_9-01.mp3",
+        "rarity": "normal",
+        "text": "Round nine"
+      }
+    ],
+    "round_10": [
+      {
+        "file": "round_10-01.mp3",
+        "rarity": "normal",
+        "text": "Round ten"
+      }
+    ]
+  },
+  "es": {
+    "prepare": [
+      {
+        "file": "prepare-01.mp3",
+        "rarity": "normal",
+        "text": "Prepárense"
+      },
+      {
+        "file": "prepare-02.mp3",
+        "rarity": "normal",
+        "text": "Casi empezamos"
+      },
+      {
+        "file": "prepare-03.mp3",
+        "rarity": "normal",
+        "text": "En posición"
+      },
+      {
+        "file": "prepare-04.mp3",
+        "rarity": "normal",
+        "text": "Concentración"
+      },
+      {
+        "file": "prepare-05.mp3",
+        "rarity": "normal",
+        "text": "Listos"
+      },
+      {
+        "file": "prepare-06.mp3",
+        "rarity": "normal",
+        "text": "Atención, ya casi"
+      },
+      {
+        "file": "prepare-07.mp3",
+        "rarity": "normal",
+        "text": "A prepararse"
+      },
+      {
+        "file": "prepare-08.mp3",
+        "rarity": "normal",
+        "text": "En sus marcas"
+      },
+      {
+        "file": "prepare-09.mp3",
+        "rarity": "normal",
+        "text": "Respiren profundo"
+      },
+      {
+        "file": "prepare-10.mp3",
+        "rarity": "normal",
+        "text": "Ya casi es hora"
+      },
+      {
+        "file": "prepare-11.mp3",
+        "rarity": "normal",
+        "text": "Enfóquense"
+      },
+      {
+        "file": "prepare-12.mp3",
+        "rarity": "normal",
+        "text": "Pongan atención"
+      },
+      {
+        "file": "prepare-13.mp3",
+        "rarity": "normal",
+        "text": "Unos segundos más"
+      },
+      {
+        "file": "prepare-14.mp3",
+        "rarity": "normal",
+        "text": "Mente enfocada"
+      },
+      {
+        "file": "prepare-15.mp3",
+        "rarity": "normal",
+        "text": "Listos para dar todo"
+      }
+    ],
+    "work_start": [
+      {
+        "file": "work_start-01.mp3",
+        "rarity": "normal",
+        "text": "¡Vamos!"
+      },
+      {
+        "file": "work_start-02.mp3",
+        "rarity": "normal",
+        "text": "¡A darle!"
+      },
+      {
+        "file": "work_start-03.mp3",
+        "rarity": "normal",
+        "text": "¡Ya!"
+      },
+      {
+        "file": "work_start-04.mp3",
+        "rarity": "normal",
+        "text": "¡Con todo!"
+      },
+      {
+        "file": "work_start-05.mp3",
+        "rarity": "normal",
+        "text": "¡Ahora!"
+      },
+      {
+        "file": "work_start-06.mp3",
+        "rarity": "normal",
+        "text": "¡Fuego!"
+      },
+      {
+        "file": "work_start-07.mp3",
+        "rarity": "normal",
+        "text": "¡Dale con fuerza!"
+      },
+      {
+        "file": "work_start-08.mp3",
+        "rarity": "normal",
+        "text": "¡Arriba!"
+      },
+      {
+        "file": "work_start-09.mp3",
+        "rarity": "normal",
+        "text": "¡A por todas!"
+      },
+      {
+        "file": "work_start-10.mp3",
+        "rarity": "normal",
+        "text": "¡Empujen!"
+      },
+      {
+        "file": "work_start-11.mp3",
+        "rarity": "normal",
+        "text": "¡Al ataque!"
+      },
+      {
+        "file": "work_start-12.mp3",
+        "rarity": "normal",
+        "text": "¡Den todo!"
+      },
+      {
+        "file": "work_start-13.mp3",
+        "rarity": "normal",
+        "text": "¡Exploten!"
+      },
+      {
+        "file": "work_start-14.mp3",
+        "rarity": "normal",
+        "text": "¡Es su momento!"
+      },
+      {
+        "file": "work_start-15.mp3",
+        "rarity": "normal",
+        "text": "¡Máxima potencia!"
+      },
+      {
+        "file": "work_start-16.mp3",
+        "rarity": "normal",
+        "text": "¡Sin límites!"
+      },
+      {
+        "file": "work_start-17.mp3",
+        "rarity": "normal",
+        "text": "¡A reventar!"
+      },
+      {
+        "file": "work_start-18.mp3",
+        "rarity": "normal",
+        "text": "¡Todo o nada!"
+      },
+      {
+        "file": "work_start-19.mp3",
+        "rarity": "normal",
+        "text": "¡Modo bestia!"
+      },
+      {
+        "file": "work_start-20.mp3",
+        "rarity": "normal",
+        "text": "¡A quemar!"
+      }
+    ],
+    "rest_start": [
+      {
+        "file": "rest_start-01.mp3",
+        "rarity": "normal",
+        "text": "Descanso"
+      },
+      {
+        "file": "rest_start-02.mp3",
+        "rarity": "normal",
+        "text": "Respira"
+      },
+      {
+        "file": "rest_start-03.mp3",
+        "rarity": "normal",
+        "text": "Recupera"
+      },
+      {
+        "file": "rest_start-04.mp3",
+        "rarity": "normal",
+        "text": "Relájate"
+      },
+      {
+        "file": "rest_start-05.mp3",
+        "rarity": "normal",
+        "text": "Tómate un respiro"
+      },
+      {
+        "file": "rest_start-06.mp3",
+        "rarity": "normal",
+        "text": "Pausa"
+      },
+      {
+        "file": "rest_start-07.mp3",
+        "rarity": "normal",
+        "text": "Hidrátate"
+      },
+      {
+        "file": "rest_start-08.mp3",
+        "rarity": "normal",
+        "text": "Suelta la tensión"
+      },
+      {
+        "file": "rest_start-09.mp3",
+        "rarity": "normal",
+        "text": "Respira profundo"
+      },
+      {
+        "file": "rest_start-10.mp3",
+        "rarity": "normal",
+        "text": "Afloja los músculos"
+      },
+      {
+        "file": "rest_start-11.mp3",
+        "rarity": "normal",
+        "text": "Sacude los brazos"
+      },
+      {
+        "file": "rest_start-12.mp3",
+        "rarity": "normal",
+        "text": "Aprovecha la pausa"
+      },
+      {
+        "file": "rest_start-13.mp3",
+        "rarity": "normal",
+        "text": "Recupera el aliento"
+      },
+      {
+        "file": "rest_start-14.mp3",
+        "rarity": "normal",
+        "text": "Baja el ritmo"
+      },
+      {
+        "file": "rest_start-15.mp3",
+        "rarity": "normal",
+        "text": "Pequeña pausa"
+      }
+    ],
+    "last_round": [
+      {
+        "file": "last_round-01.mp3",
+        "rarity": "normal",
+        "text": "¡Última serie!"
+      },
+      {
+        "file": "last_round-02.mp3",
+        "rarity": "normal",
+        "text": "¡La última!"
+      },
+      {
+        "file": "last_round-03.mp3",
+        "rarity": "normal",
+        "text": "¡Queda una!"
+      },
+      {
+        "file": "last_round-04.mp3",
+        "rarity": "normal",
+        "text": "¡Último esfuerzo!"
+      },
+      {
+        "file": "last_round-05.mp3",
+        "rarity": "normal",
+        "text": "¡A terminar con todo!"
+      },
+      {
+        "file": "last_round-06.mp3",
+        "rarity": "normal",
+        "text": "¡La final!"
+      },
+      {
+        "file": "last_round-07.mp3",
+        "rarity": "normal",
+        "text": "¡Terminemos fuerte!"
+      },
+      {
+        "file": "last_round-08.mp3",
+        "rarity": "normal",
+        "text": "¡La última es la mejor!"
+      },
+      {
+        "file": "last_round-09.mp3",
+        "rarity": "normal",
+        "text": "¡Un round más y listo!"
+      },
+      {
+        "file": "last_round-10.mp3",
+        "rarity": "normal",
+        "text": "¡Toda la energía ahora!"
+      },
+      {
+        "file": "last_round-11.mp3",
+        "rarity": "normal",
+        "text": "¡Es el momento de darlo todo!"
+      },
+      {
+        "file": "last_round-12.mp3",
+        "rarity": "normal",
+        "text": "¡No guarden nada!"
+      },
+      {
+        "file": "last_round-13.mp3",
+        "rarity": "normal",
+        "text": "¡Vacíen el tanque!"
+      },
+      {
+        "file": "last_round-14.mp3",
+        "rarity": "normal",
+        "text": "¡El gran final!"
+      },
+      {
+        "file": "last_round-15.mp3",
+        "rarity": "normal",
+        "text": "¡A tope, es la última!"
+      }
+    ],
+    "halfway": [
+      {
+        "file": "halfway-01.mp3",
+        "rarity": "normal",
+        "text": "¡Mitad del camino!"
+      },
+      {
+        "file": "halfway-02.mp3",
+        "rarity": "normal",
+        "text": "¡Cincuenta por ciento!"
+      },
+      {
+        "file": "halfway-03.mp3",
+        "rarity": "normal",
+        "text": "¡Vamos, la mitad ya!"
+      },
+      {
+        "file": "halfway-04.mp3",
+        "rarity": "normal",
+        "text": "¡Medio recorrido!"
+      },
+      {
+        "file": "halfway-05.mp3",
+        "rarity": "normal",
+        "text": "¡Ya la mitad!"
+      },
+      {
+        "file": "halfway-06.mp3",
+        "rarity": "normal",
+        "text": "¡Buen ritmo, sigan así!"
+      },
+      {
+        "file": "halfway-07.mp3",
+        "rarity": "normal",
+        "text": "¡Lo más difícil ya pasó!"
+      },
+      {
+        "file": "halfway-08.mp3",
+        "rarity": "normal",
+        "text": "¡Van por buen camino!"
+      },
+      {
+        "file": "halfway-09.mp3",
+        "rarity": "normal",
+        "text": "¡La mitad está hecha!"
+      },
+      {
+        "file": "halfway-10.mp3",
+        "rarity": "normal",
+        "text": "¡Mantengan esa energía!"
+      },
+      {
+        "file": "halfway-11.mp3",
+        "rarity": "normal",
+        "text": "¡Gran trabajo, no aflojen!"
+      },
+      {
+        "file": "halfway-12.mp3",
+        "rarity": "normal",
+        "text": "¡La meta está más cerca!"
+      }
+    ],
+    "done": [
+      {
+        "file": "done-01.mp3",
+        "rarity": "normal",
+        "text": "¡Buen trabajo, terminaste!"
+      },
+      {
+        "file": "done-02.mp3",
+        "rarity": "normal",
+        "text": "¡Excelente sesión!"
+      },
+      {
+        "file": "done-03.mp3",
+        "rarity": "normal",
+        "text": "¡Sesión completada!"
+      },
+      {
+        "file": "done-04.mp3",
+        "rarity": "normal",
+        "text": "¡Lo lograste!"
+      },
+      {
+        "file": "done-05.mp3",
+        "rarity": "normal",
+        "text": "¡Increíble esfuerzo!"
+      },
+      {
+        "file": "done-06.mp3",
+        "rarity": "normal",
+        "text": "¡Misión cumplida!"
+      },
+      {
+        "file": "done-07.mp3",
+        "rarity": "normal",
+        "text": "¡Eso fue brutal!"
+      },
+      {
+        "file": "done-08.mp3",
+        "rarity": "normal",
+        "text": "¡Qué sesión!"
+      },
+      {
+        "file": "done-09.mp3",
+        "rarity": "normal",
+        "text": "¡Eres un campeón!"
+      },
+      {
+        "file": "done-10.mp3",
+        "rarity": "normal",
+        "text": "¡Lo dieron todo!"
+      },
+      {
+        "file": "done-11.mp3",
+        "rarity": "normal",
+        "text": "¡Sesión cerrada!"
+      },
+      {
+        "file": "done-12.mp3",
+        "rarity": "normal",
+        "text": "¡Orgullo total!"
+      },
+      {
+        "file": "done-13.mp3",
+        "rarity": "normal",
+        "text": "¡Objetivo logrado!"
+      },
+      {
+        "file": "done-14.mp3",
+        "rarity": "normal",
+        "text": "¡Magnífica sesión!"
+      },
+      {
+        "file": "done-15.mp3",
+        "rarity": "normal",
+        "text": "¡Felicidades, lo hicieron!"
+      }
+    ],
+    "countdown_3": [
+      {
+        "file": "countdown_3-01.mp3",
+        "rarity": "normal",
+        "text": "Tres"
+      }
+    ],
+    "countdown_2": [
+      {
+        "file": "countdown_2-01.mp3",
+        "rarity": "normal",
+        "text": "Dos"
+      }
+    ],
+    "countdown_1": [
+      {
+        "file": "countdown_1-01.mp3",
+        "rarity": "normal",
+        "text": "Uno"
+      }
+    ],
+    "mid_work": [
+      {
+        "file": "mid_work-01.mp3",
+        "rarity": "normal",
+        "text": "¡Aguanten!"
+      },
+      {
+        "file": "mid_work-02.mp3",
+        "rarity": "normal",
+        "text": "¡Mantengan el ritmo!"
+      },
+      {
+        "file": "mid_work-03.mp3",
+        "rarity": "normal",
+        "text": "¡Seguimos!"
+      },
+      {
+        "file": "mid_work-04.mp3",
+        "rarity": "normal",
+        "text": "¡Concentrados!"
+      },
+      {
+        "file": "mid_work-05.mp3",
+        "rarity": "normal",
+        "text": "¡Un esfuerzo más!"
+      },
+      {
+        "file": "mid_work-06.mp3",
+        "rarity": "normal",
+        "text": "¡Van muy bien!"
+      },
+      {
+        "file": "mid_work-07.mp3",
+        "rarity": "normal",
+        "text": "¡Así se hace, continúen!"
+      },
+      {
+        "file": "mid_work-08.mp3",
+        "rarity": "normal",
+        "text": "¡No paren ahora!"
+      },
+      {
+        "file": "mid_work-09.mp3",
+        "rarity": "normal",
+        "text": "¡Ánimo, ya casi!"
+      },
+      {
+        "file": "mid_work-10.mp3",
+        "rarity": "normal",
+        "text": "¡No aflojen!"
+      },
+      {
+        "file": "mid_work-11.mp3",
+        "rarity": "normal",
+        "text": "¡Buen trabajo!"
+      },
+      {
+        "file": "mid_work-12.mp3",
+        "rarity": "normal",
+        "text": "¡El ritmo está perfecto!"
+      },
+      {
+        "file": "mid_work-13.mp3",
+        "rarity": "normal",
+        "text": "¡Mantengan la fuerza!"
+      },
+      {
+        "file": "mid_work-14.mp3",
+        "rarity": "normal",
+        "text": "¡Sigan así!"
+      },
+      {
+        "file": "mid_work-15.mp3",
+        "rarity": "normal",
+        "text": "¡Más, más, más!"
+      },
+      {
+        "file": "mid_work-16.mp3",
+        "rarity": "normal",
+        "text": "¡Eso es sólido!"
+      },
+      {
+        "file": "mid_work-17.mp3",
+        "rarity": "normal",
+        "text": "¡Lo están logrando!"
+      },
+      {
+        "file": "mid_work-18.mp3",
+        "rarity": "normal",
+        "text": "¡Eso es compromiso!"
+      },
+      {
+        "file": "mid_work-19.mp3",
+        "rarity": "normal",
+        "text": "¡Mantengan esa cadencia!"
+      },
+      {
+        "file": "mid_work-20.mp3",
+        "rarity": "normal",
+        "text": "¡Hasta el final!"
+      },
+      {
+        "file": "mid_work-21.mp3",
+        "rarity": "normal",
+        "text": "¡Van por buen camino!"
+      },
+      {
+        "file": "mid_work-22.mp3",
+        "rarity": "normal",
+        "text": "¡No bajen el ritmo!"
+      },
+      {
+        "file": "mid_work-23.mp3",
+        "rarity": "normal",
+        "text": "¡El esfuerzo vale la pena!"
+      },
+      {
+        "file": "mid_work-24.mp3",
+        "rarity": "normal",
+        "text": "¡Cada segundo cuenta!"
+      },
+      {
+        "file": "mid_work-25.mp3",
+        "rarity": "normal",
+        "text": "¡Den lo mejor de ustedes!"
+      },
+      {
+        "file": "mid_work-26.mp3",
+        "rarity": "normal",
+        "text": "¡Constante y firme!"
+      },
+      {
+        "file": "mid_work-27.mp3",
+        "rarity": "normal",
+        "text": "¡Mantengan esa energía!"
+      },
+      {
+        "file": "mid_work-28.mp3",
+        "rarity": "normal",
+        "text": "¡El trabajo duro siempre paga!"
+      },
+      {
+        "file": "mid_work-29.mp3",
+        "rarity": "normal",
+        "text": "¡Es normal que cueste!"
+      },
+      {
+        "file": "mid_work-30.mp3",
+        "rarity": "normal",
+        "text": "¡Aprieten los dientes, ya viene!"
+      },
+      {
+        "file": "mid_work-31.mp3",
+        "rarity": "normal",
+        "text": "¡Ya casi llegan!"
+      },
+      {
+        "file": "mid_work-32.mp3",
+        "rarity": "normal",
+        "text": "¡No se rindan!"
+      },
+      {
+        "file": "mid_work-33.mp3",
+        "rarity": "normal",
+        "text": "¡Cada repetición es una victoria!"
+      },
+      {
+        "file": "mid_work-34.mp3",
+        "rarity": "normal",
+        "text": "¡No hay marcha atrás!"
+      },
+      {
+        "file": "mid_work-35.mp3",
+        "rarity": "normal",
+        "text": "¡A apretar fuerte!"
+      },
+      {
+        "file": "mid_work-rare-36.mp3",
+        "rarity": "rare",
+        "text": "La barra no se levanta sola"
+      },
+      {
+        "file": "mid_work-rare-37.mp3",
+        "rarity": "rare",
+        "text": "Tu sofá te extraña. No vuelvas."
+      },
+      {
+        "file": "mid_work-rare-38.mp3",
+        "rarity": "rare",
+        "text": "Si puedes hablar, puedes meter más peso"
+      },
+      {
+        "file": "mid_work-rare-39.mp3",
+        "rarity": "rare",
+        "text": "Tu celular puede esperar, tus músculos no"
+      },
+      {
+        "file": "mid_work-rare-40.mp3",
+        "rarity": "rare",
+        "text": "El espejo lo ve todo"
+      },
+      {
+        "file": "mid_work-rare-41.mp3",
+        "rarity": "rare",
+        "text": "Suda ahora, presume después"
+      },
+      {
+        "file": "mid_work-rare-42.mp3",
+        "rarity": "rare",
+        "text": "La gravedad es tu enemiga. Vas ganando."
+      },
+      {
+        "file": "mid_work-rare-43.mp3",
+        "rarity": "rare",
+        "text": "El descanso es para la fase de descanso"
+      },
+      {
+        "file": "mid_work-rare-44.mp3",
+        "rarity": "rare",
+        "text": "El dolor es temporal, el orgullo es para siempre"
+      },
+      {
+        "file": "mid_work-rare-45.mp3",
+        "rarity": "rare",
+        "text": "Te va a alegrar haberlo hecho"
+      },
+      {
+        "file": "mid_work-rare-46.mp3",
+        "rarity": "rare",
+        "text": "¿Más difícil que los deberes de mate? No lo creo"
+      },
+      {
+        "file": "mid_work-rare-47.mp3",
+        "rarity": "rare",
+        "text": "El hierro no miente"
+      },
+      {
+        "file": "mid_work-epic-48.mp3",
+        "rarity": "epic",
+        "text": "Si fuera fácil, lo haría todo el mundo"
+      },
+      {
+        "file": "mid_work-epic-49.mp3",
+        "rarity": "epic",
+        "text": "Tu yo del futuro te está mirando. Impresiona."
+      },
+      {
+        "file": "mid_work-epic-50.mp3",
+        "rarity": "epic",
+        "text": "No estás aquí para verte bien, estás aquí para ser fuerte"
+      },
+      {
+        "file": "mid_work-epic-51.mp3",
+        "rarity": "epic",
+        "text": "Rep a rep, estás escribiendo tu historia"
+      },
+      {
+        "file": "mid_work-epic-52.mp3",
+        "rarity": "epic",
+        "text": "Las pesas no saben que tienes clase en una hora"
+      },
+      {
+        "file": "mid_work-epic-53.mp3",
+        "rarity": "epic",
+        "text": "El dolor es debilidad abandonando tu cuerpo"
+      },
+      {
+        "file": "mid_work-epic-54.mp3",
+        "rarity": "epic",
+        "text": "Estás construyendo tu leyenda ahora mismo"
+      },
+      {
+        "file": "mid_work-epic-55.mp3",
+        "rarity": "epic",
+        "text": "Recuerda por qué empezaste"
+      },
+      {
+        "file": "mid_work-epic-56.mp3",
+        "rarity": "epic",
+        "text": "Alguien más ligero que tú ya se rindió. Tú no."
+      },
+      {
+        "file": "mid_work-epic-57.mp3",
+        "rarity": "epic",
+        "text": "Aquí se fabrican campeones"
+      },
+      {
+        "file": "mid_work-epic-58.mp3",
+        "rarity": "epic",
+        "text": "No estás aquí para pasar desapercibido"
+      },
+      {
+        "file": "mid_work-epic-59.mp3",
+        "rarity": "epic",
+        "text": "Esta repetición es material de leyenda"
+      },
+      {
+        "file": "mid_work-super-epic-60.mp3",
+        "rarity": "super-epic",
+        "text": "Empuja como si el último autobús sale en 30 segundos"
+      },
+      {
+        "file": "mid_work-super-epic-61.mp3",
+        "rarity": "super-epic",
+        "text": "Esto no es un gimnasio, es una fábrica de campeones"
+      },
+      {
+        "file": "mid_work-super-epic-62.mp3",
+        "rarity": "super-epic",
+        "text": "Soy una app y hasta yo estoy impresionado"
+      },
+      {
+        "file": "mid_work-super-epic-63.mp3",
+        "rarity": "super-epic",
+        "text": "En algún lugar, un fisicoculturista asiente con respeto"
+      },
+      {
+        "file": "mid_work-super-epic-64.mp3",
+        "rarity": "super-epic",
+        "text": "Este rep vale por lo menos tres historias de Instagram"
+      },
+      {
+        "file": "mid_work-super-epic-65.mp3",
+        "rarity": "super-epic",
+        "text": "El sofá te mandó un mensaje. No contestes."
+      },
+      {
+        "file": "mid_work-super-epic-66.mp3",
+        "rarity": "super-epic",
+        "text": "Eres básicamente un superhéroe en pants deportivos"
+      },
+      {
+        "file": "mid_work-super-epic-67.mp3",
+        "rarity": "super-epic",
+        "text": "Si los músculos pudieran hablar, dirían gracias. Después de las agujetas."
+      },
+      {
+        "file": "mid_work-super-epic-68.mp3",
+        "rarity": "super-epic",
+        "text": "Estás rindiendo mejor que el noventa por ciento de la humanidad"
+      },
+      {
+        "file": "mid_work-super-epic-69.mp3",
+        "rarity": "super-epic",
+        "text": "Tu sudor de hoy es la confianza de mañana"
+      },
+      {
+        "file": "mid_work-super-epic-70.mp3",
+        "rarity": "super-epic",
+        "text": "¿El secreto para ser fuerte? Estar aquí. Y empujar. Eso es todo."
+      },
+      {
+        "file": "mid_work-super-epic-71.mp3",
+        "rarity": "super-epic",
+        "text": "Lo haces mejor que el noventa por ciento. ¿El otro diez? La semana que viene."
+      }
+    ],
+    "technique": [
+      {
+        "file": "technique-01.mp3",
+        "rarity": "normal",
+        "text": "Controla el movimiento"
+      },
+      {
+        "file": "technique-02.mp3",
+        "rarity": "normal",
+        "text": "¡Espalda recta!"
+      },
+      {
+        "file": "technique-03.mp3",
+        "rarity": "normal",
+        "text": "Activa el core"
+      },
+      {
+        "file": "technique-04.mp3",
+        "rarity": "normal",
+        "text": "Exhala al empujar"
+      },
+      {
+        "file": "technique-05.mp3",
+        "rarity": "normal",
+        "text": "Inhala al bajar"
+      },
+      {
+        "file": "technique-06.mp3",
+        "rarity": "normal",
+        "text": "Rango completo de movimiento"
+      },
+      {
+        "file": "technique-07.mp3",
+        "rarity": "normal",
+        "text": "No bloquees los codos"
+      },
+      {
+        "file": "technique-08.mp3",
+        "rarity": "normal",
+        "text": "Mantén los hombros abajo"
+      },
+      {
+        "file": "technique-09.mp3",
+        "rarity": "normal",
+        "text": "Contrae arriba del todo"
+      },
+      {
+        "file": "technique-10.mp3",
+        "rarity": "normal",
+        "text": "Controla la fase negativa"
+      },
+      {
+        "file": "technique-11.mp3",
+        "rarity": "normal",
+        "text": "Pies firmes en el suelo"
+      },
+      {
+        "file": "technique-12.mp3",
+        "rarity": "normal",
+        "text": "Mirada al frente"
+      },
+      {
+        "file": "technique-13.mp3",
+        "rarity": "normal",
+        "text": "Aprieta los abdominales"
+      },
+      {
+        "file": "technique-14.mp3",
+        "rarity": "normal",
+        "text": "Movimiento fluido, sin tirones"
+      },
+      {
+        "file": "technique-15.mp3",
+        "rarity": "normal",
+        "text": "No olvides respirar"
+      },
+      {
+        "file": "technique-16.mp3",
+        "rarity": "normal",
+        "text": "Rodillas en línea con los pies"
+      },
+      {
+        "file": "technique-17.mp3",
+        "rarity": "normal",
+        "text": "No arquees la espalda"
+      },
+      {
+        "file": "technique-18.mp3",
+        "rarity": "normal",
+        "text": "Hombros atrás, pecho abierto"
+      },
+      {
+        "file": "technique-19.mp3",
+        "rarity": "normal",
+        "text": "Baja despacio"
+      },
+      {
+        "file": "technique-20.mp3",
+        "rarity": "normal",
+        "text": "Concéntrate en el músculo objetivo"
+      }
+    ],
+    "time_30": [
+      {
+        "file": "time_30-01.mp3",
+        "rarity": "normal",
+        "text": "¡Quedan treinta segundos!"
+      }
+    ],
+    "time_10": [
+      {
+        "file": "time_10-01.mp3",
+        "rarity": "normal",
+        "text": "¡Diez segundos, aguanta!"
+      }
+    ],
+    "time_5": [
+      {
+        "file": "time_5-01.mp3",
+        "rarity": "normal",
+        "text": "¡Cinco segundos!"
+      }
+    ],
+    "round_1": [
+      {
+        "file": "round_1-01.mp3",
+        "rarity": "normal",
+        "text": "Primera serie"
+      }
+    ],
+    "round_2": [
+      {
+        "file": "round_2-01.mp3",
+        "rarity": "normal",
+        "text": "Segunda serie"
+      }
+    ],
+    "round_3": [
+      {
+        "file": "round_3-01.mp3",
+        "rarity": "normal",
+        "text": "Tercera serie"
+      }
+    ],
+    "round_4": [
+      {
+        "file": "round_4-01.mp3",
+        "rarity": "normal",
+        "text": "Cuarta serie"
+      }
+    ],
+    "round_5": [
+      {
+        "file": "round_5-01.mp3",
+        "rarity": "normal",
+        "text": "Quinta serie"
+      }
+    ],
+    "round_6": [
+      {
+        "file": "round_6-01.mp3",
+        "rarity": "normal",
+        "text": "Sexta serie"
+      }
+    ],
+    "round_7": [
+      {
+        "file": "round_7-01.mp3",
+        "rarity": "normal",
+        "text": "Séptima serie"
+      }
+    ],
+    "round_8": [
+      {
+        "file": "round_8-01.mp3",
+        "rarity": "normal",
+        "text": "Octava serie"
+      }
+    ],
+    "round_9": [
+      {
+        "file": "round_9-01.mp3",
+        "rarity": "normal",
+        "text": "Novena serie"
+      }
+    ],
+    "round_10": [
+      {
+        "file": "round_10-01.mp3",
+        "rarity": "normal",
+        "text": "Décima serie"
+      }
+    ]
+  }
+}

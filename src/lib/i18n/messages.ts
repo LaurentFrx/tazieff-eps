@@ -89,12 +89,6 @@ export const messages = {
       voice: {
         label: "Voix du timer",
         enabled: "Coaching vocal",
-        voiceSelect: "Voix",
-        defaultVoice: "Voix par défaut",
-        speed: "Vitesse",
-        preview: "Tester",
-        previewText: "C'est parti, on donne tout !",
-        noVoices: "Aucune voix disponible",
       },
     },
     nav: {
@@ -1188,12 +1182,6 @@ export const messages = {
       voice: {
         label: "Timer voice",
         enabled: "Voice coaching",
-        voiceSelect: "Voice",
-        defaultVoice: "Default voice",
-        speed: "Speed",
-        preview: "Preview",
-        previewText: "Let's go, give it all!",
-        noVoices: "No voices available",
       },
     },
     nav: {
@@ -2287,12 +2275,6 @@ export const messages = {
       voice: {
         label: "Voz del temporizador",
         enabled: "Coaching vocal",
-        voiceSelect: "Voz",
-        defaultVoice: "Voz por defecto",
-        speed: "Velocidad",
-        preview: "Probar",
-        previewText: "¡Vamos, a darle con todo!",
-        noVoices: "No hay voces disponibles",
       },
     },
     nav: {

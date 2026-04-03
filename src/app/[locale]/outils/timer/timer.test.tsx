@@ -16,11 +16,15 @@ vi.mock("@/lib/timer-audio", () => ({
   playSkipBeep: vi.fn(),
 }));
 
-vi.mock("@/lib/audio/speech", () => ({
-  speakEvent: vi.fn(),
-  setSpeechEnabled: vi.fn(),
-  isSpeechEnabled: () => true,
-  getRandomDoneMessage: () => "Bravo !",
+vi.mock("@/lib/audio/voice-coach", () => ({
+  playCoachEvent: vi.fn(),
+  isCoachEnabled: () => true,
+  toggleCoach: vi.fn(() => false),
+  setCoachEnabled: vi.fn(),
+  getVoice: () => 'Paul',
+  setVoice: vi.fn(),
+  getAvailableVoices: () => ['Paul', 'Koraly'],
+  stopCoachAudio: vi.fn(),
 }));
 
 // Stub AudioContext and navigator.vibrate

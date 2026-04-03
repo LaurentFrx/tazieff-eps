@@ -7,6 +7,7 @@ import { useTimerContext, type TimerDisplayConfig } from '@/contexts/TimerContex
 import type { TimerPreset } from '@/hooks/useTimer';
 import { unlockAudio } from '@/lib/timer-audio';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { VoiceSelector } from '@/components/timer/VoiceSelector';
 
 const WORK_VALUES = Array.from({ length: 12 }, (_, i) => (i + 1) * 5);
 const REST_VALUES = Array.from({ length: 12 }, (_, i) => (i + 1) * 5);
@@ -22,17 +23,6 @@ function formatDuration(totalSeconds: number) {
 
 /* ─── Icons ─── */
 
-const VoiceOnIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-  </svg>
-);
-const VoiceOffIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-    <line x1="2" y1="2" x2="22" y2="22" />
-  </svg>
-);
 const PauseIcon = () => (
   <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></svg>
 );
@@ -94,9 +84,6 @@ export function TabataTimer({ onBack }: TabataTimerProps) {
   return (
     <section className="page">
       <div className="relative overflow-hidden rounded-2xl px-5 pt-5 pb-4" style={{ background: 'linear-gradient(135deg, #16a34a, #22c55e)' }}>
-        <button onClick={() => ctx?.toggleVoice()} className="absolute top-3 right-3 flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}>
-          {ctx?.voiceOn ? <VoiceOnIcon /> : <VoiceOffIcon />}
-        </button>
         <button onClick={onBack} className="text-[13px] text-white/70 mb-2 cursor-pointer bg-transparent border-none">← Retour</button>
         <h1 className="text-[22px] font-bold text-white">Tabata</h1>
         <p className="text-[12px] text-white/70 mt-0.5">{work}s effort / {rest}s repos &times; {rounds} rounds</p>
@@ -123,6 +110,8 @@ export function TabataTimer({ onBack }: TabataTimerProps) {
         <span className="text-[11px] text-zinc-400 dark:text-white/35">Dur&eacute;e totale</span>
         <div className="font-mono text-[22px] font-bold text-zinc-900 dark:text-white mt-0.5">{formatDuration(totalDuration)}</div>
       </div>
+
+      <VoiceSelector />
 
       <button onClick={handleStart} className="w-full mt-4 cursor-pointer border-none" style={{ height: 56, borderRadius: 14, background: 'linear-gradient(135deg, #16a34a, #22c55e)', color: '#fff', fontSize: 16, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
         {t('timer.controls.start')}
@@ -173,7 +162,11 @@ function TabataCountdown({ onBack }: { onBack: () => void }) {
             </div>
           </div>
           <button onClick={toggleVoice} className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}>
-            {voiceOn ? <VoiceOnIcon /> : <VoiceOffIcon />}
+            {voiceOn ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="3" y1="3" x2="21" y2="21" strokeWidth="2.5"/></svg>
+            )}
           </button>
         </div>
       </div>

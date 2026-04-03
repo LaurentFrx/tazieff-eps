@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePlan } from "@/hooks/usePlan";
 import { isAcademicEmail, ACADEMIC_EMAIL_PATTERN } from "@/lib/auth/academic-domains";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { isSpeechEnabled, setSpeechEnabled, getSpeechRate, setSpeechRate, getSpeechVoiceURI, setSpeechVoiceURI, speakPreview } from "@/lib/audio/speech";
+
 
 /* ── Types & constants ─────────────────────────────────────────────── */
 
@@ -104,23 +104,6 @@ export default function ReglagesPage() {
   const [anatomyAnim, setLocalAnatomyAnim] = useState(getAnatomyAnim());
   const [mounted, setMounted] = useState(false);
 
-  // Voice settings
-  const [voiceEnabled, setVoiceEnabled] = useState(isSpeechEnabled());
-  const [voiceRate, setVoiceRate] = useState(getSpeechRate());
-  const [voiceURI, setVoiceURI] = useState<string | null>(getSpeechVoiceURI());
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
-    const load = () => {
-      const all = window.speechSynthesis.getVoices();
-      const langTag = lang === 'es' ? 'es' : lang === 'en' ? 'en' : 'fr';
-      setVoices(all.filter((v) => v.lang.startsWith(langTag)));
-    };
-    load();
-    window.speechSynthesis.addEventListener('voiceschanged', load);
-    return () => window.speechSynthesis.removeEventListener('voiceschanged', load);
-  }, [lang]);
 
   // Teacher mode
   const [teacherMode, setTeacherMode] = useState<TeacherModeSnapshot>(getTeacherModeSnapshot);
@@ -346,78 +329,6 @@ export default function ReglagesPage() {
               />
             </span>
           </button>
-        </div>
-
-        {/* ── SECTION 1b : Voix du timer ────────────────────────── */}
-        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-5 space-y-0">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[color:var(--muted)] mb-3">{t("settings.voice.label")}</p>
-
-          {/* Toggle on/off */}
-          <button
-            type="button"
-            className="flex w-full items-center justify-between py-0.5"
-            onClick={() => { const next = !voiceEnabled; setVoiceEnabled(next); setSpeechEnabled(next); }}
-          >
-            <span className="text-sm font-medium text-[color:var(--ink)]">{t("settings.voice.enabled")}</span>
-            <span className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${voiceEnabled ? "bg-cyan-500" : "bg-[color:var(--border)]"}`}>
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${voiceEnabled ? "translate-x-6" : "translate-x-1"}`} />
-            </span>
-          </button>
-
-          {voiceEnabled && (
-            <>
-              <div className="border-b border-[color:var(--border)] my-3" />
-
-              {/* Voice select */}
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-medium text-[color:var(--ink)] shrink-0">{t("settings.voice.voiceSelect")}</span>
-                {voices.length > 0 ? (
-                  <select
-                    className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] px-2 py-1.5 text-xs text-[color:var(--ink)] max-w-[200px] truncate"
-                    value={voiceURI ?? ''}
-                    onChange={(e) => { const uri = e.target.value || null; setVoiceURI(uri); setSpeechVoiceURI(uri); }}
-                  >
-                    <option value="">{t("settings.voice.defaultVoice")}</option>
-                    {voices.map((v) => (
-                      <option key={v.voiceURI} value={v.voiceURI}>{v.name}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <span className="text-xs text-[color:var(--muted)]">{t("settings.voice.noVoices")}</span>
-                )}
-              </div>
-
-              <div className="border-b border-[color:var(--border)] my-3" />
-
-              {/* Speed slider */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-sm font-medium text-[color:var(--ink)]">{t("settings.voice.speed")}</span>
-                  <span className="text-xs font-mono text-[color:var(--muted)]">{voiceRate.toFixed(1)}x</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.8"
-                  max="1.5"
-                  step="0.1"
-                  value={voiceRate}
-                  onChange={(e) => { const r = parseFloat(e.target.value); setVoiceRate(r); setSpeechRate(r); }}
-                  className="w-full accent-cyan-500"
-                />
-              </div>
-
-              <div className="border-b border-[color:var(--border)] my-3" />
-
-              {/* Preview button */}
-              <button
-                type="button"
-                className="w-full rounded-lg border border-cyan-500/30 bg-cyan-500/10 py-2 text-sm font-medium text-cyan-500 transition-all active:scale-[0.98]"
-                onClick={() => speakPreview(t("settings.voice.previewText"), lang)}
-              >
-                {t("settings.voice.preview")}
-              </button>
-            </>
-          )}
         </div>
 
         {/* ── SECTION 2 : Compte & accès ──────────────────────── */}

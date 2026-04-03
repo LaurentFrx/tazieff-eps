@@ -1,7 +1,5 @@
 // Timer audio system — beeps & tones only
-// Voice coaching is handled by @/lib/audio/speech
-
-import { isSpeechEnabled } from '@/lib/audio/speech';
+// Voice coaching is handled by @/lib/audio/voice-coach
 
 /* ─── Singleton AudioContext ─── */
 
@@ -48,10 +46,9 @@ function playTone(frequency: number, duration: number, volume: number): void {
   } catch { /* ignore */ }
 }
 
-/* ─── Countdown beeps (voix OFF uniquement) ─── */
+/* ─── Countdown beeps (toujours, en complément de la voix MP3) ─── */
 
 export function playCountdownBeep(secondsRemaining: number): void {
-  if (isSpeechEnabled()) return; // voix ON = pas de bips
   if (typeof window === 'undefined') return;
   if (secondsRemaining === 3) playTone(660, 0.12, 0.4);
   else if (secondsRemaining === 2) playTone(880, 0.12, 0.5);

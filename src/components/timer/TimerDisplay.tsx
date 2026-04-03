@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { PhaseEntry, TimerState } from '@/hooks/useTimer';
-import { isSpeechEnabled, setSpeechEnabled } from '@/lib/audio/speech';
+import { useTimerContext } from '@/contexts/TimerContext';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
 // ---------- Phase gradients (Sport Vibrant) ----------
@@ -46,14 +46,13 @@ const SkipIcon = () => (
 
 const VoiceOnIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/>
   </svg>
 );
 
 const VoiceOffIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-    <line x1="1" y1="1" x2="23" y2="23" />
+    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="3" y1="3" x2="21" y2="21" strokeWidth="2.5"/>
   </svg>
 );
 
@@ -505,15 +504,10 @@ export function TimerDisplay({
   onBack,
 }: TimerDisplayProps) {
   const { t } = useI18n();
-  const [speechOn, setSpeechOn] = useState(isSpeechEnabled());
+  const ctx = useTimerContext();
+  const speechOn = ctx?.voiceOn ?? true;
+  const toggleSpeech = ctx?.toggleVoice ?? (() => {});
   const bandsContainerRef = useRef<HTMLDivElement>(null);
-
-  // Toggle speech
-  const toggleSpeech = () => {
-    const newState = !isSpeechEnabled();
-    setSpeechEnabled(newState);
-    setSpeechOn(newState);
-  };
 
   // Auto-scroll active phase into view
   useEffect(() => {
@@ -594,10 +588,10 @@ export function TimerDisplay({
         <button
           onClick={toggleSpeech}
           style={{
-            background: speechOn ? 'rgba(255,255,255,0.15)' : 'rgba(255,80,80,0.15)',
+            background: 'rgba(255,255,255,0.15)',
             border: 'none',
             borderRadius: '50%',
-            color: speechOn ? '#fff' : 'rgba(255,120,120,0.8)',
+            color: '#fff',
             cursor: 'pointer',
             padding: '4px',
             display: 'flex',
