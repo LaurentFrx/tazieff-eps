@@ -25,6 +25,7 @@ vi.mock("@/lib/audio/voice-coach", () => ({
   setVoice: vi.fn(),
   getAvailableVoices: () => ['Paul', 'Koraly'],
   stopCoachAudio: vi.fn(),
+  preloadNextEvents: vi.fn(),
 }));
 
 // Stub AudioContext and navigator.vibrate

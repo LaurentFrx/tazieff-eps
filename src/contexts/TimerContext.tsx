@@ -5,7 +5,7 @@ import type { RingPhase } from '@/components/tools/CountdownRing';
 import type { TimerPreset, TimerState, PhaseEntry } from '@/hooks/useTimer';
 import { buildPhases, computeTotalRemaining, getCurrentRoundCycle } from '@/hooks/useTimer';
 import { playCountdownBeep, playFinishSound, playSkipBeep } from '@/lib/timer-audio';
-import { playCoachEvent, isCoachEnabled, toggleCoach, getVoice, setVoice, type VoiceName } from '@/lib/audio/voice-coach';
+import { playCoachEvent, isCoachEnabled, toggleCoach, getVoice, setVoice, preloadNextEvents, type VoiceName } from '@/lib/audio/voice-coach';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
 /* ─── Display config passed by each timer preset ─── */
@@ -68,6 +68,8 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const presetRef = useRef<TimerPreset | null>(null);
+  const voiceOnRef = useRef(voiceOn);
+  useEffect(() => { voiceOnRef.current = voiceOn; }, [voiceOn]);
 
   /* ── helpers ── */
 
@@ -145,6 +147,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      // Précharger les countdown et la prochaine transition
+      const nextCategory = phaseToCategory[next.type];
+      if (nextCategory) {
+        preloadNextEvents(['countdown_3', 'countdown_2', 'countdown_1', nextCategory], locale);
+      }
+
       return {
         ...cur, phases: newPhases, activePhaseIndex: nextIdx,
         secondsLeft: next.duration,
@@ -163,13 +171,18 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       const sl = prev.secondsLeft - 1;
       const el = prev.elapsedSeconds + 1;
 
-      // Countdown beeps (3, 2, 1, 0) — bips AudioContext toujours
+      // Countdown (3, 2, 1, 0) — voix OU bips, jamais les deux
       if (sl >= 0 && sl <= 3) {
-        playCountdownBeep(sl);
-        // Voix countdown (3, 2, 1)
-        if (sl === 3) playCoachEvent('countdown_3', langRef.current);
-        else if (sl === 2) playCoachEvent('countdown_2', langRef.current);
-        else if (sl === 1) playCoachEvent('countdown_1', langRef.current);
+        if (voiceOnRef.current) {
+          // Voix ON : countdown parlé, PAS de bips
+          if (sl === 3) playCoachEvent('countdown_3', langRef.current);
+          else if (sl === 2) playCoachEvent('countdown_2', langRef.current);
+          else if (sl === 1) playCoachEvent('countdown_1', langRef.current);
+          // sl === 0 : rien ici, la phrase de transition joue dans advancePhase
+        } else {
+          // Voix OFF : bips seulement
+          playCountdownBeep(sl);
+        }
       }
 
       // Time remaining announcements
@@ -230,6 +243,9 @@ export function TimerProvider({ children }: { children: ReactNode }) {
 
     acquireWL();
     intervalRef.current = setInterval(tick, 1000);
+
+    // Précharger les voix pour les premières phases
+    preloadNextEvents(['prepare', 'work_start', 'countdown_3', 'countdown_2', 'countdown_1'], langRef.current);
   }, [clearInt, releaseWL, acquireWL, tick]);
 
   const pause = useCallback(() => {

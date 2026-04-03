@@ -122,18 +122,43 @@ function pickEntry(entries: VoiceEntry[], category: string): VoiceEntry | null {
   return entries[fallbackIdx];
 }
 
+// ─── Preload cache ───
+
+const preloadCache = new Map<string, HTMLAudioElement>();
+
+function preloadMP3(url: string): void {
+  if (preloadCache.has(url)) return;
+  const audio = new Audio();
+  audio.preload = 'auto';
+  audio.src = url;
+  preloadCache.set(url, audio);
+  // Limiter le cache à 20 entrées
+  if (preloadCache.size > 20) {
+    const firstKey = preloadCache.keys().next().value;
+    if (firstKey) preloadCache.delete(firstKey);
+  }
+}
+
+function getOrCreateAudio(url: string): HTMLAudioElement {
+  const cached = preloadCache.get(url);
+  if (cached) {
+    preloadCache.delete(url);
+    return cached;
+  }
+  return new Audio(url);
+}
+
 // ─── Play audio ───
 
 let currentAudio: HTMLAudioElement | null = null;
 
 function playMP3(url: string): void {
   try {
-    // Stop previous if still playing
     if (currentAudio) {
       currentAudio.pause();
       currentAudio = null;
     }
-    const audio = new Audio(url);
+    const audio = getOrCreateAudio(url);
     audio.volume = 1.0;
     currentAudio = audio;
     audio.play().catch(() => {});
@@ -162,6 +187,24 @@ export async function playCoachEvent(category: string, lang: string = 'fr'): Pro
 
   const url = `/audio/coaching/${currentVoice}/${lang}/${entry.file}`;
   playMP3(url);
+}
+
+// ─── Preload next events ───
+
+export async function preloadNextEvents(categories: string[], lang: string = 'fr'): Promise<void> {
+  if (!voiceEnabled) return;
+  const manifest = manifests[currentVoice] || await loadManifest(currentVoice);
+  if (!manifest) return;
+  const langData = manifest[lang] || manifest['fr'];
+  if (!langData) return;
+
+  for (const category of categories) {
+    const entries = langData[category];
+    if (!entries || entries.length === 0) continue;
+    const entry = entries[0];
+    const url = `/audio/coaching/${currentVoice}/${lang}/${entry.file}`;
+    preloadMP3(url);
+  }
 }
 
 // ─── Convenience: stop current audio ───
