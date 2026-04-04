@@ -11,6 +11,7 @@ import { checkBalance, type Zone } from "@/lib/exercices/zoneMap";
 import type { CategorieMethode, MethodeFrontmatter } from "@/lib/content/schema";
 import type { LiveExerciseListItem } from "@/lib/live/types";
 import { ExoThumb } from "@/components/ExoThumb";
+import { useSessionDraft } from "@/hooks/useSessionDraft";
 
 /* ── Types ───────────────────────────────── */
 
@@ -70,6 +71,8 @@ export function SessionGenerator({
   const [objectif, setObjectif] = useState<CategorieMethode | null>(null);
   const [selectedMethodes, setSelectedMethodes] = useState<string[]>([]);
   const [selectedExercices, setSelectedExercices] = useState<string[]>([]);
+  const { items: draftItems, clearAll: clearDraft } = useSessionDraft();
+  const [draftBannerDismissed, setDraftBannerDismissed] = useState(false);
 
   /* ── localStorage restore or query param pre-select ── */
   useEffect(() => {
@@ -323,6 +326,35 @@ export function SessionGenerator({
       {/* ── STEP 3: Exercices ── */}
       {step === 3 && (
         <div className="flex flex-col gap-4">
+          {/* Draft banner */}
+          {draftItems.length > 0 && !draftBannerDismissed && selectedExercices.length === 0 && (
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-4 py-3">
+              <p className="text-sm font-semibold text-cyan-300">
+                {draftItems.length} {t("maSeance.draftBanner")}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  className="rounded-lg bg-cyan-500 px-3 py-1.5 text-xs font-bold text-white"
+                  onClick={() => {
+                    const slugs = draftItems.slice(0, MAX_EXERCICES).map((d) => d.slug);
+                    setSelectedExercices(slugs);
+                    clearDraft();
+                  }}
+                >
+                  {t("maSeance.useDraft")}
+                </button>
+                <button
+                  type="button"
+                  className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-[color:var(--muted)]"
+                  onClick={() => setDraftBannerDismissed(true)}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          )}
+
           <p className="text-sm font-semibold text-[color:var(--accent)]">
             {selectedExercices.length} / {MAX_EXERCICES} {t("maSeance.exercicesCount")}
           </p>

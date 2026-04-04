@@ -14,6 +14,7 @@ import {
   subscribeFavorites,
   toggleFavorite,
 } from "@/lib/favoritesStore";
+import { useSessionDraft } from "@/hooks/useSessionDraft";
 import logo from "../../../../public/media/branding/logo-eps.webp";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -603,6 +604,7 @@ export function ExerciseLiveDetail({
   const { t, lang } = useI18n();
   const settingsLabel = t("settings.open");
   const searchParams = useSearchParams();
+  const sessionDraft = useSessionDraft();
   const supabase = getSupabaseBrowserClient();
   const [base, setBase] = useState(() => ({
     frontmatter: baseFrontmatter,
@@ -2553,6 +2555,24 @@ export function ExerciseLiveDetail({
                     {getFavoritesSnapshot().includes(merged.frontmatter.slug)
                       ? t("favorites.remove")
                       : t("favorites.add")}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const fm = merged.frontmatter;
+                      if (sessionDraft.isInDraft(fm.slug)) {
+                        sessionDraft.removeItem(fm.slug);
+                      } else {
+                        sessionDraft.addItem({ slug: fm.slug, title: fm.title, muscles: fm.muscles });
+                      }
+                      setMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors"
+                  >
+                    {sessionDraft.isInDraft(merged.frontmatter.slug)
+                      ? `✓ ${t("exerciseDetail.inSession")}`
+                      : `＋ ${t("exerciseDetail.addToSession")}`}
                   </button>
 
                   {/* Séparateur */}
