@@ -139,9 +139,6 @@ for (const [groupId, muscles] of Object.entries(MUSCLE_GROUP_MAP) as [MuscleGrou
 export function getMuscleGroup(muscleName: string): MuscleGroupId | null {
   const key = normalize(muscleName);
   const group = reverseLookup.get(key) ?? null;
-  if (!group && process.env.NODE_ENV !== "production") {
-    console.warn(`[muscleGroups] Muscle non classé: "${muscleName}" (normalized: "${key}")`);
-  }
   return group;
 }
 

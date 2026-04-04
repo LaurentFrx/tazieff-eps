@@ -131,11 +131,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Erreur d'enregistrement." }, { status: 500 });
   }
 
-  console.log(
-    `[override-save] slug=${slug} locale=${locale} updated_at=${updatedAt} version=${
-      stats.version ?? "unknown"
-    } sections=${stats.sections ?? "unknown"} blocks=${stats.blocks ?? "unknown"}`,
-  );
 
   return NextResponse.json({ ok: true });
 }

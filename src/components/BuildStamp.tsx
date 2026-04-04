@@ -38,10 +38,6 @@ export function useBuildInfo() {
   const buildTimeLocal = formatBuildTimeLocal(buildInfo.buildTimeIso);
   const fullLine = `${buildInfo.envLabel} · v${buildInfo.appVersion} · ${buildInfo.gitShaShort} · ${buildTimeLocal}`;
 
-  if (process.env.NODE_ENV !== "production") {
-    console.log("[buildstamp]", buildInfo.buildTimeIso, buildTimeLocal);
-  }
-
   return {
     envLabel: buildInfo.envLabel,
     appVersion: buildInfo.appVersion,
