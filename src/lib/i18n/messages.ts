@@ -930,6 +930,7 @@ export const messages = {
       toggleSkeleton: "Afficher/masquer le squelette",
       toggleWireframe: "Afficher/masquer le wireframe",
       toggleMuscles: "Afficher/masquer les muscles",
+      seeAllMuscles: "Voir tous les muscles",
       groups: {
         pectoraux: "Pectoraux",
         epaules: "Épaules",
@@ -1828,6 +1829,7 @@ export const messages = {
       toggleSkeleton: "Show/hide skeleton",
       toggleWireframe: "Show/hide wireframe",
       toggleMuscles: "Show/hide muscles",
+      seeAllMuscles: "See all muscles",
       groups: {
         pectoraux: "Pectorals",
         epaules: "Shoulders",
@@ -3178,6 +3180,7 @@ export const messages = {
       toggleSkeleton: "Mostrar/ocultar esqueleto",
       toggleWireframe: "Mostrar/ocultar wireframe",
       toggleMuscles: "Mostrar/ocultar músculos",
+      seeAllMuscles: "Ver todos los músculos",
       groups: {
         pectoraux: "Pectorales",
         epaules: "Hombros",

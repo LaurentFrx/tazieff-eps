@@ -18,6 +18,7 @@ type Props = {
   selectedGroup: string | null;
   highlightedMuscle: string | null;
   activeGroups?: string[];
+  focusGroup?: string | null;
   initialRotationY?: number;
   scanning?: boolean;
   showSkeleton?: boolean;
@@ -412,6 +413,7 @@ function Scene({
   selectedGroup,
   highlightedMuscle,
   activeGroups,
+  focusGroup,
   scanning,
   initialRotationY,
   showSkeleton,
@@ -503,6 +505,42 @@ function Scene({
 
     return () => cancelAnimationFrame(id);
   }, []);
+
+  /* Focus mode: zoom into a specific muscle group */
+  useEffect(() => {
+    if (!focusGroup) return;
+    const controls = controlsRef.current;
+    const mannequin = mannequinGroupRef.current;
+    if (!controls || !mannequin) return;
+
+    // Wait a frame for the mannequin to be positioned
+    const id = requestAnimationFrame(() => {
+      // Find meshes belonging to the focus group
+      const groupBox = new Box3();
+      let found = false;
+      mannequin.traverse((child) => {
+        if (!(child as THREE.Mesh).isMesh) return;
+        const name = (child.userData?.frName as string || child.name || "").toLowerCase();
+        const groupKey = (child.userData?.groupKey as string || "").toLowerCase();
+        if (groupKey === focusGroup || name.includes(focusGroup)) {
+          const meshBox = new Box3().setFromObject(child);
+          groupBox.union(meshBox);
+          found = true;
+        }
+      });
+
+      if (!found) return;
+
+      const center = groupBox.getCenter(new Vector3());
+      const size = groupBox.getSize(new Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const distance = Math.max(maxDim * 2.5, 1.5);
+
+      controls.setLookAt(0, center.y, distance, 0, center.y, 0, true);
+    });
+
+    return () => cancelAnimationFrame(id);
+  }, [focusGroup]);
 
   /* Turntable single-finger drag + double-tap reset */
   useEffect(() => {
@@ -682,6 +720,7 @@ export default function AnatomyCanvas({
   selectedGroup,
   highlightedMuscle,
   activeGroups,
+  focusGroup,
   scanning,
   initialRotationY,
   showSkeleton,
@@ -708,6 +747,7 @@ export default function AnatomyCanvas({
           selectedGroup={selectedGroup}
           highlightedMuscle={highlightedMuscle}
           activeGroups={activeGroups}
+          focusGroup={focusGroup}
           scanning={scanning}
           initialRotationY={initialRotationY}
           showSkeleton={showSkeleton}

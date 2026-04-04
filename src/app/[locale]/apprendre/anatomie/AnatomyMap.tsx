@@ -42,6 +42,18 @@ export default function AnatomyMap({ exercises }: Props) {
   const fromExercice = searchParams.get("from") === "exercice";
   const returnSlug = searchParams.get("slug") ?? "";
 
+  // Focus mode: single muscle group from autolink (e.g. ?muscles=pectoraux)
+  const focusMode = !fromExercice && urlMuscleGroups.length === 1;
+  const focusGroup = focusMode ? urlMuscleGroups[0] : null;
+  const [focusActive, setFocusActive] = useState(focusMode);
+
+  // Auto-select the group in bottom sheet when in focus mode
+  useEffect(() => {
+    if (focusGroup && focusActive) {
+      setSelectedGroup(focusGroup);
+    }
+  }, [focusGroup, focusActive]);
+
   // Compute initial rotation: if majority posterior → show back (PI)
   const initialRotationY = useMemo(() => {
     if (urlMuscleGroups.length === 0) return 0;
@@ -196,6 +208,7 @@ export default function AnatomyMap({ exercises }: Props) {
             selectedGroup={selectedGroup}
             highlightedMuscle={highlightedMuscle}
             activeGroups={effectiveActiveGroups}
+            focusGroup={focusActive ? focusGroup : null}
             scanning={scanning}
             initialRotationY={initialRotationY}
             showSkeleton={showSkeleton}
@@ -273,6 +286,20 @@ export default function AnatomyMap({ exercises }: Props) {
             </Link>
           ) : null}
         </div>
+      )}
+
+      {/* ── Focus mode: "See all muscles" button ──────────────────────── */}
+      {focusActive && (
+        <button
+          type="button"
+          className="anatomy-focus-reset"
+          onClick={() => {
+            setFocusActive(false);
+            clearSelection();
+          }}
+        >
+          {t("anatomy.seeAllMuscles")}
+        </button>
       )}
 
       {/* ── Layer toolbar (top right): [🦴] [◇] [💪] [☰] ───────────────── */}
