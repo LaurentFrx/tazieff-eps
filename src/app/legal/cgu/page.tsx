@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 export default function CguPage() {
   return (
     <>
-      <h1 className="mb-8 font-['Bebas_Neue'] text-4xl tracking-wide text-white">
+      <h1 className="mb-8 font-[family-name:var(--font-bebas)] text-4xl tracking-wide text-white">
         Conditions G&eacute;n&eacute;rales d&rsquo;Utilisation
       </h1>
 
@@ -19,7 +19,7 @@ export default function CguPage() {
       <section className="space-y-8">
         {/* ── Article 1 ────────────────────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Article 1 &mdash; Objet
           </h2>
           <p>
@@ -41,7 +41,7 @@ export default function CguPage() {
 
         {/* ── Article 2 ────────────────────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Article 2 &mdash; Acc&egrave;s au service
           </h2>
           <p>
@@ -66,7 +66,7 @@ export default function CguPage() {
 
         {/* ── Article 3 ────────────────────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Article 3 &mdash; Utilisation de l&rsquo;Application
           </h2>
           <p>
@@ -97,7 +97,7 @@ export default function CguPage() {
 
         {/* ── Article 4 ────────────────────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Article 4 &mdash; Propri&eacute;t&eacute; intellectuelle
           </h2>
           <p>
@@ -122,7 +122,7 @@ export default function CguPage() {
 
         {/* ── Article 5 ────────────────────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Article 5 &mdash; Avertissement sant&eacute;
           </h2>
           <p>
@@ -144,7 +144,7 @@ export default function CguPage() {
 
         {/* ── Article 6 ────────────────────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Article 6 &mdash; Donn&eacute;es personnelles
           </h2>
           <p>
@@ -162,7 +162,7 @@ export default function CguPage() {
 
         {/* ── Article 7 ────────────────────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Article 7 &mdash; Responsabilit&eacute;
           </h2>
           <p>
@@ -193,7 +193,7 @@ export default function CguPage() {
 
         {/* ── Article 8 ────────────────────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Article 8 &mdash; Liens hypertextes
           </h2>
           <p>
@@ -206,7 +206,7 @@ export default function CguPage() {
 
         {/* ── Article 9 ────────────────────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Article 9 &mdash; Modification des CGU
           </h2>
           <p>
@@ -221,7 +221,7 @@ export default function CguPage() {
 
         {/* ── Article 10 ───────────────────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Article 10 &mdash; Droit applicable
           </h2>
           <p>

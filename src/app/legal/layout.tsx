@@ -22,7 +22,7 @@ export default function LegalLayout({
           </Link>
         </nav>
 
-        <article className="font-['DM_Sans'] text-[14px] leading-relaxed">
+        <article className="font-[family-name:var(--font-dm-sans)] text-[14px] leading-relaxed">
           {children}
         </article>
 

@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { getSupabaseBrowserClient } from "./client";
+import { getSupabaseBrowserClientAsync } from "./client";
 
 type AuthContextValue = {
   user: User | null;
@@ -21,7 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const initAuth = useCallback(async () => {
-    const supabase = getSupabaseBrowserClient();
+    const supabase = await getSupabaseBrowserClientAsync();
     if (!supabase) {
       setIsLoading(false);
       return;
@@ -44,20 +44,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     initAuth();
+  }, [initAuth]);
 
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
+  useEffect(() => {
+    let cancelled = false;
+    let cleanupRef: (() => void) | null = null;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null);
-      },
-    );
+    getSupabaseBrowserClientAsync().then((supabase) => {
+      if (cancelled || !supabase) return;
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (_event, session) => {
+          setUser(session?.user ?? null);
+        },
+      );
+
+      cleanupRef = () => subscription.unsubscribe();
+    });
 
     return () => {
-      subscription.unsubscribe();
+      cancelled = true;
+      cleanupRef?.();
     };
-  }, [initAuth]);
+  }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({

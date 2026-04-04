@@ -7,13 +7,13 @@ export const metadata: Metadata = {
 export default function MentionsLegalesPage() {
   return (
     <>
-      <h1 className="mb-8 font-['Bebas_Neue'] text-4xl tracking-wide text-white">
+      <h1 className="mb-8 font-[family-name:var(--font-bebas)] text-4xl tracking-wide text-white">
         Mentions l&eacute;gales
       </h1>
 
       <section className="space-y-6">
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             &Eacute;diteur du site
           </h2>
           <p>
@@ -39,7 +39,7 @@ export default function MentionsLegalesPage() {
         </div>
 
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             H&eacute;bergement
           </h2>
           <p>L&rsquo;application est h&eacute;berg&eacute;e par&nbsp;:</p>
@@ -72,7 +72,7 @@ export default function MentionsLegalesPage() {
         </div>
 
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Contenu p&eacute;dagogique
           </h2>
           <p>
@@ -85,7 +85,7 @@ export default function MentionsLegalesPage() {
         </div>
 
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Propri&eacute;t&eacute; intellectuelle
           </h2>
           <p>
@@ -101,7 +101,7 @@ export default function MentionsLegalesPage() {
         </div>
 
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Cr&eacute;dits techniques
           </h2>
           <p>

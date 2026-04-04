@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 export default function ConfidentialitePage() {
   return (
     <>
-      <h1 className="mb-8 font-['Bebas_Neue'] text-4xl tracking-wide text-white">
+      <h1 className="mb-8 font-[family-name:var(--font-bebas)] text-4xl tracking-wide text-white">
         Politique de confidentialit&eacute;
       </h1>
 
@@ -18,7 +18,7 @@ export default function ConfidentialitePage() {
       <section className="space-y-8">
         {/* ── Responsable du traitement ─────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Responsable du traitement
           </h2>
           <p>
@@ -42,7 +42,7 @@ export default function ConfidentialitePage() {
 
         {/* ── Public concerné ──────────────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Public concern&eacute;
           </h2>
           <p>
@@ -59,11 +59,11 @@ export default function ConfidentialitePage() {
 
         {/* ── Données collectées ───────────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Donn&eacute;es collect&eacute;es
           </h2>
 
-          <h3 className="mb-2 mt-4 font-['DM_Sans'] text-[15px] font-semibold text-zinc-200">
+          <h3 className="mb-2 mt-4 font-[family-name:var(--font-dm-sans)] text-[15px] font-semibold text-zinc-200">
             1. Utilisation sans compte (mode gratuit)
           </h3>
           <p>
@@ -91,7 +91,7 @@ export default function ConfidentialitePage() {
             identifier personnellement.
           </p>
 
-          <h3 className="mb-2 mt-6 font-['DM_Sans'] text-[15px] font-semibold text-zinc-200">
+          <h3 className="mb-2 mt-6 font-[family-name:var(--font-dm-sans)] text-[15px] font-semibold text-zinc-200">
             2. Utilisation avec compte &eacute;tablissement (mode Pro)
           </h3>
           <p>
@@ -118,7 +118,7 @@ export default function ConfidentialitePage() {
 
         {/* ── Finalités du traitement ──────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Finalit&eacute;s du traitement
           </h2>
           <ul className="list-['\2013\20'] space-y-1 pl-5 text-zinc-400">
@@ -138,7 +138,7 @@ export default function ConfidentialitePage() {
 
         {/* ── Base légale ──────────────────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Base l&eacute;gale
           </h2>
           <ul className="list-['\2013\20'] space-y-1 pl-5 text-zinc-400">
@@ -155,7 +155,7 @@ export default function ConfidentialitePage() {
 
         {/* ── Sous-traitants ───────────────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Sous-traitants
           </h2>
           <p>
@@ -206,7 +206,7 @@ export default function ConfidentialitePage() {
 
         {/* ── Cookies ──────────────────────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Cookies
           </h2>
           <p>
@@ -230,7 +230,7 @@ export default function ConfidentialitePage() {
 
         {/* ── Durée de conservation ────────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Dur&eacute;e de conservation
           </h2>
           <ul className="list-['\2013\20'] space-y-1 pl-5 text-zinc-400">
@@ -252,7 +252,7 @@ export default function ConfidentialitePage() {
 
         {/* ── Vos droits ───────────────────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Vos droits
           </h2>
           <p>
@@ -315,7 +315,7 @@ export default function ConfidentialitePage() {
 
         {/* ── Sécurité ─────────────────────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             S&eacute;curit&eacute;
           </h2>
           <p>Les donn&eacute;es sont prot&eacute;g&eacute;es par&nbsp;:</p>
@@ -334,7 +334,7 @@ export default function ConfidentialitePage() {
 
         {/* ── Transferts internationaux ────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Transferts internationaux
           </h2>
           <p>
@@ -352,7 +352,7 @@ export default function ConfidentialitePage() {
 
         {/* ── Modifications ────────────────────────────────────────── */}
         <div>
-          <h2 className="mb-3 font-['DM_Sans'] text-lg font-bold text-white">
+          <h2 className="mb-3 font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white">
             Modifications
           </h2>
           <p>

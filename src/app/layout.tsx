@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk, Space_Mono, Sora, Orbitron } from "next/font/google";
+import { readFileSync } from "fs";
+import { join } from "path";
+import { Space_Grotesk, Space_Mono, Sora, Orbitron, Bebas_Neue, DM_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -25,6 +27,26 @@ const orbitron = Orbitron({
   variable: "--font-orbitron",
   weight: ["700", "900"],
 });
+
+const bebasNeue = Bebas_Neue({
+  subsets: ["latin"],
+  variable: "--font-bebas",
+  weight: ["400"],
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  weight: ["400", "500"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains",
+  weight: ["300", "400"],
+});
+
+const splashScript = readFileSync(join(process.cwd(), "public/splash.js"), "utf8");
 
 
 export const viewport: Viewport = {
@@ -60,16 +82,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
-        <script src="/splash.js" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500&family=JetBrains+Mono:wght@300;400&display=swap"
-          rel="stylesheet"
-        />
+        <script dangerouslySetInnerHTML={{ __html: splashScript }} />
       </head>
-      <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable} ${orbitron.variable}`} suppressHydrationWarning>
+      <body className={`${spaceGrotesk.variable} ${sora.variable} ${spaceMono.variable} ${orbitron.variable} ${bebasNeue.variable} ${dmSans.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
         {children}
       </body>
     </html>
