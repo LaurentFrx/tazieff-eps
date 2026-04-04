@@ -94,6 +94,20 @@ a {
   text-decoration: none;
 }
 
+a.autolink {
+  color: #00E5FF;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  opacity: 0.85;
+  transition: opacity 0.15s ease;
+}
+
+a.autolink:hover {
+  opacity: 1;
+}
+
 h1,
 h2,
 h3 {

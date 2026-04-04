@@ -6,6 +6,7 @@ import matter from "gray-matter";
 import { compileMDX } from "next-mdx-remote/rsc";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
+import { remarkAutolink } from "@/lib/mdx/remark-autolink";
 import type { ReactNode } from "react";
 import { z } from "zod";
 import { mdxComponents } from "@/components/mdx/MDXComponents";
@@ -135,7 +136,7 @@ export async function renderPageMdx(source: string) {
     components: mdxComponents,
     options: {
       mdxOptions: {
-        remarkPlugins: [remarkGfm],
+        remarkPlugins: [remarkGfm, remarkAutolink],
         rehypePlugins: [rehypeSlug],
       },
     },
