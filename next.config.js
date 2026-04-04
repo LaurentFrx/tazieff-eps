@@ -31,6 +31,14 @@ const nextConfig = {
   outputFileTracingIncludes: {
     "/*": ["content/**/*"],
   },
+  async rewrites() {
+    return {
+      beforeFiles: [
+        // Root → FR homepage without middleware (CDN-cacheable)
+        { source: "/", destination: "/fr" },
+      ],
+    };
+  },
 };
 
 module.exports = withBundleAnalyzer(withSerwist(nextConfig));
