@@ -2,8 +2,8 @@
   "ci": {
     "assert": {
       "assertions": {
-        "categories:performance": ["warn", { "minScore": 0.7 }],
-        "categories:pwa": ["off"]
+        "categories:performance": ["warn", { "minScore": 0.70 }],
+        "categories:pwa": ["error", { "minScore": 0.95 }]
       }
     }
   }
