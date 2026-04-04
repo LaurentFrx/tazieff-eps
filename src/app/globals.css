@@ -4,6 +4,11 @@
 
 :root {
   color-scheme: light;
+  /* Font aliases — anciennes variables → design system Sport Vibrant */
+  --font-display: var(--font-bebas);
+  --font-body: var(--font-dm-sans);
+  --font-mono: var(--font-jetbrains);
+  --font-orbitron: var(--font-jetbrains);
   --bg: #f5efe6;
   --bg-2: #fff7ee;
   --ink: #1e1a16;
