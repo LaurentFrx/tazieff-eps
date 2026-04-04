@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePlan } from "@/hooks/usePlan";
 import { isAcademicEmail, ACADEMIC_EMAIL_PATTERN } from "@/lib/auth/academic-domains";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { LocaleLink } from "@/components/LocaleLink";
 
 
 /* ── Types & constants ─────────────────────────────────────────────── */
@@ -545,6 +546,17 @@ export default function ReglagesPage() {
               {buildInfo.label}
             </button>
           </p>
+          <div className="mt-3 flex justify-center gap-4 text-[11px] text-[color:var(--muted)]">
+            <LocaleLink href="/legal/mentions-legales" className="hover:text-[color:var(--ink)] transition-colors">
+              {t("settings.legal.mentions")}
+            </LocaleLink>
+            <LocaleLink href="/legal/confidentialite" className="hover:text-[color:var(--ink)] transition-colors">
+              {t("settings.legal.privacy")}
+            </LocaleLink>
+            <LocaleLink href="/legal/cgu" className="hover:text-[color:var(--ink)] transition-colors">
+              {t("settings.legal.cgu")}
+            </LocaleLink>
+          </div>
         </div>
       </div>
 

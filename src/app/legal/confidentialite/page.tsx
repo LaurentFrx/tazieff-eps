@@ -22,13 +22,10 @@ export default function ConfidentialitePage() {
             Responsable du traitement
           </h2>
           <p>
-            {/* TODO: remplacer [NOM_COMPLET] */}
-            <span className="text-amber-400">[NOM_COMPLET]</span>
+            Laurent Feroux
           </p>
           <p>
-            Contact :{" "}
-            {/* TODO: remplacer [EMAIL_CONTACT] */}
-            <span className="text-amber-400">[EMAIL_CONTACT]</span>
+            Contact : laurent@feroux.fr
           </p>
           <p className="mt-3">
             Cette politique d&eacute;crit comment muscu-eps.fr collecte,
@@ -294,9 +291,7 @@ export default function ConfidentialitePage() {
             </li>
           </ul>
           <p className="mt-3">
-            Pour exercer ces droits, contactez :{" "}
-            {/* TODO: remplacer [EMAIL_CONTACT] */}
-            <span className="text-amber-400">[EMAIL_CONTACT]</span>
+            Pour exercer ces droits, contactez : laurent@feroux.fr
           </p>
           <p className="mt-3">
             En cas de litige, vous pouvez introduire une r&eacute;clamation

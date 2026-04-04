@@ -90,6 +90,11 @@ export const messages = {
         label: "Voix du timer",
         enabled: "Coaching vocal",
       },
+      legal: {
+        mentions: "Mentions légales",
+        privacy: "Confidentialité",
+        cgu: "CGU",
+      },
     },
     nav: {
       home: { label: "Accueil" },
@@ -1197,6 +1202,11 @@ export const messages = {
         label: "Timer voice",
         enabled: "Voice coaching",
       },
+      legal: {
+        mentions: "Legal notice",
+        privacy: "Privacy",
+        cgu: "Terms of use",
+      },
     },
     nav: {
       home: { label: "Home" },
@@ -2303,6 +2313,11 @@ export const messages = {
       voice: {
         label: "Voz del temporizador",
         enabled: "Coaching vocal",
+      },
+      legal: {
+        mentions: "Aviso legal",
+        privacy: "Privacidad",
+        cgu: "Condiciones de uso",
       },
     },
     nav: {

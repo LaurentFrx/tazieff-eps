@@ -18,14 +18,12 @@ export default function MentionsLegalesPage() {
           </h2>
           <p>
             Le site muscu-eps.fr est &eacute;dit&eacute; par{" "}
-            {/* TODO: remplacer [NOM_COMPLET] */}
-            <span className="text-amber-400">[NOM_COMPLET]</span>, personne
+            Laurent Feroux, personne
             physique.
           </p>
           <p>
             Contact :{" "}
-            {/* TODO: remplacer [EMAIL_CONTACT] */}
-            <span className="text-amber-400">[EMAIL_CONTACT]</span>
+            laurent@feroux.fr
           </p>
           <p className="mt-3">
             En application de l&rsquo;article 6-III-2 de la loi n&deg;

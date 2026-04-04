@@ -28,8 +28,7 @@ export default function CguPage() {
             l&rsquo;utilisation de l&rsquo;application web muscu-eps.fr
             (ci-apr&egrave;s &laquo;&nbsp;l&rsquo;Application&nbsp;&raquo;),
             &eacute;dit&eacute;e par{" "}
-            {/* TODO: remplacer [NOM_COMPLET] */}
-            <span className="text-amber-400">[NOM_COMPLET]</span>.
+            Laurent Feroux.
           </p>
           <p className="mt-3">
             L&rsquo;Application est un outil p&eacute;dagogique
