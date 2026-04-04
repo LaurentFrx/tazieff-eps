@@ -10,6 +10,7 @@ import { ParametresTable } from "@/components/methodes/ParametresTable";
 import { checkBalance, type Zone } from "@/lib/exercices/zoneMap";
 import type { CategorieMethode, MethodeFrontmatter } from "@/lib/content/schema";
 import type { LiveExerciseListItem } from "@/lib/live/types";
+import { ExoThumb } from "@/components/ExoThumb";
 
 /* ── Types ───────────────────────────────── */
 
@@ -456,8 +457,9 @@ export function SessionGenerator({
                 const ex = allExercices.find((e) => e.slug === slug);
                 if (!ex) return null;
                 return (
-                  <div key={slug} className="flex items-baseline justify-between gap-3 py-2.5">
-                    <div>
+                  <div key={slug} className="flex items-center gap-3 py-2.5">
+                    <ExoThumb slug={slug} size={36} />
+                    <div className="min-w-0 flex-1">
                       <span className="mr-2 text-xs font-bold text-[color:var(--accent)]">
                         {i + 1}.
                       </span>
@@ -551,6 +553,7 @@ function ExerciceToggle({
       >
         {selected ? "✓" : ""}
       </span>
+      <ExoThumb slug={exercice.slug} size={36} />
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold text-[color:var(--ink)]">
           {exercice.title}

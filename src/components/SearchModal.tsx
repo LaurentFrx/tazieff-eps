@@ -6,6 +6,7 @@ import { BookMarked, BookOpen, Dumbbell, Search } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { search, type SearchResultGroup } from "@/lib/search/search";
 import type { SearchEntry } from "@/lib/search/search-index";
+import { ExoThumb } from "@/components/ExoThumb";
 
 const TYPE_ICONS: Record<SearchEntry["type"], typeof Search> = {
   exercice: Dumbbell,
@@ -96,6 +97,7 @@ export function SearchModal({ onClose }: { onClose: () => void }) {
                     className="search-result-item"
                     onClick={() => navigate(item.href)}
                   >
+                    {group.type === "exercice" && <ExoThumb slug={item.slug} size={32} />}
                     {item.title}
                   </button>
                 ))}

@@ -3,6 +3,7 @@
 import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useMemo, useState } from "react";
 import { RestTimer } from "@/components/RestTimer";
+import { ExoThumb } from "@/components/ExoThumb";
 
 type TerrainBlock = {
   exoSlug: string;
@@ -62,7 +63,10 @@ export function TerrainClient({ seanceSlug, seanceTitle, blocks }: TerrainClient
       </header>
 
       <div className="card">
-        <h2 className="text-xl font-semibold">{current.title}</h2>
+        <div className="flex items-center gap-4 mb-2">
+          <ExoThumb slug={current.exoSlug} size={80} className="rounded-xl" />
+          <h2 className="text-xl font-semibold">{current.title}</h2>
+        </div>
         <p className="text-sm text-[color:var(--muted)]">
           {current.muscles.length > 0 ? current.muscles.join(" • ") : "Muscles à renseigner"}
         </p>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { LiveExerciseListItem } from "@/lib/live/types";
+import { ExoThumb } from "@/components/ExoThumb";
 
 type RelatedExercicesProps = {
   slugs: string[];
@@ -30,8 +31,9 @@ export function RelatedExercices({
           <li key={exo.slug}>
             <Link
               href={`/exercices/${exo.slug}`}
-              className="flex items-center py-3 text-[color:var(--ink)] hover:text-[color:var(--accent)]"
+              className="flex items-center gap-3 py-3 text-[color:var(--ink)] hover:text-[color:var(--accent)]"
             >
+              <ExoThumb slug={exo.slug} size={40} />
               <p className="truncate text-sm font-semibold">{exo.title}</p>
             </Link>
           </li>

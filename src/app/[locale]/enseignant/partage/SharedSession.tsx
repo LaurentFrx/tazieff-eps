@@ -4,6 +4,7 @@ import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { ExoThumb } from "@/components/ExoThumb";
 import { getEnseignantLabels } from "../labels";
 
 type DecodedSession = {
@@ -97,7 +98,8 @@ export function SharedSession() {
           <h2 className="text-sm font-semibold text-[color:var(--muted)]">{t("enseignant.exercices")}</h2>
           <div className="flex gap-2 flex-wrap mt-2">
             {session.e.map((slug) => (
-              <Link key={slug} href={`/exercices/${slug}`} className="pill text-xs">
+              <Link key={slug} href={`/exercices/${slug}`} className="pill text-xs flex items-center gap-1.5">
+                <ExoThumb slug={slug} size={32} />
                 {slug}
               </Link>
             ))}

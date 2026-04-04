@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale}${path}`;
 import DifficultyPill from "@/components/DifficultyPill";
+import { ExoThumb } from "@/components/ExoThumb";
 import { exercisesIndex, getSeance } from "@/lib/content/fs";
 import { renderMdx } from "@/lib/mdx/render";
 import { SeanceDownloadButton } from "@/app/[locale]/seances/[slug]/SeanceDownloadButton";
@@ -88,6 +89,7 @@ export default async function SeancePage({ params }: SeancePageProps) {
             const muscleLabel = exercise?.muscles?.slice(0, 3).join(" • ");
             return (
               <div key={`${block.exoSlug}-${index}`} className="block-row">
+                <ExoThumb slug={block.exoSlug} size={40} />
                 <div>
                   <Link href={lp(`/exercices/${block.exoSlug}`, locale)} className="block-title">
                     {exercise?.title ?? block.exoSlug}
