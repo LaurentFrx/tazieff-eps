@@ -369,6 +369,12 @@ export const messages = {
       filterByMuscle: "Filtrer par ce muscle",
       addToSession: "Ajouter à ma séance",
       inSession: "Dans ma séance",
+      complementary: "Exercices complémentaires",
+      lastWorked: {
+        recent: "Travaillé récemment",
+        daysAgo: "Dernier entraînement il y a {n} jours",
+        timeToTrain: "C'est le moment !",
+      },
       sections: {
         resume: "Résumé",
         execution: "Exécution",
@@ -722,6 +728,7 @@ export const messages = {
         minutes: "min",
         setDuration: "Durée",
         fullTimerLink: "Timer complet →",
+        launchTimer: "Lancer le timer repos",
       },
       compatiblesHeading: "Méthodes compatibles",
       exercicesCompatibles: "Exercices compatibles",
@@ -992,6 +999,7 @@ export const messages = {
     carnet: {
       title: "Carnet d'entraînement",
       lede: "Note tes séances, suis ta progression et exporte ton historique.",
+      sessionComplete: "Séance terminée ! Les exercices ont été pré-remplis.",
       tabForm: "Nouvelle entrée",
       tabHistory: "Historique",
       date: "Date",
@@ -1485,6 +1493,12 @@ export const messages = {
       filterByMuscle: "Filter by this muscle",
       addToSession: "Add to my session",
       inSession: "In my session",
+      complementary: "Complementary exercises",
+      lastWorked: {
+        recent: "Trained recently",
+        daysAgo: "Last trained {n} days ago",
+        timeToTrain: "Time to train!",
+      },
       sections: {
         resume: "Summary",
         execution: "Execution",
@@ -1883,6 +1897,7 @@ export const messages = {
     carnet: {
       title: "Training Log",
       lede: "Log your sessions, track your progress and export your history.",
+      sessionComplete: "Session complete! Exercises have been pre-filled.",
       tabForm: "New entry",
       tabHistory: "History",
       date: "Date",
@@ -2039,6 +2054,7 @@ export const messages = {
         minutes: "min",
         setDuration: "Duration",
         fullTimerLink: "Full timer →",
+        launchTimer: "Launch rest timer",
       },
       compatiblesHeading: "Compatible methods",
       exercicesCompatibles: "Compatible exercises",
@@ -2601,6 +2617,12 @@ export const messages = {
       filterByMuscle: "Filtrar por este músculo",
       addToSession: "Añadir a mi sesión",
       inSession: "En mi sesión",
+      complementary: "Ejercicios complementarios",
+      lastWorked: {
+        recent: "Entrenado recientemente",
+        daysAgo: "Último entrenamiento hace {n} días",
+        timeToTrain: "¡Es el momento!",
+      },
       sections: {
         resume: "Resumen",
         execution: "Ejecución",
@@ -2954,6 +2976,7 @@ export const messages = {
         minutes: "min",
         setDuration: "Duración",
         fullTimerLink: "Cronómetro completo →",
+        launchTimer: "Iniciar temporizador de descanso",
       },
       compatiblesHeading: "Métodos compatibles",
       exercicesCompatibles: "Ejercicios compatibles",
@@ -3224,6 +3247,7 @@ export const messages = {
     carnet: {
       title: "Cuaderno de entrenamiento",
       lede: "Registra tus sesiones, sigue tu progreso y exporta tu historial.",
+      sessionComplete: "¡Sesión terminada! Los ejercicios se han rellenado automáticamente.",
       tabForm: "Nueva entrada",
       tabHistory: "Historial",
       date: "Fecha",

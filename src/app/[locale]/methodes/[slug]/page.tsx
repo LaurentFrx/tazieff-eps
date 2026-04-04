@@ -15,6 +15,15 @@ import { MethodeTimer } from "@/components/methodes/MethodeTimer";
 import { RelatedMethods } from "@/components/methodes/RelatedMethods";
 import { RelatedExercices } from "@/components/methodes/RelatedExercices";
 import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
+import { TimerLaunchButton } from "@/components/methodes/TimerLaunchButton";
+
+function parseRestSeconds(recup: string | undefined): number {
+  if (!recup) return 120;
+  const match = recup.match(/(\d+)\s*(min|s|sec)/i);
+  if (!match) return 120;
+  const val = parseInt(match[1], 10);
+  return match[2].startsWith("min") ? val * 60 : val;
+}
 
 type MethodePageProps = {
   params: Promise<{ locale: string; slug: string }>;
@@ -146,14 +155,19 @@ export default async function MethodePage({ params }: MethodePageProps) {
       {m.timer ? (
         <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/40 dark:to-cyan-950/30 shadow-sm p-5">
           <MethodeTimer labels={timerLabels} />
-          <Link
-            href={lp("/outils/timer", locale)}
-            className="mt-4 flex items-center justify-center py-3 text-sm font-semibold text-blue-600 dark:text-blue-400 rounded-xl bg-white/60 dark:bg-zinc-900/40 hover:bg-white dark:hover:bg-zinc-800 transition-colors"
-          >
-            {t("methodes.timer.fullTimerLink")}
-          </Link>
+          <div className="mt-4 flex flex-col gap-2">
+            <Link
+              href={lp("/outils/timer", locale)}
+              className="flex items-center justify-center py-3 text-sm font-semibold text-blue-600 dark:text-blue-400 rounded-xl bg-white/60 dark:bg-zinc-900/40 hover:bg-white dark:hover:bg-zinc-800 transition-colors"
+            >
+              {t("methodes.timer.fullTimerLink")}
+            </Link>
+            <TimerLaunchButton restSeconds={parseRestSeconds(m.parametres.recuperation)} methodSlug={m.slug} />
+          </div>
         </div>
-      ) : null}
+      ) : (
+        <TimerLaunchButton restSeconds={parseRestSeconds(m.parametres.recuperation)} methodSlug={m.slug} />
+      )}
 
       <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-5 md:p-6 flex flex-col gap-5">
         {mdxContent}

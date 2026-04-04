@@ -552,9 +552,38 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
   // Track whether initial Supabase sync has happened
   const hasSyncedRef = useRef(false);
 
+  // Session complete banner
+  const [sessionComplete, setSessionComplete] = useState<{
+    exercices: { slug: string; title: string; muscles: string[] }[];
+    duration: number;
+    timerType: string | null;
+    date: string;
+  } | null>(null);
+
   // Load local entries immediately (offline-first)
   useEffect(() => {
     setEntries(loadEntriesLocal());
+
+    // Detect session complete flag from timer
+    try {
+      const raw = localStorage.getItem("eps_session_complete");
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data?.exercices?.length) {
+          setSessionComplete(data);
+          setTab("form");
+          // Pre-fill form with session data
+          setDate(new Date(data.date).toISOString().slice(0, 10));
+          const exos: CarnetExerciceState[] = data.exercices.map(
+            (e: { title: string }) => ({
+              ...newExercice(),
+              nom: e.title,
+            }),
+          );
+          if (exos.length > 0) setExercices(exos);
+        }
+      }
+    } catch { /* ignore */ }
   }, []);
 
   // Merge with Supabase when user becomes available
@@ -814,6 +843,28 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
           style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
         />
       </div>
+
+      {/* ── Session complete banner ────────────────────────────────── */}
+      {sessionComplete && (
+        <div className="mx-4 mt-3 flex items-center justify-between gap-3 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3">
+          <p className="text-sm font-semibold text-emerald-300">
+            {t("carnet.sessionComplete")}
+          </p>
+          <button
+            type="button"
+            className="text-xs text-[color:var(--muted)]"
+            onClick={() => {
+              setSessionComplete(null);
+              try {
+                localStorage.removeItem("eps_session_complete");
+                localStorage.removeItem("eps_session_draft");
+              } catch { /* ignore */ }
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* ── Form ─────────────────────────────────────────────────────── */}
       {tab === "form" && (

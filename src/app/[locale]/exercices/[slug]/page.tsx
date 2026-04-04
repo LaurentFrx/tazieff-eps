@@ -15,6 +15,9 @@ import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { MethodeCard } from "@/components/methodes/MethodeCard";
 import { SessionExercises } from "@/app/[locale]/exercices/[slug]/SessionExercises";
+import { ComplementaryExercises } from "@/components/exercices/ComplementaryExercises";
+import { LastWorkedBadge } from "@/components/exercices/LastWorkedBadge";
+import { getComplementaryExercises } from "@/lib/exercices/muscle-pairs";
 
 type ExercicePageProps = {
   params: Promise<{ locale: string; slug: string }>;
@@ -204,6 +207,9 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
         .slice(0, 6)
     : [];
 
+  const complementaryExercises = getComplementaryExercises(slug, allExercises);
+  const primaryMuscle = (baseFrontmatter as { muscles?: string[] }).muscles?.[0] ?? null;
+
   return (
     <section className="page">
       <Breadcrumbs
@@ -245,6 +251,15 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
             ))}
           </div>
         </div>
+      ) : null}
+
+      {primaryMuscle && <LastWorkedBadge muscleGroup={primaryMuscle} />}
+
+      {complementaryExercises.length > 0 ? (
+        <ComplementaryExercises
+          exercises={complementaryExercises.map((e) => ({ slug: e.slug, title: e.title, muscles: e.muscles }))}
+          heading={t("exerciseDetail.complementary")}
+        />
       ) : null}
 
       {sessionExercises.length > 0 ? (

@@ -222,13 +222,29 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     presetRef.current = null; setState(IDLE_STATE);
   }, [clearInt, releaseWL]);
 
-  // Auto-cleanup 2 s after done
+  // Auto-cleanup 2 s after done + session complete flag
   useEffect(() => {
     if (state.status === 'done') {
+      // If a session draft exists, store completion data for carnet
+      try {
+        const draft = localStorage.getItem('eps_session_draft');
+        if (draft) {
+          const items = JSON.parse(draft);
+          if (Array.isArray(items) && items.length > 0) {
+            localStorage.setItem('eps_session_complete', JSON.stringify({
+              exercices: items,
+              duration: state.elapsedSeconds,
+              timerType,
+              date: new Date().toISOString(),
+            }));
+          }
+        }
+      } catch { /* ignore */ }
+
       const t = setTimeout(stop, 2000);
       return () => clearTimeout(t);
     }
-  }, [state.status, stop]);
+  }, [state.status, state.elapsedSeconds, timerType, stop]);
 
   const startTimer = useCallback((type: string, preset: TimerPreset, config: TimerDisplayConfig) => {
     clearInt(); releaseWL();
