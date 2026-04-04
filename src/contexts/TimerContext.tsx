@@ -5,6 +5,7 @@ import type { RingPhase } from '@/components/tools/CountdownRing';
 import type { TimerPreset, TimerState, PhaseEntry } from '@/hooks/useTimer';
 import { buildPhases, computeTotalRemaining, getCurrentRoundCycle } from '@/hooks/useTimer';
 import { playCountdownBeep, playFinishSound, playSkipBeep } from '@/lib/timer-audio';
+import { hapticFeedback } from '@/lib/audio/beep';
 import { playCoachEvent, isCoachEnabled, toggleCoach, getVoice, setVoice, preloadNextEvents, type VoiceName } from '@/lib/audio/voice-coach';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
@@ -100,12 +101,14 @@ export function TimerProvider({ children }: { children: ReactNode }) {
 
     if (nextIdx >= cur.phases.length) {
       playFinishSound();
+      hapticFeedback('heavy');
       // Retarder la voix de fin après le triple Do-Mi-Sol (~0.8s)
       setTimeout(() => playCoachEvent('done', langRef.current), 1000);
       return { ...cur, status: 'done', phases: newPhases, secondsLeft: 0, totalSecondsLeft: 0 };
     }
 
     const next = newPhases[nextIdx];
+    hapticFeedback('double');
     const preset = presetRef.current;
     if (preset) {
       const { currentRound, currentCycle } = getCurrentRoundCycle(newPhases, nextIdx);
@@ -173,6 +176,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       const el = prev.elapsedSeconds + 1;
 
       // Countdown (3, 2, 1, 0) — voix OU bips, jamais les deux
+      if (sl >= 1 && sl <= 3) hapticFeedback('tap');
       if (sl >= 0 && sl <= 3) {
         if (voiceOnRef.current) {
           // Voix ON : countdown parlé, PAS de bips
@@ -275,6 +279,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
 
   const skip = useCallback(() => {
     playSkipBeep();
+    hapticFeedback('tap');
     setState(p => (p.status === 'running' || p.status === 'paused')
       ? advancePhase({ ...p, secondsLeft: 0 }) : p);
   }, [advancePhase]);

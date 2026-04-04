@@ -146,13 +146,19 @@ Comportement :
 - Bips de countdown dans les 3 dernières secondes de chaque phase
 
 ### Vibration (mobile)
+Utiliser `hapticFeedback()` de `@/lib/audio/beep` — PAS `navigator.vibrate` directement.
+Android : vibration native. iOS Safari : fallback audio (thump basse fréquence 60 Hz).
+Intégré dans `TimerContext.tsx` :
 ```typescript
-// Changement de phase
-navigator.vibrate?.(200);
+import { hapticFeedback } from '@/lib/audio/beep';
+// Changement de phase (travail → repos, repos → travail)
+hapticFeedback('double');
 // Fin du timer
-navigator.vibrate?.([200, 100, 200, 100, 400]);
-// 3 dernières secondes
-navigator.vibrate?.(100);
+hapticFeedback('heavy');
+// Countdown 3-2-1
+hapticFeedback('tap');
+// Skip
+hapticFeedback('tap');
 ```
 
 ### Wake Lock
