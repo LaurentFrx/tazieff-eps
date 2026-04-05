@@ -3,9 +3,10 @@ import { notFound } from "next/navigation";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { OBJECTIFS, getObjectifBySlug } from "@/lib/objectifs/data";
-import { getAllMethodes } from "@/lib/content/fs";
-import { getAllExercises } from "@/lib/content/fs";
+import { getAllMethodes, getAllExercises } from "@/lib/content/fs";
 import type { Lang } from "@/lib/i18n/messages";
+import type { ObjectifSlug } from "@/lib/objectifs/data";
+import { getExerciseSlugsForObjectif } from "@/lib/objectifs/exercises";
 import { MethodAccordion, ExerciseList } from "@/components/objectifs/MethodAccordion";
 
 /* ── locale-aware link prefix ─────────────────────────────────── */
@@ -67,16 +68,13 @@ export default async function ObjectifPage({ params }: Props) {
     .map((s) => methodesMap.get(s))
     .filter(Boolean);
 
-  /* Collect exercise slugs from matched methods, deduplicated */
-  const exoSlugsSet = new Set<string>();
-  for (const m of matchedMethodes) {
-    for (const s of m!.exercices_compatibles) {
-      exoSlugsSet.add(s);
-    }
-  }
-
-  /* Resolve exercise data */
+  /* Collect exercise slugs via shared utility (methods bridge) */
   const allExercises = await getAllExercises(lang);
+  const exoSlugsSet = getExerciseSlugsForObjectif(
+    objectif.slug as ObjectifSlug,
+    allExercises,
+    allMethodes,
+  );
   const exoMap = new Map(allExercises.map((e) => [e.slug, e]));
   const matchedExercises = [...exoSlugsSet]
     .map((s) => exoMap.get(s))

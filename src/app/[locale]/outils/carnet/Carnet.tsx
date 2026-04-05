@@ -6,6 +6,7 @@ import { ChevronDown, ChevronUp, Download, Printer, Trash2 } from "lucide-react"
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useAuth } from "@/hooks/useAuth";
 import { normalizeForSearch } from "@/lib/text/normalize";
+import { getExerciseSlugsForObjectif, OBJECTIF_KEY_TO_SLUG } from "@/lib/objectifs/exercises";
 import {
   type CarnetEntry,
   loadEntriesLocal,
@@ -34,11 +35,18 @@ type ExerciceOption = {
   slug: string;
   title: string;
   themeCompatibility: number[];
+  methodes_compatibles: string[];
   session: string;
 };
 
+type MethodeOption = {
+  slug: string;
+  titre: string;
+  exercices_compatibles: string[];
+};
+
 type Props = {
-  methodeNames: { slug: string; titre: string }[];
+  methodeNames: MethodeOption[];
   exerciceNames: ExerciceOption[];
 };
 
@@ -145,11 +153,13 @@ function ExerciceSelector({
   value,
   options,
   objectif,
+  methodes,
   onChange,
 }: {
   value: string;
   options: ExerciceOption[];
   objectif: string;
+  methodes: MethodeOption[];
   onChange: (title: string) => void;
 }) {
   const [query, setQuery] = useState("");
@@ -158,7 +168,13 @@ function ExerciceSelector({
   const listId = useRef(`cb-${crypto.randomUUID().slice(0, 8)}`).current;
 
   const isSearching = query.length > 0;
-  const themeNum = OBJECTIF_TO_THEME[objectif];
+
+  // Compute exercise slugs matching the selected objectif via methods bridge
+  const matchingSlugs = useMemo(() => {
+    const objSlug = OBJECTIF_KEY_TO_SLUG[objectif];
+    if (!objSlug) return null;
+    return getExerciseSlugsForObjectif(objSlug, options, methodes);
+  }, [objectif, options, methodes]);
 
   // Flat search results
   const searchResults = useMemo(() => {
@@ -185,18 +201,18 @@ function ExerciceSelector({
         }))
         .filter((g) => g.exercises.length > 0);
 
-    if (!themeNum) {
+    if (!matchingSlugs) {
       return { matchingGroups: buildGroups(options), otherGroups: [] };
     }
 
     const matching: ExerciceOption[] = [];
     const others: ExerciceOption[] = [];
     for (const o of options) {
-      if (o.themeCompatibility.includes(themeNum)) matching.push(o);
+      if (matchingSlugs.has(o.slug)) matching.push(o);
       else others.push(o);
     }
     return { matchingGroups: buildGroups(matching), otherGroups: buildGroups(others) };
-  }, [options, themeNum, isSearching]);
+  }, [options, matchingSlugs, isSearching]);
 
   // Flat list for keyboard nav
   const flatItems = useMemo(() => {
@@ -964,6 +980,7 @@ export function Carnet({ methodeNames, exerciceNames }: Props) {
                       value={ex.nom}
                       options={exerciceNames}
                       objectif={objectif}
+                      methodes={methodeNames}
                       onChange={(title) => updateExercice(ex._id, "nom", title)}
                     />
 

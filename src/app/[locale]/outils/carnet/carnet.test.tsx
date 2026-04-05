@@ -23,13 +23,13 @@ import { Carnet } from "./Carnet";
 const STORAGE_KEY = "tazieff-carnet";
 
 const mockMethodes = [
-  { slug: "charge-constante", titre: "Charge constante" },
-  { slug: "pyramide", titre: "Pyramide" },
+  { slug: "charge-constante", titre: "Charge constante", exercices_compatibles: ["s3-01", "s4-01"] },
+  { slug: "pyramide", titre: "Pyramide", exercices_compatibles: ["s4-01"] },
 ];
 
 const mockExercices = [
-  { slug: "s3-01", title: "Développé couché", themeCompatibility: [1, 2], session: "S3" },
-  { slug: "s4-01", title: "Squat", themeCompatibility: [1, 2, 3], session: "S4" },
+  { slug: "s3-01", title: "Développé couché", themeCompatibility: [1, 2], methodes_compatibles: ["charge-constante"], session: "S3" },
+  { slug: "s4-01", title: "Squat", themeCompatibility: [1, 2, 3], methodes_compatibles: ["charge-constante", "pyramide"], session: "S4" },
 ];
 
 /* ── localStorage ────────────────────────────────────────────────── */

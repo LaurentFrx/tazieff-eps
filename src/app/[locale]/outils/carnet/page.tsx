@@ -21,11 +21,16 @@ export default async function CarnetPage({ params }: { params: Promise<{ locale:
     getExercisesIndex(lang),
   ]);
 
-  const methodeNames = allMethodes.map((m) => ({ slug: m.slug, titre: m.titre }));
+  const methodeNames = allMethodes.map((m) => ({
+    slug: m.slug,
+    titre: m.titre,
+    exercices_compatibles: m.exercices_compatibles,
+  }));
   const exerciceNames = allExercices.map((e) => ({
     slug: e.slug,
     title: e.title,
     themeCompatibility: e.themeCompatibility,
+    methodes_compatibles: e.methodes_compatibles ?? [],
     session: e.slug.split("-")[0].toUpperCase(),
   }));
 
