@@ -5,8 +5,8 @@ import type { VoiceName } from '@/lib/audio/voice-coach';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
 const VOICE_OPTIONS: { value: VoiceName; labelFR: string; labelEN: string; labelES: string; icon: string }[] = [
-  { value: 'Paul', labelFR: 'Paul (homme)', labelEN: 'Paul (male)', labelES: 'Paul (hombre)', icon: '\uD83C\uDFA4' },
-  { value: 'Koraly', labelFR: 'Koraly (femme)', labelEN: 'Koraly (female)', labelES: 'Koraly (mujer)', icon: '\uD83C\uDFA4' },
+  { value: 'Paul', labelFR: 'Paul', labelEN: 'Paul', labelES: 'Paul', icon: '\uD83C\uDFA4' },
+  { value: 'Koraly', labelFR: 'Koraly', labelEN: 'Koraly', labelES: 'Koraly', icon: '\uD83C\uDFA4' },
 ];
 
 export function VoiceSelector() {
