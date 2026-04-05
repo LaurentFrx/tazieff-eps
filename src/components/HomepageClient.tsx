@@ -243,7 +243,7 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
         </h2>
         <div className="grid grid-cols-3 gap-2">
           <Link
-            href="/methodes?objectif=endurance"
+            href="/objectifs/endurance-de-force"
             className="rounded-xl p-3 flex flex-col items-center gap-1.5 text-center shadow-md transition-all duration-300 hover:scale-[1.03]"
             style={{ background: "linear-gradient(135deg, #059669, #34d399)" }}
           >
@@ -251,7 +251,7 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
             <span className="text-xs font-bold text-white leading-tight">{t("pages.home.themeEndurance")}</span>
           </Link>
           <Link
-            href="/methodes?objectif=volume"
+            href="/objectifs/gain-de-volume"
             className="rounded-xl p-3 flex flex-col items-center gap-1.5 text-center shadow-md transition-all duration-300 hover:scale-[1.03]"
             style={{ background: "linear-gradient(135deg, #3b82f6, #6366f1)" }}
           >
@@ -259,7 +259,7 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
             <span className="text-xs font-bold text-white leading-tight">{t("pages.home.themeVolume")}</span>
           </Link>
           <Link
-            href="/methodes?objectif=puissance"
+            href="/objectifs/gain-de-puissance"
             className="rounded-xl p-3 flex flex-col items-center gap-1.5 text-center shadow-md transition-all duration-300 hover:scale-[1.03]"
             style={{ background: "linear-gradient(135deg, #f97316, #ef4444)" }}
           >
