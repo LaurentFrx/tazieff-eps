@@ -4,7 +4,9 @@ import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { OBJECTIFS, getObjectifBySlug } from "@/lib/objectifs/data";
 import { getAllMethodes } from "@/lib/content/fs";
+import { getAllExercises } from "@/lib/content/fs";
 import type { Lang } from "@/lib/i18n/messages";
+import { MethodAccordion, ExerciseList } from "@/components/objectifs/MethodAccordion";
 
 /* ── locale-aware link prefix ─────────────────────────────────── */
 const lp = (path: string, locale: string) =>
@@ -58,12 +60,28 @@ export default async function ObjectifPage({ params }: Props) {
   const objectif = getObjectifBySlug(slug);
   if (!objectif) notFound();
 
-  /* Resolve method names from MDX content */
+  /* Resolve method data from MDX content */
   const allMethodes = await getAllMethodes(lang);
   const methodesMap = new Map(allMethodes.map((m) => [m.slug, m]));
   const matchedMethodes = objectif.methodesSlugs
     .map((s) => methodesMap.get(s))
     .filter(Boolean);
+
+  /* Collect exercise slugs from matched methods, deduplicated */
+  const exoSlugsSet = new Set<string>();
+  for (const m of matchedMethodes) {
+    for (const s of m!.exercices_compatibles) {
+      exoSlugsSet.add(s);
+    }
+  }
+
+  /* Resolve exercise data */
+  const allExercises = await getAllExercises(lang);
+  const exoMap = new Map(allExercises.map((e) => [e.slug, e]));
+  const matchedExercises = [...exoSlugsSet]
+    .map((s) => exoMap.get(s))
+    .filter(Boolean)
+    .map((e) => ({ slug: e!.slug, title: e!.title }));
 
   const objectifNames: Record<string, Record<Lang, string>> = {
     "endurance-de-force": { fr: "Endurance de force", en: "Strength Endurance", es: "Resistencia de fuerza" },
@@ -74,12 +92,27 @@ export default async function ObjectifPage({ params }: Props) {
 
   const paramKeys = ["charge", "repetitions", "series", "recuperation", "rythme"] as const;
 
+  /* Prepare data for client components */
+  const accordionMethodes = matchedMethodes.map((m) => ({
+    slug: m!.slug,
+    titre: m!.titre,
+    scores: m!.scores,
+  }));
+
+  const scoreLabels = {
+    endurance: t("methodes.scores.endurance"),
+    hypertrophie: t("methodes.scores.hypertrophie"),
+    force: t("methodes.scores.force"),
+    puissance: t("methodes.scores.puissance"),
+  };
+
   return (
     <section className="page space-y-6">
       {/* Breadcrumbs */}
       <Breadcrumbs
         items={[
           { label: t("nav.home.label"), href: "/" },
+          { label: t("objectifs.title"), href: "/" },
           { label: objectifName },
         ]}
       />
@@ -90,6 +123,13 @@ export default async function ObjectifPage({ params }: Props) {
         style={{ background: objectif.gradient }}
       >
         <div className="relative z-10">
+          <a
+            href={lp("/", locale)}
+            className="inline-flex items-center gap-1 text-[13px] text-white/70 mb-2 hover:text-white/90 transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            {t("objectifs.backHome")}
+          </a>
           <p className="text-sm font-semibold text-white/70 uppercase tracking-wide mb-1">
             {t("objectifs.title")}
           </p>
@@ -139,7 +179,7 @@ export default async function ObjectifPage({ params }: Props) {
         </div>
       </div>
 
-      {/* ── 3. Description complémentaire ─────────────────────── */}
+      {/* ── 3. Description — En pratique ──────────────────────── */}
       <div>
         <h2
           className="text-xl font-extrabold text-[color:var(--ink)] mb-3"
@@ -152,8 +192,8 @@ export default async function ObjectifPage({ params }: Props) {
         </p>
       </div>
 
-      {/* ── 4. Méthodes recommandées ──────────────────────────── */}
-      {matchedMethodes.length > 0 && (
+      {/* ── 4. Méthodes recommandées (accordéon) ──────────────── */}
+      {accordionMethodes.length > 0 && (
         <div>
           <h2
             className="text-xl font-extrabold text-[color:var(--ink)] mb-4"
@@ -161,45 +201,35 @@ export default async function ObjectifPage({ params }: Props) {
           >
             {t("objectifs.methodsTitle")}
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {matchedMethodes.map((m) => (
-              <a
-                key={m!.slug}
-                href={lp(`/methodes/${m!.slug}`, locale)}
-                className="card flex flex-col gap-2 p-4 transition-colors hover:border-current"
-                style={{ borderColor: `${objectif.colorAccent}30` }}
-              >
-                <p className="text-sm font-bold text-[color:var(--ink)]">
-                  {m!.titre}
-                </p>
-                {m!.description && (
-                  <p className="text-xs text-[color:var(--muted)] line-clamp-2">
-                    {m!.description}
-                  </p>
-                )}
-                <span
-                  className="text-xs font-semibold mt-auto"
-                  style={{ color: objectif.colorAccent }}
-                >
-                  {t("objectifs.methodsExplore")} →
-                </span>
-              </a>
-            ))}
-          </div>
+          <MethodAccordion
+            methodes={accordionMethodes}
+            scoreLabels={scoreLabels}
+            colorAccent={objectif.colorAccent}
+            locale={locale}
+            expandLabel={t("objectifs.methodsExpand")}
+            collapseLabel={t("objectifs.methodsCollapse")}
+            seeMethodLabel={t("objectifs.methodsSeeMethod")}
+          />
         </div>
       )}
 
-      {/* ── 5. CTA Exercices ──────────────────────────────────── */}
-      <div className="pt-2 pb-4">
-        <a
-          href={lp("/exercices", locale)}
-          className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:scale-[1.02]"
-          style={{ background: objectif.gradient }}
-        >
-          {t("objectifs.ctaExercises")}
-          <span aria-hidden="true">→</span>
-        </a>
-      </div>
+      {/* ── 5. Exercices pour cet objectif ────────────────────── */}
+      {matchedExercises.length > 0 && (
+        <div>
+          <h2
+            className="text-xl font-extrabold text-[color:var(--ink)] mb-4"
+            style={{ fontFamily: "var(--font-bebas), sans-serif" }}
+          >
+            {t("objectifs.exercisesTitle")}
+          </h2>
+          <ExerciseList
+            exercises={matchedExercises}
+            locale={locale}
+            seeAllLabel={t("objectifs.exercisesSeeAll")}
+            seeAllHref="/exercices"
+          />
+        </div>
+      )}
     </section>
   );
 }
