@@ -8,3 +8,4 @@ Disallow: /reglages
 Disallow: /onboarding
 
 Host: https://muscu-eps.fr
+Sitemap: https://muscu-eps.fr/sitemap.xml
