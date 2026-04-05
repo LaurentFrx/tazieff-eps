@@ -8,6 +8,7 @@ import type { TimerPreset } from '@/hooks/useTimer';
 import { unlockAudio } from '@/lib/timer-audio';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { VoiceSelector } from '@/components/timer/VoiceSelector';
+import { VoiceOnIcon, VoiceOffIcon } from '@/components/timer/VoiceIcons';
 
 const PREPARE_VALUES = [0, 3, 5, 10, 15, 20, 30];
 const COOLDOWN_VALUES = [0, 5, 10, 15, 20, 30];
@@ -231,11 +232,7 @@ function CustomCountdown({ onBack }: { onBack: () => void }) {
             </div>
           </div>
           <button onClick={toggleVoice} className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}>
-            {voiceOn ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-            ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="3" y1="3" x2="21" y2="21" strokeWidth="2.5"/></svg>
-            )}
+            {voiceOn ? <VoiceOnIcon /> : <VoiceOffIcon />}
           </button>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import type { PhaseEntry, TimerState } from '@/hooks/useTimer';
 import { useTimerContext } from '@/contexts/TimerContext';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { VoiceOnIcon, VoiceOffIcon } from '@/components/timer/VoiceIcons';
 
 // ---------- Phase gradients (Sport Vibrant) ----------
 
@@ -41,18 +42,6 @@ const SkipIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <polygon points="5 4 15 12 5 20 5 4" />
     <line x1="19" y1="5" x2="19" y2="19" />
-  </svg>
-);
-
-const VoiceOnIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/>
-  </svg>
-);
-
-const VoiceOffIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="3" y1="3" x2="21" y2="21" strokeWidth="2.5"/>
   </svg>
 );
 
