@@ -53,7 +53,8 @@ export async function generateMetadata({
   return {
     title: titre,
     description: desc,
-    openGraph: { title: titre, description: desc },
+    openGraph: { title: `${titre} — Tazieff EPS`, description: desc, type: "article" },
+    twitter: { card: "summary_large_image", title: titre, description: desc },
   };
 }
 

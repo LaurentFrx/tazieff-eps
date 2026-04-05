@@ -32,6 +32,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://muscu-eps.fr"),
   title: "Tazieff EPS",
   description: "Guide complet de musculation pour le BAC EPS : exercices, m\u00e9thodes d\u2019entra\u00eenement, anatomie et parcours d\u2019\u00e9valuation.",
   manifest: "/manifest.webmanifest",
@@ -43,6 +44,21 @@ export const metadata: Metadata = {
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
+  },
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    alternateLocale: ["en_US", "es_ES"],
+    siteName: "Tazieff EPS",
+    title: "Tazieff EPS — Musculation au lycée",
+    description: "Application pédagogique de musculation pour l'EPS. Exercices, méthodes d'entraînement, préparation BAC.",
+    images: [{ url: "/images/og-default.webp", width: 1200, height: 630, alt: "Tazieff EPS — Musculation au lycée" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Tazieff EPS — Musculation au lycée",
+    description: "Application pédagogique de musculation pour l'EPS.",
+    images: ["/images/og-default.webp"],
   },
 };
 

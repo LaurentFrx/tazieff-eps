@@ -115,13 +115,18 @@ export async function generateMetadata({
 
   if (importedExercise) {
     const title = importedExercise.title;
+    const desc = `${title} — ${t("header.exercicesSubtitle")}`;
+    const ogImage = importedExercise.media || `/images/exos/${slug}.webp`;
     return {
       title,
-      description: `${title} — ${t("header.exercicesSubtitle")}`,
+      description: desc,
       openGraph: {
-        title,
-        ...(importedExercise.media ? { images: [importedExercise.media] } : {}),
+        title: `${title} — Tazieff EPS`,
+        description: desc,
+        type: "article",
+        images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
       },
+      twitter: { card: "summary_large_image", title, description: desc, images: [ogImage] },
     };
   }
 
@@ -133,15 +138,18 @@ export async function generateMetadata({
   const title = merged.frontmatter.title;
   const muscles = merged.frontmatter.muscles?.join(", ") ?? "";
   const description = muscles ? `${title} — ${muscles}` : title;
+  const ogImage = merged.frontmatter.media || `/images/exos/${slug}.webp`;
 
   return {
     title,
     description,
     openGraph: {
-      title,
+      title: `${title} — Tazieff EPS`,
       description,
-      ...(merged.frontmatter.media ? { images: [merged.frontmatter.media] } : {}),
+      type: "article",
+      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
     },
+    twitter: { card: "summary_large_image", title, description, images: [ogImage] },
   };
 }
 

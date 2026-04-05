@@ -30,7 +30,8 @@ export async function generateMetadata({
   const title = result.frontmatter.title;
   return {
     title,
-    openGraph: { title },
+    openGraph: { title: `${title} — Tazieff EPS`, type: "article" },
+    twitter: { card: "summary_large_image", title },
   };
 }
 
