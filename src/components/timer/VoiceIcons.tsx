@@ -1,29 +1,25 @@
-/** Shared voice-toggle icons for all timers — "talking face" profile with sound arcs */
+/** Shared voice-toggle icons for all timers — "talking head" with sound arcs */
 
 export const VoiceOnIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    {/* Head profile */}
-    <path d="M8 3C4 3 1 7 1 12C1 17 4 21 8 21"/>
-    {/* Nose-mouth */}
-    <path d="M8 9L10.5 11L8 13"/>
+    {/* Head + chin */}
+    <path d="M12 1C9 1 7 3.5 7 6c0 1.5.5 3 2 4l-1 2.5c-.2.5.1 1 .6 1h6.8c.5 0 .8-.5.6-1L15 10c1.5-1 2-2.5 2-4 0-2.5-2-5-5-5z"/>
+    <path d="M9 13.5v1c0 1.7 1.3 3 3 3s3-1.3 3-3v-1"/>
     {/* Sound arcs */}
-    <path d="M13 8C15.5 10.5 15.5 13.5 13 16"/>
-    <path d="M16 5.5C19.5 9 19.5 15 16 18.5"/>
-    <path d="M19 3C23 7.5 23 16.5 19 21"/>
+    <path d="M17 8a5.5 5.5 0 0 1 0 5"/>
+    <path d="M20 6.5a9 9 0 0 1 0 9"/>
   </svg>
 );
 
 export const VoiceOffIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    {/* Head profile */}
-    <path d="M8 3C4 3 1 7 1 12C1 17 4 21 8 21"/>
-    {/* Nose-mouth */}
-    <path d="M8 9L10.5 11L8 13"/>
+    {/* Head + chin */}
+    <path d="M12 1C9 1 7 3.5 7 6c0 1.5.5 3 2 4l-1 2.5c-.2.5.1 1 .6 1h6.8c.5 0 .8-.5.6-1L15 10c1.5-1 2-2.5 2-4 0-2.5-2-5-5-5z"/>
+    <path d="M9 13.5v1c0 1.7 1.3 3 3 3s3-1.3 3-3v-1"/>
     {/* Sound arcs */}
-    <path d="M13 8C15.5 10.5 15.5 13.5 13 16"/>
-    <path d="M16 5.5C19.5 9 19.5 15 16 18.5"/>
-    <path d="M19 3C23 7.5 23 16.5 19 21"/>
+    <path d="M17 8a5.5 5.5 0 0 1 0 5"/>
+    <path d="M20 6.5a9 9 0 0 1 0 9"/>
     {/* Strike-through */}
-    <line x1="1" y1="1" x2="23" y2="23" strokeWidth="2.5"/>
+    <line x1="3" y1="21" x2="21" y2="3" strokeWidth="2.5"/>
   </svg>
 );
