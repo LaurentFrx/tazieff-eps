@@ -27,6 +27,8 @@ export default async function ApprendrePage({ params }: { params: Promise<{ loca
     "contractions",
     "glossaire",
     "programmes-hebdomadaires",
+    "nutrition",
+    "sante-prevention",
   ];
 
   type CardItem = { href: string; title: string; description: string };
