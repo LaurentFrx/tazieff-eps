@@ -55,7 +55,7 @@ export function CircuitTimer({ onBack }: CircuitTimerProps) {
 
   const preset: TimerPreset = useMemo(() => ({
     name: 'CIRCUIT', prepareDuration: 10, workDuration: work, restDuration: rest,
-    rounds: stations, cycles: tours, recoveryDuration: tours > 1 ? 30 : 0, cooldownDuration: 0,
+    rounds: stations, cycles: tours, recoveryDuration: tours > 1 ? 30 : 0, restBetweenDuration: 0, cooldownDuration: 0,
   }), [work, rest, stations, tours]);
 
   const ringPhases: RingPhase[] = useMemo(() => {

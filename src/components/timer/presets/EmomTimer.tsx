@@ -33,7 +33,7 @@ export function EmomTimer({ onBack }: EmomTimerProps) {
 
   const preset: TimerPreset = useMemo(() => ({
     name: 'EMOM', prepareDuration: 10, workDuration: duration, restDuration: 0,
-    rounds: minutes, cycles: 1, recoveryDuration: 0, cooldownDuration: 0,
+    rounds: minutes, cycles: 1, recoveryDuration: 0, restBetweenDuration: 0, cooldownDuration: 0,
   }), [duration, minutes]);
 
   const ringPhases: RingPhase[] = useMemo(() =>

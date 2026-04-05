@@ -24,6 +24,7 @@ const SIMPLE: TimerPreset = {
   rounds: 2,
   cycles: 1,
   recoveryDuration: 0,
+  restBetweenDuration: 0,
   cooldownDuration: 0,
 };
 
@@ -35,6 +36,7 @@ const FULL: TimerPreset = {
   rounds: 2,
   cycles: 2,
   recoveryDuration: 15,
+  restBetweenDuration: 0,
   cooldownDuration: 5,
 };
 
@@ -46,6 +48,7 @@ const REST_ONLY: TimerPreset = {
   rounds: 1,
   cycles: 1,
   recoveryDuration: 0,
+  restBetweenDuration: 0,
   cooldownDuration: 0,
 };
 

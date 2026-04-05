@@ -119,6 +119,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         prepare: 'prepare',
         work: 'work_start',
         rest: 'rest_start',
+        rest_between: 'rest_start',
         recovery: 'rest_start',
         cooldown: 'rest_start',
       };
@@ -272,6 +273,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         prepare: 'prepare',
         work: 'work_start',
         rest: 'rest_start',
+        rest_between: 'rest_start',
         recovery: 'rest_start',
         cooldown: 'rest_start',
       };

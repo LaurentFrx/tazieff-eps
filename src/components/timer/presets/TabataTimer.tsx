@@ -12,6 +12,7 @@ import { VoiceSelector } from '@/components/timer/VoiceSelector';
 const WORK_VALUES = Array.from({ length: 12 }, (_, i) => (i + 1) * 5);
 const REST_VALUES = Array.from({ length: 12 }, (_, i) => (i + 1) * 5);
 const ROUND_VALUES = Array.from({ length: 20 }, (_, i) => i + 1);
+const REST_BETWEEN_VALUES = [0, 10, 15, 20, 30, 45, 60];
 
 function formatDuration(totalSeconds: number) {
   const m = Math.floor(totalSeconds / 60);
@@ -48,30 +49,35 @@ export function TabataTimer({ onBack }: TabataTimerProps) {
   const [work, setWork] = useState(20);
   const [rest, setRest] = useState(10);
   const [rounds, setRounds] = useState(8);
+  const [restBetween, setRestBetween] = useState(0);
 
-  const totalDuration = (work + rest) * rounds;
+  const totalDuration = (work + rest) * rounds + restBetween * Math.max(0, rounds - 1);
 
   const preset: TimerPreset = useMemo(() => ({
     name: 'TABATA', prepareDuration: 10, workDuration: work, restDuration: rest,
-    rounds, cycles: 1, recoveryDuration: 0, cooldownDuration: 0,
-  }), [work, rest, rounds]);
+    rounds, cycles: 1, recoveryDuration: 0, restBetweenDuration: restBetween, cooldownDuration: 0,
+  }), [work, rest, rounds, restBetween]);
 
   const ringPhases: RingPhase[] = useMemo(() => {
     const p: RingPhase[] = [];
     for (let r = 0; r < rounds; r++) {
       p.push({ type: 'work', duration: work, color: '#22c55e' });
       p.push({ type: 'rest', duration: rest, color: '#ef4444' });
+      if (restBetween > 0 && r < rounds - 1) {
+        p.push({ type: 'rest_between', duration: restBetween, color: '#22d3ee' });
+      }
     }
     return p;
-  }, [work, rest, rounds]);
+  }, [work, rest, rounds, restBetween]);
 
   const displayConfig: TimerDisplayConfig = useMemo(() => ({
     ringPhases, ringTotal: totalDuration,
-    phaseColorMap: { prepare: '#3b82f6', work: '#22c55e', rest: '#ef4444' },
+    phaseColorMap: { prepare: '#3b82f6', work: '#22c55e', rest: '#ef4444', rest_between: '#22d3ee' },
     phaseGradientMap: {
       prepare: 'linear-gradient(135deg, #2563eb, #3b82f6)',
       work: 'linear-gradient(135deg, #16a34a, #22c55e)',
       rest: 'linear-gradient(135deg, #dc2626, #ef4444)',
+      rest_between: 'linear-gradient(135deg, #06b6d4, #22d3ee)',
     },
   }), [ringPhases, totalDuration]);
 
@@ -86,23 +92,27 @@ export function TabataTimer({ onBack }: TabataTimerProps) {
       <div className="relative overflow-hidden rounded-2xl px-5 pt-5 pb-4" style={{ background: 'linear-gradient(135deg, #16a34a, #22c55e)' }}>
         <button onClick={onBack} className="text-[13px] text-white/70 mb-2 cursor-pointer bg-transparent border-none">← Retour</button>
         <h1 className="text-[22px] font-bold text-white">Tabata</h1>
-        <p className="text-[12px] text-white/70 mt-0.5">{work}s effort / {rest}s repos &times; {rounds} rounds</p>
+        <p className="text-[12px] text-white/70 mt-0.5">{work}s effort / {rest}s repos &times; {rounds} rounds{restBetween > 0 ? ` / ${restBetween}s récup` : ''}</p>
       </div>
 
       <div className="rounded-2xl p-4 bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06]">
-        <div className="grid items-start mb-2" style={{ gridTemplateColumns: '1fr auto 1fr auto 1fr' }}>
+        <div className="grid items-start mb-2" style={{ gridTemplateColumns: '1fr auto 1fr auto 1fr auto 1fr' }}>
           <div className="text-[11px] font-semibold tracking-wider text-center uppercase" style={{ color: '#22c55e' }}>{t('timer.config.work')}</div>
           <div />
           <div className="text-[11px] font-semibold tracking-wider text-center uppercase" style={{ color: '#ef4444' }}>{t('timer.config.rest')}</div>
           <div />
           <div className="text-[11px] font-semibold tracking-wider text-center uppercase" style={{ color: '#60a5fa' }}>Rounds</div>
+          <div />
+          <div className="text-[10px] font-semibold tracking-wider text-center uppercase" style={{ color: '#22d3ee' }}>{t('timer.config.restBetween')}</div>
         </div>
-        <div className="grid items-center" style={{ gridTemplateColumns: '1fr auto 1fr auto 1fr' }}>
+        <div className="grid items-center" style={{ gridTemplateColumns: '1fr auto 1fr auto 1fr auto 1fr' }}>
           <WheelPicker values={WORK_VALUES} defaultValue={20} unit="s" color="#22c55e" onChange={setWork} />
           <div className="text-[14px] text-zinc-300 dark:text-zinc-700 px-1 self-center">|</div>
           <WheelPicker values={REST_VALUES} defaultValue={10} unit="s" color="#ef4444" onChange={setRest} />
           <div className="text-[14px] text-zinc-300 dark:text-zinc-700 px-1 self-center">&times;</div>
           <WheelPicker values={ROUND_VALUES} defaultValue={8} unit="" color="#60a5fa" onChange={setRounds} />
+          <div className="text-[14px] text-zinc-300 dark:text-zinc-700 px-1 self-center">|</div>
+          <WheelPicker values={REST_BETWEEN_VALUES} defaultValue={0} unit="s" color="#22d3ee" onChange={setRestBetween} />
         </div>
       </div>
 
@@ -133,6 +143,7 @@ function TabataCountdown({ onBack }: { onBack: () => void }) {
   const phaseType = activePhase?.type ?? 'work';
   const isWork = phaseType === 'work';
   const isRest = phaseType === 'rest';
+  const isRestBetween = phaseType === 'rest_between';
   const isPrepare = phaseType === 'prepare';
 
   const phaseColor = displayConfig?.phaseColorMap[phaseType] ?? '#22c55e';
@@ -157,7 +168,7 @@ function TabataCountdown({ onBack }: { onBack: () => void }) {
             <div>
               <div className="text-[18px] font-bold text-white">Tabata</div>
               <div className="text-[13px] font-semibold tracking-wider text-white/80">
-                {isPrepare ? t('timer.phases.prepare') : `${isWork ? t('timer.phases.work') : t('timer.phases.rest')} \u2014 Round ${state.currentRound} / ${state.totalRounds}`}
+                {isPrepare ? t('timer.phases.prepare') : isRestBetween ? t('timer.phases.rest_between') : `${isWork ? t('timer.phases.work') : t('timer.phases.rest')} \u2014 Round ${state.currentRound} / ${state.totalRounds}`}
               </div>
             </div>
           </div>

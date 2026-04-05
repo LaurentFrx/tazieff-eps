@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 
 // ---------- Types ----------
 
-export type TimerPhaseType = 'prepare' | 'work' | 'rest' | 'recovery' | 'cooldown';
+export type TimerPhaseType = 'prepare' | 'work' | 'rest' | 'rest_between' | 'recovery' | 'cooldown';
 export type TimerStatus = 'idle' | 'running' | 'paused' | 'done';
 
 export interface PhaseEntry {
@@ -24,6 +24,7 @@ export interface TimerPreset {
   rounds: number;
   cycles: number;
   recoveryDuration: number; // between cycles
+  restBetweenDuration: number; // rest between rounds (e.g. Tabata inter-series)
   cooldownDuration: number;
 }
 
@@ -80,6 +81,18 @@ export function buildPhases(preset: TimerPreset): PhaseEntry[] {
           duration: preset.restDuration,
           status: 'upcoming',
           label: `REST`,
+          roundIndex: r,
+          cycleIndex: c,
+        });
+      }
+
+      // Rest between rounds (inter-series), not after the last round
+      if (preset.restBetweenDuration > 0 && r < preset.rounds) {
+        phases.push({
+          type: 'rest_between',
+          duration: preset.restBetweenDuration,
+          status: 'upcoming',
+          label: 'REST_BETWEEN',
           roundIndex: r,
           cycleIndex: c,
         });

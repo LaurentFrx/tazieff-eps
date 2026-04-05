@@ -41,7 +41,7 @@ export function AmrapTimer({ onBack }: AmrapTimerProps) {
 
   const preset: TimerPreset = useMemo(() => ({
     name: 'AMRAP', prepareDuration: 10, workDuration: ringTotal,
-    restDuration: 0, rounds: 1, cycles: 1, recoveryDuration: 0, cooldownDuration: 0,
+    restDuration: 0, rounds: 1, cycles: 1, recoveryDuration: 0, restBetweenDuration: 0, cooldownDuration: 0,
   }), [ringTotal]);
 
   const ringPhases: RingPhase[] = useMemo(() =>

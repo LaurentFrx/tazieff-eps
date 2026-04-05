@@ -42,7 +42,7 @@ export function ReposTimer({ onBack }: ReposTimerProps) {
 
   const preset: TimerPreset = useMemo(() => ({
     name: 'REPOS', prepareDuration: 3, workDuration: duration,
-    restDuration: 0, rounds: 1, cycles: 1, recoveryDuration: 0, cooldownDuration: 0,
+    restDuration: 0, rounds: 1, cycles: 1, recoveryDuration: 0, restBetweenDuration: 0, cooldownDuration: 0,
   }), [duration]);
 
   const displayConfig: TimerDisplayConfig = useMemo(() => ({
@@ -64,7 +64,7 @@ export function ReposTimer({ onBack }: ReposTimerProps) {
     unlockAudio();
     pickerRef.current?.scrollToValue(value);
     setDuration(value);
-    const qPreset: TimerPreset = { name: 'REPOS', prepareDuration: 3, workDuration: value, restDuration: 0, rounds: 1, cycles: 1, recoveryDuration: 0, cooldownDuration: 0 };
+    const qPreset: TimerPreset = { name: 'REPOS', prepareDuration: 3, workDuration: value, restDuration: 0, rounds: 1, cycles: 1, recoveryDuration: 0, restBetweenDuration: 0, cooldownDuration: 0 };
     const qPhases: RingPhase[] = [{ type: 'rest', duration: value, color: '#06b6d4' }];
     const qConfig: TimerDisplayConfig = { ringPhases: qPhases, ringTotal: value, phaseColorMap: { prepare: '#6366f1', work: '#06b6d4' }, phaseGradientMap: { prepare: 'linear-gradient(135deg, #4f46e5, #6366f1)', work: 'linear-gradient(135deg, #0891b2, #06b6d4)' } };
     ctx?.startTimer('repos', qPreset, qConfig);

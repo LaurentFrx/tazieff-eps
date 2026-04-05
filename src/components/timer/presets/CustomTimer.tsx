@@ -102,7 +102,7 @@ export function CustomTimer({ onBack }: CustomTimerProps) {
 
   const preset: TimerPreset = useMemo(() => ({
     name: 'PERSONNALISÉ', prepareDuration: prepare, workDuration: work, restDuration: rest,
-    rounds: series, cycles, recoveryDuration: 0, cooldownDuration: cooldown,
+    rounds: series, cycles, recoveryDuration: 0, restBetweenDuration: 0, cooldownDuration: cooldown,
   }), [prepare, work, rest, series, cycles, cooldown]);
 
   // Build ring phases matching the spec exactly
