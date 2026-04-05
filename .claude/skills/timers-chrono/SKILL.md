@@ -32,7 +32,7 @@ Composants partagés dans `src/components/tools/` :
 - Composants timer spécifiques à chaque mode
 
 Composants partagés dans `src/components/timer/` :
-- `VoiceIcons.tsx` — `VoiceOnIcon` (profil visage + 3 arcs sonores) et `VoiceOffIcon` (idem + barre diagonale). Importé dans les 6 timers countdown, VoiceSelector et TimerDisplay. Ne JAMAIS re-dupliquer ces SVG inline.
+- `VoiceIcons.tsx` — `VoiceOnIcon` (haut-parleur + 2 arcs sonores) et `VoiceOffIcon` (haut-parleur + croix). Importé dans les 6 timers countdown, VoiceSelector et TimerDisplay. Ne JAMAIS re-dupliquer ces SVG inline.
 - `VoiceSelector.tsx` — toggle voix on/off + sélection voix (Paul/Koraly)
 
 ## Principe architectural : Design D (layout sur mesure)
