@@ -99,7 +99,7 @@ export function SharedSession() {
           <div className="flex gap-2 flex-wrap mt-2">
             {session.e.map((slug) => (
               <Link key={slug} href={`/exercices/${slug}`} className="pill text-xs flex items-center gap-1.5">
-                <ExoThumb slug={slug} size={32} />
+                <ExoThumb slug={slug} />
                 {slug}
               </Link>
             ))}

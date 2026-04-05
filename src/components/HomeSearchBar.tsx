@@ -150,7 +150,7 @@ export function HomeSearchBar() {
                     className="w-full text-left px-4 py-2.5 text-sm text-[color:var(--ink)] hover:bg-white/8 transition-colors cursor-pointer bg-transparent border-none flex items-center gap-3"
                     onClick={() => navigate(item.href)}
                   >
-                    {group.type === "exercice" && <ExoThumb slug={item.slug} size={32} />}
+                    {group.type === "exercice" && <ExoThumb slug={item.slug} />}
                     <span className="truncate">{item.title}</span>
                   </button>
                 ))}

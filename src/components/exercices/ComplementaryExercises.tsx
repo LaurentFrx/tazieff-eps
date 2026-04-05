@@ -25,7 +25,7 @@ export function ComplementaryExercises({ exercises, heading }: Props) {
             href={`/exercices/${ex.slug}`}
             className="flex items-center gap-3 rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-3 transition-all duration-200 hover:bg-cyan-400/10"
           >
-            <ExoThumb slug={ex.slug} size={40} />
+            <ExoThumb slug={ex.slug} />
             <div className="min-w-0">
               <span className="inline-block rounded-full bg-cyan-400/15 px-2 py-0.5 text-[9px] font-bold text-cyan-400 uppercase mb-1">
                 Antagoniste

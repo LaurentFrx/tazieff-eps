@@ -23,7 +23,7 @@ export function SessionExercises({ exercises, heading }: Props) {
             href={`/exercices/${exercise.slug}`}
             className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 transition-all duration-200 hover:bg-white/10"
           >
-            <ExoThumb slug={exercise.slug} size={40} />
+            <ExoThumb slug={exercise.slug} />
             <div className="min-w-0">
               <span className="block text-[10px] font-mono text-zinc-500 uppercase mb-1">
                 {exercise.slug.toUpperCase()}

@@ -97,7 +97,7 @@ export function SearchModal({ onClose }: { onClose: () => void }) {
                     className="search-result-item"
                     onClick={() => navigate(item.href)}
                   >
-                    {group.type === "exercice" && <ExoThumb slug={item.slug} size={32} />}
+                    {group.type === "exercice" && <ExoThumb slug={item.slug} />}
                     {item.title}
                   </button>
                 ))}

@@ -33,7 +33,7 @@ export function RelatedExercices({
               href={`/exercices/${exo.slug}`}
               className="flex items-center gap-3 py-3 text-[color:var(--ink)] hover:text-[color:var(--accent)]"
             >
-              <ExoThumb slug={exo.slug} size={40} />
+              <ExoThumb slug={exo.slug} />
               <p className="truncate text-sm font-semibold">{exo.title}</p>
             </Link>
           </li>

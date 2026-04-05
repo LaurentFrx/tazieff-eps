@@ -89,7 +89,7 @@ export default async function SeancePage({ params }: SeancePageProps) {
             const muscleLabel = exercise?.muscles?.slice(0, 3).join(" • ");
             return (
               <div key={`${block.exoSlug}-${index}`} className="block-row">
-                <ExoThumb slug={block.exoSlug} size={40} />
+                <ExoThumb slug={block.exoSlug} />
                 <div>
                   <Link href={lp(`/exercices/${block.exoSlug}`, locale)} className="block-title">
                     {exercise?.title ?? block.exoSlug}

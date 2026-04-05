@@ -18,7 +18,7 @@ function DumbbellIcon({ size }: { size: number }) {
   );
 }
 
-export function ExoThumb({ slug, size = 40, className = "" }: ExoThumbProps) {
+export function ExoThumb({ slug, size = 60, className = "" }: ExoThumbProps) {
   const [err, setErr] = useState(false);
 
   return (
