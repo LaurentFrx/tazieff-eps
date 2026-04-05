@@ -221,6 +221,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     clearInt(); releaseWL();
     setTimerType(null); setDisplayConfig(null);
     presetRef.current = null; setState(IDLE_STATE);
+    // Clear media session
+    if (typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
+      navigator.mediaSession.metadata = null;
+      navigator.mediaSession.setActionHandler('pause', null);
+      navigator.mediaSession.setActionHandler('play', null);
+    }
   }, [clearInt, releaseWL]);
 
   // Auto-cleanup 2 s after done + session complete flag
@@ -283,6 +289,14 @@ export function TimerProvider({ children }: { children: ReactNode }) {
 
     // Précharger les voix pour les prochaines phases
     preloadNextEvents(['prepare', 'work_start', 'countdown_3', 'countdown_2', 'countdown_1'], langRef.current);
+
+    // Media Session — lock screen controls (does NOT steal audio focus)
+    if (typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: 'Timer actif',
+        artist: 'Tazieff EPS',
+      });
+    }
   }, [clearInt, releaseWL, acquireWL, tick]);
 
   const pause = useCallback(() => {
@@ -316,6 +330,18 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   useEffect(() => () => { clearInt(); releaseWL(); }, [clearInt, releaseWL]);
 
   const isActive = state.status === 'running' || state.status === 'paused';
+
+  // Media Session play/pause handlers
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+    if (!isActive) return;
+    navigator.mediaSession.setActionHandler('pause', () => pause());
+    navigator.mediaSession.setActionHandler('play', () => resume());
+    return () => {
+      navigator.mediaSession.setActionHandler('pause', null);
+      navigator.mediaSession.setActionHandler('play', null);
+    };
+  }, [isActive, pause, resume]);
 
   return (
     <TimerContext.Provider value={{

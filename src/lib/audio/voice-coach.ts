@@ -122,47 +122,83 @@ function pickEntry(entries: VoiceEntry[], category: string): VoiceEntry | null {
   return entries[fallbackIdx];
 }
 
-// ─── Preload cache ───
+// ─── AudioContext singleton (shared, cohabits with background music) ───
 
-const preloadCache = new Map<string, HTMLAudioElement>();
+let audioCtx: AudioContext | null = null;
+
+function getAudioContext(): AudioContext {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+// ─── AudioBuffer cache (decoded MP3s) ───
+
+const bufferCache = new Map<string, AudioBuffer>();
+const fetchingUrls = new Set<string>();
+
+async function fetchAndDecode(url: string): Promise<AudioBuffer | null> {
+  if (bufferCache.has(url)) return bufferCache.get(url)!;
+  if (fetchingUrls.has(url)) return null;
+  fetchingUrls.add(url);
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) return null;
+    const arrayBuf = await resp.arrayBuffer();
+    const ctx = getAudioContext();
+    const decoded = await ctx.decodeAudioData(arrayBuf);
+    bufferCache.set(decoded ? url : '', decoded);
+    if (decoded) bufferCache.set(url, decoded);
+    // Limit cache to 30 entries
+    if (bufferCache.size > 30) {
+      const firstKey = bufferCache.keys().next().value;
+      if (firstKey) bufferCache.delete(firstKey);
+    }
+    return decoded;
+  } catch {
+    return null;
+  } finally {
+    fetchingUrls.delete(url);
+  }
+}
 
 function preloadMP3(url: string): void {
-  if (preloadCache.has(url)) return;
-  const audio = new Audio();
-  audio.preload = 'auto';
-  audio.src = url;
-  preloadCache.set(url, audio);
-  // Limiter le cache à 20 entrées
-  if (preloadCache.size > 20) {
-    const firstKey = preloadCache.keys().next().value;
-    if (firstKey) preloadCache.delete(firstKey);
-  }
+  if (bufferCache.has(url)) return;
+  fetchAndDecode(url);
 }
 
-function getOrCreateAudio(url: string): HTMLAudioElement {
-  const cached = preloadCache.get(url);
-  if (cached) {
-    preloadCache.delete(url);
-    return cached;
-  }
-  return new Audio(url);
-}
+// ─── Play audio via AudioContext (does NOT interrupt background music) ───
 
-// ─── Play audio ───
-
-let currentAudio: HTMLAudioElement | null = null;
+let currentSource: AudioBufferSourceNode | null = null;
 
 function playMP3(url: string): void {
   try {
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio = null;
+    if (currentSource) {
+      currentSource.stop();
+      currentSource = null;
     }
-    const audio = getOrCreateAudio(url);
-    audio.volume = 1.0;
-    currentAudio = audio;
-    audio.play().catch(() => {});
-    audio.onended = () => { if (currentAudio === audio) currentAudio = null; };
+    const cached = bufferCache.get(url);
+    if (cached) {
+      playBuffer(cached);
+    } else {
+      fetchAndDecode(url).then((buf) => { if (buf) playBuffer(buf); });
+    }
+  } catch { /* ignore */ }
+}
+
+function playBuffer(buffer: AudioBuffer): void {
+  try {
+    const ctx = getAudioContext();
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctx.destination);
+    source.start(0);
+    currentSource = source;
+    source.onended = () => { if (currentSource === source) currentSource = null; };
   } catch { /* ignore */ }
 }
 
@@ -210,8 +246,8 @@ export async function preloadNextEvents(categories: string[], lang: string = 'fr
 // ─── Convenience: stop current audio ───
 
 export function stopCoachAudio(): void {
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio = null;
+  if (currentSource) {
+    currentSource.stop();
+    currentSource = null;
   }
 }
