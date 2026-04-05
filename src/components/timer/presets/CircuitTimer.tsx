@@ -103,7 +103,7 @@ export function CircuitTimer({ onBack }: CircuitTimerProps) {
         </div>
         <div className="grid items-center" style={{ gridTemplateColumns: '1fr auto 1fr' }}>
           <WheelPicker values={WORK_VALUES} defaultValue={30} unit="s" color="#f97316" onChange={setWork} />
-          <div className="text-[14px] text-zinc-300 dark:text-zinc-700 px-1 self-center">|</div>
+          <div className="text-[14px] text-zinc-300 dark:text-zinc-400 px-1 self-center">|</div>
           <WheelPicker values={REST_VALUES} defaultValue={15} unit="s" color="#ef4444" onChange={setRest} />
         </div>
         <div className="grid items-start mb-1 mt-4" style={{ gridTemplateColumns: '1fr auto 1fr' }}>
@@ -113,13 +113,13 @@ export function CircuitTimer({ onBack }: CircuitTimerProps) {
         </div>
         <div className="grid items-center" style={{ gridTemplateColumns: '1fr auto 1fr' }}>
           <WheelPicker values={STATION_VALUES} defaultValue={6} unit="" color="#3b82f6" onChange={setStations} />
-          <div className="text-[14px] text-zinc-300 dark:text-zinc-700 px-2 self-center">&times;</div>
+          <div className="text-[14px] text-zinc-300 dark:text-zinc-400 px-2 self-center">&times;</div>
           <WheelPicker values={TOUR_VALUES} defaultValue={2} unit="" color="#8b5cf6" onChange={setTours} />
         </div>
       </div>
 
       <div className="text-center mt-4">
-        <span className="text-[11px] text-zinc-400 dark:text-white/35">Dur&eacute;e totale</span>
+        <span className="text-[11px] text-zinc-400 dark:text-white/70">Dur&eacute;e totale</span>
         <div className="font-mono text-[22px] font-bold text-zinc-900 dark:text-white mt-0.5">{formatDuration(totalDuration)}</div>
       </div>
 

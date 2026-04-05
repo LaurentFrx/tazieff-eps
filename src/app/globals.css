@@ -1158,13 +1158,18 @@ body:has(.anatomy-page) nav {
 
 .onboarding-banner-close {
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: 4px;
+  right: 4px;
   background: none;
   border: none;
   color: var(--muted);
   cursor: pointer;
-  padding: 4px;
+  padding: 12px;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .onboarding-step {

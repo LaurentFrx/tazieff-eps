@@ -28,7 +28,7 @@ export function VoiceSelector() {
       {/* Toggle voix on/off */}
       <button
         onClick={toggleVoice}
-        className="flex items-center justify-center w-10 h-10 rounded-full border-none cursor-pointer shrink-0"
+        className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer shrink-0"
         style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}
       >
         {voiceOn ? <VoiceOnIcon /> : <VoiceOffIcon />}
@@ -41,7 +41,7 @@ export function VoiceSelector() {
             <button
               key={opt.value}
               onClick={() => setSelectedVoice(opt.value)}
-              className="px-3 py-1.5 rounded-full text-xs font-medium border-none cursor-pointer transition-all"
+              className="px-4 py-2.5 min-h-[44px] rounded-full text-xs font-medium border-none cursor-pointer transition-all"
               style={{
                 background: selectedVoice === opt.value ? 'rgba(0,229,255,0.25)' : 'rgba(255,255,255,0.08)',
                 color: selectedVoice === opt.value ? '#00E5FF' : 'rgba(255,255,255,0.6)',

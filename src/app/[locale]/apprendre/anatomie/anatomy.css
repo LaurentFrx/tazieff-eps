@@ -26,8 +26,8 @@
   top: calc(16px + env(safe-area-inset-top, 0px));
   left: calc(16px + env(safe-area-inset-left, 0px));
   z-index: 18;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -168,8 +168,8 @@
   border: none;
   color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -194,8 +194,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  min-height: 38px;
-  padding: 0 14px;
+  min-height: 44px;
+  padding: 0 16px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 20px;
@@ -314,8 +314,8 @@
 
 .anatomy-toolbar-btn {
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;

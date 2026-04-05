@@ -134,7 +134,7 @@ export function ExerciseGrid({
         <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[color:var(--card)] p-1">
           <button
             type="button"
-            className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent)] ${
+            className={`inline-flex h-11 w-11 items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent)] ${
               viewMode === "grid" ? activeClass : inactiveClass
             }`}
             aria-pressed={viewMode === "grid"}
@@ -151,7 +151,7 @@ export function ExerciseGrid({
           </button>
           <button
             type="button"
-            className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent)] ${
+            className={`inline-flex h-11 w-11 items-center justify-center rounded-full border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent)] ${
               viewMode === "list" ? activeClass : inactiveClass
             }`}
             aria-pressed={viewMode === "list"}

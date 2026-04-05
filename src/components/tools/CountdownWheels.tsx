@@ -111,7 +111,7 @@ function SingleWheel({ value, label }: { value: number; label: string }) {
           </div>
         </div>
       </div>
-      <span className="text-[11px] mt-1.5 text-zinc-400 dark:text-white/30">{label}</span>
+      <span className="text-[11px] mt-1.5 text-zinc-400 dark:text-white/70">{label}</span>
     </div>
   );
 }
@@ -120,7 +120,7 @@ export function CountdownWheels({ minutes, seconds }: CountdownWheelsProps) {
   return (
     <div className="flex items-center justify-center gap-3">
       <SingleWheel value={minutes} label="min" />
-      <span className="font-mono text-[36px] font-bold text-zinc-400 dark:text-white/30 -mt-6">:</span>
+      <span className="font-mono text-[36px] font-bold text-zinc-400 dark:text-white/70 -mt-6">:</span>
       <SingleWheel value={seconds} label="sec" />
     </div>
   );

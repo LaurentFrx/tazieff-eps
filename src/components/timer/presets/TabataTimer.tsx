@@ -115,17 +115,17 @@ export function TabataTimer({ onBack }: TabataTimerProps) {
         </div>
         <div className="grid items-center" style={{ gridTemplateColumns: '1fr auto 1fr auto 1fr auto 1fr' }}>
           <WheelPicker values={WORK_VALUES} defaultValue={20} unit="s" color="#22c55e" onChange={setWork} />
-          <div className="text-[14px] text-zinc-300 dark:text-zinc-700 px-1 self-center">|</div>
+          <div className="text-[14px] text-zinc-300 dark:text-zinc-400 px-1 self-center">|</div>
           <WheelPicker values={REST_VALUES} defaultValue={10} unit="s" color="#ef4444" onChange={setRest} />
-          <div className="text-[14px] text-zinc-300 dark:text-zinc-700 px-1 self-center">&times;</div>
+          <div className="text-[14px] text-zinc-300 dark:text-zinc-400 px-1 self-center">&times;</div>
           <WheelPicker values={ROUND_VALUES} defaultValue={8} unit="" color="#60a5fa" onChange={setRounds} />
-          <div className="text-[14px] text-zinc-300 dark:text-zinc-700 px-1 self-center">|</div>
+          <div className="text-[14px] text-zinc-300 dark:text-zinc-400 px-1 self-center">|</div>
           <WheelPicker values={REST_BETWEEN_VALUES} defaultValue={120} color="#22d3ee" onChange={setRestBetween} formatLabel={formatRestBetween} />
         </div>
       </div>
 
       <div className="text-center mt-4">
-        <span className="text-[11px] text-zinc-400 dark:text-white/35">Dur&eacute;e totale</span>
+        <span className="text-[11px] text-zinc-400 dark:text-white/70">Dur&eacute;e totale</span>
         <div className="font-mono text-[22px] font-bold text-zinc-900 dark:text-white mt-0.5">{formatDuration(totalDuration)}</div>
       </div>
 

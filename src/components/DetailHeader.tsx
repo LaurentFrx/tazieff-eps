@@ -24,7 +24,7 @@ export function DetailHeader({
     >
       <Link
         href={backHref}
-        className="inline-flex items-center gap-1 text-white/80 hover:text-white text-xs font-medium transition-colors self-start min-h-[32px]"
+        className="inline-flex items-center gap-1 text-white/80 hover:text-white text-xs font-medium transition-colors self-start min-h-[44px]"
       >
         <svg
           width="16"

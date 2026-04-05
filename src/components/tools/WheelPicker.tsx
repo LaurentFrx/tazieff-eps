@@ -190,7 +190,7 @@ export const WheelPicker = forwardRef<WheelPickerHandle, WheelPickerProps>(funct
                         {lbl.main}
                       </span>
                       {lbl.unit && (
-                        <span className="text-[11px] ml-1 text-zinc-400 dark:text-white/40">
+                        <span className="text-[11px] ml-1 text-zinc-400 dark:text-white/70">
                           {lbl.unit}
                         </span>
                       )}
@@ -202,7 +202,7 @@ export const WheelPicker = forwardRef<WheelPickerHandle, WheelPickerProps>(funct
                       {v}
                     </span>
                     {unit && (
-                      <span className="text-[11px] ml-1 text-zinc-400 dark:text-white/40">
+                      <span className="text-[11px] ml-1 text-zinc-400 dark:text-white/70">
                         {unit}
                       </span>
                     )}

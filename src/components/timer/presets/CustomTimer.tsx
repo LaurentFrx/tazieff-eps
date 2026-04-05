@@ -168,7 +168,7 @@ export function CustomTimer({ onBack }: CustomTimerProps) {
       </div>
 
       <div className="text-center mt-3">
-        <span className="text-[11px] text-zinc-400 dark:text-white/35">Dur&eacute;e totale</span>
+        <span className="text-[11px] text-zinc-400 dark:text-white/70">Dur&eacute;e totale</span>
         <div className="font-mono text-[22px] font-bold text-zinc-900 dark:text-white mt-0.5">{formatDuration(totalDuration)}</div>
       </div>
 

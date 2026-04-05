@@ -123,7 +123,7 @@ export function TopBar() {
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="flex items-center justify-center w-10 h-10 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              className="flex items-center justify-center w-11 h-11 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               aria-label={t("search.open")}
             >
               <IconSearch />
@@ -132,7 +132,7 @@ export function TopBar() {
             {/* Outils — mobile only */}
             <Link
               href="/outils"
-              className="flex items-center justify-center w-10 h-10 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              className="flex items-center justify-center w-11 h-11 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               aria-label={t("nav.outils.label")}
             >
               <IconTools />
@@ -141,7 +141,7 @@ export function TopBar() {
             {/* Réglages */}
             <Link
               href="/reglages"
-              className="flex items-center justify-center w-10 h-10 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              className="flex items-center justify-center w-11 h-11 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               aria-label={t("pages.settings.title")}
             >
               <IconSettings />
@@ -151,7 +151,7 @@ export function TopBar() {
             {teacherUnlocked && (
               <Link
                 href="/enseignant"
-                className="flex items-center justify-center w-10 h-10 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                className="flex items-center justify-center w-11 h-11 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                 aria-label={t("enseignant.navLabel")}
               >
                 <IconTeacher />

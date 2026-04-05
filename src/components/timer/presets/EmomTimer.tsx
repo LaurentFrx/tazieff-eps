@@ -72,13 +72,13 @@ export function EmomTimer({ onBack }: EmomTimerProps) {
         </div>
         <div className="grid items-center" style={{ gridTemplateColumns: '1fr auto 1fr' }}>
           <WheelPicker values={DURATION_VALUES} defaultValue={60} unit="s" color="#06b6d4" onChange={setDuration} />
-          <div className="text-[14px] text-zinc-300 dark:text-zinc-700 px-2 self-center">&times;</div>
+          <div className="text-[14px] text-zinc-300 dark:text-zinc-400 px-2 self-center">&times;</div>
           <WheelPicker values={MINUTES_VALUES} defaultValue={10} unit="min" color="#3b82f6" onChange={setMinutes} />
         </div>
       </div>
 
       <div className="text-center mt-4">
-        <span className="text-[11px] text-zinc-400 dark:text-white/35">Dur&eacute;e totale</span>
+        <span className="text-[11px] text-zinc-400 dark:text-white/70">Dur&eacute;e totale</span>
         <div className="font-mono text-[22px] font-bold text-zinc-900 dark:text-white mt-0.5">{minutes} min</div>
       </div>
 

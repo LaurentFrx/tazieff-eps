@@ -64,7 +64,7 @@ function ImageLightbox({
       <button
         type="button"
         onClick={onClose}
-        className="absolute z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+        className="absolute z-10 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
         style={{
           top: "max(16px, env(safe-area-inset-top, 16px))",
           right: "max(16px, env(safe-area-inset-right, 16px))",
@@ -210,7 +210,7 @@ export function HeroMedia(props: HeroMediaProps) {
         <button
           type="button"
           onClick={handlePlayFullscreen}
-          className="absolute bottom-4 right-4 z-20 flex items-center justify-center w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm ring-1 ring-white/20 text-white hover:bg-black/40 transition-colors"
+          className="absolute bottom-4 right-4 z-20 flex items-center justify-center w-12 h-12 rounded-full bg-black/30 backdrop-blur-sm ring-1 ring-white/20 text-white hover:bg-black/40 transition-colors"
           aria-label={t("media.fullscreenPlay")}
         >
           <svg

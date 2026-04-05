@@ -99,7 +99,7 @@ export function InstallPwaBanner() {
         </div>
         <button
           type="button"
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-[color:var(--border)] bg-[var(--card)] text-sm text-[color:var(--ink)] shadow-[var(--shadow)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent)]"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-[color:var(--border)] bg-[var(--card)] text-sm text-[color:var(--ink)] shadow-[var(--shadow)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent)]"
           aria-label={t("pwaBanner.close")}
           onClick={handleDismiss}
         >

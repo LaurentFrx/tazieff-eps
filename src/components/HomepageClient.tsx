@@ -154,7 +154,7 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
           <span className="text-3xl font-black text-white">{exerciseCount}</span>
           <div>
             <span className="text-sm font-bold text-white">{t("pages.home.exercicesLabel")}</span>
-            <span className="block text-[11px] text-white/70">{t("pages.home.exercicesDesc")}</span>
+            <span className="block text-[11px] text-white/90">{t("pages.home.exercicesDesc")}</span>
           </div>
         </Link>
 
@@ -168,7 +168,7 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
           <span className="text-3xl font-black text-white">{methodeCount}</span>
           <div>
             <span className="text-sm font-bold text-white">{t("pages.home.methodesLabel")}</span>
-            <span className="block text-[11px] text-white/70">{t("pages.home.methodesDesc")}</span>
+            <span className="block text-[11px] text-white/90">{t("pages.home.methodesDesc")}</span>
           </div>
         </Link>
 
@@ -182,7 +182,7 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
           <span className="text-3xl font-black text-white">{learnCount}</span>
           <div>
             <span className="text-sm font-bold text-white">{t("pages.home.apprendreLabel")}</span>
-            <span className="block text-[11px] text-white/70">{t("pages.home.apprendreDesc")}</span>
+            <span className="block text-[11px] text-white/90">{t("pages.home.apprendreDesc")}</span>
           </div>
         </Link>
 
@@ -196,7 +196,7 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
           <div className="flex-1" />
           <div>
             <span className="text-sm font-bold text-white">{t("pages.home.bacLabel")}</span>
-            <span className="block text-[11px] text-white/70">{t("pages.home.bacDesc")}</span>
+            <span className="block text-[11px] text-white/90">{t("pages.home.bacDesc")}</span>
           </div>
         </Link>
       </div>

@@ -120,7 +120,7 @@ export function CountdownRing({
               {formatTime(currentSeconds)}
             </span>
           </div>
-          <span className="font-mono text-[12px] mt-1 text-zinc-400 dark:text-white/35">
+          <span className="font-mono text-[12px] mt-1 text-zinc-400 dark:text-white/70">
             {formatTime(totalRemaining)} restant
           </span>
         </div>
