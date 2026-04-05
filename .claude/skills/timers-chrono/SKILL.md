@@ -43,10 +43,11 @@ de stations + tours + travail + repos.
 ## Les 6 timers
 
 ### Tabata (vert #22c55e)
-- Pickers : Travail (s) × Repos (s) × Rounds
-- Défauts : 20s / 10s / 8 rounds
-- Phases alternées travail/repos
-- Classique Tabata = 4 min total
+- Pickers : Travail (s) × Repos (s) × Rounds × Repos série
+- Défauts : 20s / 10s / 8 rounds / 2mn repos série
+- Repos série : 0, 30s, 1mn, 2mn, 3mn, 4mn, 5mn (formatLabel custom pour affichage mixte s/mn)
+- Phases alternées travail/repos avec repos inter-série optionnel
+- Classique Tabata = 4 min total (hors repos série)
 
 ### EMOM (cyan #06b6d4)
 - Pickers : Durée par minute (s) × Minutes totales
@@ -122,11 +123,15 @@ Composant réutilisable (aussi utilisé par le calculateur 1RM).
 interface WheelPickerProps {
   values: number[];
   defaultValue: number;
-  unit: string;           // "s", "min", "kg", ""
-  color: string;          // couleur accent hex
+  unit?: string;          // "s", "min", "kg", "" — défaut "s"
+  color?: string;         // couleur accent hex — défaut "#22c55e"
   onChange: (value: number) => void;
   height?: number;        // défaut 120px
   itemHeight?: number;    // défaut 40px
+  label?: string;         // label au-dessus du picker
+  formatLabel?: (value: number) => { main: string; unit?: string };
+  // formatLabel remplace l'affichage par défaut "{value}{unit}"
+  // Utilisé par Tabata repos série pour affichage mixte s/mn
 }
 ```
 

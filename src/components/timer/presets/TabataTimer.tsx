@@ -12,7 +12,14 @@ import { VoiceSelector } from '@/components/timer/VoiceSelector';
 const WORK_VALUES = Array.from({ length: 12 }, (_, i) => (i + 1) * 5);
 const REST_VALUES = Array.from({ length: 12 }, (_, i) => (i + 1) * 5);
 const ROUND_VALUES = Array.from({ length: 20 }, (_, i) => i + 1);
-const REST_BETWEEN_VALUES = [0, 15, 30, 45, 60, 90, 120, 150, 180];
+const REST_BETWEEN_VALUES = [0, 30, 60, 120, 180, 240, 300];
+
+function formatRestBetween(seconds: number): { main: string; unit?: string } {
+  if (seconds === 0) return { main: '0' };
+  if (seconds < 60) return { main: String(seconds), unit: 's' };
+  const m = seconds / 60;
+  return { main: String(m), unit: 'mn' };
+}
 
 function formatDuration(totalSeconds: number) {
   const m = Math.floor(totalSeconds / 60);
@@ -49,7 +56,7 @@ export function TabataTimer({ onBack }: TabataTimerProps) {
   const [work, setWork] = useState(20);
   const [rest, setRest] = useState(10);
   const [rounds, setRounds] = useState(8);
-  const [restBetween, setRestBetween] = useState(60);
+  const [restBetween, setRestBetween] = useState(120);
 
   const totalDuration = (work + rest) * rounds + restBetween * Math.max(0, rounds - 1);
 
@@ -112,7 +119,7 @@ export function TabataTimer({ onBack }: TabataTimerProps) {
           <div className="text-[14px] text-zinc-300 dark:text-zinc-700 px-1 self-center">&times;</div>
           <WheelPicker values={ROUND_VALUES} defaultValue={8} unit="" color="#60a5fa" onChange={setRounds} />
           <div className="text-[14px] text-zinc-300 dark:text-zinc-700 px-1 self-center">|</div>
-          <WheelPicker values={REST_BETWEEN_VALUES} defaultValue={60} unit="s" color="#22d3ee" onChange={setRestBetween} />
+          <WheelPicker values={REST_BETWEEN_VALUES} defaultValue={120} color="#22d3ee" onChange={setRestBetween} formatLabel={formatRestBetween} />
         </div>
       </div>
 

@@ -11,6 +11,8 @@ export interface WheelPickerProps {
   height?: number;
   itemHeight?: number;
   label?: string;
+  /** Custom label renderer — overrides default `{value}{unit}` display */
+  formatLabel?: (value: number) => { main: string; unit?: string };
 }
 
 export interface WheelPickerHandle {
@@ -26,6 +28,7 @@ export const WheelPicker = forwardRef<WheelPickerHandle, WheelPickerProps>(funct
   height = 120,
   itemHeight = 40,
   label,
+  formatLabel,
 }, ref) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -179,13 +182,31 @@ export const WheelPicker = forwardRef<WheelPickerHandle, WheelPickerProps>(funct
                   willChange: 'opacity, transform',
                 }}
               >
-                <span className="font-mono text-[22px] font-bold text-zinc-900 dark:text-white">
-                  {v}
-                </span>
-                {unit && (
-                  <span className="text-[11px] ml-1 text-zinc-400 dark:text-white/40">
-                    {unit}
-                  </span>
+                {formatLabel ? (() => {
+                  const lbl = formatLabel(v);
+                  return (
+                    <>
+                      <span className="font-mono text-[22px] font-bold text-zinc-900 dark:text-white">
+                        {lbl.main}
+                      </span>
+                      {lbl.unit && (
+                        <span className="text-[11px] ml-1 text-zinc-400 dark:text-white/40">
+                          {lbl.unit}
+                        </span>
+                      )}
+                    </>
+                  );
+                })() : (
+                  <>
+                    <span className="font-mono text-[22px] font-bold text-zinc-900 dark:text-white">
+                      {v}
+                    </span>
+                    {unit && (
+                      <span className="text-[11px] ml-1 text-zinc-400 dark:text-white/40">
+                        {unit}
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
             ))}
