@@ -19,6 +19,7 @@ import logo from "../../../../public/media/branding/logo-eps.webp";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Lang } from "@/lib/i18n/messages";
+import { ExerciseJsonLd } from "@/components/seo/ExerciseJsonLd";
 import { translateTerms } from "@/lib/i18n/terms/translate";
 import { getMuscleGroup, type MuscleGroupId } from "@/lib/exercices/muscleGroups";
 const MarkdownRenderer = dynamic(
@@ -2411,6 +2412,7 @@ export function ExerciseLiveDetail({
 
   return (
     <>
+      <ExerciseJsonLd frontmatter={merged.frontmatter} content={merged.content} locale={locale} />
       <style>{`
         .app-shell > .app-header {
           display: none;

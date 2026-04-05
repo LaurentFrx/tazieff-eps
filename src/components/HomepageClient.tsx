@@ -9,6 +9,7 @@ import { SEARCH_INDEX } from "@/lib/search/search-index";
 import { OnboardingBanner } from "@/components/OnboardingBanner";
 import { HomeFlyer } from "@/components/HomeFlyer";
 import { HomeSearchBar } from "@/components/HomeSearchBar";
+import { HomeJsonLd } from "@/components/seo/HomeJsonLd";
 
 /* ── SVG icons ───────────────────────────────────────────────────── */
 
@@ -132,6 +133,7 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
 
   return (
     <section className="page">
+      <HomeJsonLd />
       <OnboardingBanner />
 
       {/* ── ZONE 1 : Hero compact ──────────────────────────────────── */}
