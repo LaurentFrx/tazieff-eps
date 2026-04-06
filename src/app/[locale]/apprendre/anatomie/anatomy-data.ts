@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   Anatomy data – Fred's muscle groups (Diapo p.31)
+   Anatomy data – muscle groups (Diapo p.31)
    Ordered: haut du corps → tronc → bas du corps
    ═══════════════════════════════════════════════════════════════════════════ */
 

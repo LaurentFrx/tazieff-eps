@@ -1,6 +1,6 @@
 /**
  * Parcours BAC — checklist items & auto-evaluation questions
- * Source : Diapo Muscu'EPS de Frédérique Proisy (pages 60–65)
+ * Source : Diapo Muscu'EPS (pages 60–65)
  */
 
 export type Niveau = "seconde" | "premiere" | "terminale";

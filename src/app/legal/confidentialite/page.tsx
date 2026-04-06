@@ -25,7 +25,7 @@ export default function ConfidentialitePage() {
             Laurent Feroux
           </p>
           <p>
-            Contact : laurent@feroux.fr
+            Contact : contact@muscu-eps.fr
           </p>
           <p className="mt-3">
             Cette politique d&eacute;crit comment muscu-eps.fr collecte,
@@ -291,7 +291,7 @@ export default function ConfidentialitePage() {
             </li>
           </ul>
           <p className="mt-3">
-            Pour exercer ces droits, contactez : laurent@feroux.fr
+            Pour exercer ces droits, contactez : contact@muscu-eps.fr
           </p>
           <p className="mt-3">
             En cas de litige, vous pouvez introduire une r&eacute;clamation

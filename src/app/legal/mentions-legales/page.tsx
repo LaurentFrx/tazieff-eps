@@ -23,7 +23,7 @@ export default function MentionsLegalesPage() {
           </p>
           <p>
             Contact :{" "}
-            laurent@feroux.fr
+            contact@muscu-eps.fr
           </p>
           <p className="mt-3">
             En application de l&rsquo;article 6-III-2 de la loi n&deg;
@@ -76,9 +76,8 @@ export default function MentionsLegalesPage() {
           <p>
             Le contenu p&eacute;dagogique (exercices, m&eacute;thodes
             d&rsquo;entra&icirc;nement, programmes, grilles
-            d&rsquo;&eacute;valuation) est con&ccedil;u par Fr&eacute;d&eacute;rique
-            Proisy, enseignante d&rsquo;EPS au Lyc&eacute;e Haroun Tazieff,
-            Saint-Paul-l&egrave;s-Dax (40).
+            d&rsquo;&eacute;valuation) est con&ccedil;u par
+            l&rsquo;&eacute;quipe Tazieff&nbsp;EPS.
           </p>
         </div>
 

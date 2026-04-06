@@ -238,7 +238,7 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
         </div>
       </div>
 
-      {/* ── ZONE 4 : Thèmes de Fred ────────────────────────────────── */}
+      {/* ── ZONE 4 : Thèmes d'entraînement ─────────────────────────── */}
       <div>
         <h2 className="text-base font-extrabold text-[color:var(--ink)] mb-3">
           {t("pages.home.themesTitle")}

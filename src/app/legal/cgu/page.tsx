@@ -103,8 +103,7 @@ export default function CguPage() {
             Le contenu p&eacute;dagogique de l&rsquo;Application (exercices,
             m&eacute;thodes, programmes, illustrations, grilles
             d&rsquo;&eacute;valuation) est la propri&eacute;t&eacute;
-            intellectuelle de Fr&eacute;d&eacute;rique Proisy et de
-            l&rsquo;&eacute;diteur. Toute reproduction,
+            intellectuelle de l&rsquo;&eacute;diteur. Toute reproduction,
             repr&eacute;sentation ou diffusion, m&ecirc;me partielle, est
             interdite sans autorisation &eacute;crite pr&eacute;alable.
           </p>
