@@ -1,11 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import NextImage from "next/image";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { getExerciseMuscleGroups } from "@/lib/exercices/muscle-groups";
 import { MUSCLE_GROUPS, matchesGroup } from "@/app/[locale]/apprendre/anatomie/anatomy-data";
-import miniMannequin from "../../../public/images/anatomy/mini-mannequin.webp";
 import "./exercise-anatomy.css";
 
 const GROUP_COLORS: Record<string, string> = {
@@ -73,15 +71,21 @@ export default function ExerciseAnatomyThumb({
       href={href}
       className="exo-anatomy-thumb"
       aria-label={t("exerciseAnatomy.musclesWorked")}
-      style={{ width: "100%", height: 280, position: "relative" }}
+      style={{ width: "100%", height: 280, position: "relative", background: "red" }}
     >
-      <NextImage
-        src={miniMannequin}
+      <img
+        src="/images/anatomy/mini-mannequin.webp"
         alt={t("exerciseAnatomy.musclesWorked")}
-        className="exo-anatomy-thumb-img"
-        fill
-        sizes="(min-width: 768px) 220px, 220px"
-        priority={false}
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "contain",
+          objectPosition: "center bottom",
+          pointerEvents: "none",
+        }}
+        loading="lazy"
       />
       <div className="exo-anatomy-thumb-labels">
         {groupKeys.map((key) => (
