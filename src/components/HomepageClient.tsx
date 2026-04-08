@@ -163,85 +163,54 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
       <OnboardingBanner />
 
       {/* ── ZONE 1 : Hero compact ──────────────────────────────────── */}
-      <div
-        ref={flyerRef as React.RefObject<HTMLDivElement>}
-        className={`reveal-section${flyerVisible ? ' is-visible' : ''}`}
-        style={{ transitionDuration: "0.8s" }}
-      >
+      <div ref={flyerRef as React.RefObject<HTMLDivElement>}>
         <HomeFlyer />
       </div>
 
       {/* Search bar */}
-      <div
-        ref={searchRef as React.RefObject<HTMLDivElement>}
-        className={`reveal-section${searchVisible ? ' is-visible' : ''}`}
-        style={{ transitionDelay: "100ms" }}
-      >
+      <div ref={searchRef as React.RefObject<HTMLDivElement>}>
         <HomeSearchBar />
       </div>
 
       {/* ── ZONE 2 : Accès rapide — grille 2×2 ────────────────────── */}
       <div ref={gridRef as React.RefObject<HTMLDivElement>} className="grid grid-cols-2 gap-3">
-        {/* Exercices */}
-        <Link
-          href="/exercices"
-          className={`tap-feedback reveal-section group relative overflow-hidden rounded-2xl p-4 min-h-[130px] flex flex-col justify-between shadow-lg${gridVisible ? ' is-visible' : ''}`}
-          style={{ background: "linear-gradient(135deg, #f97316, #f59e0b)", transitionDelay: "0ms" }}
-        >
-          <div className="absolute top-3 right-3 text-white/20"><IconDumbbell /></div>
-          <span className="text-3xl font-black text-white">{exoCount}</span>
-          <div>
-            <span className="text-sm font-bold text-white">{t("pages.home.exercicesLabel")}</span>
-            <span className="block text-[11px] text-white/90">{t("pages.home.exercicesDesc")}</span>
-          </div>
-        </Link>
-
-        {/* Méthodes */}
-        <Link
-          href="/methodes"
-          className={`tap-feedback reveal-section group relative overflow-hidden rounded-2xl p-4 min-h-[130px] flex flex-col justify-between shadow-lg${gridVisible ? ' is-visible' : ''}`}
-          style={{ background: "linear-gradient(135deg, #4f46e5, #7c3aed)", transitionDelay: "80ms" }}
-        >
-          <div className="absolute top-3 right-3 text-white/20"><IconClipboard /></div>
-          <span className="text-3xl font-black text-white">{metCount}</span>
-          <div>
-            <span className="text-sm font-bold text-white">{t("pages.home.methodesLabel")}</span>
-            <span className="block text-[11px] text-white/90">{t("pages.home.methodesDesc")}</span>
-          </div>
-        </Link>
-
-        {/* Apprendre */}
-        <Link
-          href="/apprendre"
-          className={`tap-feedback reveal-section group relative overflow-hidden rounded-2xl p-4 min-h-[130px] flex flex-col justify-between shadow-lg${gridVisible ? ' is-visible' : ''}`}
-          style={{ background: "linear-gradient(135deg, #16a34a, #22c55e)", transitionDelay: "160ms" }}
-        >
-          <div className="absolute top-3 right-3 text-white/20"><IconBook /></div>
-          <span className="text-3xl font-black text-white">{lrnCount}</span>
-          <div>
-            <span className="text-sm font-bold text-white">{t("pages.home.apprendreLabel")}</span>
-            <span className="block text-[11px] text-white/90">{t("pages.home.apprendreDesc")}</span>
-          </div>
-        </Link>
-
-        {/* Mon BAC */}
-        <Link
-          href="/parcours-bac"
-          className={`tap-feedback reveal-section group relative overflow-hidden rounded-2xl p-4 min-h-[130px] flex flex-col justify-between shadow-lg${gridVisible ? ' is-visible' : ''}`}
-          style={{ background: "linear-gradient(135deg, #7c3aed, #d946ef)", transitionDelay: "240ms" }}
-        >
-          <div className="absolute top-3 right-3 text-white/20"><IconTrophy /></div>
-          <div className="flex-1" />
-          <div>
-            <span className="text-sm font-bold text-white">{t("pages.home.bacLabel")}</span>
-            <span className="block text-[11px] text-white/90">{t("pages.home.bacDesc")}</span>
-          </div>
-        </Link>
+        {[
+          { href: "/exercices", bg: "linear-gradient(135deg, #f97316, #f59e0b)", icon: <IconDumbbell />, count: exoCount, label: t("pages.home.exercicesLabel"), desc: t("pages.home.exercicesDesc") },
+          { href: "/methodes", bg: "linear-gradient(135deg, #4f46e5, #7c3aed)", icon: <IconClipboard />, count: metCount, label: t("pages.home.methodesLabel"), desc: t("pages.home.methodesDesc") },
+          { href: "/apprendre", bg: "linear-gradient(135deg, #16a34a, #22c55e)", icon: <IconBook />, count: lrnCount, label: t("pages.home.apprendreLabel"), desc: t("pages.home.apprendreDesc") },
+          { href: "/parcours-bac", bg: "linear-gradient(135deg, #7c3aed, #d946ef)", icon: <IconTrophy />, count: null, label: t("pages.home.bacLabel"), desc: t("pages.home.bacDesc") },
+        ].map((card, i) => (
+          <Link
+            key={card.href}
+            href={card.href}
+            className="tap-feedback group relative overflow-hidden rounded-2xl p-4 min-h-[130px] flex flex-col justify-between shadow-lg"
+            style={{
+              background: card.bg,
+              opacity: gridVisible ? 1 : 0,
+              transform: gridVisible ? "none" : "translateY(24px)",
+              transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)",
+              transitionDelay: `${i * 80}ms`,
+            }}
+          >
+            <div className="absolute top-3 right-3 text-white/20">{card.icon}</div>
+            {card.count !== null ? <span className="text-3xl font-black text-white">{card.count}</span> : <div className="flex-1" />}
+            <div>
+              <span className="text-sm font-bold text-white">{card.label}</span>
+              <span className="block text-[11px] text-white/90">{card.desc}</span>
+            </div>
+          </Link>
+        ))}
       </div>
 
       {/* ── ZONE 3 : Favoris ou "Pour bien commencer" ──────────────── */}
       <div ref={starterRef as React.RefObject<HTMLDivElement>}>
-        <h2 className={`reveal-section text-base font-extrabold text-[color:var(--ink)] mb-3${starterVisible ? ' is-visible' : ''}`}>
+        <h2 className="text-base font-extrabold text-[color:var(--ink)] mb-3"
+          style={{
+            opacity: starterVisible ? 1 : 0,
+            transform: starterVisible ? "none" : "translateY(24px)",
+            transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)",
+          }}
+        >
           {hasFavorites ? t("pages.home.favoritesTitle") : t("pages.home.startTitle")}
         </h2>
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 snap-x snap-mandatory scrollbar-none">
@@ -255,8 +224,13 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
               <Link
                 key={slug}
                 href={`/exercices/${slug}`}
-                className={`reveal-step tap-feedback flex-shrink-0 w-36 rounded-xl overflow-hidden border border-white/10 bg-white/5 shadow-sm snap-start${starterVisible ? ' is-visible' : ''}`}
-                style={{ transform: starterVisible ? "none" : "translateX(-20px)", transitionDelay: `${i * 100}ms` }}
+                className="tap-feedback flex-shrink-0 w-36 rounded-xl overflow-hidden border border-white/10 bg-white/5 shadow-sm snap-start"
+                style={{
+                  opacity: starterVisible ? 1 : 0,
+                  transform: starterVisible ? "none" : "translateX(-20px)",
+                  transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)",
+                  transitionDelay: `${i * 100}ms`,
+                }}
               >
                 <div className="relative w-full aspect-video bg-zinc-800">
                   <Image
@@ -279,78 +253,79 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
 
       {/* ── ZONE 4 : Thèmes d'entraînement ─────────────────────────── */}
       <div ref={themesRef as React.RefObject<HTMLDivElement>}>
-        <h2 className={`reveal-section text-base font-extrabold text-[color:var(--ink)] mb-3${themesVisible ? ' is-visible' : ''}`}>
+        <h2 className="text-base font-extrabold text-[color:var(--ink)] mb-3"
+          style={{
+            opacity: themesVisible ? 1 : 0,
+            transform: themesVisible ? "none" : "translateY(24px)",
+            transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)",
+          }}
+        >
           {t("pages.home.themesTitle")}
         </h2>
         <div className="grid grid-cols-3 gap-2">
-          <Link
-            href="/objectifs/endurance-de-force"
-            className={`reveal-section tap-feedback rounded-xl p-3 flex flex-col items-center gap-1.5 text-center shadow-md${themesVisible ? ' is-visible' : ''}`}
-            style={{ background: "linear-gradient(135deg, #059669, #34d399)", transitionDelay: "0ms", boxShadow: undefined }}
-            onPointerEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(52, 211, 153, 0.3)"; }}
-            onPointerLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = ""; }}
-          >
-            <span className="text-white/60"><IconHeartbeat /></span>
-            <span className="text-xs font-bold text-white leading-tight">{t("pages.home.themeEndurance")}</span>
-          </Link>
-          <Link
-            href="/objectifs/gain-de-volume"
-            className={`reveal-section tap-feedback rounded-xl p-3 flex flex-col items-center gap-1.5 text-center shadow-md${themesVisible ? ' is-visible' : ''}`}
-            style={{ background: "linear-gradient(135deg, #3b82f6, #6366f1)", transitionDelay: "80ms" }}
-            onPointerEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(99, 102, 241, 0.3)"; }}
-            onPointerLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = ""; }}
-          >
-            <span className="text-white/60"><IconBarbell /></span>
-            <span className="text-xs font-bold text-white leading-tight">{t("pages.home.themeVolume")}</span>
-          </Link>
-          <Link
-            href="/objectifs/gain-de-puissance"
-            className={`reveal-section tap-feedback rounded-xl p-3 flex flex-col items-center gap-1.5 text-center shadow-md${themesVisible ? ' is-visible' : ''}`}
-            style={{ background: "linear-gradient(135deg, #f97316, #ef4444)", transitionDelay: "160ms" }}
-            onPointerEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(249, 115, 22, 0.3)"; }}
-            onPointerLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = ""; }}
-          >
-            <span className="text-white/60"><IconBolt /></span>
-            <span className="text-xs font-bold text-white leading-tight">{t("pages.home.themePuissance")}</span>
-          </Link>
+          {[
+            { href: "/objectifs/endurance-de-force", bg: "linear-gradient(135deg, #059669, #34d399)", icon: <IconHeartbeat />, label: t("pages.home.themeEndurance"), glow: "0 0 20px rgba(52,211,153,0.3)" },
+            { href: "/objectifs/gain-de-volume", bg: "linear-gradient(135deg, #3b82f6, #6366f1)", icon: <IconBarbell />, label: t("pages.home.themeVolume"), glow: "0 0 20px rgba(99,102,241,0.3)" },
+            { href: "/objectifs/gain-de-puissance", bg: "linear-gradient(135deg, #f97316, #ef4444)", icon: <IconBolt />, label: t("pages.home.themePuissance"), glow: "0 0 20px rgba(249,115,22,0.3)" },
+          ].map((btn, i) => (
+            <Link
+              key={btn.href}
+              href={btn.href}
+              className="tap-feedback rounded-xl p-3 flex flex-col items-center gap-1.5 text-center shadow-md"
+              style={{
+                background: btn.bg,
+                opacity: themesVisible ? 1 : 0,
+                transform: themesVisible ? "none" : "translateY(24px)",
+                transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1), box-shadow 0.2s ease",
+                transitionDelay: `${i * 80}ms`,
+              }}
+              onPointerEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = btn.glow; }}
+              onPointerLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = ""; }}
+            >
+              <span className="text-white/60">{btn.icon}</span>
+              <span className="text-xs font-bold text-white leading-tight">{btn.label}</span>
+            </Link>
+          ))}
         </div>
       </div>
 
       {/* ── ZONE 5 : Outils ────────────────────────────────────────── */}
       <div ref={outilsRef as React.RefObject<HTMLDivElement>}>
-        <h2 className={`reveal-section text-base font-extrabold text-[color:var(--ink)] mb-3${outilsVisible ? ' is-visible' : ''}`}>
+        <h2 className="text-base font-extrabold text-[color:var(--ink)] mb-3"
+          style={{
+            opacity: outilsVisible ? 1 : 0,
+            transform: outilsVisible ? "none" : "translateY(24px)",
+            transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)",
+          }}
+        >
           {t("pages.home.outilsTitle")}
         </h2>
         <div className="grid grid-cols-3 gap-2">
-          <Link
-            href="/outils/calculateur-rm"
-            className={`reveal-section tap-feedback rounded-xl p-3 flex flex-col items-center gap-1.5 text-center border border-white/10 bg-white/5${outilsVisible ? ' is-visible' : ''}`}
-            style={{ transitionDelay: "0ms" }}
-          >
-            <span className="text-cyan-400"><IconCalculateur /></span>
-            <span className="text-[11px] font-semibold text-[color:var(--ink)]">{t("pages.home.outilCalculateur")}</span>
-          </Link>
-          <Link
-            href="/outils/timer"
-            className={`reveal-section tap-feedback rounded-xl p-3 flex flex-col items-center gap-1.5 text-center border border-white/10 bg-white/5${outilsVisible ? ' is-visible' : ''}`}
-            style={{ transitionDelay: "80ms" }}
-          >
-            <span className="text-amber-400"><IconTimer /></span>
-            <span className="text-[11px] font-semibold text-[color:var(--ink)]">{t("pages.home.outilTimer")}</span>
-          </Link>
-          <Link
-            href="/outils/carnet"
-            className={`reveal-section tap-feedback rounded-xl p-3 flex flex-col items-center gap-1.5 text-center border border-white/10 bg-white/5${outilsVisible ? ' is-visible' : ''}`}
-            style={{ transitionDelay: "160ms" }}
-          >
-            <span className="text-violet-400"><IconCarnet /></span>
-            <span className="text-[11px] font-semibold text-[color:var(--ink)]">{t("pages.home.outilCarnet")}</span>
-          </Link>
+          {[
+            { href: "/outils/calculateur-rm", icon: <IconCalculateur />, color: "text-cyan-400", label: t("pages.home.outilCalculateur") },
+            { href: "/outils/timer", icon: <IconTimer />, color: "text-amber-400", label: t("pages.home.outilTimer") },
+            { href: "/outils/carnet", icon: <IconCarnet />, color: "text-violet-400", label: t("pages.home.outilCarnet") },
+          ].map((tool, i) => (
+            <Link
+              key={tool.href}
+              href={tool.href}
+              className="tap-feedback rounded-xl p-3 flex flex-col items-center gap-1.5 text-center border border-white/10 bg-white/5"
+              style={{
+                opacity: outilsVisible ? 1 : 0,
+                transform: outilsVisible ? "none" : "translateY(24px)",
+                transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)",
+                transitionDelay: `${i * 80}ms`,
+              }}
+            >
+              <span className={tool.color}>{tool.icon}</span>
+              <span className="text-[11px] font-semibold text-[color:var(--ink)]">{tool.label}</span>
+            </Link>
+          ))}
         </div>
       </div>
 
       {/* ── Share ──────────────────────────────────────────────────── */}
-      <div ref={footerRef as React.RefObject<HTMLDivElement>} className={`reveal-section text-center pb-4${footerVisible ? ' is-visible' : ''}`}>
+      <div ref={footerRef as React.RefObject<HTMLDivElement>} className="text-center pb-4">
         <Link
           href="/partager"
           className="tap-feedback inline-flex items-center gap-1.5 text-sm text-pink-400 hover:text-pink-300 font-medium transition-colors"
@@ -364,7 +339,7 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
       </div>
 
       {/* ── Footer légal ─────────────────────────────────────────── */}
-      <div className={`reveal-section text-center pb-6 pt-2${footerVisible ? ' is-visible' : ''}`} style={{ transitionDelay: "100ms" }}>
+      <div className="text-center pb-6 pt-2">
         <nav className="inline-flex gap-2 text-[11px] text-zinc-500">
           <a href="/legal/mentions-legales" className="tap-feedback hover:text-zinc-400 transition-colors">Mentions l&eacute;gales</a>
           <span aria-hidden="true">&middot;</span>

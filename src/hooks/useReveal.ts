@@ -2,51 +2,68 @@
 
 import { useEffect, useRef, useState } from "react";
 
+const SPRING = "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)";
+
 /**
- * Observe-once reveal hook. Returns a ref to attach to the element
- * and a boolean that flips to `true` once the element enters the viewport.
- *
- * Uses requestAnimationFrame to defer observation by one frame so the
- * browser paints the initial hidden state (opacity 0) before the
- * IntersectionObserver fires for elements already in the viewport.
+ * Observe-once reveal hook.
+ * Returns [ref, visible, style] — attach ref to the element,
+ * spread style on it for guaranteed inline animation.
  */
-export function useReveal(delay = 0): [React.RefObject<HTMLElement | null>, boolean] {
+export function useReveal(delay = 0): [
+  React.RefObject<HTMLElement | null>,
+  boolean,
+  React.CSSProperties,
+] {
   const ref = useRef<HTMLElement | null>(null);
-  const cleanupRef = useRef<(() => void) | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    // Double-RAF ensures the browser has painted the initial hidden state
-    // before IntersectionObserver fires for above-the-fold elements.
+
+    // Apply hidden state immediately via DOM to avoid FOUC
+    el.style.opacity = "0";
+    el.style.transform = "translateY(24px)";
+    el.style.transition = SPRING;
+    if (delay > 0) el.style.transitionDelay = `${delay}ms`;
+
+    // Double-RAF ensures browser paints opacity:0 before observing
     let cancelled = false;
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         if (cancelled) return;
-        const observer = new IntersectionObserver(
+        observerRef.current = new IntersectionObserver(
           ([entry]) => {
             if (entry.isIntersecting) {
-              if (delay > 0) {
-                setTimeout(() => setVisible(true), delay);
-              } else {
-                setVisible(true);
-              }
-              observer.disconnect();
+              setVisible(true);
+              observerRef.current?.disconnect();
             }
           },
-          { threshold: 0.15 },
+          { threshold: 0.1 },
         );
-        observer.observe(el);
-        // Store for cleanup
-        cleanupRef.current = () => observer.disconnect();
+        observerRef.current.observe(el);
       });
     });
+
     return () => {
       cancelled = true;
-      cleanupRef.current?.();
+      observerRef.current?.disconnect();
     };
   }, [delay]);
 
-  return [ref, visible];
+  // Apply visible state via DOM imperatively for immediate effect
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !visible) return;
+    el.style.opacity = "1";
+    el.style.transform = "none";
+  }, [visible]);
+
+  // Style object for SSR initial render (hidden)
+  const style: React.CSSProperties = visible
+    ? { opacity: 1, transform: "none", transition: SPRING }
+    : { opacity: 0, transform: "translateY(24px)", transition: SPRING };
+
+  return [ref, visible, style];
 }

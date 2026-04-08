@@ -2680,7 +2680,7 @@ export function ExerciseLiveDetail({
       ) : null}
 
       {/* ─── 2. MUSCLES + EQUIPEMENT ─── */}
-      <div ref={musclesRef as React.RefObject<HTMLDivElement>} className={`reveal-section flex flex-col gap-3 mt-1${musclesVisible ? ' is-visible' : ''}`}>
+      <div ref={musclesRef as React.RefObject<HTMLDivElement>} className={`flex flex-col gap-3 mt-1`}>
         {/* Muscles */}
         {merged.frontmatter.muscles.length > 0 && (
           <div className="flex flex-wrap gap-2">
@@ -2717,7 +2717,7 @@ export function ExerciseLiveDetail({
       </div>
 
       {/* ─── 3. DOSAGE RECOMMANDE ─── */}
-      <div ref={dosageRef as React.RefObject<HTMLDivElement>} className={`reveal-section tap-feedback${dosageVisible ? ' is-visible' : ''}`} style={{ transitionDelay: "50ms" }}>
+      <div ref={dosageRef as React.RefObject<HTMLDivElement>} className="tap-feedback">
         <ExerciseQuickInfo
           content={merged.content}
           securite={merged.frontmatter.consignes_securite ?? ''}
@@ -2725,13 +2725,13 @@ export function ExerciseLiveDetail({
       </div>
 
       {/* ─── 4. TIMER REPOS ─── */}
-      <div ref={timerRef as React.RefObject<HTMLDivElement>} className={`reveal-section tap-feedback${timerVisible ? ' is-visible' : ''}`} style={{ transitionDelay: "100ms" }}>
+      <div ref={timerRef as React.RefObject<HTMLDivElement>} className="tap-feedback">
         <RestTimer restRaw={parsedSections.restRaw} />
       </div>
 
       {/* ─── 5. MANNEQUIN ANATOMIQUE ─── */}
       {merged.frontmatter.muscles.length > 0 && (
-        <div ref={mannequinRef as React.RefObject<HTMLDivElement>} className={`reveal-section${mannequinVisible ? ' is-visible' : ''}`} style={{ display: "flex", justifyContent: "center", padding: "16px 0", transitionDelay: "150ms" }}>
+        <div ref={mannequinRef as React.RefObject<HTMLDivElement>} style={{ display: "flex", justifyContent: "center", padding: "16px 0" }}>
           <div style={{ width: 240 }} className={`mannequin-glow${mannequinVisible ? ' is-visible' : ''}`}>
             <ExerciseAnatomyThumb
               muscles={merged.frontmatter.muscles}
@@ -2795,7 +2795,7 @@ export function ExerciseLiveDetail({
         <div className="flex flex-col gap-0">
           {/* 6. RESUME */}
           {parsedSections.resume && parsedSections.resume.body && (
-            <div ref={resumeRef as React.RefObject<HTMLDivElement>} className={`reveal-section border-l-2 border-[#FF8C00] pl-4 py-1 mb-4${resumeVisible ? ' is-visible' : ''}`}>
+            <div ref={resumeRef as React.RefObject<HTMLDivElement>} className="border-l-2 border-[#FF8C00] pl-4 py-1 mb-4">
               <p className="text-[15px] text-white/90 leading-relaxed" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>
                 {parsedSections.resume.body}
               </p>
@@ -2819,9 +2819,11 @@ export function ExerciseLiveDetail({
                     return (
                       <div
                         key={i}
-                        className={`reveal-step flex gap-3 items-start${executionVisible ? ' is-visible' : ''}`}
+                        className="flex gap-3 items-start"
                         style={{
+                          opacity: executionVisible ? 1 : 0,
                           transform: executionVisible ? "none" : translateDir,
+                          transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)",
                           transitionDelay: `${i * 80}ms`,
                         }}
                       >
@@ -2840,7 +2842,7 @@ export function ExerciseLiveDetail({
 
           {/* 8. RESPIRATION */}
           {parsedSections.respiration && parsedSections.respiration.body && (
-            <div ref={respirationRef as React.RefObject<HTMLDivElement>} className={`reveal-section mb-4${respirationVisible ? ' is-visible' : ''}`}>
+            <div ref={respirationRef as React.RefObject<HTMLDivElement>} className="mb-4">
               <h2 className="text-xl uppercase tracking-wider text-white mb-2 mt-2" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
                 {parsedSections.respiration.heading}
               </h2>
@@ -2855,7 +2857,7 @@ export function ExerciseLiveDetail({
 
           {/* 9. CONSEILS (collapsible) */}
           {parsedSections.conseils && parsedSections.conseils.body && (
-            <div ref={conseilsRef as React.RefObject<HTMLDivElement>} className={`reveal-section mb-1${conseilsVisible ? ' is-visible' : ''}`}>
+            <div ref={conseilsRef as React.RefObject<HTMLDivElement>} className="mb-1">
               <button
                 type="button"
                 onClick={() => setConseilsOpen(!conseilsOpen)}
@@ -2883,7 +2885,7 @@ export function ExerciseLiveDetail({
 
           {/* 10. SECURITE (collapsible, accent jaune) */}
           {parsedSections.securite && parsedSections.securite.body && (
-            <div ref={securiteRef as React.RefObject<HTMLDivElement>} className={`reveal-section mb-1${securiteVisible ? ' is-visible' : ''}`} style={{ transitionDelay: "50ms" }}>
+            <div ref={securiteRef as React.RefObject<HTMLDivElement>} className="mb-1">
               <button
                 type="button"
                 onClick={() => setSecuriteOpen(!securiteOpen)}
