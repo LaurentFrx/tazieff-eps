@@ -15,15 +15,21 @@ export function ComplementaryExercises({ exercises, heading }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-        <span className="border-b-2 border-[#FF8C00] pb-1">{heading}</span>
+      <h2
+        className="text-xl uppercase tracking-wider text-white"
+        style={{ fontFamily: "var(--font-bebas), sans-serif" }}
+      >
+        {heading}
       </h2>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+      <div
+        className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 sm:-mx-6 sm:px-6"
+        style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
+      >
         {exercises.map((ex) => (
           <Link
             key={ex.slug}
             href={`/exercices/${ex.slug}`}
-            className="flex items-center gap-3 rounded-xl border border-[#FF8C00]/20 bg-[#FF8C00]/5 p-3 transition-all duration-200 hover:bg-[#FF8C00]/10"
+            className="snap-start shrink-0 w-[200px] flex items-center gap-3 rounded-xl border border-[#FF8C00]/20 bg-[#FF8C00]/5 p-3 transition-all duration-200 hover:bg-[#FF8C00]/10"
           >
             <ExoThumb slug={ex.slug} />
             <div className="min-w-0">

@@ -21,6 +21,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Lang } from "@/lib/i18n/messages";
 import { ExerciseJsonLd } from "@/components/seo/ExerciseJsonLd";
 import { ExerciseQuickInfo } from "@/components/exercices/ExerciseQuickInfo";
+import { RestTimer } from "@/components/exercices/RestTimer";
 import { translateTerms } from "@/lib/i18n/terms/translate";
 import { getMuscleGroup, type MuscleGroupId } from "@/lib/exercices/muscleGroups";
 const MarkdownRenderer = dynamic(
@@ -2455,6 +2456,15 @@ export function ExerciseLiveDetail({
     }
 
     const find = (pattern: RegExp) => sections.find(s => pattern.test(s.heading));
+    const dosage = find(/^dosage/i);
+
+    // Extract rest value from dosage body for the timer
+    let restRaw: string | null = null;
+    if (dosage?.body) {
+      const restMatch = dosage.body.match(/[Rr]epos\s+([\d][\d\-–']*\s*(?:s|sec|min|mn|')?)/i);
+      if (restMatch) restRaw = restMatch[1].trim();
+    }
+
     return {
       resume: find(/^r[eé]sum[eé]/i),
       execution: find(/^ex[eé]cution/i),
@@ -2462,9 +2472,20 @@ export function ExerciseLiveDetail({
       conseils: find(/^conseils?/i),
       securite: find(/^s[eé]curit[eé]/i),
       erreurs: find(/^erreurs?/i),
+      dosage,
+      restRaw,
       all: sections,
     };
   }, [merged.content]);
+
+  // Filter dosage-contaminated lines from execution steps (e.g. "6 x 3-10 reps", "Repos 90 s", "Technique.")
+  const isDosageLine = (line: string) => {
+    const t2 = line.replace(/^-\s*/, '').trim();
+    if (/^\d[\d\-–]*\s*[x×]\s*\d/i.test(t2)) return true;
+    if (/^repos\s+\d/i.test(t2)) return true;
+    if (/^technique\.?$/i.test(t2)) return true;
+    return false;
+  };
 
   // Session badge label (ex: "S5 Fonctionnel")
   const sessionMatch = slug.match(/^s(\d+)/i);
@@ -2477,14 +2498,17 @@ export function ExerciseLiveDetail({
         .app-shell > .app-header {
           display: none;
         }
+        .page > nav[aria-label="breadcrumb"] {
+          display: none;
+        }
       `}</style>
 
       {/* ─── STICKY HEADER (visible au scroll, après le hero) ─── */}
       <div
-        className={`fixed top-0 left-0 right-0 z-[70] transition-transform duration-300 ${showStickyHeader ? 'translate-y-0' : '-translate-y-full'}`}
-        style={{ background: 'rgba(4,4,10,0.92)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
+        className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${showStickyHeader ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}
+        style={{ background: 'rgba(4,4,10,0.92)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
       >
-        <div className="flex items-center gap-3 px-4 py-3 max-w-3xl mx-auto">
+        <div className="flex items-center gap-3 px-4 py-2.5 max-w-3xl mx-auto" style={{ height: '50px' }}>
           <Link
             href="/exercices"
             aria-label={t("exerciseDetail.backLabel")}
@@ -2492,7 +2516,15 @@ export function ExerciseLiveDetail({
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
           </Link>
-          <h2 className="text-sm font-semibold text-white truncate" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>{displayTitle}</h2>
+          <h2 className="flex-1 text-sm font-semibold text-white truncate text-center" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>{displayTitle}</h2>
+          <button
+            type="button"
+            onClick={() => toggleFavorite(merged.frontmatter.slug)}
+            className="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 text-white shrink-0"
+            aria-label={getFavoritesSnapshot().includes(merged.frontmatter.slug) ? t("favorites.remove") : t("favorites.add")}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={getFavoritesSnapshot().includes(merged.frontmatter.slug) ? '#FF8C00' : 'none'} stroke={getFavoritesSnapshot().includes(merged.frontmatter.slug) ? '#FF8C00' : 'currentColor'} strokeWidth="2" className="w-4 h-4"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+          </button>
         </div>
       </div>
 
@@ -2641,10 +2673,13 @@ export function ExerciseLiveDetail({
         securite={merged.frontmatter.consignes_securite ?? ''}
       />
 
-      {/* ─── 4. MANNEQUIN ANATOMIQUE ─── */}
+      {/* ─── 4. TIMER REPOS ─── */}
+      <RestTimer restRaw={parsedSections.restRaw} />
+
+      {/* ─── 5. MANNEQUIN ANATOMIQUE ─── */}
       {merged.frontmatter.muscles.length > 0 && (
         <div className="flex justify-center">
-          <div className="w-full max-w-[200px]">
+          <div className="w-full min-w-[50%] max-w-[200px]">
             <ExerciseAnatomyThumb
               muscles={merged.frontmatter.muscles}
               translatedMuscles={translateTerms(merged.frontmatter.muscles, "muscles", lang)}
@@ -2654,16 +2689,16 @@ export function ExerciseLiveDetail({
         </div>
       )}
 
-      {/* ─── 5-9. CONTENU STRUCTURÉ ─── */}
+      {/* ─── 6-10. CONTENU STRUCTURÉ ─── */}
       {overrideDocView ? (
         /* Override teacher: render structured sections, skip Dosage heading */
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-4">
           {overrideDocView.sections
             .filter((section) => !/^dosage$/i.test(section.title?.trim() ?? ''))
             .map((section) => (
             <section key={section.id}>
               {section.title ? (
-                <h2 className="text-xl uppercase tracking-wider text-white mb-4" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>{section.title}</h2>
+                <h2 className="text-xl uppercase tracking-wider text-white mb-3 mt-1" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>{section.title}</h2>
               ) : null}
               <div className="flex flex-col gap-3">
                 {section.blocks.map((block, blockIndex) => {
@@ -2705,42 +2740,47 @@ export function ExerciseLiveDetail({
       ) : (
         /* MDX content: render structured sections individually */
         <div className="flex flex-col gap-0">
-          {/* 5. RESUME */}
+          {/* 6. RESUME */}
           {parsedSections.resume && parsedSections.resume.body && (
-            <div className="border-l-2 border-[#FF8C00] pl-4 py-1 mb-8">
+            <div className="border-l-2 border-[#FF8C00] pl-4 py-1 mb-4">
               <p className="text-[15px] text-white/90 leading-relaxed" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>
                 {parsedSections.resume.body}
               </p>
             </div>
           )}
 
-          {/* 6. EXECUTION */}
+          {/* 7. EXECUTION (dosage lines filtered) */}
           {parsedSections.execution && parsedSections.execution.body && (
-            <div className="mb-8">
-              <h2 className="text-xl uppercase tracking-wider text-white mb-4" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
+            <div className="mb-4">
+              <h2 className="text-xl uppercase tracking-wider text-white mb-3 mt-1" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
                 {parsedSections.execution.heading}
               </h2>
-              <div className="flex flex-col gap-3">
-                {parsedSections.execution.body.split('\n').filter(l => l.trim().startsWith('-')).map((line, i) => {
-                  const text = line.replace(/^-\s*/, '').trim();
-                  return (
-                    <div key={i} className="flex gap-3 items-start">
-                      <span className="text-2xl leading-none text-[#FF8C00] shrink-0 w-8 text-right" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>{i + 1}</span>
-                      <p className="text-sm text-white/80 leading-relaxed pt-0.5" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>{text}</p>
-                    </div>
-                  );
-                })}
+              <div className="flex flex-col gap-2.5">
+                {(() => {
+                  const steps = parsedSections.execution.body.split('\n')
+                    .filter(l => l.trim().startsWith('-'))
+                    .filter(l => !isDosageLine(l));
+                  return steps.map((line, i) => {
+                    const text = line.replace(/^-\s*/, '').trim();
+                    return (
+                      <div key={i} className="flex gap-3 items-start">
+                        <span className="text-2xl leading-none text-[#FF8C00] shrink-0 w-8 text-right" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>{i + 1}</span>
+                        <p className="text-sm text-white/80 leading-relaxed pt-0.5" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>{text}</p>
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             </div>
           )}
 
           {/* Séparateur */}
-          <div className="h-px bg-white/5 mb-8" />
+          <div className="h-px bg-white/5 my-2" />
 
-          {/* 7. RESPIRATION */}
+          {/* 8. RESPIRATION */}
           {parsedSections.respiration && parsedSections.respiration.body && (
-            <div className="mb-8">
-              <h2 className="text-xl uppercase tracking-wider text-white mb-3" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
+            <div className="mb-4">
+              <h2 className="text-xl uppercase tracking-wider text-white mb-2 mt-2" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
                 {parsedSections.respiration.heading}
               </h2>
               <p className="text-sm text-white/70 leading-relaxed" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>
@@ -2750,15 +2790,15 @@ export function ExerciseLiveDetail({
           )}
 
           {/* Séparateur */}
-          {(parsedSections.conseils || parsedSections.securite) && <div className="h-px bg-white/5 mb-4" />}
+          {(parsedSections.conseils || parsedSections.securite) && <div className="h-px bg-white/5 my-1" />}
 
-          {/* 8. CONSEILS (collapsible) */}
+          {/* 9. CONSEILS (collapsible) */}
           {parsedSections.conseils && parsedSections.conseils.body && (
-            <div className="mb-4">
+            <div className="mb-1">
               <button
                 type="button"
                 onClick={() => setConseilsOpen(!conseilsOpen)}
-                className="flex items-center justify-between w-full py-3 text-left"
+                className="flex items-center justify-between w-full py-2 text-left"
               >
                 <h2 className="text-xl uppercase tracking-wider text-white" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
                   {parsedSections.conseils.heading}
@@ -2766,8 +2806,8 @@ export function ExerciseLiveDetail({
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`w-5 h-5 text-white/40 transition-transform duration-200 ${conseilsOpen ? 'rotate-180' : ''}`}><path d="M6 9l6 6 6-6" /></svg>
               </button>
               {conseilsOpen && (
-                <div className="pb-4">
-                  <ul className="flex flex-col gap-2 pl-1">
+                <div className="pb-2">
+                  <ul className="flex flex-col gap-1.5 pl-1">
                     {parsedSections.conseils.body.split('\n').filter(l => l.trim().startsWith('-')).map((line, i) => (
                       <li key={i} className="flex gap-2 items-start text-sm text-white/70 leading-relaxed">
                         <span className="text-[#FF8C00] mt-1 shrink-0">•</span>
@@ -2780,13 +2820,13 @@ export function ExerciseLiveDetail({
             </div>
           )}
 
-          {/* 9. SECURITE (collapsible, accent jaune) */}
+          {/* 10. SECURITE (collapsible, accent jaune) */}
           {parsedSections.securite && parsedSections.securite.body && (
-            <div className="mb-4">
+            <div className="mb-1">
               <button
                 type="button"
                 onClick={() => setSecuriteOpen(!securiteOpen)}
-                className="flex items-center justify-between w-full py-3 text-left"
+                className="flex items-center justify-between w-full py-2 text-left"
               >
                 <h2 className="flex items-center gap-2 text-xl uppercase tracking-wider text-[#FBBF24]" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
@@ -2795,7 +2835,7 @@ export function ExerciseLiveDetail({
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`w-5 h-5 text-[#FBBF24]/40 transition-transform duration-200 ${securiteOpen ? 'rotate-180' : ''}`}><path d="M6 9l6 6 6-6" /></svg>
               </button>
               {securiteOpen && (
-                <div className="rounded-xl bg-[#FBBF24]/5 border border-[#FBBF24]/15 px-4 py-3 mb-2">
+                <div className="rounded-xl bg-[#FBBF24]/5 border border-[#FBBF24]/15 px-4 py-3 mb-1">
                   <p className="text-sm text-[#FBBF24]/80 leading-relaxed">
                     {parsedSections.securite.body}
                   </p>
@@ -2806,11 +2846,11 @@ export function ExerciseLiveDetail({
 
           {/* Erreurs courantes (si présent, dans le flux) */}
           {parsedSections.erreurs && parsedSections.erreurs.body && (
-            <div className="mb-8">
-              <h2 className="text-xl uppercase tracking-wider text-white mb-3" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
+            <div className="mb-4">
+              <h2 className="text-xl uppercase tracking-wider text-white mb-2 mt-2" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
                 {parsedSections.erreurs.heading}
               </h2>
-              <ul className="flex flex-col gap-2 pl-1">
+              <ul className="flex flex-col gap-1.5 pl-1">
                 {parsedSections.erreurs.body.split('\n').filter(l => l.trim().startsWith('-')).map((line, i) => (
                   <li key={i} className="flex gap-2 items-start text-sm text-white/70 leading-relaxed">
                     <span className="text-red-400 mt-1 shrink-0">•</span>
