@@ -73,6 +73,7 @@ export default function ExerciseAnatomyThumb({
       href={href}
       className="exo-anatomy-thumb"
       aria-label={t("exerciseAnatomy.musclesWorked")}
+      style={{ width: "100%", height: 280, position: "relative" }}
     >
       <NextImage
         src={miniMannequin}
