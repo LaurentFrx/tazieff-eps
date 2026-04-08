@@ -27,7 +27,7 @@ export function useReveal(delay = 0): [
     if (!el) return;
 
     const rect = el.getBoundingClientRect();
-    const isAboveFold = rect.top < window.innerHeight + 100;
+    const isAboveFold = rect.top < window.innerHeight * 0.5;
 
     if (isAboveFold) {
       // Above the fold: show immediately, no animation, no flash
