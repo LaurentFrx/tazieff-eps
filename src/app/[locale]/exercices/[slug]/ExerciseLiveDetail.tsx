@@ -2502,6 +2502,13 @@ export function ExerciseLiveDetail({
         .page > nav[aria-label="breadcrumb"] {
           display: none;
         }
+        .app-shell {
+          padding-top: env(safe-area-inset-top, 0px) !important;
+        }
+        .page {
+          padding-top: 0 !important;
+          margin-top: 0 !important;
+        }
       `}</style>
 
       {/* ─── STICKY HEADER (visible au scroll, après le hero) ─── */}
