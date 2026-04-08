@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { LocaleLink as Link } from "@/components/LocaleLink";
 import Image from "next/image";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -10,6 +10,8 @@ import { OnboardingBanner } from "@/components/OnboardingBanner";
 import { HomeFlyer } from "@/components/HomeFlyer";
 import { HomeSearchBar } from "@/components/HomeSearchBar";
 import { HomeJsonLd } from "@/components/seo/HomeJsonLd";
+import { useReveal } from "@/hooks/useReveal";
+import { useCountUp } from "@/hooks/useCountUp";
 
 /* ── SVG icons ───────────────────────────────────────────────────── */
 
@@ -111,6 +113,30 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
   const { t } = useI18n();
   const { favorites } = useFavorites();
 
+  // --- Reveal hooks ---
+  const [flyerRef, flyerVisible] = useReveal(0.1);
+  const [searchRef, searchVisible] = useReveal();
+  const [gridRef, gridVisible] = useReveal();
+  const [starterRef, starterVisible] = useReveal();
+  const [themesRef, themesVisible] = useReveal();
+  const [outilsRef, outilsVisible] = useReveal();
+  const [footerRef, footerVisible] = useReveal();
+
+  // --- Count-up hooks ---
+  const exoCount = useCountUp(exerciseCount, gridVisible, 1000);
+  const metCount = useCountUp(methodeCount, gridVisible, 1000);
+  const lrnCount = useCountUp(learnCount, gridVisible, 1000);
+
+  // --- Entrance animation (once per session) ---
+  const [showEntrance, setShowEntrance] = useState(false);
+  useEffect(() => {
+    if (typeof sessionStorage === "undefined") return;
+    if (!sessionStorage.getItem("homeAnimPlayed")) {
+      setShowEntrance(true);
+      sessionStorage.setItem("homeAnimPlayed", "1");
+    }
+  }, []);
+
   const slugMap = useMemo(
     () => new Map(SEARCH_INDEX.filter((e) => e.type === "exercice").map((e) => [e.slug, e])),
     [],
@@ -137,21 +163,33 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
       <OnboardingBanner />
 
       {/* ── ZONE 1 : Hero compact ──────────────────────────────────── */}
-      <HomeFlyer />
+      <div
+        ref={flyerRef as React.RefObject<HTMLDivElement>}
+        className={`reveal-section${flyerVisible ? ' is-visible' : ''}`}
+        style={{ transitionDuration: "0.8s" }}
+      >
+        <HomeFlyer />
+      </div>
 
       {/* Search bar */}
-      <HomeSearchBar />
+      <div
+        ref={searchRef as React.RefObject<HTMLDivElement>}
+        className={`reveal-section${searchVisible ? ' is-visible' : ''}`}
+        style={{ transitionDelay: "100ms" }}
+      >
+        <HomeSearchBar />
+      </div>
 
       {/* ── ZONE 2 : Accès rapide — grille 2×2 ────────────────────── */}
-      <div className="grid grid-cols-2 gap-3">
+      <div ref={gridRef as React.RefObject<HTMLDivElement>} className="grid grid-cols-2 gap-3">
         {/* Exercices */}
         <Link
           href="/exercices"
-          className="group relative overflow-hidden rounded-2xl p-4 min-h-[130px] flex flex-col justify-between shadow-lg transition-all duration-300 hover:scale-[1.02]"
-          style={{ background: "linear-gradient(135deg, #f97316, #f59e0b)" }}
+          className={`tap-feedback reveal-section group relative overflow-hidden rounded-2xl p-4 min-h-[130px] flex flex-col justify-between shadow-lg${gridVisible ? ' is-visible' : ''}`}
+          style={{ background: "linear-gradient(135deg, #f97316, #f59e0b)", transitionDelay: "0ms" }}
         >
           <div className="absolute top-3 right-3 text-white/20"><IconDumbbell /></div>
-          <span className="text-3xl font-black text-white">{exerciseCount}</span>
+          <span className="text-3xl font-black text-white">{exoCount}</span>
           <div>
             <span className="text-sm font-bold text-white">{t("pages.home.exercicesLabel")}</span>
             <span className="block text-[11px] text-white/90">{t("pages.home.exercicesDesc")}</span>
@@ -161,11 +199,11 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
         {/* Méthodes */}
         <Link
           href="/methodes"
-          className="group relative overflow-hidden rounded-2xl p-4 min-h-[130px] flex flex-col justify-between shadow-lg transition-all duration-300 hover:scale-[1.02]"
-          style={{ background: "linear-gradient(135deg, #4f46e5, #7c3aed)" }}
+          className={`tap-feedback reveal-section group relative overflow-hidden rounded-2xl p-4 min-h-[130px] flex flex-col justify-between shadow-lg${gridVisible ? ' is-visible' : ''}`}
+          style={{ background: "linear-gradient(135deg, #4f46e5, #7c3aed)", transitionDelay: "80ms" }}
         >
           <div className="absolute top-3 right-3 text-white/20"><IconClipboard /></div>
-          <span className="text-3xl font-black text-white">{methodeCount}</span>
+          <span className="text-3xl font-black text-white">{metCount}</span>
           <div>
             <span className="text-sm font-bold text-white">{t("pages.home.methodesLabel")}</span>
             <span className="block text-[11px] text-white/90">{t("pages.home.methodesDesc")}</span>
@@ -175,11 +213,11 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
         {/* Apprendre */}
         <Link
           href="/apprendre"
-          className="group relative overflow-hidden rounded-2xl p-4 min-h-[130px] flex flex-col justify-between shadow-lg transition-all duration-300 hover:scale-[1.02]"
-          style={{ background: "linear-gradient(135deg, #16a34a, #22c55e)" }}
+          className={`tap-feedback reveal-section group relative overflow-hidden rounded-2xl p-4 min-h-[130px] flex flex-col justify-between shadow-lg${gridVisible ? ' is-visible' : ''}`}
+          style={{ background: "linear-gradient(135deg, #16a34a, #22c55e)", transitionDelay: "160ms" }}
         >
           <div className="absolute top-3 right-3 text-white/20"><IconBook /></div>
-          <span className="text-3xl font-black text-white">{learnCount}</span>
+          <span className="text-3xl font-black text-white">{lrnCount}</span>
           <div>
             <span className="text-sm font-bold text-white">{t("pages.home.apprendreLabel")}</span>
             <span className="block text-[11px] text-white/90">{t("pages.home.apprendreDesc")}</span>
@@ -189,8 +227,8 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
         {/* Mon BAC */}
         <Link
           href="/parcours-bac"
-          className="group relative overflow-hidden rounded-2xl p-4 min-h-[130px] flex flex-col justify-between shadow-lg transition-all duration-300 hover:scale-[1.02]"
-          style={{ background: "linear-gradient(135deg, #7c3aed, #d946ef)" }}
+          className={`tap-feedback reveal-section group relative overflow-hidden rounded-2xl p-4 min-h-[130px] flex flex-col justify-between shadow-lg${gridVisible ? ' is-visible' : ''}`}
+          style={{ background: "linear-gradient(135deg, #7c3aed, #d946ef)", transitionDelay: "240ms" }}
         >
           <div className="absolute top-3 right-3 text-white/20"><IconTrophy /></div>
           <div className="flex-1" />
@@ -202,12 +240,12 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
       </div>
 
       {/* ── ZONE 3 : Favoris ou "Pour bien commencer" ──────────────── */}
-      <div>
-        <h2 className="text-base font-extrabold text-[color:var(--ink)] mb-3">
+      <div ref={starterRef as React.RefObject<HTMLDivElement>}>
+        <h2 className={`reveal-section text-base font-extrabold text-[color:var(--ink)] mb-3${starterVisible ? ' is-visible' : ''}`}>
           {hasFavorites ? t("pages.home.favoritesTitle") : t("pages.home.startTitle")}
         </h2>
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 snap-x snap-mandatory scrollbar-none">
-          {(hasFavorites ? validFavorites.slice(0, 10) : starterExercises).map((item) => {
+          {(hasFavorites ? validFavorites.slice(0, 10) : starterExercises).map((item, i) => {
             const slug = typeof item === "string" ? item : item.slug;
             const entry = slugMap.get(slug);
             const title = typeof item === "string"
@@ -217,7 +255,8 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
               <Link
                 key={slug}
                 href={`/exercices/${slug}`}
-                className="flex-shrink-0 w-36 rounded-xl overflow-hidden border border-white/10 bg-white/5 shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md snap-start"
+                className={`reveal-step tap-feedback flex-shrink-0 w-36 rounded-xl overflow-hidden border border-white/10 bg-white/5 shadow-sm snap-start${starterVisible ? ' is-visible' : ''}`}
+                style={{ transform: starterVisible ? "none" : "translateX(-20px)", transitionDelay: `${i * 100}ms` }}
               >
                 <div className="relative w-full aspect-video bg-zinc-800">
                   <Image
@@ -239,31 +278,37 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
       </div>
 
       {/* ── ZONE 4 : Thèmes d'entraînement ─────────────────────────── */}
-      <div>
-        <h2 className="text-base font-extrabold text-[color:var(--ink)] mb-3">
+      <div ref={themesRef as React.RefObject<HTMLDivElement>}>
+        <h2 className={`reveal-section text-base font-extrabold text-[color:var(--ink)] mb-3${themesVisible ? ' is-visible' : ''}`}>
           {t("pages.home.themesTitle")}
         </h2>
         <div className="grid grid-cols-3 gap-2">
           <Link
             href="/objectifs/endurance-de-force"
-            className="rounded-xl p-3 flex flex-col items-center gap-1.5 text-center shadow-md transition-all duration-300 hover:scale-[1.03]"
-            style={{ background: "linear-gradient(135deg, #059669, #34d399)" }}
+            className={`reveal-section tap-feedback rounded-xl p-3 flex flex-col items-center gap-1.5 text-center shadow-md${themesVisible ? ' is-visible' : ''}`}
+            style={{ background: "linear-gradient(135deg, #059669, #34d399)", transitionDelay: "0ms", boxShadow: undefined }}
+            onPointerEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(52, 211, 153, 0.3)"; }}
+            onPointerLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = ""; }}
           >
             <span className="text-white/60"><IconHeartbeat /></span>
             <span className="text-xs font-bold text-white leading-tight">{t("pages.home.themeEndurance")}</span>
           </Link>
           <Link
             href="/objectifs/gain-de-volume"
-            className="rounded-xl p-3 flex flex-col items-center gap-1.5 text-center shadow-md transition-all duration-300 hover:scale-[1.03]"
-            style={{ background: "linear-gradient(135deg, #3b82f6, #6366f1)" }}
+            className={`reveal-section tap-feedback rounded-xl p-3 flex flex-col items-center gap-1.5 text-center shadow-md${themesVisible ? ' is-visible' : ''}`}
+            style={{ background: "linear-gradient(135deg, #3b82f6, #6366f1)", transitionDelay: "80ms" }}
+            onPointerEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(99, 102, 241, 0.3)"; }}
+            onPointerLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = ""; }}
           >
             <span className="text-white/60"><IconBarbell /></span>
             <span className="text-xs font-bold text-white leading-tight">{t("pages.home.themeVolume")}</span>
           </Link>
           <Link
             href="/objectifs/gain-de-puissance"
-            className="rounded-xl p-3 flex flex-col items-center gap-1.5 text-center shadow-md transition-all duration-300 hover:scale-[1.03]"
-            style={{ background: "linear-gradient(135deg, #f97316, #ef4444)" }}
+            className={`reveal-section tap-feedback rounded-xl p-3 flex flex-col items-center gap-1.5 text-center shadow-md${themesVisible ? ' is-visible' : ''}`}
+            style={{ background: "linear-gradient(135deg, #f97316, #ef4444)", transitionDelay: "160ms" }}
+            onPointerEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(249, 115, 22, 0.3)"; }}
+            onPointerLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = ""; }}
           >
             <span className="text-white/60"><IconBolt /></span>
             <span className="text-xs font-bold text-white leading-tight">{t("pages.home.themePuissance")}</span>
@@ -272,28 +317,31 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
       </div>
 
       {/* ── ZONE 5 : Outils ────────────────────────────────────────── */}
-      <div>
-        <h2 className="text-base font-extrabold text-[color:var(--ink)] mb-3">
+      <div ref={outilsRef as React.RefObject<HTMLDivElement>}>
+        <h2 className={`reveal-section text-base font-extrabold text-[color:var(--ink)] mb-3${outilsVisible ? ' is-visible' : ''}`}>
           {t("pages.home.outilsTitle")}
         </h2>
         <div className="grid grid-cols-3 gap-2">
           <Link
             href="/outils/calculateur-rm"
-            className="rounded-xl p-3 flex flex-col items-center gap-1.5 text-center border border-white/10 bg-white/5 transition-all duration-300 hover:bg-white/10"
+            className={`reveal-section tap-feedback rounded-xl p-3 flex flex-col items-center gap-1.5 text-center border border-white/10 bg-white/5${outilsVisible ? ' is-visible' : ''}`}
+            style={{ transitionDelay: "0ms" }}
           >
             <span className="text-cyan-400"><IconCalculateur /></span>
             <span className="text-[11px] font-semibold text-[color:var(--ink)]">{t("pages.home.outilCalculateur")}</span>
           </Link>
           <Link
             href="/outils/timer"
-            className="rounded-xl p-3 flex flex-col items-center gap-1.5 text-center border border-white/10 bg-white/5 transition-all duration-300 hover:bg-white/10"
+            className={`reveal-section tap-feedback rounded-xl p-3 flex flex-col items-center gap-1.5 text-center border border-white/10 bg-white/5${outilsVisible ? ' is-visible' : ''}`}
+            style={{ transitionDelay: "80ms" }}
           >
             <span className="text-amber-400"><IconTimer /></span>
             <span className="text-[11px] font-semibold text-[color:var(--ink)]">{t("pages.home.outilTimer")}</span>
           </Link>
           <Link
             href="/outils/carnet"
-            className="rounded-xl p-3 flex flex-col items-center gap-1.5 text-center border border-white/10 bg-white/5 transition-all duration-300 hover:bg-white/10"
+            className={`reveal-section tap-feedback rounded-xl p-3 flex flex-col items-center gap-1.5 text-center border border-white/10 bg-white/5${outilsVisible ? ' is-visible' : ''}`}
+            style={{ transitionDelay: "160ms" }}
           >
             <span className="text-violet-400"><IconCarnet /></span>
             <span className="text-[11px] font-semibold text-[color:var(--ink)]">{t("pages.home.outilCarnet")}</span>
@@ -302,10 +350,10 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
       </div>
 
       {/* ── Share ──────────────────────────────────────────────────── */}
-      <div className="text-center pb-4">
+      <div ref={footerRef as React.RefObject<HTMLDivElement>} className={`reveal-section text-center pb-4${footerVisible ? ' is-visible' : ''}`}>
         <Link
           href="/partager"
-          className="inline-flex items-center gap-1.5 text-sm text-pink-400 hover:text-pink-300 font-medium transition-colors"
+          className="tap-feedback inline-flex items-center gap-1.5 text-sm text-pink-400 hover:text-pink-300 font-medium transition-colors"
         >
           <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
             <circle cx="13" cy="4.5" r="2.5" /><circle cx="5" cy="10" r="2.5" /><circle cx="13" cy="15.5" r="2.5" />
@@ -316,13 +364,13 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
       </div>
 
       {/* ── Footer légal ─────────────────────────────────────────── */}
-      <div className="text-center pb-6 pt-2">
+      <div className={`reveal-section text-center pb-6 pt-2${footerVisible ? ' is-visible' : ''}`} style={{ transitionDelay: "100ms" }}>
         <nav className="inline-flex gap-2 text-[11px] text-zinc-500">
-          <a href="/legal/mentions-legales" className="hover:text-zinc-400 transition-colors">Mentions l&eacute;gales</a>
+          <a href="/legal/mentions-legales" className="tap-feedback hover:text-zinc-400 transition-colors">Mentions l&eacute;gales</a>
           <span aria-hidden="true">&middot;</span>
-          <a href="/legal/confidentialite" className="hover:text-zinc-400 transition-colors">Confidentialit&eacute;</a>
+          <a href="/legal/confidentialite" className="tap-feedback hover:text-zinc-400 transition-colors">Confidentialit&eacute;</a>
           <span aria-hidden="true">&middot;</span>
-          <a href="/legal/cgu" className="hover:text-zinc-400 transition-colors">CGU</a>
+          <a href="/legal/cgu" className="tap-feedback hover:text-zinc-400 transition-colors">CGU</a>
         </nav>
       </div>
     </section>

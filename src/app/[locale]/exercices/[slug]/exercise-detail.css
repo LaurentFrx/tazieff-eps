@@ -1,42 +1,7 @@
-/* ── Tap feedback ─────────────────────────────────────────────── */
-
-.tap-feedback {
-  transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-.tap-feedback:active {
-  transform: scale(0.95);
-}
-
 /* ── Hero parallax ───────────────────────────────────────────── */
 
 .hero-parallax {
   will-change: transform;
-}
-
-/* ── Section reveal ──────────────────────────────────────────── */
-
-.reveal-section {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.reveal-section.is-visible {
-  opacity: 1;
-  transform: none;
-}
-
-/* Execution step zigzag */
-.reveal-step {
-  opacity: 0;
-  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.reveal-step.is-visible {
-  opacity: 1;
-  transform: none;
 }
 
 /* ── Favori burst ────────────────────────────────────────────── */
@@ -107,12 +72,6 @@
   .hero-parallax {
     transform: none !important;
     will-change: auto;
-  }
-  .reveal-section,
-  .reveal-step {
-    opacity: 1;
-    transform: none;
-    transition: none;
   }
   .fav-burst.is-bursting svg,
   .fav-burst.is-bursting::after,

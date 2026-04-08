@@ -242,6 +242,52 @@ body:has(.anatomy-page) nav {
   touch-action: manipulation;
 }
 
+/* ── Tap feedback (global) ──────────────────────────────────── */
+
+.tap-feedback {
+  transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.tap-feedback:active {
+  transform: scale(0.95);
+}
+
+/* ── Reveal section (global) ────────────────────────────────── */
+
+.reveal-section {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-section.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.reveal-step {
+  opacity: 0;
+  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-step.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-section,
+  .reveal-step {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .tap-feedback:active {
+    transform: none;
+  }
+}
+
 .page {
   display: flex;
   flex-direction: column;
