@@ -83,7 +83,7 @@ export default function ExerciseAnatomyThumb({
         href={href}
         className="exo-anatomy-thumb"
         aria-label={t("exerciseAnatomy.musclesWorked")}
-        style={{ width: "100%", height: 280, position: "relative", display: "block" }}
+        style={{ width: "100%", height: 320, position: "relative", display: "block" }}
       >
         <img
           src="/images/anatomy/mini-mannequin.webp"
@@ -94,15 +94,25 @@ export default function ExerciseAnatomyThumb({
             width: "100%",
             height: "100%",
             objectFit: "contain",
-            objectPosition: "center bottom",
+            objectPosition: "center 10%",
             pointerEvents: "none",
           }}
           loading="lazy"
         />
-        <div className="exo-anatomy-thumb-hint">
-          {t("exerciseAnatomy.tapToExplore")}
-        </div>
       </Link>
+      <div
+        style={{
+          marginTop: 8,
+          textAlign: "center",
+          fontSize: 11,
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+          opacity: 0.4,
+          color: "white",
+        }}
+      >
+        {t("exerciseAnatomy.tapToExplore")}
+      </div>
     </div>
   );
 }
