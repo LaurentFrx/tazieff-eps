@@ -2411,6 +2411,85 @@ export function ExerciseLiveDetail({
     pillSearch.themes,
   );
 
+  // --- Sticky header on scroll past hero ---
+  const heroContainerRef = useRef<HTMLDivElement | null>(null);
+  const [showStickyHeader, setShowStickyHeader] = useState(false);
+  useEffect(() => {
+    const el = heroContainerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowStickyHeader(!entry.isIntersecting),
+      { threshold: 0 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // --- Collapsible sections ---
+  const [conseilsOpen, setConseilsOpen] = useState(false);
+  const [securiteOpen, setSecuriteOpen] = useState(false);
+
+  // --- Parse markdown into structured sections & filter dosage ---
+  const parsedSections = useMemo(() => {
+    const raw = merged.content;
+    const lines = raw.split('\n');
+    type Section = { heading: string; body: string };
+    const sections: Section[] = [];
+    let currentHeading = '';
+    let currentBody: string[] = [];
+
+    for (const line of lines) {
+      const headingMatch = line.match(/^##\s+(.+)/);
+      if (headingMatch) {
+        if (currentHeading || currentBody.length > 0) {
+          sections.push({ heading: currentHeading, body: currentBody.join('\n').trim() });
+        }
+        currentHeading = headingMatch[1].trim();
+        currentBody = [];
+      } else {
+        currentBody.push(line);
+      }
+    }
+    if (currentHeading || currentBody.length > 0) {
+      sections.push({ heading: currentHeading, body: currentBody.join('\n').trim() });
+    }
+
+    const find = (pattern: RegExp) => sections.find(s => pattern.test(s.heading));
+    return {
+      resume: find(/^r[eé]sum[eé]/i),
+      execution: find(/^ex[eé]cution/i),
+      respiration: find(/^respiration/i),
+      conseils: find(/^conseils?/i),
+      securite: find(/^s[eé]curit[eé]/i),
+      erreurs: find(/^erreurs?/i),
+      all: sections,
+    };
+  }, [merged.content]);
+
+  // Content sans section Dosage pour le rendu override
+  const contentWithoutDosage = useMemo(() => {
+    const lines = merged.content.split('\n');
+    const result: string[] = [];
+    let skipDosage = false;
+    for (const line of lines) {
+      if (/^##\s+[Dd]osage/.test(line)) {
+        skipDosage = true;
+        continue;
+      }
+      if (skipDosage && /^##\s/.test(line)) {
+        skipDosage = false;
+      }
+      if (!skipDosage) {
+        result.push(line);
+      }
+    }
+    return result.join('\n');
+  }, [merged.content]);
+
+  // Session badge label (ex: "S5 Fonctionnel")
+  const sessionMatch = slug.match(/^s(\d+)/i);
+  const sessionLabel = sessionMatch ? `S${sessionMatch[1]}` : null;
+
   return (
     <>
       <ExerciseJsonLd frontmatter={merged.frontmatter} content={merged.content} locale={locale} />
@@ -2419,418 +2498,363 @@ export function ExerciseLiveDetail({
           display: none;
         }
       `}</style>
-      {/* Container hero avec boutons flottants et titre overlay */}
+
+      {/* ─── STICKY HEADER (visible au scroll, après le hero) ─── */}
+      <div
+        className={`fixed top-0 left-0 right-0 z-[70] transition-transform duration-300 ${showStickyHeader ? 'translate-y-0' : '-translate-y-full'}`}
+        style={{ background: 'rgba(4,4,10,0.92)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
+      >
+        <div className="flex items-center gap-3 px-4 py-3 max-w-3xl mx-auto">
+          <Link
+            href="/exercices"
+            aria-label={t("exerciseDetail.backLabel")}
+            className="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 text-white shrink-0"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+          </Link>
+          <h2 className="text-sm font-semibold text-white truncate" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>{displayTitle}</h2>
+        </div>
+      </div>
+
+      {/* ─── 1. HERO MEDIA ─── */}
       {hero ? (
-        <div className="relative rounded-2xl overflow-hidden">
-          {/* Boutons flottants en haut */}
+        <div ref={heroContainerRef} className="relative -mx-4 sm:-mx-6 md:mx-0 md:rounded-2xl overflow-hidden">
+          {/* Boutons flottants */}
           <div className="absolute top-4 left-4 right-4 flex justify-between z-50">
-            {/* Bouton retour */}
+            {/* Retour */}
             <Link
               href="/exercices"
               aria-label={t("exerciseDetail.backLabel")}
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm ring-1 ring-white/20 text-white hover:bg-black/40 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 rounded-full bg-black/40 backdrop-blur-md text-white text-sm font-medium hover:bg-black/50 transition-colors"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-5 h-5"
-                aria-hidden="true"
-              >
-                <path d="M19 12H5M12 19l-7-7 7-7" />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+              Exercices
             </Link>
 
-            {/* Bouton menu (long press pour mode prof) */}
-            <div className="relative">
+            {/* Favori + Menu */}
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm ring-1 ring-white/20 text-white font-bold tracking-widest hover:bg-black/40 transition-colors"
-                aria-label={t("exerciseDetail.menuLabel")}
-                onPointerDown={(event) => {
-                  if (event.ctrlKey || event.shiftKey) {
-                    event.preventDefault();
-                    cancelLongPress();
-                    openPinModal();
-                    return;
-                  }
-                  if (event.pointerType === "touch") {
-                    touchPointerActiveRef.current = true;
-                  } else {
-                    event.preventDefault();
-                  }
-                  startLongPress(event.clientX, event.clientY);
-                }}
-                onPointerMove={(event) => {
-                  cancelLongPressOnMove(event.clientX, event.clientY);
-                }}
-                onPointerUp={() => {
-                  cancelLongPress();
-                  touchPointerActiveRef.current = false;
-                }}
-                onPointerLeave={() => {
-                  cancelLongPress();
-                  touchPointerActiveRef.current = false;
-                }}
-                onPointerCancel={() => {
-                  cancelLongPress();
-                  touchPointerActiveRef.current = false;
-                }}
-                onMouseDown={(event) => {
-                  if (event.ctrlKey || event.shiftKey) {
-                    event.preventDefault();
-                    cancelLongPress();
-                    openPinModal();
-                    return;
-                  }
-                  event.preventDefault();
-                }}
-                onTouchStart={(event) => {
-                  if (touchPointerActiveRef.current) {
-                    return;
-                  }
-                  const touch = event.touches[0];
-                  if (!touch) {
-                    return;
-                  }
-                  startLongPress(touch.clientX, touch.clientY);
-                }}
-                onTouchMove={(event) => {
-                  if (touchPointerActiveRef.current) {
-                    return;
-                  }
-                  const touch = event.touches[0];
-                  if (!touch) {
-                    return;
-                  }
-                  cancelLongPressOnMove(touch.clientX, touch.clientY);
-                }}
-                onTouchEnd={() => {
-                  cancelLongPress();
-                  touchPointerActiveRef.current = false;
-                }}
-                onTouchCancel={() => {
-                  cancelLongPress();
-                  touchPointerActiveRef.current = false;
-                }}
-                onContextMenu={(event) => {
-                  event.preventDefault();
-                }}
-                onClick={(event) => {
-                  if (event.ctrlKey || event.shiftKey) {
-                    event.preventDefault();
-                    cancelLongPress();
-                    openPinModal();
-                  } else {
-                    event.stopPropagation();
-                    setMenuOpen(!menuOpen);
-                  }
-                }}
-                onKeyDown={(event) => {
-                  if (teacherUnlocked) {
-                    return;
-                  }
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    setMenuOpen(!menuOpen);
-                  }
-                }}
-                style={{ WebkitUserSelect: "none", WebkitTouchCallout: "none" }}
+                onClick={() => toggleFavorite(merged.frontmatter.slug)}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-black/50 transition-colors"
+                aria-label={getFavoritesSnapshot().includes(merged.frontmatter.slug) ? t("favorites.remove") : t("favorites.add")}
               >
-                ···
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={getFavoritesSnapshot().includes(merged.frontmatter.slug) ? '#FF8C00' : 'none'} stroke={getFavoritesSnapshot().includes(merged.frontmatter.slug) ? '#FF8C00' : 'currentColor'} strokeWidth="2" className="w-5 h-5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
               </button>
-
-              {/* Menu contextuel */}
-              {menuOpen && (
-                <div className="absolute top-12 right-0 min-w-48 rounded-xl border border-white/10 bg-gray-900/95 backdrop-blur-md p-2 shadow-xl z-[60]">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      toggleFavorite(merged.frontmatter.slug);
-                      setMenuOpen(false);
-                    }}
-                    className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors"
-                  >
-                    {getFavoritesSnapshot().includes(merged.frontmatter.slug)
-                      ? t("favorites.remove")
-                      : t("favorites.add")}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const fm = merged.frontmatter;
-                      if (sessionDraft.isInDraft(fm.slug)) {
-                        sessionDraft.removeItem(fm.slug);
-                      } else {
-                        sessionDraft.addItem({ slug: fm.slug, title: fm.title, muscles: fm.muscles });
-                      }
-                      setMenuOpen(false);
-                    }}
-                    className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors"
-                  >
-                    {sessionDraft.isInDraft(merged.frontmatter.slug)
-                      ? `✓ ${t("exerciseDetail.inSession")}`
-                      : `＋ ${t("exerciseDetail.addToSession")}`}
-                  </button>
-
-                  {/* Séparateur */}
-                  <div className="h-px bg-white/10 my-1" />
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (teacherUnlocked) {
-                        openOverrideEditor();
-                      } else {
-                        openPinModal();
-                      }
-                      setMenuOpen(false);
-                    }}
-                    className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors"
-                  >
-                    {t("exerciseDetail.teacherMode")}
-                  </button>
-                </div>
-              )}
+              <div className="relative">
+                <button
+                  type="button"
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white font-bold tracking-widest hover:bg-black/50 transition-colors"
+                  aria-label={t("exerciseDetail.menuLabel")}
+                  onPointerDown={(event) => {
+                    if (event.ctrlKey || event.shiftKey) {
+                      event.preventDefault();
+                      cancelLongPress();
+                      openPinModal();
+                      return;
+                    }
+                    if (event.pointerType === "touch") {
+                      touchPointerActiveRef.current = true;
+                    } else {
+                      event.preventDefault();
+                    }
+                    startLongPress(event.clientX, event.clientY);
+                  }}
+                  onPointerMove={(event) => cancelLongPressOnMove(event.clientX, event.clientY)}
+                  onPointerUp={() => { cancelLongPress(); touchPointerActiveRef.current = false; }}
+                  onPointerLeave={() => { cancelLongPress(); touchPointerActiveRef.current = false; }}
+                  onPointerCancel={() => { cancelLongPress(); touchPointerActiveRef.current = false; }}
+                  onMouseDown={(event) => { if (event.ctrlKey || event.shiftKey) { event.preventDefault(); cancelLongPress(); openPinModal(); return; } event.preventDefault(); }}
+                  onTouchStart={(event) => { if (touchPointerActiveRef.current) return; const touch = event.touches[0]; if (!touch) return; startLongPress(touch.clientX, touch.clientY); }}
+                  onTouchMove={(event) => { if (touchPointerActiveRef.current) return; const touch = event.touches[0]; if (!touch) return; cancelLongPressOnMove(touch.clientX, touch.clientY); }}
+                  onTouchEnd={() => { cancelLongPress(); touchPointerActiveRef.current = false; }}
+                  onTouchCancel={() => { cancelLongPress(); touchPointerActiveRef.current = false; }}
+                  onContextMenu={(event) => event.preventDefault()}
+                  onClick={(event) => { if (event.ctrlKey || event.shiftKey) { event.preventDefault(); cancelLongPress(); openPinModal(); } else { event.stopPropagation(); setMenuOpen(!menuOpen); } }}
+                  onKeyDown={(event) => { if (teacherUnlocked) return; if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setMenuOpen(!menuOpen); } }}
+                  style={{ WebkitUserSelect: "none", WebkitTouchCallout: "none" }}
+                >
+                  ···
+                </button>
+                {menuOpen && (
+                  <div className="absolute top-12 right-0 min-w-48 rounded-xl border border-white/10 bg-gray-900/95 backdrop-blur-md p-2 shadow-xl z-[60]">
+                    <button type="button" onClick={() => { toggleFavorite(merged.frontmatter.slug); setMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors">
+                      {getFavoritesSnapshot().includes(merged.frontmatter.slug) ? t("favorites.remove") : t("favorites.add")}
+                    </button>
+                    <button type="button" onClick={() => { const fm = merged.frontmatter; if (sessionDraft.isInDraft(fm.slug)) { sessionDraft.removeItem(fm.slug); } else { sessionDraft.addItem({ slug: fm.slug, title: fm.title, muscles: fm.muscles }); } setMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors">
+                      {sessionDraft.isInDraft(merged.frontmatter.slug) ? `✓ ${t("exerciseDetail.inSession")}` : `＋ ${t("exerciseDetail.addToSession")}`}
+                    </button>
+                    <div className="h-px bg-white/10 my-1" />
+                    <button type="button" onClick={() => { if (teacherUnlocked) { openOverrideEditor(); } else { openPinModal(); } setMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors">
+                      {t("exerciseDetail.teacherMode")}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Hero media pleine largeur */}
           {hero.type === "video" ? (
-            <HeroMedia
-              type="video"
-              src={hero.src}
-              alt={hero.alt}
-              imageFallback={hero.imageFallback}
-              rounded={false}
-            />
+            <HeroMedia type="video" src={hero.src} alt={hero.alt} imageFallback={hero.imageFallback} rounded={false} />
           ) : (
-            <HeroMedia
-              type="image"
-              src={hero.src}
-              alt={hero.alt}
-              width={hero.width}
-              height={hero.height}
-              priority
-              rounded={false}
-            />
+            <HeroMedia type="image" src={hero.src} alt={hero.alt} width={hero.width} height={hero.height} priority rounded={false} />
           )}
 
-          {/* Gradient + titre en overlay au bas */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent px-4 py-6 z-10">
-            <h1 className="text-white font-bold text-xl leading-tight">
+          {/* Gradient vers fond #04040A + titre overlay */}
+          <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-5 pt-20" style={{ background: 'linear-gradient(to top, #04040A 0%, rgba(4,4,10,0.7) 50%, transparent 100%)' }}>
+            <h1 className="text-white text-3xl md:text-4xl leading-none tracking-wide" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
               {displayTitle}
             </h1>
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              {sessionLabel && (
+                <span className="inline-flex items-center rounded-full bg-white/10 backdrop-blur-sm px-2.5 py-0.5 text-[11px] font-semibold text-white/80 uppercase tracking-wider" style={{ fontFamily: 'var(--font-jetbrains), monospace' }}>
+                  {sessionLabel}
+                </span>
+              )}
+              <DifficultyPill level={difficulty} />
+            </div>
           </div>
         </div>
       ) : null}
 
-      {/* Infos rapides — badges & metadata + anatomy thumb */}
-      <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-4 flex gap-4">
-        <div className="flex-1 flex flex-col gap-3 min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <DifficultyPill level={difficulty} />
+      {/* ─── 2. MUSCLES + EQUIPEMENT ─── */}
+      <div className="flex flex-col gap-3 mt-1">
+        {/* Muscles */}
+        {merged.frontmatter.muscles.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {merged.frontmatter.muscles.map((muscle, i) => {
+              const group = getMuscleGroup(muscle);
+              const translated = translateTerms([muscle], "muscles", lang)[0];
+              const isPrimary = i === 0;
+              if (!group) {
+                return (
+                  <span key={muscle} className={`inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium ${isPrimary ? 'bg-[#FF8C00] text-white' : 'bg-transparent border border-[#FF8C00]/40 text-[#FF8C00]'}`}>
+                    {translated}
+                  </span>
+                );
+              }
+              return (
+                <Link key={muscle} href={`/exercices?muscle=${group}`} title={t("exerciseDetail.filterByMuscle")} className={`inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${isPrimary ? 'bg-[#FF8C00] text-white hover:bg-[#FF8C00]/90' : 'bg-transparent border border-[#FF8C00]/40 text-[#FF8C00] hover:bg-[#FF8C00]/10'}`}>
+                  {translated}
+                </Link>
+              );
+            })}
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {tagPills.map((pill, index) => (
-              <span
-                key={`${pill.label}-${index}`}
-                className="inline-flex items-center rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400 px-3 py-1 text-xs font-medium"
-              >
-                {translateTerms([pill.label], "tags", lang)[0]}
+        )}
+        {/* Equipement */}
+        {merged.frontmatter.equipment && merged.frontmatter.equipment.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {translateTerms(merged.frontmatter.equipment, "equipment", lang).map((eq) => (
+              <span key={eq} className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3 opacity-50"><rect x="2" y="10" width="20" height="4" rx="1" /><line x1="6" y1="7" x2="6" y2="17" /><line x1="18" y1="7" x2="18" y2="17" /></svg>
+                {eq}
               </span>
             ))}
           </div>
-          {merged.frontmatter.equipment && merged.frontmatter.equipment.length > 0 ? (
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              {t("exerciseDetail.equipment")}: {translateTerms(merged.frontmatter.equipment, "equipment", lang).join(", ")}
-            </p>
-          ) : (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("exerciseDetail.noEquipment")}</p>
-          )}
-          {merged.frontmatter.themeCompatibility.length > 0 && merged.frontmatter.themeCompatibility.length < 3 && (
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            {t("exerciseDetail.compatibleThemes")}: {merged.frontmatter.themeCompatibility.map((v) => t(`filters.themeName.${v}`)).join(", ")}
-          </p>
-          )}
-        </div>
-        <ExerciseAnatomyThumb
-          muscles={merged.frontmatter.muscles}
-          translatedMuscles={translateTerms(merged.frontmatter.muscles, "muscles", lang)}
-          slug={slug}
-        />
+        )}
       </div>
 
-      {/* Quick Info dosage — visible sans scroll, optimisé salle */}
+      {/* ─── 3. DOSAGE RECOMMANDE ─── */}
       <ExerciseQuickInfo
         content={merged.content}
         securite={merged.frontmatter.consignes_securite ?? ''}
       />
 
-      {/* Muscles cliquables → filtre exercices par groupe musculaire */}
+      {/* ─── 4. MANNEQUIN ANATOMIQUE ─── */}
       {merged.frontmatter.muscles.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {merged.frontmatter.muscles.map((muscle, i) => {
-            const group = getMuscleGroup(muscle);
-            const translated = translateTerms([muscle], "muscles", lang)[0];
-            if (!group) {
-              return (
-                <span
-                  key={muscle}
-                  className="inline-flex items-center rounded-full bg-orange-500/15 text-orange-400 px-3 py-1.5 text-xs font-medium"
-                >
-                  {translated}
-                </span>
-              );
-            }
-            return (
-              <Link
-                key={muscle}
-                href={`/exercices?muscle=${group}`}
-                className="inline-flex items-center rounded-full bg-cyan-500/15 text-cyan-400 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-cyan-500/25"
-                title={t("exerciseDetail.filterByMuscle")}
-              >
-                {translated}
-              </Link>
-            );
-          })}
+        <div className="flex justify-center">
+          <div className="w-full max-w-[200px]">
+            <ExerciseAnatomyThumb
+              muscles={merged.frontmatter.muscles}
+              translatedMuscles={translateTerms(merged.frontmatter.muscles, "muscles", lang)}
+              slug={slug}
+            />
+          </div>
         </div>
       )}
 
-      {teacherUnlocked ? (
-        <div className="teacher-panel">
-          <p className="eyebrow">{t("exerciseEditor.teacherPanel")}</p>
-          <div className="modal-actions">
-            <button
-              type="button"
-              className="primary-button primary-button--wide"
-              onClick={openOverrideEditor}
-            >
-              {t("exerciseDetail.editExercise")}
-            </button>
-          </div>
-          {submitStatus ? (
-            <p className="text-xs text-[color:var(--muted)]">{submitStatus}</p>
-          ) : null}
-        </div>
-      ) : null}
-
-      <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-5 md:p-6 flex flex-col gap-5">
-        {overrideDocView ? (
-          overrideDocView.sections.map((section) => (
-            <section key={section.id} className="stack-md">
+      {/* ─── 5-9. CONTENU STRUCTURÉ ─── */}
+      {overrideDocView ? (
+        /* Override teacher: render structured sections, skip Dosage heading */
+        <div className="flex flex-col gap-8">
+          {overrideDocView.sections
+            .filter((section) => !/^dosage$/i.test(section.title?.trim() ?? ''))
+            .map((section) => (
+            <section key={section.id}>
               {section.title ? (
-                <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{section.title}</h2>
+                <h2 className="text-xl uppercase tracking-wider text-white mb-4" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>{section.title}</h2>
               ) : null}
-              <div className="stack-md">
+              <div className="flex flex-col gap-3">
                 {section.blocks.map((block, blockIndex) => {
                   if (block.type === "markdown") {
-                    return (
-                      <MarkdownRenderer
-                        key={`markdown-${section.id}-${blockIndex}`}
-                      >
-                        {block.content}
-                      </MarkdownRenderer>
-                    );
+                    return <MarkdownRenderer key={`markdown-${section.id}-${blockIndex}`}>{block.content}</MarkdownRenderer>;
                   }
                   if (block.type === "bullets") {
                     return (
-                      <ul
-                        key={`bullets-${section.id}-${blockIndex}`}
-                        className="list-disc pl-6 space-y-1"
-                      >
-                        {block.items.map((item, itemIndex) => (
-                          <li key={`item-${section.id}-${blockIndex}-${itemIndex}`}>
-                            {item}
-                          </li>
-                        ))}
+                      <ul key={`bullets-${section.id}-${blockIndex}`} className="list-disc pl-6 space-y-1">
+                        {block.items.map((item, itemIndex) => (<li key={`item-${section.id}-${blockIndex}-${itemIndex}`}>{item}</li>))}
                       </ul>
                     );
                   }
                   return (
-                    <div
-                      key={`media-${section.id}-${blockIndex}`}
-                      className="stack-sm"
-                    >
+                    <div key={`media-${section.id}-${blockIndex}`} className="flex flex-col gap-2">
                       {block.mediaType === "image" ? (() => {
                         const directUrl = block.url?.trim();
-                        const resolvedUrl =
-                          directUrl ||
-                          (block.mediaId
-                            ? mediaUrlMap[block.mediaId] ??
-                              mediaUrlCache.get(block.mediaId)
-                            : undefined);
+                        const resolvedUrl = directUrl || (block.mediaId ? mediaUrlMap[block.mediaId] ?? mediaUrlCache.get(block.mediaId) : undefined);
                         if (resolvedUrl) {
                           return (
                             <>
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={resolvedUrl}
-                                alt={block.caption || `${displayTitle} — ${(merged.frontmatter.muscles ?? []).slice(0, 3).join(", ")}`}
-                                className="w-full h-auto rounded-2xl ring-1 ring-white/10"
-                                loading="lazy"
-                                decoding="async"
-                              />
+                              <img src={resolvedUrl} alt={block.caption || `${displayTitle} — ${(merged.frontmatter.muscles ?? []).slice(0, 3).join(", ")}`} className="w-full h-auto rounded-2xl ring-1 ring-white/10" loading="lazy" decoding="async" />
                             </>
                           );
                         }
-                        return (
-                          <p className="text-xs text-[color:var(--muted)]">
-                            {t("exerciseEditor.imagePending")}
-                          </p>
-                        );
+                        return <p className="text-xs text-[color:var(--muted)]">{t("exerciseEditor.imagePending")}</p>;
                       })() : null}
-                      {block.mediaType === "video" ? (
-                        block.url ? (
-                          <video
-                            className="w-full rounded-2xl ring-1 ring-white/10"
-                            controls
-                            src={block.url}
-                          />
-                        ) : (
-                          <p className="text-xs text-[color:var(--muted)]">
-                            {t("exerciseEditor.urlMissing")}
-                          </p>
-                        )
-                      ) : null}
-                      {block.mediaType === "link" ? (
-                        block.url ? (
-                          <a
-                            className="text-sm underline"
-                            href={block.url}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            {block.caption || block.url}
-                          </a>
-                        ) : (
-                          <p className="text-xs text-[color:var(--muted)]">
-                            {t("exerciseEditor.urlMissing")}
-                          </p>
-                        )
-                      ) : null}
-                      {block.caption && block.mediaType !== "link" ? (
-                        <p className="text-xs text-[color:var(--muted)]">
-                          {block.caption}
-                        </p>
-                      ) : null}
+                      {block.mediaType === "video" ? (block.url ? <video className="w-full rounded-2xl ring-1 ring-white/10" controls src={block.url} /> : <p className="text-xs text-[color:var(--muted)]">{t("exerciseEditor.urlMissing")}</p>) : null}
+                      {block.mediaType === "link" ? (block.url ? <a className="text-sm underline" href={block.url} target="_blank" rel="noreferrer">{block.caption || block.url}</a> : <p className="text-xs text-[color:var(--muted)]">{t("exerciseEditor.urlMissing")}</p>) : null}
+                      {block.caption && block.mediaType !== "link" ? <p className="text-xs text-[color:var(--muted)]">{block.caption}</p> : null}
                     </div>
                   );
                 })}
               </div>
             </section>
-          ))
-        ) : (
-          <MarkdownRenderer>
-            {merged.content}
-          </MarkdownRenderer>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        /* MDX content: render structured sections individually */
+        <div className="flex flex-col gap-0">
+          {/* 5. RESUME */}
+          {parsedSections.resume && parsedSections.resume.body && (
+            <div className="border-l-2 border-[#FF8C00] pl-4 py-1 mb-8">
+              <p className="text-[15px] text-white/90 leading-relaxed" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>
+                {parsedSections.resume.body}
+              </p>
+            </div>
+          )}
+
+          {/* 6. EXECUTION */}
+          {parsedSections.execution && parsedSections.execution.body && (
+            <div className="mb-8">
+              <h2 className="text-xl uppercase tracking-wider text-white mb-4" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
+                {parsedSections.execution.heading}
+              </h2>
+              <div className="flex flex-col gap-3">
+                {parsedSections.execution.body.split('\n').filter(l => l.trim().startsWith('-')).map((line, i) => {
+                  const text = line.replace(/^-\s*/, '').trim();
+                  return (
+                    <div key={i} className="flex gap-3 items-start">
+                      <span className="text-2xl leading-none text-[#FF8C00] shrink-0 w-8 text-right" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>{i + 1}</span>
+                      <p className="text-sm text-white/80 leading-relaxed pt-0.5" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>{text}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Séparateur */}
+          <div className="h-px bg-white/5 mb-8" />
+
+          {/* 7. RESPIRATION */}
+          {parsedSections.respiration && parsedSections.respiration.body && (
+            <div className="mb-8">
+              <h2 className="text-xl uppercase tracking-wider text-white mb-3" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
+                {parsedSections.respiration.heading}
+              </h2>
+              <p className="text-sm text-white/70 leading-relaxed" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>
+                {parsedSections.respiration.body}
+              </p>
+            </div>
+          )}
+
+          {/* Séparateur */}
+          {(parsedSections.conseils || parsedSections.securite) && <div className="h-px bg-white/5 mb-4" />}
+
+          {/* 8. CONSEILS (collapsible) */}
+          {parsedSections.conseils && parsedSections.conseils.body && (
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={() => setConseilsOpen(!conseilsOpen)}
+                className="flex items-center justify-between w-full py-3 text-left"
+              >
+                <h2 className="text-xl uppercase tracking-wider text-white" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
+                  {parsedSections.conseils.heading}
+                </h2>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`w-5 h-5 text-white/40 transition-transform duration-200 ${conseilsOpen ? 'rotate-180' : ''}`}><path d="M6 9l6 6 6-6" /></svg>
+              </button>
+              {conseilsOpen && (
+                <div className="pb-4">
+                  <ul className="flex flex-col gap-2 pl-1">
+                    {parsedSections.conseils.body.split('\n').filter(l => l.trim().startsWith('-')).map((line, i) => (
+                      <li key={i} className="flex gap-2 items-start text-sm text-white/70 leading-relaxed">
+                        <span className="text-[#FF8C00] mt-1 shrink-0">•</span>
+                        <span>{line.replace(/^-\s*/, '').trim()}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 9. SECURITE (collapsible, accent jaune) */}
+          {parsedSections.securite && parsedSections.securite.body && (
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={() => setSecuriteOpen(!securiteOpen)}
+                className="flex items-center justify-between w-full py-3 text-left"
+              >
+                <h2 className="flex items-center gap-2 text-xl uppercase tracking-wider text-[#FBBF24]" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                  {parsedSections.securite.heading}
+                </h2>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`w-5 h-5 text-[#FBBF24]/40 transition-transform duration-200 ${securiteOpen ? 'rotate-180' : ''}`}><path d="M6 9l6 6 6-6" /></svg>
+              </button>
+              {securiteOpen && (
+                <div className="rounded-xl bg-[#FBBF24]/5 border border-[#FBBF24]/15 px-4 py-3 mb-2">
+                  <p className="text-sm text-[#FBBF24]/80 leading-relaxed">
+                    {parsedSections.securite.body}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Erreurs courantes (si présent, dans le flux) */}
+          {parsedSections.erreurs && parsedSections.erreurs.body && (
+            <div className="mb-8">
+              <h2 className="text-xl uppercase tracking-wider text-white mb-3" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
+                {parsedSections.erreurs.heading}
+              </h2>
+              <ul className="flex flex-col gap-2 pl-1">
+                {parsedSections.erreurs.body.split('\n').filter(l => l.trim().startsWith('-')).map((line, i) => (
+                  <li key={i} className="flex gap-2 items-start text-sm text-white/70 leading-relaxed">
+                    <span className="text-red-400 mt-1 shrink-0">•</span>
+                    <span>{line.replace(/^-\s*/, '').trim()}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ─── PANEL ENSEIGNANT ─── */}
+      {teacherUnlocked ? (
+        <div className="teacher-panel">
+          <p className="eyebrow">{t("exerciseEditor.teacherPanel")}</p>
+          <div className="modal-actions">
+            <button type="button" className="primary-button primary-button--wide" onClick={openOverrideEditor}>
+              {t("exerciseDetail.editExercise")}
+            </button>
+          </div>
+          {submitStatus ? <p className="text-xs text-[color:var(--muted)]">{submitStatus}</p> : null}
+        </div>
+      ) : null}
 
       {pinModalOpen ? (
         <div className="modal-overlay" role="dialog" aria-modal="true">
