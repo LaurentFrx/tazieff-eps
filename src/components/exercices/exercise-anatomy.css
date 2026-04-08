@@ -53,13 +53,10 @@
 }
 
 .exo-anatomy-thumb-labels {
-  position: absolute;
-  top: 6px;
-  left: 6px;
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  pointer-events: none;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
 }
 
 .exo-anatomy-thumb-label {

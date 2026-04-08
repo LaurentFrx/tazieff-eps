@@ -67,26 +67,7 @@ export default function ExerciseAnatomyThumb({
   const href = `/apprendre/anatomie?muscles=${anatomyKeys.join(",")}&from=exercice&slug=${slug}`;
 
   return (
-    <Link
-      href={href}
-      className="exo-anatomy-thumb"
-      aria-label={t("exerciseAnatomy.musclesWorked")}
-      style={{ width: "100%", height: 280, position: "relative", display: "block" }}
-    >
-      <img
-        src="/images/anatomy/mini-mannequin.webp"
-        alt={t("exerciseAnatomy.musclesWorked")}
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: "contain",
-          objectPosition: "center bottom",
-          pointerEvents: "none",
-        }}
-        loading="lazy"
-      />
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, width: "100%" }}>
       <div className="exo-anatomy-thumb-labels">
         {groupKeys.map((key) => (
           <span key={key} className="exo-anatomy-thumb-label">
@@ -98,9 +79,30 @@ export default function ExerciseAnatomyThumb({
           </span>
         ))}
       </div>
-      <div className="exo-anatomy-thumb-hint">
-        {t("exerciseAnatomy.tapToExplore")}
-      </div>
-    </Link>
+      <Link
+        href={href}
+        className="exo-anatomy-thumb"
+        aria-label={t("exerciseAnatomy.musclesWorked")}
+        style={{ width: "100%", height: 280, position: "relative", display: "block" }}
+      >
+        <img
+          src="/images/anatomy/mini-mannequin.webp"
+          alt={t("exerciseAnatomy.musclesWorked")}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "contain",
+            objectPosition: "center bottom",
+            pointerEvents: "none",
+          }}
+          loading="lazy"
+        />
+        <div className="exo-anatomy-thumb-hint">
+          {t("exerciseAnatomy.tapToExplore")}
+        </div>
+      </Link>
+    </div>
   );
 }
