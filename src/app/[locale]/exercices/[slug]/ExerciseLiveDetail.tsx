@@ -2679,8 +2679,8 @@ export function ExerciseLiveDetail({
 
       {/* ─── 5. MANNEQUIN ANATOMIQUE ─── */}
       {merged.frontmatter.muscles.length > 0 && (
-        <div style={{ display: "flex", justifyContent: "center", padding: "16px 0" }}>
-          <div style={{ width: "100%", maxWidth: 240 }}>
+        <div style={{ display: "flex", justifyContent: "center", padding: "16px 0", background: "green" }}>
+          <div style={{ width: 240, background: "blue" }}>
             <ExerciseAnatomyThumb
               muscles={merged.frontmatter.muscles}
               translatedMuscles={translateTerms(merged.frontmatter.muscles, "muscles", lang)}
