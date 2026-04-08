@@ -2815,7 +2815,7 @@ export function ExerciseLiveDetail({
                     .filter(l => !isDosageLine(l));
                   return steps.map((line, i) => {
                     const text = line.replace(/^-\s*/, '').trim();
-                    const translateDir = i % 2 === 0 ? "translateX(-20px)" : "translateX(20px)";
+                    const translateDir = i % 2 === 0 ? "translateX(-40px)" : "translateX(40px)";
                     return (
                       <div
                         key={i}
@@ -2823,7 +2823,7 @@ export function ExerciseLiveDetail({
                         style={{
                           opacity: executionVisible ? 1 : 0,
                           transform: executionVisible ? "none" : translateDir,
-                          transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)",
+                          transition: "opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1)",
                           transitionDelay: `${i * 80}ms`,
                         }}
                       >

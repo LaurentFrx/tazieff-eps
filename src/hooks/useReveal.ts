@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const SPRING = "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)";
+const SPRING = "opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1)";
+const HIDDEN = "translateY(60px) scale(0.97)";
 
 /**
  * Observe-once reveal hook.
@@ -24,7 +25,7 @@ export function useReveal(delay = 0): [
 
     // Apply hidden state immediately via DOM to avoid FOUC
     el.style.opacity = "0";
-    el.style.transform = "translateY(24px)";
+    el.style.transform = HIDDEN;
     el.style.transition = SPRING;
     if (delay > 0) el.style.transitionDelay = `${delay}ms`;
 
@@ -40,7 +41,7 @@ export function useReveal(delay = 0): [
               observerRef.current?.disconnect();
             }
           },
-          { threshold: 0.1 },
+          { threshold: 0.05 },
         );
         observerRef.current.observe(el);
       });
@@ -63,7 +64,7 @@ export function useReveal(delay = 0): [
   // Style object for SSR initial render (hidden)
   const style: React.CSSProperties = visible
     ? { opacity: 1, transform: "none", transition: SPRING }
-    : { opacity: 0, transform: "translateY(24px)", transition: SPRING };
+    : { opacity: 0, transform: HIDDEN, transition: SPRING };
 
   return [ref, visible, style];
 }

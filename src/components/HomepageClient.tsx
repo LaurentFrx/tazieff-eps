@@ -187,8 +187,8 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
             style={{
               background: card.bg,
               opacity: gridVisible ? 1 : 0,
-              transform: gridVisible ? "none" : "translateY(24px)",
-              transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)",
+              transform: gridVisible ? "none" : "translateY(60px) scale(0.97)",
+              transition: "opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1)",
               transitionDelay: `${i * 80}ms`,
             }}
           >
@@ -207,8 +207,8 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
         <h2 className="text-base font-extrabold text-[color:var(--ink)] mb-3"
           style={{
             opacity: starterVisible ? 1 : 0,
-            transform: starterVisible ? "none" : "translateY(24px)",
-            transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)",
+            transform: starterVisible ? "none" : "translateY(60px) scale(0.97)",
+            transition: "opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1)",
           }}
         >
           {hasFavorites ? t("pages.home.favoritesTitle") : t("pages.home.startTitle")}
@@ -227,8 +227,8 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
                 className="tap-feedback flex-shrink-0 w-36 rounded-xl overflow-hidden border border-white/10 bg-white/5 shadow-sm snap-start"
                 style={{
                   opacity: starterVisible ? 1 : 0,
-                  transform: starterVisible ? "none" : "translateX(-20px)",
-                  transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)",
+                  transform: starterVisible ? "none" : "translateX(-40px) scale(0.97)",
+                  transition: "opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1)",
                   transitionDelay: `${i * 100}ms`,
                 }}
               >
@@ -256,8 +256,8 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
         <h2 className="text-base font-extrabold text-[color:var(--ink)] mb-3"
           style={{
             opacity: themesVisible ? 1 : 0,
-            transform: themesVisible ? "none" : "translateY(24px)",
-            transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)",
+            transform: themesVisible ? "none" : "translateY(60px) scale(0.97)",
+            transition: "opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1)",
           }}
         >
           {t("pages.home.themesTitle")}
@@ -275,7 +275,7 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
               style={{
                 background: btn.bg,
                 opacity: themesVisible ? 1 : 0,
-                transform: themesVisible ? "none" : "translateY(24px)",
+                transform: themesVisible ? "none" : "translateY(60px) scale(0.97)",
                 transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1), box-shadow 0.2s ease",
                 transitionDelay: `${i * 80}ms`,
               }}
@@ -294,8 +294,8 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
         <h2 className="text-base font-extrabold text-[color:var(--ink)] mb-3"
           style={{
             opacity: outilsVisible ? 1 : 0,
-            transform: outilsVisible ? "none" : "translateY(24px)",
-            transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)",
+            transform: outilsVisible ? "none" : "translateY(60px) scale(0.97)",
+            transition: "opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1)",
           }}
         >
           {t("pages.home.outilsTitle")}
@@ -312,8 +312,8 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
               className="tap-feedback rounded-xl p-3 flex flex-col items-center gap-1.5 text-center border border-white/10 bg-white/5"
               style={{
                 opacity: outilsVisible ? 1 : 0,
-                transform: outilsVisible ? "none" : "translateY(24px)",
-                transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)",
+                transform: outilsVisible ? "none" : "translateY(60px) scale(0.97)",
+                transition: "opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1)",
                 transitionDelay: `${i * 80}ms`,
               }}
             >
