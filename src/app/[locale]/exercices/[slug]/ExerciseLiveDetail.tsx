@@ -2495,11 +2495,21 @@ export function ExerciseLiveDetail({
     <>
       <ExerciseJsonLd frontmatter={merged.frontmatter} content={merged.content} locale={locale} />
       <style>{`
-        .app-shell > .app-header {
-          display: none;
+        .app-shell > .app-header,
+        header.fixed.z-40 {
+          display: none !important;
         }
         .page > nav[aria-label="breadcrumb"] {
           display: none;
+        }
+        .exo-detail-mannequin .exo-anatomy-thumb {
+          width: 100%;
+          height: 280px;
+        }
+        @media (min-width: 768px) {
+          .exo-detail-mannequin .exo-anatomy-thumb {
+            height: 320px;
+          }
         }
       `}</style>
 
@@ -2678,8 +2688,8 @@ export function ExerciseLiveDetail({
 
       {/* ─── 5. MANNEQUIN ANATOMIQUE ─── */}
       {merged.frontmatter.muscles.length > 0 && (
-        <div className="flex justify-center">
-          <div className="w-full min-w-[50%] max-w-[200px]">
+        <div className="exo-detail-mannequin flex justify-center">
+          <div className="w-full max-w-[220px]">
             <ExerciseAnatomyThumb
               muscles={merged.frontmatter.muscles}
               translatedMuscles={translateTerms(merged.frontmatter.muscles, "muscles", lang)}

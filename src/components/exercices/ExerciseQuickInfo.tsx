@@ -9,24 +9,20 @@ interface DosageData {
   note: string | null;
 }
 
-function parseDosage(content: string): DosageData | null {
+function extractSection(content: string, heading: RegExp): string {
   const lines = content.split('\n');
-  let inDosage = false;
-  let dosageText = '';
-
+  let inSection = false;
+  let text = '';
   for (const line of lines) {
-    if (/^##\s+dosage/i.test(line)) {
-      inDosage = true;
-      continue;
-    }
-    if (inDosage && /^##\s/.test(line)) break;
-    if (inDosage && line.trim()) {
-      dosageText += ' ' + line.trim();
-    }
+    if (heading.test(line)) { inSection = true; continue; }
+    if (inSection && /^##\s/.test(line)) break;
+    if (inSection && line.trim()) text += ' ' + line.trim();
   }
+  return text.trim();
+}
 
-  dosageText = dosageText.trim();
-  if (!dosageText) return null;
+function tryParseDosageText(dosageText: string): DosageData | null {
+  if (!dosageText || /contenu\s+[aà]\s+compl/i.test(dosageText)) return null;
 
   // Parse sets: "3-5 x ..."
   const setsMatch = dosageText.match(/^(\d[\d\-–]*)\s*[x×]/i);
@@ -60,6 +56,31 @@ function parseDosage(content: string): DosageData | null {
 
   if (!sets && !reps && !rest) return null;
   return { sets, reps, rest, note };
+}
+
+function parseDosage(content: string): DosageData | null {
+  // 1. Try ## Dosage section
+  const dosageText = extractSection(content, /^##\s+dosage/i);
+  const fromDosage = tryParseDosageText(dosageText);
+  if (fromDosage) return fromDosage;
+
+  // 2. Fallback: look for dosage pattern in ## Conseils (e.g. "Dosage indicatif : 2-4 x 3-5 reps")
+  const conseilsText = extractSection(content, /^##\s+conseils?/i);
+  const dosageLine = conseilsText.match(/dosage[^:]*:\s*(.+)/i);
+  if (dosageLine) {
+    const fromConseils = tryParseDosageText(dosageLine[1]);
+    if (fromConseils) return fromConseils;
+  }
+
+  // 3. Fallback: look for dosage lines in ## Exécution
+  const execText = extractSection(content, /^##\s+ex[eé]cution/i);
+  const execDosage = execText.match(/(\d[\d\-–]*\s*[x×]\s*.+)/i);
+  if (execDosage) {
+    const fromExec = tryParseDosageText(execDosage[1]);
+    if (fromExec) return fromExec;
+  }
+
+  return null;
 }
 
 interface ExerciseQuickInfoProps {
