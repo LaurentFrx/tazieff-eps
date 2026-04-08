@@ -12,28 +12,40 @@ import { useEffect, useRef, useState } from "react";
  */
 export function useReveal(delay = 0): [React.RefObject<HTMLElement | null>, boolean] {
   const ref = useRef<HTMLElement | null>(null);
+  const cleanupRef = useRef<(() => void) | null>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const raf = requestAnimationFrame(() => {
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            if (delay > 0) {
-              setTimeout(() => setVisible(true), delay);
-            } else {
-              setVisible(true);
+    // Double-RAF ensures the browser has painted the initial hidden state
+    // before IntersectionObserver fires for above-the-fold elements.
+    let cancelled = false;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (cancelled) return;
+        const observer = new IntersectionObserver(
+          ([entry]) => {
+            if (entry.isIntersecting) {
+              if (delay > 0) {
+                setTimeout(() => setVisible(true), delay);
+              } else {
+                setVisible(true);
+              }
+              observer.disconnect();
             }
-            observer.disconnect();
-          }
-        },
-        { threshold: 0.15 },
-      );
-      observer.observe(el);
+          },
+          { threshold: 0.15 },
+        );
+        observer.observe(el);
+        // Store for cleanup
+        cleanupRef.current = () => observer.disconnect();
+      });
     });
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelled = true;
+      cleanupRef.current?.();
+    };
   }, [delay]);
 
   return [ref, visible];
