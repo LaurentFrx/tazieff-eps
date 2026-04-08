@@ -114,7 +114,7 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
   const { favorites } = useFavorites();
 
   // --- Reveal hooks ---
-  const [flyerRef, flyerVisible] = useReveal(0.1);
+  const [flyerRef, flyerVisible] = useReveal();
   const [searchRef, searchVisible] = useReveal();
   const [gridRef, gridVisible] = useReveal();
   const [starterRef, starterVisible] = useReveal();
