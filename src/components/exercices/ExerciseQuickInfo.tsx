@@ -120,7 +120,7 @@ export function ExerciseQuickInfo({ content, securite }: ExerciseQuickInfoProps)
       {/* Context subtitle */}
       <div className="mt-2 text-xs italic text-white/30">
         Adapte selon ta méthode et ton objectif →{" "}
-        <LocaleLink href="/methodes" className="text-cyan-400 hover:text-cyan-300 transition-colors">
+        <LocaleLink href="/methodes" className="text-[#FF8C00] hover:text-[#FF8C00]/80 transition-colors">
           Méthodes
         </LocaleLink>
       </div>

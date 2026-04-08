@@ -2466,26 +2466,6 @@ export function ExerciseLiveDetail({
     };
   }, [merged.content]);
 
-  // Content sans section Dosage pour le rendu override
-  const contentWithoutDosage = useMemo(() => {
-    const lines = merged.content.split('\n');
-    const result: string[] = [];
-    let skipDosage = false;
-    for (const line of lines) {
-      if (/^##\s+[Dd]osage/.test(line)) {
-        skipDosage = true;
-        continue;
-      }
-      if (skipDosage && /^##\s/.test(line)) {
-        skipDosage = false;
-      }
-      if (!skipDosage) {
-        result.push(line);
-      }
-    }
-    return result.join('\n');
-  }, [merged.content]);
-
   // Session badge label (ex: "S5 Fonctionnel")
   const sessionMatch = slug.match(/^s(\d+)/i);
   const sessionLabel = sessionMatch ? `S${sessionMatch[1]}` : null;
@@ -2629,13 +2609,13 @@ export function ExerciseLiveDetail({
               const isPrimary = i === 0;
               if (!group) {
                 return (
-                  <span key={muscle} className={`inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium ${isPrimary ? 'bg-[#FF8C00] text-white' : 'bg-transparent border border-[#FF8C00]/40 text-[#FF8C00]'}`}>
+                  <span key={muscle} className={`inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium capitalize ${isPrimary ? 'bg-[#FF8C00] text-white' : 'bg-transparent border border-[#FF8C00]/40 text-[#FF8C00]'}`}>
                     {translated}
                   </span>
                 );
               }
               return (
-                <Link key={muscle} href={`/exercices?muscle=${group}`} title={t("exerciseDetail.filterByMuscle")} className={`inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${isPrimary ? 'bg-[#FF8C00] text-white hover:bg-[#FF8C00]/90' : 'bg-transparent border border-[#FF8C00]/40 text-[#FF8C00] hover:bg-[#FF8C00]/10'}`}>
+                <Link key={muscle} href={`/exercices?muscle=${group}`} title={t("exerciseDetail.filterByMuscle")} className={`inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors ${isPrimary ? 'bg-[#FF8C00] text-white hover:bg-[#FF8C00]/90' : 'bg-transparent border border-[#FF8C00]/40 text-[#FF8C00] hover:bg-[#FF8C00]/10'}`}>
                   {translated}
                 </Link>
               );
@@ -2646,7 +2626,7 @@ export function ExerciseLiveDetail({
         {merged.frontmatter.equipment && merged.frontmatter.equipment.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {translateTerms(merged.frontmatter.equipment, "equipment", lang).map((eq) => (
-              <span key={eq} className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70">
+              <span key={eq} className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 capitalize">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3 opacity-50"><rect x="2" y="10" width="20" height="4" rx="1" /><line x1="6" y1="7" x2="6" y2="17" /><line x1="18" y1="7" x2="18" y2="17" /></svg>
                 {eq}
               </span>
