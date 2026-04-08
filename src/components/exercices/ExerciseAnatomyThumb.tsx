@@ -81,7 +81,7 @@ export default function ExerciseAnatomyThumb({
       </div>
       <Link
         href={href}
-        className="exo-anatomy-thumb"
+        className="exo-anatomy-thumb tap-feedback"
         aria-label={t("exerciseAnatomy.musclesWorked")}
         style={{ width: "100%", height: 320, position: "relative", display: "block" }}
       >

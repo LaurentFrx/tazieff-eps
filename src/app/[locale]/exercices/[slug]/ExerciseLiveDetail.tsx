@@ -46,6 +46,8 @@ import type {
   LiveExerciseRow,
 } from "@/lib/live/types";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { useReveal } from "@/hooks/useReveal";
+import "./exercise-detail.css";
 
 type ExerciseLiveDetailProps = {
   slug: string;
@@ -2426,6 +2428,43 @@ export function ExerciseLiveDetail({
     return () => observer.disconnect();
   }, []);
 
+  // --- Parallax hero ---
+  const heroImgRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) return;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (y > 500 || !heroImgRef.current) return;
+      heroImgRef.current.style.transform = `translateY(${y * 0.3}px) scale(1.05)`;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // --- Section reveal hooks ---
+  const [musclesRef, musclesVisible] = useReveal();
+  const [dosageRef, dosageVisible] = useReveal();
+  const [timerRef, timerVisible] = useReveal();
+  const [mannequinRef, mannequinVisible] = useReveal();
+  const [resumeRef, resumeVisible] = useReveal();
+  const [executionRef, executionVisible] = useReveal();
+  const [respirationRef, respirationVisible] = useReveal();
+  const [conseilsRef, conseilsVisible] = useReveal();
+  const [securiteRef, securiteVisible] = useReveal();
+
+  // --- Favori burst ---
+  const [favBursting, setFavBursting] = useState(false);
+  const prevFavRef = useRef(getFavoritesSnapshot().includes(slug));
+  const handleToggleFav = useCallback(() => {
+    const wasFav = getFavoritesSnapshot().includes(merged.frontmatter.slug);
+    toggleFavorite(merged.frontmatter.slug);
+    if (wasFav === false) {
+      setFavBursting(true);
+      setTimeout(() => setFavBursting(false), 500);
+    }
+  }, [merged.frontmatter.slug]);
+
   // --- Collapsible sections ---
   const [conseilsOpen, setConseilsOpen] = useState(false);
   const [securiteOpen, setSecuriteOpen] = useState(false);
@@ -2527,8 +2566,8 @@ export function ExerciseLiveDetail({
           <h2 className="flex-1 text-sm font-semibold text-white truncate text-center" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>{displayTitle}</h2>
           <button
             type="button"
-            onClick={() => toggleFavorite(merged.frontmatter.slug)}
-            className="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 text-white shrink-0"
+            onClick={handleToggleFav}
+            className={`fav-burst tap-feedback flex items-center justify-center w-8 h-8 rounded-full bg-white/10 text-white shrink-0${favBursting ? ' is-bursting' : ''}`}
             aria-label={getFavoritesSnapshot().includes(merged.frontmatter.slug) ? t("favorites.remove") : t("favorites.add")}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={getFavoritesSnapshot().includes(merged.frontmatter.slug) ? '#FF8C00' : 'none'} stroke={getFavoritesSnapshot().includes(merged.frontmatter.slug) ? '#FF8C00' : 'currentColor'} strokeWidth="2" className="w-4 h-4"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
@@ -2545,7 +2584,7 @@ export function ExerciseLiveDetail({
             <Link
               href="/exercices"
               aria-label={t("exerciseDetail.backLabel")}
-              className="flex items-center gap-2 px-3 py-2 rounded-full bg-black/40 backdrop-blur-md text-white text-sm font-medium hover:bg-black/50 transition-colors"
+              className="tap-feedback flex items-center gap-2 px-3 py-2 rounded-full bg-black/40 backdrop-blur-md text-white text-sm font-medium hover:bg-black/50 transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
               Exercices
@@ -2555,8 +2594,8 @@ export function ExerciseLiveDetail({
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => toggleFavorite(merged.frontmatter.slug)}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-black/50 transition-colors"
+                onClick={handleToggleFav}
+                className={`fav-burst tap-feedback flex items-center justify-center w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-black/50 transition-colors${favBursting ? ' is-bursting' : ''}`}
                 aria-label={getFavoritesSnapshot().includes(merged.frontmatter.slug) ? t("favorites.remove") : t("favorites.add")}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={getFavoritesSnapshot().includes(merged.frontmatter.slug) ? '#FF8C00' : 'none'} stroke={getFavoritesSnapshot().includes(merged.frontmatter.slug) ? '#FF8C00' : 'currentColor'} strokeWidth="2" className="w-5 h-5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
@@ -2564,7 +2603,7 @@ export function ExerciseLiveDetail({
               <div className="relative">
                 <button
                   type="button"
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white font-bold tracking-widest hover:bg-black/50 transition-colors"
+                  className="tap-feedback flex items-center justify-center w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white font-bold tracking-widest hover:bg-black/50 transition-colors"
                   aria-label={t("exerciseDetail.menuLabel")}
                   onPointerDown={(event) => {
                     if (event.ctrlKey || event.shiftKey) {
@@ -2614,12 +2653,14 @@ export function ExerciseLiveDetail({
             </div>
           </div>
 
-          {/* Hero media pleine largeur */}
-          {hero.type === "video" ? (
-            <HeroMedia type="video" src={hero.src} alt={hero.alt} imageFallback={hero.imageFallback} rounded={false} />
-          ) : (
-            <HeroMedia type="image" src={hero.src} alt={hero.alt} width={hero.width} height={hero.height} priority rounded={false} />
-          )}
+          {/* Hero media pleine largeur — parallax wrapper */}
+          <div ref={heroImgRef} className="hero-parallax" style={{ transform: "scale(1.05)" }}>
+            {hero.type === "video" ? (
+              <HeroMedia type="video" src={hero.src} alt={hero.alt} imageFallback={hero.imageFallback} rounded={false} />
+            ) : (
+              <HeroMedia type="image" src={hero.src} alt={hero.alt} width={hero.width} height={hero.height} priority rounded={false} />
+            )}
+          </div>
 
           {/* Gradient vers fond #04040A + titre overlay */}
           <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-5 pt-20" style={{ background: 'linear-gradient(to top, #04040A 0%, rgba(4,4,10,0.7) 50%, transparent 100%)' }}>
@@ -2639,7 +2680,7 @@ export function ExerciseLiveDetail({
       ) : null}
 
       {/* ─── 2. MUSCLES + EQUIPEMENT ─── */}
-      <div className="flex flex-col gap-3 mt-1">
+      <div ref={musclesRef as React.RefObject<HTMLDivElement>} className={`reveal-section flex flex-col gap-3 mt-1${musclesVisible ? ' is-visible' : ''}`}>
         {/* Muscles */}
         {merged.frontmatter.muscles.length > 0 && (
           <div className="flex flex-wrap gap-2">
@@ -2649,13 +2690,13 @@ export function ExerciseLiveDetail({
               const isPrimary = i === 0;
               if (!group) {
                 return (
-                  <span key={muscle} className={`inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium capitalize ${isPrimary ? 'bg-[#FF8C00] text-white' : 'bg-transparent border border-[#FF8C00]/40 text-[#FF8C00]'}`}>
+                  <span key={muscle} className={`tap-feedback inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium capitalize ${isPrimary ? 'bg-[#FF8C00] text-white' : 'bg-transparent border border-[#FF8C00]/40 text-[#FF8C00]'}`}>
                     {translated}
                   </span>
                 );
               }
               return (
-                <Link key={muscle} href={`/exercices?muscle=${group}`} title={t("exerciseDetail.filterByMuscle")} className={`inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors ${isPrimary ? 'bg-[#FF8C00] text-white hover:bg-[#FF8C00]/90' : 'bg-transparent border border-[#FF8C00]/40 text-[#FF8C00] hover:bg-[#FF8C00]/10'}`}>
+                <Link key={muscle} href={`/exercices?muscle=${group}`} title={t("exerciseDetail.filterByMuscle")} className={`tap-feedback inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors ${isPrimary ? 'bg-[#FF8C00] text-white hover:bg-[#FF8C00]/90' : 'bg-transparent border border-[#FF8C00]/40 text-[#FF8C00] hover:bg-[#FF8C00]/10'}`}>
                   {translated}
                 </Link>
               );
@@ -2666,7 +2707,7 @@ export function ExerciseLiveDetail({
         {merged.frontmatter.equipment && merged.frontmatter.equipment.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {translateTerms(merged.frontmatter.equipment, "equipment", lang).map((eq) => (
-              <span key={eq} className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 capitalize">
+              <span key={eq} className="tap-feedback inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 capitalize">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3 opacity-50"><rect x="2" y="10" width="20" height="4" rx="1" /><line x1="6" y1="7" x2="6" y2="17" /><line x1="18" y1="7" x2="18" y2="17" /></svg>
                 {eq}
               </span>
@@ -2676,18 +2717,22 @@ export function ExerciseLiveDetail({
       </div>
 
       {/* ─── 3. DOSAGE RECOMMANDE ─── */}
-      <ExerciseQuickInfo
-        content={merged.content}
-        securite={merged.frontmatter.consignes_securite ?? ''}
-      />
+      <div ref={dosageRef as React.RefObject<HTMLDivElement>} className={`reveal-section tap-feedback${dosageVisible ? ' is-visible' : ''}`} style={{ transitionDelay: "50ms" }}>
+        <ExerciseQuickInfo
+          content={merged.content}
+          securite={merged.frontmatter.consignes_securite ?? ''}
+        />
+      </div>
 
       {/* ─── 4. TIMER REPOS ─── */}
-      <RestTimer restRaw={parsedSections.restRaw} />
+      <div ref={timerRef as React.RefObject<HTMLDivElement>} className={`reveal-section tap-feedback${timerVisible ? ' is-visible' : ''}`} style={{ transitionDelay: "100ms" }}>
+        <RestTimer restRaw={parsedSections.restRaw} />
+      </div>
 
       {/* ─── 5. MANNEQUIN ANATOMIQUE ─── */}
       {merged.frontmatter.muscles.length > 0 && (
-        <div style={{ display: "flex", justifyContent: "center", padding: "16px 0" }}>
-          <div style={{ width: 240 }}>
+        <div ref={mannequinRef as React.RefObject<HTMLDivElement>} className={`reveal-section${mannequinVisible ? ' is-visible' : ''}`} style={{ display: "flex", justifyContent: "center", padding: "16px 0", transitionDelay: "150ms" }}>
+          <div style={{ width: 240 }} className={`mannequin-glow${mannequinVisible ? ' is-visible' : ''}`}>
             <ExerciseAnatomyThumb
               muscles={merged.frontmatter.muscles}
               translatedMuscles={translateTerms(merged.frontmatter.muscles, "muscles", lang)}
@@ -2750,7 +2795,7 @@ export function ExerciseLiveDetail({
         <div className="flex flex-col gap-0">
           {/* 6. RESUME */}
           {parsedSections.resume && parsedSections.resume.body && (
-            <div className="border-l-2 border-[#FF8C00] pl-4 py-1 mb-4">
+            <div ref={resumeRef as React.RefObject<HTMLDivElement>} className={`reveal-section border-l-2 border-[#FF8C00] pl-4 py-1 mb-4${resumeVisible ? ' is-visible' : ''}`}>
               <p className="text-[15px] text-white/90 leading-relaxed" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>
                 {parsedSections.resume.body}
               </p>
@@ -2759,7 +2804,7 @@ export function ExerciseLiveDetail({
 
           {/* 7. EXECUTION (dosage lines filtered) */}
           {parsedSections.execution && parsedSections.execution.body && (
-            <div className="mb-4">
+            <div ref={executionRef as React.RefObject<HTMLDivElement>} className="mb-4">
               <h2 className="text-xl uppercase tracking-wider text-white mb-3 mt-1" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
                 {parsedSections.execution.heading}
               </h2>
@@ -2770,8 +2815,16 @@ export function ExerciseLiveDetail({
                     .filter(l => !isDosageLine(l));
                   return steps.map((line, i) => {
                     const text = line.replace(/^-\s*/, '').trim();
+                    const translateDir = i % 2 === 0 ? "translateX(-20px)" : "translateX(20px)";
                     return (
-                      <div key={i} className="flex gap-3 items-start">
+                      <div
+                        key={i}
+                        className={`reveal-step flex gap-3 items-start${executionVisible ? ' is-visible' : ''}`}
+                        style={{
+                          transform: executionVisible ? "none" : translateDir,
+                          transitionDelay: `${i * 80}ms`,
+                        }}
+                      >
                         <span className="text-2xl leading-none text-[#FF8C00] shrink-0 w-8 text-right" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>{i + 1}</span>
                         <p className="text-sm text-white/80 leading-relaxed pt-0.5" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>{text}</p>
                       </div>
@@ -2787,7 +2840,7 @@ export function ExerciseLiveDetail({
 
           {/* 8. RESPIRATION */}
           {parsedSections.respiration && parsedSections.respiration.body && (
-            <div className="mb-4">
+            <div ref={respirationRef as React.RefObject<HTMLDivElement>} className={`reveal-section mb-4${respirationVisible ? ' is-visible' : ''}`}>
               <h2 className="text-xl uppercase tracking-wider text-white mb-2 mt-2" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
                 {parsedSections.respiration.heading}
               </h2>
@@ -2802,11 +2855,11 @@ export function ExerciseLiveDetail({
 
           {/* 9. CONSEILS (collapsible) */}
           {parsedSections.conseils && parsedSections.conseils.body && (
-            <div className="mb-1">
+            <div ref={conseilsRef as React.RefObject<HTMLDivElement>} className={`reveal-section mb-1${conseilsVisible ? ' is-visible' : ''}`}>
               <button
                 type="button"
                 onClick={() => setConseilsOpen(!conseilsOpen)}
-                className="flex items-center justify-between w-full py-2 text-left"
+                className="tap-feedback flex items-center justify-between w-full py-2 text-left"
               >
                 <h2 className="text-xl uppercase tracking-wider text-white" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
                   {parsedSections.conseils.heading}
@@ -2830,11 +2883,11 @@ export function ExerciseLiveDetail({
 
           {/* 10. SECURITE (collapsible, accent jaune) */}
           {parsedSections.securite && parsedSections.securite.body && (
-            <div className="mb-1">
+            <div ref={securiteRef as React.RefObject<HTMLDivElement>} className={`reveal-section mb-1${securiteVisible ? ' is-visible' : ''}`} style={{ transitionDelay: "50ms" }}>
               <button
                 type="button"
                 onClick={() => setSecuriteOpen(!securiteOpen)}
-                className="flex items-center justify-between w-full py-2 text-left"
+                className="tap-feedback flex items-center justify-between w-full py-2 text-left"
               >
                 <h2 className="flex items-center gap-2 text-xl uppercase tracking-wider text-[#FBBF24]" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>

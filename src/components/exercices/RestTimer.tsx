@@ -144,13 +144,20 @@ export function RestTimer({ restRaw }: RestTimerProps) {
             cy={RADIUS + STROKE}
             r={RADIUS}
             fill="none"
-            stroke="#FF8C00"
+            stroke={finished ? "#00E676" : "#FF8C00"}
             strokeWidth={STROKE}
             strokeLinecap="round"
             strokeDasharray={CIRCUMFERENCE}
             strokeDashoffset={dashOffset}
-            style={{ transition: running ? "stroke-dashoffset 1s linear" : "none" }}
-            opacity={isActive ? 1 : 0}
+            className={!running && !finished && timeLeft < totalSeconds ? "timer-ring-pulse" : ""}
+            style={{
+              transition: running
+                ? "stroke-dashoffset 1s linear, stroke 0.3s ease"
+                : finished
+                  ? "stroke 0.3s ease"
+                  : "stroke-dashoffset 0.3s ease",
+            }}
+            opacity={isActive || timeLeft < totalSeconds ? 1 : 0}
           />
         </svg>
         {/* Center text */}
@@ -173,7 +180,7 @@ export function RestTimer({ restRaw }: RestTimerProps) {
             color: isActive ? "#FF8C00" : "rgba(255,255,255,0.45)",
           }}
         >
-          {finished ? "Terminé !" : "Timer repos"}
+          {finished ? <span className="timer-finished-text" style={{ display: "inline-block" }}>Terminé !</span> : "Timer repos"}
         </p>
         <p
           className="text-[11px]"
