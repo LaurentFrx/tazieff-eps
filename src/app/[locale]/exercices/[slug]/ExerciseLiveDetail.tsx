@@ -2502,15 +2502,6 @@ export function ExerciseLiveDetail({
         .page > nav[aria-label="breadcrumb"] {
           display: none;
         }
-        .exo-detail-mannequin .exo-anatomy-thumb {
-          width: 100%;
-          height: 280px;
-        }
-        @media (min-width: 768px) {
-          .exo-detail-mannequin .exo-anatomy-thumb {
-            height: 320px;
-          }
-        }
       `}</style>
 
       {/* ─── STICKY HEADER (visible au scroll, après le hero) ─── */}

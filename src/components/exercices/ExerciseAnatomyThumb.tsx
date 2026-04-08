@@ -79,7 +79,7 @@ export default function ExerciseAnatomyThumb({
         alt={t("exerciseAnatomy.musclesWorked")}
         className="exo-anatomy-thumb-img"
         fill
-        sizes="(min-width: 768px) 150px, 120px"
+        sizes="(min-width: 768px) 220px, 220px"
         priority={false}
       />
       <div className="exo-anatomy-thumb-labels">

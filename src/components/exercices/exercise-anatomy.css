@@ -24,6 +24,18 @@
   }
 }
 
+/* Larger mannequin on exercise detail page */
+.exo-detail-mannequin .exo-anatomy-thumb {
+  width: 100%;
+  height: 280px;
+}
+
+@media (min-width: 768px) {
+  .exo-detail-mannequin .exo-anatomy-thumb {
+    height: 320px;
+  }
+}
+
 .exo-anatomy-thumb-img {
   object-fit: contain;
   object-position: center bottom;
