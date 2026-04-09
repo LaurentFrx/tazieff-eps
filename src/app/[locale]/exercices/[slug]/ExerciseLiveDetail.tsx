@@ -2822,14 +2822,13 @@ export function ExerciseLiveDetail({
           }
         }
         return (
-          <div ref={mannequinRef as React.RefObject<HTMLDivElement>} style={{ display: "flex", justifyContent: "center", margin: "-6px 0" }}>
-            <div style={{ width: 280 }} className="mannequin-glow is-visible">
-              <ExerciseMannequin3D
-                muscles={merged.frontmatter.muscles}
-                slug={slug}
-                anatomyGroups={anatomyGroups}
-              />
-            </div>
+          <div ref={mannequinRef as React.RefObject<HTMLDivElement>} style={{ margin: "-6px 0" }}>
+            <ExerciseMannequin3D
+              muscles={merged.frontmatter.muscles}
+              slug={slug}
+              anatomyGroups={anatomyGroups}
+              title={displayTitle}
+            />
           </div>
         );
       })()}
