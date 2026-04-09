@@ -7,7 +7,11 @@ import { BottomSheet } from "@/components/ui/BottomSheet";
 import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { MUSCLE_GROUPS, POSTERIOR_GROUPS } from "@/app/[locale]/apprendre/anatomie/anatomy-data";
-import { getExerciseMuscleGroups } from "@/lib/exercices/muscle-groups";
+import {
+  getExerciseMuscleGroupsWithColors,
+  GROUP_COLORS,
+} from "@/lib/exercices/muscle-groups";
+import MuscleHighlightSVG from "./MuscleHighlightSVG";
 
 // Dynamic import of the heavy 3D canvas (Three.js ~500KB)
 const AnatomyCanvas = dynamic(
@@ -36,31 +40,28 @@ type Props = {
   muscles: string[];
   slug: string;
   anatomyGroups: string[];
+  title?: string;
 };
 
-const GROUP_COLORS: Record<string, string> = {
-  dos: "#3b82f6",
-  "membres-inferieurs": "#22c55e",
-  "membres-superieurs": "#f97316",
-  abdominaux: "#a855f7",
-  pectoraux: "#ef4444",
-};
-
-export function ExerciseMannequin3D({ muscles, slug, anatomyGroups }: Props) {
+export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Props) {
   const { t } = useI18n();
-  const [show3D, setShow3D] = useState(false);
+  const [overlayOpen, setOverlayOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetGroup, setSheetGroup] = useState<string | null>(null);
+  const [animateIn, setAnimateIn] = useState(false);
 
-  // B2: Orientation — face by default, dos only if majority posterior
+  // Orientation — face by default, dos only if majority posterior
   const initialRotationY = useMemo(() => {
     const posteriorCount = anatomyGroups.filter((k) => POSTERIOR_GROUPS.has(k)).length;
     return posteriorCount > anatomyGroups.length / 2 ? Math.PI : 0;
   }, [anatomyGroups]);
 
-  // B3: Legend — simplified muscle group keys
-  const groupKeys = useMemo(() => getExerciseMuscleGroups(muscles), [muscles]);
+  // Muscle groups with colors (single source of truth)
+  const groupsWithColors = useMemo(
+    () => getExerciseMuscleGroupsWithColors(muscles),
+    [muscles],
+  );
 
   const handleClickMuscle = useCallback(
     (_frName: string | null, groupKey: string | null) => {
@@ -74,12 +75,39 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups }: Props) {
 
   const noop = useCallback(() => {}, []);
 
-  // Mark loading done after a short delay (AnatomyCanvas has no onReady callback)
+  // Mark loading done after a short delay
   useEffect(() => {
-    if (!show3D) return;
+    if (!overlayOpen) return;
     const timer = setTimeout(() => setLoading(false), 1500);
     return () => clearTimeout(timer);
-  }, [show3D]);
+  }, [overlayOpen]);
+
+  // Animate in after overlay opens
+  useEffect(() => {
+    if (overlayOpen) {
+      requestAnimationFrame(() => setAnimateIn(true));
+    } else {
+      setAnimateIn(false);
+    }
+  }, [overlayOpen]);
+
+  // Lock body scroll when overlay is open
+  useEffect(() => {
+    if (overlayOpen) {
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = ""; };
+    }
+  }, [overlayOpen]);
+
+  const handleOpen = useCallback(() => {
+    setOverlayOpen(true);
+    setLoading(true);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setAnimateIn(false);
+    setTimeout(() => setOverlayOpen(false), 250);
+  }, []);
 
   const anatomyHref = `/apprendre/anatomie?muscles=${anatomyGroups.join(",")}&from=exercice&slug=${slug}`;
 
@@ -89,110 +117,204 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups }: Props) {
     ? sheetGroup!.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
     : "";
 
-  if (!show3D) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, width: "100%" }}>
-        {/* B3: Legend labels */}
-        {groupKeys.length > 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8, marginBottom: 4 }}>
-            {groupKeys.map((key) => (
-              <span key={key} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 8, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.6)" }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: GROUP_COLORS[key] ?? "#888" }} />
-                {t(`filters.muscleGroups.${key}`)}
+  return (
+    <>
+      {/* ─── VIGNETTE SVG ─── */}
+      <div style={{ position: "relative", width: "100%", maxWidth: 280, margin: "0 auto", padding: "20px 0" }}>
+        {/* Glow pulse behind */}
+        <div
+          style={{
+            position: "absolute",
+            inset: -20,
+            borderRadius: 24,
+            background: "radial-gradient(ellipse at center, rgba(255,140,0,0.12) 0%, transparent 70%)",
+            animation: "mannequinGlow 3s ease-in-out infinite",
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* Legend labels */}
+        {groupsWithColors.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8, marginBottom: 10 }}>
+            {groupsWithColors.map((g) => (
+              <span
+                key={g.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  fontSize: 8,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  color: "rgba(255,255,255,0.6)",
+                }}
+              >
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: g.color, flexShrink: 0 }} />
+                {t(`filters.muscleGroups.${g.id}`)}
               </span>
             ))}
           </div>
         )}
+
+        {/* SVG mannequin — click to open 3D */}
         <div
-          className="relative cursor-pointer"
-          style={{ width: "100%", height: 320 }}
-          onClick={() => setShow3D(true)}
+          onClick={handleOpen}
+          className="tap-feedback"
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") setShow3D(true);
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleOpen(); }}
+          style={{
+            position: "relative",
+            borderRadius: 20,
+            overflow: "hidden",
+            background: "#0a0a14",
+            border: "1px solid rgba(255,140,0,0.15)",
+            cursor: "pointer",
           }}
         >
-          <img
-            src="/images/anatomy/mini-mannequin.webp"
-            alt={t("exerciseAnatomy.musclesWorked")}
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "contain",
-              objectPosition: "center 10%",
-              pointerEvents: "none",
-            }}
-            loading="lazy"
-          />
+          <MuscleHighlightSVG activeGroups={groupsWithColors} width={280} height={320} />
         </div>
-        {/* B1: Tap text below image, not as overlay */}
-        <div style={{ marginTop: 8, textAlign: "center", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", opacity: 0.35, color: "white" }}>
+
+        {/* Label below */}
+        <div style={{ textAlign: "center", marginTop: 10, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.35)" }}>
           {t("exerciseAnatomy.tapToExplore")}
         </div>
       </div>
-    );
-  }
 
-  return (
-    <>
-      {/* B3: Legend labels (3D active) */}
-      {groupKeys.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8, marginBottom: 4 }}>
-          {groupKeys.map((key) => (
-            <span key={key} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 8, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.6)" }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: GROUP_COLORS[key] ?? "#888" }} />
-              {t(`filters.muscleGroups.${key}`)}
-            </span>
-          ))}
-        </div>
-      )}
-      <Mannequin3DErrorBoundary
-        fallback={
-          <Link
-            href={anatomyHref}
-            style={{ display: "block", width: "100%", height: 320 }}
-          >
-            <img
-              src="/images/anatomy/mini-mannequin.webp"
-              alt={t("exerciseAnatomy.musclesWorked")}
-              style={{ width: "100%", height: "100%", objectFit: "contain" }}
-            />
-          </Link>
-        }
-      >
+      {/* ─── 3D FULLSCREEN OVERLAY ─── */}
+      {overlayOpen && (
         <div
           style={{
-            width: "100%",
-            height: 320,
-            touchAction: "pan-y",
-            position: "relative",
+            position: "fixed",
+            inset: 0,
+            zIndex: 200,
+            background: "#04040A",
+            transform: animateIn ? "scale(1)" : "scale(0.92)",
+            opacity: animateIn ? 1 : 0,
+            transition: "transform 0.35s cubic-bezier(0.22,1,0.36,1), opacity 0.25s ease",
           }}
         >
-          {loading && (
-            <div className="absolute inset-0 skeleton" />
-          )}
+          {/* Header */}
           <div
-            style={{ opacity: loading ? 0 : 1, transition: "opacity 0.5s ease", width: "100%", height: "100%" }}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 210,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "calc(16px + env(safe-area-inset-top, 0px)) 16px 12px",
+              background: "linear-gradient(to bottom, rgba(4,4,10,0.85) 0%, transparent 100%)",
+              pointerEvents: "none",
+            }}
           >
-            <AnatomyCanvas
-              selectedGroup={null}
-              highlightedMuscle={null}
-              activeGroups={anatomyGroups}
-              scanning={false}
-              showSkeleton={false}
-              showWireframe={true}
-              showMuscles={true}
-              onHoverMuscle={noop}
-              onClickMuscle={handleClickMuscle}
-              onLongPressMuscle={noop}
-              initialRotationY={initialRotationY}
-            />
+            <span
+              style={{
+                fontSize: 12,
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                color: "rgba(255,255,255,0.5)",
+                pointerEvents: "none",
+              }}
+            >
+              {title ?? slug.toUpperCase()}
+            </span>
+            <button
+              type="button"
+              onClick={handleClose}
+              style={{
+                pointerEvents: "auto",
+                width: 40,
+                height: 40,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "rgba(10,10,20,0.65)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: "1px solid rgba(255,255,255,0.15)",
+                borderRadius: 10,
+                color: "rgba(255,255,255,0.75)",
+                fontSize: 18,
+                cursor: "pointer",
+              }}
+              aria-label={t("header.close")}
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* 3D Canvas */}
+          <Mannequin3DErrorBoundary
+            fallback={
+              <Link
+                href={anatomyHref}
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", color: "rgba(255,255,255,0.5)", fontSize: 14 }}
+                onClick={handleClose}
+              >
+                {t("exerciseAnatomy.tapToExplore")}
+              </Link>
+            }
+          >
+            <div style={{ position: "absolute", inset: 0, touchAction: "none" }}>
+              {loading && <div className="absolute inset-0 skeleton" />}
+              <div style={{ opacity: loading ? 0 : 1, transition: "opacity 0.5s ease", width: "100%", height: "100%" }}>
+                <AnatomyCanvas
+                  selectedGroup={null}
+                  highlightedMuscle={null}
+                  activeGroups={anatomyGroups}
+                  scanning={false}
+                  showSkeleton={false}
+                  showWireframe={true}
+                  showMuscles={true}
+                  onHoverMuscle={noop}
+                  onClickMuscle={handleClickMuscle}
+                  onLongPressMuscle={noop}
+                  initialRotationY={initialRotationY}
+                />
+              </div>
+            </div>
+          </Mannequin3DErrorBoundary>
+
+          {/* Bottom legend */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 210,
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: 10,
+              padding: "16px 16px calc(16px + env(safe-area-inset-bottom, 0px))",
+              background: "linear-gradient(to top, rgba(4,4,10,0.85) 0%, transparent 100%)",
+              pointerEvents: "none",
+            }}
+          >
+            {groupsWithColors.map((g) => (
+              <span
+                key={g.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                  fontSize: 10,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  color: "rgba(255,255,255,0.7)",
+                }}
+              >
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: g.color, flexShrink: 0 }} />
+                {t(`filters.muscleGroups.${g.id}`)}
+              </span>
+            ))}
           </div>
         </div>
-      </Mannequin3DErrorBoundary>
+      )}
 
       {/* Bottom sheet for muscle group details */}
       <BottomSheet

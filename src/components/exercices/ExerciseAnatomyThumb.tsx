@@ -2,17 +2,14 @@
 
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { getExerciseMuscleGroups } from "@/lib/exercices/muscle-groups";
+import {
+  getExerciseMuscleGroups,
+  getExerciseMuscleGroupsWithColors,
+  GROUP_COLORS,
+} from "@/lib/exercices/muscle-groups";
 import { MUSCLE_GROUPS, matchesGroup } from "@/app/[locale]/apprendre/anatomie/anatomy-data";
+import MuscleHighlightSVG from "./MuscleHighlightSVG";
 import "./exercise-anatomy.css";
-
-const GROUP_COLORS: Record<string, string> = {
-  dos: "#3b82f6",
-  "membres-inferieurs": "#22c55e",
-  "membres-superieurs": "#f97316",
-  abdominaux: "#a855f7",
-  pectoraux: "#ef4444",
-};
 
 // IMPORTANT : bug récurrent. Ne pas supprimer ce filtrage.
 // Quand ouvert depuis un exercice, seuls les muscles de l'exercice sont surlignés.
@@ -45,6 +42,7 @@ export default function ExerciseAnatomyThumb({
 
   // 5 simplified groups for badge display
   const groupKeys = getExerciseMuscleGroups(muscles);
+  const groupsWithColors = getExerciseMuscleGroupsWithColors(muscles);
 
   /* No matched groups → fallback to text chips */
   if (groupKeys.length === 0) {
@@ -83,22 +81,12 @@ export default function ExerciseAnatomyThumb({
         href={href}
         className="exo-anatomy-thumb tap-feedback"
         aria-label={t("exerciseAnatomy.musclesWorked")}
-        style={{ width: "100%", height: 320, position: "relative", display: "block" }}
+        style={{ width: "100%", height: 320, position: "relative", display: "block", overflow: "hidden", borderRadius: 16 }}
       >
-        <img
-          src="/images/anatomy/mini-mannequin.webp"
-          alt={t("exerciseAnatomy.musclesWorked")}
-          data-testid="mannequin-img"
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "contain",
-            objectPosition: "center 10%",
-            pointerEvents: "none",
-          }}
-          loading="lazy"
+        <MuscleHighlightSVG
+          activeGroups={groupsWithColors}
+          width={280}
+          height={320}
         />
       </Link>
       <div
