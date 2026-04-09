@@ -18,9 +18,9 @@ export default function MannequinPreviewCanvas({ activeGroups, rotationY }: Prop
   return (
     <Canvas
       frameloop="demand"
-      camera={{ position: [0, 0.8, 3.5], fov: 60, near: 0.01, far: 100 }}
+      camera={{ position: [0, 0.8, 2.0], fov: 50, near: 0.01, far: 100 }}
       gl={{ antialias: true, stencil: false, alpha: true }}
-      style={{ width: "100%", height: "100%", background: "transparent" }}
+      style={{ width: "100%", height: "100%", background: "transparent", pointerEvents: "none" }}
     >
       <MannequinPreviewScene activeGroups={activeGroups} rotationY={rotationY} />
     </Canvas>

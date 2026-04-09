@@ -261,7 +261,8 @@ function MusclesModel({
   onHoverMuscle,
   onClickMuscle,
   onLongPressMuscle,
-}: Omit<Props, "hoveredMuscle">) {
+  groupColorMap,
+}: Omit<Props, "hoveredMuscle"> & { groupColorMap?: Record<string, string> }) {
   const { scene } = useGLTF("/models/muscles.glb");
   const { scene: sceneExtra } = useGLTF("/models/muscles_manquants.glb");
   const { gl } = useThree();
@@ -423,7 +424,12 @@ function MusclesModel({
       } else if (activeGroups.length > 0) {
         // Multi-group mode (from exercise): high-contrast colors per group
         if (ud.groupKey && activeGroups.includes(ud.groupKey)) {
-          const gc = exColor ?? ud.originalColor;
+          let gc: THREE.Color;
+          if (groupColorMap && ud.groupKey && groupColorMap[ud.groupKey]) {
+            gc = new THREE.Color(groupColorMap[ud.groupKey]);
+          } else {
+            gc = exColor ?? ud.originalColor;
+          }
           mat.color.copy(gc);
           mat.opacity = 1;
           mat.emissive.copy(gc).multiplyScalar(0.3);
@@ -440,7 +446,7 @@ function MusclesModel({
       // Stencil: block wireframe ONLY where muscle is visible and opaque
       mat.stencilWrite = mesh.visible && mat.opacity > 0.5;
     }
-  }, [selectedGroup, highlightedMuscle, activeGroups, wireframe]);
+  }, [selectedGroup, highlightedMuscle, activeGroups, wireframe, groupColorMap]);
   /* eslint-enable react-hooks/immutability */
 
   // Update scan Y uniform each frame for progressive muscle reveal
@@ -663,6 +669,7 @@ export default function HologramMannequin({
   pointColor = "#00ffff",
   ambientIntensity = 0.8,
   mainLightIntensity = 1.2,
+  groupColorMap,
 }: Props & {
   showSkeleton?: boolean;
   showWireframe?: boolean;
@@ -673,6 +680,8 @@ export default function HologramMannequin({
   pointColor?: string;
   ambientIntensity?: number;
   mainLightIntensity?: number;
+  /** Optional mapping: anatomy groupKey → hex color. Overrides EXERCISE_PALETTE when set. */
+  groupColorMap?: Record<string, string>;
 }) {
 
   return (
@@ -702,6 +711,7 @@ export default function HologramMannequin({
           onHoverMuscle={onHoverMuscle}
           onClickMuscle={onClickMuscle}
           onLongPressMuscle={onLongPressMuscle}
+          groupColorMap={groupColorMap}
         />
       )}
     </group>
