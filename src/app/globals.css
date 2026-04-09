@@ -767,15 +767,15 @@ body:has(.anatomy-page) nav {
 }
 
 .pill--debutant {
-  --pill-accent: #16a34a;
+  --pill-accent: #34D399;
 }
 
 .pill--intermediaire {
-  --pill-accent: #2563eb;
+  --pill-accent: #FF8C00;
 }
 
 .pill--avance {
-  --pill-accent: #dc2626;
+  --pill-accent: #EF4444;
 }
 
 .settings-page {

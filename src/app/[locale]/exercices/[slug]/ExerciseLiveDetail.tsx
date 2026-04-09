@@ -2737,7 +2737,7 @@ export function ExerciseLiveDetail({
 
       {/* ─── 1b. SWIPE NAV BAR ─── */}
       {(prevExercise || nextExercise) && (
-        <div className="flex items-center justify-between px-1 -mt-1 mb-1">
+        <div className="flex items-center justify-between px-1 my-4 py-3 border-y border-white/5">
           {prevExercise ? (
             <Link
               href={`/exercices/${prevExercise.slug}`}
@@ -2822,7 +2822,7 @@ export function ExerciseLiveDetail({
           }
         }
         return (
-          <div ref={mannequinRef as React.RefObject<HTMLDivElement>} style={{ display: "flex", justifyContent: "center", padding: "16px 0" }}>
+          <div ref={mannequinRef as React.RefObject<HTMLDivElement>} style={{ display: "flex", justifyContent: "center", margin: "-6px 0" }}>
             <div style={{ width: 280 }} className="mannequin-glow is-visible">
               <ExerciseMannequin3D
                 muscles={merged.frontmatter.muscles}

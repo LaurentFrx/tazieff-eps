@@ -88,6 +88,7 @@ export default function ExerciseAnatomyThumb({
         <img
           src="/images/anatomy/mini-mannequin.webp"
           alt={t("exerciseAnatomy.musclesWorked")}
+          data-testid="mannequin-img"
           style={{
             position: "absolute",
             inset: 0,

@@ -227,7 +227,7 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
   const primaryMuscle = (baseFrontmatter as { muscles?: string[] }).muscles?.[0] ?? null;
 
   return (
-    <section className="page pb-20">
+    <section className="page pb-6">
       <Breadcrumbs
         items={[
           { label: t("nav.home.label"), href: "/" },

@@ -28,9 +28,12 @@ function tryParseDosageText(dosageText: string): DosageData | null {
   const setsMatch = dosageText.match(/^(\d[\d\-–]*)\s*[x×]/i);
   const sets = setsMatch ? setsMatch[1].replace('–', '-') : null;
 
+  // Helper: strip leading/trailing dashes, en-dashes, whitespace
+  const cleanValue = (v: string) => v.replace(/^[\s\-–]+|[\s\-–]+$/g, '').trim();
+
   // Parse reps/duration after "x": everything up to "Repos" or end
   const afterX = dosageText.match(/[x×]\s*(.+?)(?:\s+[Rr]epos\b|$)/i);
-  const reps = afterX ? afterX[1].trim().replace(/\.$/, '') : null;
+  let reps = afterX ? cleanValue(afterX[1].replace(/\.$/, '')) : null;
 
   // Parse rest: extract only the numeric time value after "Repos"
   let rest: string | null = null;
@@ -42,16 +45,26 @@ function tryParseDosageText(dosageText: string): DosageData | null {
     // Extract time pattern: digits with optional dash/range + unit
     const timeMatch = afterRepos.match(/^(\d[\d\-–']*\s*(?:s|sec|min|'|mn)?)/i);
     if (timeMatch) {
-      rest = timeMatch[1].trim().replace('–', '-').replace(/\.$/, '');
+      rest = cleanValue(timeMatch[1].replace('–', '-').replace(/\.$/, ''));
       // Everything after the time value is the note
-      const remaining = afterRepos.slice(timeMatch[0].length).trim().replace(/^\.*\s*/, '').replace(/\.$/, '');
+      const remaining = cleanValue(afterRepos.slice(timeMatch[0].length).replace(/^\.*\s*/, '').replace(/\.$/, ''));
       if (remaining.length > 3) {
         note = remaining;
       }
     } else {
       // No numeric pattern — entire value is rest description
-      rest = afterRepos.replace(/\.$/, '');
+      rest = cleanValue(afterRepos.replace(/\.$/, ''));
     }
+  }
+
+  // A2: If reps contains "par côté/bras/jambe", move it to focus
+  if (reps && /\bpar\b/i.test(reps)) {
+    const [num, ...extra] = reps.split(/\s+par\s+/i);
+    reps = cleanValue(num.replace(/\s*reps?/i, ''));
+    const focusExtra = 'par ' + extra.join(' ');
+    note = note ? `${focusExtra}. ${note}` : focusExtra;
+    // Restore "reps" in reps value for label detection
+    if (/rep/i.test(afterX?.[1] ?? '')) reps = reps + ' reps';
   }
 
   if (!sets && !reps && !rest) return null;

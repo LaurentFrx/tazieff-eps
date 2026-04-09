@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useCallback, useEffect, Component } from "react";
+import { useState, useCallback, useEffect, useMemo, Component } from "react";
 import type { ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { MUSCLE_GROUPS } from "@/app/[locale]/apprendre/anatomie/anatomy-data";
+import { MUSCLE_GROUPS, POSTERIOR_GROUPS } from "@/app/[locale]/apprendre/anatomie/anatomy-data";
+import { getExerciseMuscleGroups } from "@/lib/exercices/muscle-groups";
 
 // Dynamic import of the heavy 3D canvas (Three.js ~500KB)
 const AnatomyCanvas = dynamic(
@@ -37,12 +38,29 @@ type Props = {
   anatomyGroups: string[];
 };
 
+const GROUP_COLORS: Record<string, string> = {
+  dos: "#3b82f6",
+  "membres-inferieurs": "#22c55e",
+  "membres-superieurs": "#f97316",
+  abdominaux: "#a855f7",
+  pectoraux: "#ef4444",
+};
+
 export function ExerciseMannequin3D({ muscles, slug, anatomyGroups }: Props) {
   const { t } = useI18n();
   const [show3D, setShow3D] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetGroup, setSheetGroup] = useState<string | null>(null);
+
+  // B2: Orientation — face by default, dos only if majority posterior
+  const initialRotationY = useMemo(() => {
+    const posteriorCount = anatomyGroups.filter((k) => POSTERIOR_GROUPS.has(k)).length;
+    return posteriorCount > anatomyGroups.length / 2 ? Math.PI : 0;
+  }, [anatomyGroups]);
+
+  // B3: Legend — simplified muscle group keys
+  const groupKeys = useMemo(() => getExerciseMuscleGroups(muscles), [muscles]);
 
   const handleClickMuscle = useCallback(
     (_frName: string | null, groupKey: string | null) => {
@@ -73,41 +91,46 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups }: Props) {
 
   if (!show3D) {
     return (
-      <div
-        className="relative cursor-pointer"
-        style={{ width: "100%", height: 320 }}
-        onClick={() => setShow3D(true)}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") setShow3D(true);
-        }}
-      >
-        <img
-          src="/images/anatomy/mini-mannequin.webp"
-          alt={t("exerciseAnatomy.musclesWorked")}
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "contain",
-            objectPosition: "center 10%",
-            pointerEvents: "none",
-          }}
-          loading="lazy"
-        />
-        {/* "Tap to explore" overlay */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, width: "100%" }}>
+        {/* B3: Legend labels */}
+        {groupKeys.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8, marginBottom: 4 }}>
+            {groupKeys.map((key) => (
+              <span key={key} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 8, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.6)" }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: GROUP_COLORS[key] ?? "#888" }} />
+                {t(`filters.muscleGroups.${key}`)}
+              </span>
+            ))}
+          </div>
+        )}
         <div
-          className="absolute inset-0 flex items-center justify-center"
-          style={{ background: "rgba(0,0,0,0.25)" }}
+          className="relative cursor-pointer"
+          style={{ width: "100%", height: 320 }}
+          onClick={() => setShow3D(true)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") setShow3D(true);
+          }}
         >
-          <span
-            className="text-white text-xs uppercase tracking-widest font-semibold px-4 py-2 rounded-full"
-            style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}
-          >
-            {t("exerciseAnatomy.tapToExplore")}
-          </span>
+          <img
+            src="/images/anatomy/mini-mannequin.webp"
+            alt={t("exerciseAnatomy.musclesWorked")}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+              objectPosition: "center 10%",
+              pointerEvents: "none",
+            }}
+            loading="lazy"
+          />
+        </div>
+        {/* B1: Tap text below image, not as overlay */}
+        <div style={{ marginTop: 8, textAlign: "center", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", opacity: 0.35, color: "white" }}>
+          {t("exerciseAnatomy.tapToExplore")}
         </div>
       </div>
     );
@@ -115,6 +138,17 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups }: Props) {
 
   return (
     <>
+      {/* B3: Legend labels (3D active) */}
+      {groupKeys.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8, marginBottom: 4 }}>
+          {groupKeys.map((key) => (
+            <span key={key} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 8, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.6)" }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: GROUP_COLORS[key] ?? "#888" }} />
+              {t(`filters.muscleGroups.${key}`)}
+            </span>
+          ))}
+        </div>
+      )}
       <Mannequin3DErrorBoundary
         fallback={
           <Link
@@ -154,6 +188,7 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups }: Props) {
               onHoverMuscle={noop}
               onClickMuscle={handleClickMuscle}
               onLongPressMuscle={noop}
+              initialRotationY={initialRotationY}
             />
           </div>
         </div>
