@@ -10,23 +10,25 @@ import { CircuitTimer } from '@/components/timer/presets/CircuitTimer';
 import { AmrapTimer } from '@/components/timer/presets/AmrapTimer';
 import { ReposTimer } from '@/components/timer/presets/ReposTimer';
 import { CustomTimer } from '@/components/timer/presets/CustomTimer';
+import { useReveal } from '@/hooks/useReveal';
 
 // ---------- Preset card definitions ----------
 
 interface PresetCard {
   id: string;
   gradient: string;
+  glow: string;
   subtitle: string;
   detail: string;
 }
 
 const PRESETS: PresetCard[] = [
-  { id: 'tabata', gradient: 'linear-gradient(135deg, #16a34a, #22c55e)', subtitle: '20s effort / 10s repos', detail: '8 rounds — 4 min' },
-  { id: 'emom', gradient: 'linear-gradient(135deg, #2563eb, #3b82f6)', subtitle: '1 exo par minute', detail: 'Chaque minute, top départ' },
-  { id: 'circuit', gradient: 'linear-gradient(135deg, #ea580c, #f97316)', subtitle: 'Travail / repos par station', detail: 'Enchaînement continu' },
-  { id: 'amrap', gradient: 'linear-gradient(135deg, #dc2626, #ef4444)', subtitle: 'Max reps en temps limité', detail: 'Intensité maximale' },
-  { id: 'repos', gradient: 'linear-gradient(135deg, #0891b2, #06b6d4)', subtitle: 'Chrono entre séries', detail: '30s — 1min — 2min — 5min' },
-  { id: 'custom', gradient: 'linear-gradient(135deg, #7c3aed, #8b5cf6)', subtitle: 'Configure ton chrono', detail: 'Durées personnalisées' },
+  { id: 'tabata', gradient: 'linear-gradient(135deg, #16a34a, #22c55e)', glow: '0 0 20px rgba(52,211,153,0.3)', subtitle: '20s effort / 10s repos', detail: '8 rounds — 4 min' },
+  { id: 'emom', gradient: 'linear-gradient(135deg, #2563eb, #3b82f6)', glow: '0 0 20px rgba(59,130,246,0.3)', subtitle: '1 exo par minute', detail: 'Chaque minute, top départ' },
+  { id: 'circuit', gradient: 'linear-gradient(135deg, #ea580c, #f97316)', glow: '0 0 20px rgba(249,115,22,0.3)', subtitle: 'Travail / repos par station', detail: 'Enchaînement continu' },
+  { id: 'amrap', gradient: 'linear-gradient(135deg, #dc2626, #ef4444)', glow: '0 0 20px rgba(239,68,68,0.3)', subtitle: 'Max reps en temps limité', detail: 'Intensité maximale' },
+  { id: 'repos', gradient: 'linear-gradient(135deg, #0891b2, #06b6d4)', glow: '0 0 20px rgba(6,182,212,0.3)', subtitle: 'Chrono entre séries', detail: '30s — 1min — 2min — 5min' },
+  { id: 'custom', gradient: 'linear-gradient(135deg, #7c3aed, #8b5cf6)', glow: '0 0 20px rgba(139,92,246,0.3)', subtitle: 'Configure ton chrono', detail: 'Durées personnalisées' },
 ];
 
 const PRESET_ICONS: Record<string, React.ReactNode> = {
@@ -73,6 +75,13 @@ const TIMER_COMPONENTS: Record<string, React.ComponentType<{ onBack: () => void 
   custom: CustomTimer,
 };
 
+// ---------- Reveal wrapper for preset cards ----------
+
+function PresetReveal({ delay, children }: { delay: number; children: React.ReactNode }) {
+  const ref = useReveal(delay);
+  return <div ref={ref as React.RefObject<HTMLDivElement>}>{children}</div>;
+}
+
 // ---------- Page ----------
 
 export default function TimerPage() {
@@ -109,30 +118,38 @@ export default function TimerPage() {
       </header>
 
       <div className="grid grid-cols-2 gap-3">
-        {PRESETS.map((def) => (
-          <button
-            key={def.id}
-            onClick={() => setSelectedId(def.id)}
-            className="relative overflow-hidden rounded-2xl text-left cursor-pointer flex flex-col justify-end transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
-            style={{
-              background: def.gradient,
-              padding: '20px 16px',
-              minHeight: '120px',
-              border: 'none',
-            }}
-          >
-            {PRESET_ICONS[def.id]}
-            <span className="text-[18px] font-bold text-white" style={{ letterSpacing: '0.03em' }}>
-              {t(`timer.presets.${def.id}.name`)}
-            </span>
-            <span className="text-[12px] text-white/70 mt-1">
-              {def.subtitle}
-            </span>
-            <span className="text-[11px] text-white/45 mt-0.5">
-              {def.detail}
-            </span>
-          </button>
-        ))}
+        {PRESETS.map((def, i) => {
+          // 2-column stagger: col 0 = 0, col 1 = 80, next row +160
+          const delay = Math.floor(i / 2) * 160 + (i % 2) * 80;
+          return (
+            <PresetReveal key={def.id} delay={delay}>
+              <button
+                onClick={() => setSelectedId(def.id)}
+                className="tap-feedback relative overflow-hidden rounded-2xl text-left cursor-pointer flex flex-col justify-end w-full"
+                style={{
+                  background: def.gradient,
+                  padding: '20px 16px',
+                  minHeight: '120px',
+                  border: 'none',
+                  transition: 'box-shadow 0.2s ease',
+                }}
+                onPointerEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = def.glow; }}
+                onPointerLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = ''; }}
+              >
+                {PRESET_ICONS[def.id]}
+                <span className="text-[18px] font-bold text-white" style={{ letterSpacing: '0.03em' }}>
+                  {t(`timer.presets.${def.id}.name`)}
+                </span>
+                <span className="text-[12px] text-white/70 mt-1">
+                  {def.subtitle}
+                </span>
+                <span className="text-[11px] text-white/45 mt-0.5">
+                  {def.detail}
+                </span>
+              </button>
+            </PresetReveal>
+          );
+        })}
       </div>
     </section>
   );

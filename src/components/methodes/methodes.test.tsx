@@ -1,5 +1,15 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeAll } from "vitest";
+
+beforeAll(() => {
+  globalThis.IntersectionObserver = class {
+    cb: IntersectionObserverCallback;
+    constructor(cb: IntersectionObserverCallback) { this.cb = cb; }
+    observe() { this.cb([{ isIntersecting: true } as IntersectionObserverEntry], this as unknown as IntersectionObserver); }
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof IntersectionObserver;
+});
 
 vi.mock("next/link");
 

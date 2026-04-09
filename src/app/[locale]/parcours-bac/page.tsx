@@ -4,6 +4,8 @@ import { ParcoursDashboard } from "./ParcoursDashboard";
 import { SectionHero } from "@/components/SectionHero";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { IlluTrophy } from "@/components/illustrations";
+import { RevealSection } from "@/components/ui/RevealSection";
+import { AnimatedCount } from "@/components/ui/AnimatedCount";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -20,13 +22,15 @@ export default async function ParcoursBacPage({ params }: { params: Promise<{ lo
   return (
     <section className="page">
       <Breadcrumbs items={[{ label: t("nav.home.label"), href: "/" }, { label: t("pages.home.bacLabel") }]} />
-      <SectionHero
-        title={t("parcours.title")}
-        count={4}
-        subtitle={t("pages.home.heroBacSub")}
-        gradient="from-violet-600 to-fuchsia-500"
-        illustration={<IlluTrophy />}
-      />
+      <RevealSection>
+        <SectionHero
+          title={t("parcours.title")}
+          countElement={<AnimatedCount target={4} />}
+          subtitle={t("pages.home.heroBacSub")}
+          gradient="from-violet-600 to-fuchsia-500"
+          illustration={<IlluTrophy />}
+        />
+      </RevealSection>
 
       <ParcoursDashboard />
     </section>

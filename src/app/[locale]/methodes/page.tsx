@@ -8,6 +8,8 @@ import { SectionHero } from "@/components/SectionHero";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { IlluClipboard } from "@/components/illustrations";
 import { LocaleLink as Link } from "@/components/LocaleLink";
+import { RevealSection } from "@/components/ui/RevealSection";
+import { AnimatedCount } from "@/components/ui/AnimatedCount";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -70,17 +72,19 @@ export default async function MethodesPage({
   return (
     <section className="page">
       <Breadcrumbs items={[{ label: t("nav.home.label"), href: "/" }, { label: t("pages.home.methodesLabel") }]} />
-      <SectionHero
-        title={
-          activeCategory
-            ? t(`methodes.categories.${activeCategory}`)
-            : t("methodes.title")
-        }
-        count={displayedCount}
-        subtitle={t("pages.home.heroMethodesSub")}
-        gradient="from-blue-600 to-indigo-500"
-        illustration={<IlluClipboard />}
-      />
+      <RevealSection>
+        <SectionHero
+          title={
+            activeCategory
+              ? t(`methodes.categories.${activeCategory}`)
+              : t("methodes.title")
+          }
+          countElement={<AnimatedCount target={displayedCount} />}
+          subtitle={t("pages.home.heroMethodesSub")}
+          gradient="from-blue-600 to-indigo-500"
+          illustration={<IlluClipboard />}
+        />
+      </RevealSection>
 
       {activeCategory && (
         <div className="mb-4">
@@ -106,20 +110,22 @@ export default async function MethodesPage({
                 </h2>
               )}
               <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {items.map((methode) => (
+                {items.map((methode, i) => (
                   <li key={methode.slug}>
-                    <MethodeCard
-                      slug={methode.slug}
-                      titre={methode.titre}
-                      soustitre={methode.soustitre}
-                      description={methode.description}
-                      categorie={methode.categorie}
-                      categoryLabel={t(`methodes.categories.${methode.categorie}`)}
-                      scores={methode.scores}
-                      scoreLabels={scoreLabels}
-                      niveauLabel={`${t("methodes.niveau")} : ${t(`methodes.niveaux.${methode.niveau_minimum}`)}`}
-                      timerLabel={methode.timer ? t("methodes.timer.heading") : undefined}
-                    />
+                    <RevealSection delay={i * 100}>
+                      <MethodeCard
+                        slug={methode.slug}
+                        titre={methode.titre}
+                        soustitre={methode.soustitre}
+                        description={methode.description}
+                        categorie={methode.categorie}
+                        categoryLabel={t(`methodes.categories.${methode.categorie}`)}
+                        scores={methode.scores}
+                        scoreLabels={scoreLabels}
+                        niveauLabel={`${t("methodes.niveau")} : ${t(`methodes.niveaux.${methode.niveau_minimum}`)}`}
+                        timerLabel={methode.timer ? t("methodes.timer.heading") : undefined}
+                      />
+                    </RevealSection>
                   </li>
                 ))}
               </ul>

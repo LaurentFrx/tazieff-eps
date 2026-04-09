@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { CategorieMethode } from "@/lib/content/schema";
 import { CategoryBadge } from "@/components/methodes/CategoryBadge";
-import { ScoresBlock } from "@/components/methodes/ScoreBar";
+import { AnimatedScoresBlock } from "@/components/methodes/AnimatedScoresBlock";
 
 type MethodeCardProps = {
   slug: string;
@@ -41,7 +41,7 @@ export function MethodeCard({
   return (
     <Link
       href={`/methodes/${slug}`}
-      className="card flex flex-col gap-3 p-4 transition-colors hover:border-[color:var(--accent)]"
+      className="card tap-feedback flex flex-col gap-3 p-4 transition-colors hover:border-[color:var(--accent)]"
     >
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
@@ -57,7 +57,7 @@ export function MethodeCard({
           {description}
         </p>
       ) : null}
-      <ScoresBlock scores={scores} labels={scoreLabels} />
+      <AnimatedScoresBlock scores={scores} labels={scoreLabels} />
       {niveauLabel || timerLabel ? (
         <div className="flex items-center justify-between">
           {niveauLabel ? (

@@ -5,6 +5,8 @@ import { SectionHero } from "@/components/SectionHero";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { IlluBook } from "@/components/illustrations";
 import { LocaleLink as Link } from "@/components/LocaleLink";
+import { RevealSection } from "@/components/ui/RevealSection";
+import { AnimatedCount } from "@/components/ui/AnimatedCount";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -50,19 +52,23 @@ export default async function ApprendrePage({ params }: { params: Promise<{ loca
   return (
     <section className="page">
       <Breadcrumbs items={[{ label: t("nav.home.label"), href: "/" }, { label: t("pages.home.apprendreLabel") }]} />
-      <SectionHero
-        title={t("pages.home.apprendreLabel")}
-        count={allCards.length}
-        subtitle={t("pages.home.heroApprendreSub")}
-        gradient="from-green-500 to-emerald-400"
-        illustration={<IlluBook />}
-      />
+      <RevealSection>
+        <SectionHero
+          title={t("pages.home.apprendreLabel")}
+          countElement={<AnimatedCount target={allCards.length} />}
+          subtitle={t("pages.home.heroApprendreSub")}
+          gradient="from-green-500 to-emerald-400"
+          illustration={<IlluBook />}
+        />
+      </RevealSection>
       <div className="card-grid">
-        {allCards.map((card) => (
-          <Link key={card.href} href={card.href} className="card">
-            <h2>{card.title}</h2>
-            <p>{card.description}</p>
-          </Link>
+        {allCards.map((card, i) => (
+          <RevealSection key={card.href} delay={i * 80}>
+            <Link href={card.href} className="card tap-feedback">
+              <h2>{card.title}</h2>
+              <p>{card.description}</p>
+            </Link>
+          </RevealSection>
         ))}
       </div>
     </section>

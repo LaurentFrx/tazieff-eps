@@ -9,13 +9,14 @@ import { DetailHeader } from "@/components/DetailHeader";
 
 const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale}${path}`;
 import { CategoryBadge } from "@/components/methodes/CategoryBadge";
-import { ScoresBlock } from "@/components/methodes/ScoreBar";
+import { AnimatedScoresBlock } from "@/components/methodes/AnimatedScoresBlock";
 import { ParametresTable } from "@/components/methodes/ParametresTable";
 import { MethodeTimer } from "@/components/methodes/MethodeTimer";
 import { RelatedMethods } from "@/components/methodes/RelatedMethods";
 import { RelatedExercices } from "@/components/methodes/RelatedExercices";
 import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
 import { TimerLaunchButton } from "@/components/methodes/TimerLaunchButton";
+import { RevealSection } from "@/components/ui/RevealSection";
 
 function parseRestSeconds(recup: string | undefined): number {
   if (!recup) return 120;
@@ -138,67 +139,79 @@ export default async function MethodePage({ params }: MethodePageProps) {
         ) : null}
       </DetailHeader>
 
-      <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-5">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-          {t("methodes.scores.endurance")} / {t("methodes.scores.hypertrophie")} /{" "}
-          {t("methodes.scores.force")} / {t("methodes.scores.puissance")}
-        </h2>
-        <ScoresBlock scores={m.scores} labels={scoreLabels} />
-      </div>
-
-      <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-5">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-          {t("methodes.parametres.label")}
-        </h2>
-        <ParametresTable parametres={m.parametres} labels={parametresLabels} />
-      </div>
-
-      {m.timer ? (
-        <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/40 dark:to-cyan-950/30 shadow-sm p-5">
-          <MethodeTimer labels={timerLabels} />
-          <div className="mt-4 flex flex-col gap-2">
-            <Link
-              href={lp("/outils/timer", locale)}
-              className="flex items-center justify-center py-3 text-sm font-semibold text-blue-600 dark:text-blue-400 rounded-xl bg-white/60 dark:bg-zinc-900/40 hover:bg-white dark:hover:bg-zinc-800 transition-colors"
-            >
-              {t("methodes.timer.fullTimerLink")}
-            </Link>
-            <TimerLaunchButton restSeconds={parseRestSeconds(m.parametres.recuperation)} methodSlug={m.slug} />
-          </div>
+      <RevealSection delay={0}>
+        <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-5">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            {t("methodes.scores.endurance")} / {t("methodes.scores.hypertrophie")} /{" "}
+            {t("methodes.scores.force")} / {t("methodes.scores.puissance")}
+          </h2>
+          <AnimatedScoresBlock scores={m.scores} labels={scoreLabels} />
         </div>
-      ) : (
-        <TimerLaunchButton restSeconds={parseRestSeconds(m.parametres.recuperation)} methodSlug={m.slug} />
-      )}
+      </RevealSection>
 
-      <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-5 md:p-6 flex flex-col gap-5">
-        {mdxContent}
-      </div>
+      <RevealSection delay={80}>
+        <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-5">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            {t("methodes.parametres.label")}
+          </h2>
+          <ParametresTable parametres={m.parametres} labels={parametresLabels} />
+        </div>
+      </RevealSection>
+
+      <RevealSection delay={160}>
+        {m.timer ? (
+          <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/40 dark:to-cyan-950/30 shadow-sm p-5">
+            <MethodeTimer labels={timerLabels} />
+            <div className="mt-4 flex flex-col gap-2">
+              <Link
+                href={lp("/outils/timer", locale)}
+                className="tap-feedback flex items-center justify-center py-3 text-sm font-semibold text-blue-600 dark:text-blue-400 rounded-xl bg-white/60 dark:bg-zinc-900/40 hover:bg-white dark:hover:bg-zinc-800 transition-colors"
+              >
+                {t("methodes.timer.fullTimerLink")}
+              </Link>
+              <TimerLaunchButton restSeconds={parseRestSeconds(m.parametres.recuperation)} methodSlug={m.slug} />
+            </div>
+          </div>
+        ) : (
+          <TimerLaunchButton restSeconds={parseRestSeconds(m.parametres.recuperation)} methodSlug={m.slug} />
+        )}
+      </RevealSection>
+
+      <RevealSection delay={0}>
+        <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/60 shadow-sm p-5 md:p-6 flex flex-col gap-5">
+          {mdxContent}
+        </div>
+      </RevealSection>
 
       {m.methodes_complementaires.length > 0 ? (
-        <div className="flex flex-col gap-3">
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-            <span className="border-b-2 border-blue-400 pb-1">{t("methodes.related")}</span>
-          </h2>
-          <RelatedMethods
-            slugs={m.methodes_complementaires}
-            allMethodes={allMethodes}
-            heading=""
-            categoryLabels={categoryLabels}
-          />
-        </div>
+        <RevealSection delay={0}>
+          <div className="flex flex-col gap-3">
+            <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+              <span className="border-b-2 border-blue-400 pb-1">{t("methodes.related")}</span>
+            </h2>
+            <RelatedMethods
+              slugs={m.methodes_complementaires}
+              allMethodes={allMethodes}
+              heading=""
+              categoryLabels={categoryLabels}
+            />
+          </div>
+        </RevealSection>
       ) : null}
 
       {m.exercices_compatibles.length > 0 ? (
-        <div className="flex flex-col gap-3">
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-            <span className="border-b-2 border-blue-400 pb-1">{t("methodes.exercicesCompatibles")}</span>
-          </h2>
-          <RelatedExercices
-            slugs={m.exercices_compatibles}
-            allExercices={allExercices}
-            heading=""
-          />
-        </div>
+        <RevealSection delay={0}>
+          <div className="flex flex-col gap-3">
+            <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+              <span className="border-b-2 border-blue-400 pb-1">{t("methodes.exercicesCompatibles")}</span>
+            </h2>
+            <RelatedExercices
+              slugs={m.exercices_compatibles}
+              allExercices={allExercices}
+              heading=""
+            />
+          </div>
+        </RevealSection>
       ) : null}
     </section>
   );
