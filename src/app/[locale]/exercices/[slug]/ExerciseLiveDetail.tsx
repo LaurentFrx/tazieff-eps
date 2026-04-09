@@ -5,9 +5,11 @@ import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import NextImage from "next/image";
 import { LocaleLink as Link } from "@/components/LocaleLink";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import DifficultyPill from "@/components/DifficultyPill";
 import ExerciseAnatomyThumb from "@/components/exercices/ExerciseAnatomyThumb";
+import { ExerciseMannequin3D } from "@/components/exercices/ExerciseMannequin3D";
+import { MUSCLE_GROUPS, matchesGroup } from "@/app/[locale]/apprendre/anatomie/anatomy-data";
 import { HeroMedia } from "@/components/media/HeroMedia";
 import {
   getFavoritesSnapshot,
@@ -54,6 +56,8 @@ function RevealStep({ delay, children }: { delay: number; children: React.ReactN
   return <div ref={ref as React.RefObject<HTMLDivElement>}>{children}</div>;
 }
 
+type SessionSibling = { slug: string; title: string };
+
 type ExerciseLiveDetailProps = {
   slug: string;
   locale: Lang;
@@ -62,6 +66,7 @@ type ExerciseLiveDetailProps = {
   baseContent: string;
   initialPatch: ExerciseOverridePatch | null;
   onRevalidate?: (slug: string) => Promise<void>;
+  sessionSiblings?: SessionSibling[];
 };
 
 type LiveDraft = {
@@ -610,8 +615,10 @@ export function ExerciseLiveDetail({
   baseContent,
   initialPatch,
   onRevalidate,
+  sessionSiblings = [],
 }: ExerciseLiveDetailProps) {
   const { t, lang } = useI18n();
+  const router = useRouter();
   const settingsLabel = t("settings.open");
   const searchParams = useSearchParams();
   const sessionDraft = useSessionDraft();
@@ -2458,6 +2465,44 @@ export function ExerciseLiveDetail({
   const conseilsRef = useReveal(0);
   const securiteRef = useReveal(50);
 
+  // --- Swipe navigation between session exercises ---
+  const currentIdx = sessionSiblings.findIndex((s) => s.slug === slug);
+  const prevExercise = currentIdx > 0 ? sessionSiblings[currentIdx - 1] : null;
+  const nextExercise = currentIdx < sessionSiblings.length - 1 ? sessionSiblings[currentIdx + 1] : null;
+
+  // Prefetch adjacent exercise pages
+  useEffect(() => {
+    if (prevExercise) router.prefetch(`/exercices/${prevExercise.slug}`);
+    if (nextExercise) router.prefetch(`/exercices/${nextExercise.slug}`);
+  }, [prevExercise, nextExercise, router]);
+
+  // Swipe gesture on hero
+  const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
+  const handleSwipeStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    swipeStartRef.current = { x: touch.clientX, y: touch.clientY };
+  }, []);
+  const handleSwipeEnd = useCallback((e: React.TouchEvent) => {
+    const start = swipeStartRef.current;
+    if (!start) return;
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - start.x;
+    const deltaY = touch.clientY - start.y;
+    swipeStartRef.current = null;
+    if (Math.abs(deltaX) > 80 && Math.abs(deltaX) > Math.abs(deltaY) * 2) {
+      const target = deltaX < 0 ? nextExercise : prevExercise;
+      if (target) {
+        const heroEl = heroContainerRef.current;
+        if (heroEl) {
+          heroEl.style.transition = "transform 0.3s ease, opacity 0.3s ease";
+          heroEl.style.transform = `translateX(${deltaX < 0 ? "-100%" : "100%"})`;
+          heroEl.style.opacity = "0";
+        }
+        setTimeout(() => router.push(`/exercices/${target.slug}`), 300);
+      }
+    }
+  }, [nextExercise, prevExercise, router]);
+
   // --- Favori burst ---
   const [favBursting, setFavBursting] = useState(false);
   const prevFavRef = useRef(getFavoritesSnapshot().includes(slug));
@@ -2582,7 +2627,13 @@ export function ExerciseLiveDetail({
 
       {/* ─── 1. HERO MEDIA ─── */}
       {hero ? (
-        <div ref={heroContainerRef} className="relative -mx-4 sm:-mx-6 md:mx-0 md:rounded-2xl overflow-hidden">
+        <div
+          ref={heroContainerRef}
+          className="relative -mx-4 sm:-mx-6 md:mx-0 md:rounded-2xl overflow-hidden"
+          style={{ touchAction: "pan-y" }}
+          onTouchStart={handleSwipeStart}
+          onTouchEnd={handleSwipeEnd}
+        >
           {/* Boutons flottants */}
           <div className="absolute top-4 left-4 right-4 flex justify-between z-50">
             {/* Retour */}
@@ -2684,6 +2735,32 @@ export function ExerciseLiveDetail({
         </div>
       ) : null}
 
+      {/* ─── 1b. SWIPE NAV BAR ─── */}
+      {(prevExercise || nextExercise) && (
+        <div className="flex items-center justify-between px-1 -mt-1 mb-1">
+          {prevExercise ? (
+            <Link
+              href={`/exercices/${prevExercise.slug}`}
+              className="tap-feedback flex items-center gap-1 text-[10px] uppercase tracking-wider text-white/40 hover:text-white/60 transition-colors"
+              style={{ fontFamily: "var(--font-jetbrains), monospace" }}
+            >
+              <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12.5 15l-5-5 5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              {prevExercise.slug.toUpperCase()}
+            </Link>
+          ) : <span />}
+          {nextExercise ? (
+            <Link
+              href={`/exercices/${nextExercise.slug}`}
+              className="tap-feedback flex items-center gap-1 text-[10px] uppercase tracking-wider text-white/40 hover:text-white/60 transition-colors"
+              style={{ fontFamily: "var(--font-jetbrains), monospace" }}
+            >
+              {nextExercise.slug.toUpperCase()}
+              <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7.5 15l5-5-5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </Link>
+          ) : <span />}
+        </div>
+      )}
+
       {/* ─── 2. MUSCLES + EQUIPEMENT ─── */}
       <div ref={musclesRef as React.RefObject<HTMLDivElement>} className="flex flex-col gap-3 mt-1">
         {/* Muscles */}
@@ -2734,18 +2811,28 @@ export function ExerciseLiveDetail({
         <RestTimer restRaw={parsedSections.restRaw} />
       </div>
 
-      {/* ─── 5. MANNEQUIN ANATOMIQUE ─── */}
-      {merged.frontmatter.muscles.length > 0 && (
-        <div ref={mannequinRef as React.RefObject<HTMLDivElement>} style={{ display: "flex", justifyContent: "center", padding: "16px 0" }}>
-          <div style={{ width: 240 }} className="mannequin-glow is-visible">
-            <ExerciseAnatomyThumb
-              muscles={merged.frontmatter.muscles}
-              translatedMuscles={translateTerms(merged.frontmatter.muscles, "muscles", lang)}
-              slug={slug}
-            />
+      {/* ─── 5. MANNEQUIN ANATOMIQUE 3D ─── */}
+      {merged.frontmatter.muscles.length > 0 && (() => {
+        const anatomyGroups: string[] = [];
+        for (const muscle of merged.frontmatter.muscles) {
+          for (const [key, group] of Object.entries(MUSCLE_GROUPS)) {
+            if (matchesGroup(group, muscle) && !anatomyGroups.includes(key)) {
+              anatomyGroups.push(key);
+            }
+          }
+        }
+        return (
+          <div ref={mannequinRef as React.RefObject<HTMLDivElement>} style={{ display: "flex", justifyContent: "center", padding: "16px 0" }}>
+            <div style={{ width: 280 }} className="mannequin-glow is-visible">
+              <ExerciseMannequin3D
+                muscles={merged.frontmatter.muscles}
+                slug={slug}
+                anatomyGroups={anatomyGroups}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ─── 6-10. CONTENU STRUCTURÉ ─── */}
       {overrideDocView ? (

@@ -215,6 +215,14 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
         .slice(0, 6)
     : [];
 
+  // Ordered session siblings for swipe navigation (including current)
+  const sessionSiblings = sessionPrefix
+    ? allExercises
+        .filter((e) => e.slug.startsWith(`${sessionPrefix}-`))
+        .sort((a, b) => a.slug.localeCompare(b.slug))
+        .map((e) => ({ slug: e.slug, title: e.title }))
+    : [];
+
   const complementaryExercises = getComplementaryExercises(slug, allExercises);
   const primaryMuscle = (baseFrontmatter as { muscles?: string[] }).muscles?.[0] ?? null;
 
@@ -237,6 +245,7 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
         baseContent={baseContent}
         initialPatch={initialPatch}
         onRevalidate={revalidateExercises}
+        sessionSiblings={sessionSiblings}
       />
 
       {compatibleMethodes.length > 0 ? (
