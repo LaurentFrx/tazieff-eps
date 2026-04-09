@@ -2,7 +2,7 @@
 
 /**
  * Minimal R3F Canvas that renders a static mannequin preview.
- * No background, no shadows, no controls, frameloop="demand".
+ * No background, no shadows, no controls.
  * Dynamically imported by ExerciseMannequin3D (ssr: false).
  */
 
@@ -17,8 +17,7 @@ type Props = {
 export default function MannequinPreviewCanvas({ activeGroups, rotationY }: Props) {
   return (
     <Canvas
-      frameloop="demand"
-      camera={{ position: [0, 0.8, 2.0], fov: 50, near: 0.01, far: 100 }}
+      camera={{ position: [0, 1.0, 1.8], fov: 45, near: 0.01, far: 100 }}
       gl={{ antialias: true, stencil: false, alpha: true }}
       style={{ width: "100%", height: "100%", background: "transparent", pointerEvents: "none" }}
     >

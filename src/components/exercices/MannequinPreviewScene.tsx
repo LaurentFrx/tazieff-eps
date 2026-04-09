@@ -8,7 +8,7 @@
  */
 
 import { useEffect, useRef, useCallback, useMemo } from "react";
-import { useThree } from "@react-three/fiber";
+import { useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import HologramMannequin from "@/app/[locale]/apprendre/anatomie/HologramMannequin";
 
@@ -56,24 +56,33 @@ function buildGroupColorMap(activeGroups: string[]): Record<string, string> {
 
 export default function MannequinPreviewScene({ activeGroups, rotationY }: Props) {
   const mannequinRef = useRef<THREE.Group>(null);
-  const { invalidate } = useThree();
+  const centeredRef = useRef(false);
+  const { camera } = useThree();
 
   const noop = useCallback(() => {}, []);
-
   const groupColorMap = useMemo(() => buildGroupColorMap(activeGroups), [activeGroups]);
 
-  // Center mannequin (anchor feet to y=0) after GLB loads
-  useEffect(() => {
+  // Center mannequin + adjust camera every frame until GLBs are loaded
+  useFrame(() => {
+    if (centeredRef.current) return;
     const m = mannequinRef.current;
     if (!m) return;
-    const id = requestAnimationFrame(() => {
-      const box = new THREE.Box3().setFromObject(m);
-      if (box.isEmpty()) return;
-      m.position.y -= box.min.y;
-      invalidate();
-    });
-    return () => cancelAnimationFrame(id);
-  }, [invalidate]);
+    const box = new THREE.Box3().setFromObject(m);
+    if (box.isEmpty()) return;
+
+    // Anchor feet to y=0
+    m.position.y -= box.min.y;
+    // Recompute after repositioning
+    box.setFromObject(m);
+    const center = box.getCenter(new THREE.Vector3());
+
+    // Point camera at mannequin center
+    camera.position.set(0, center.y, 1.8);
+    camera.lookAt(0, center.y, 0);
+    camera.updateProjectionMatrix();
+
+    centeredRef.current = true;
+  });
 
   return (
     <group rotation-y={rotationY}>
