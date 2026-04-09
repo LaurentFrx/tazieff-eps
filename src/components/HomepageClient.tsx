@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { LocaleLink as Link } from "@/components/LocaleLink";
 import Image from "next/image";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -114,18 +114,34 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
   const { favorites } = useFavorites();
 
   // --- Reveal hooks ---
-  const [flyerRef, flyerVisible] = useReveal();
-  const [searchRef, searchVisible] = useReveal();
-  const [gridRef, gridVisible] = useReveal();
-  const [starterRef, starterVisible] = useReveal();
-  const [themesRef, themesVisible] = useReveal();
-  const [outilsRef, outilsVisible] = useReveal();
-  const [footerRef, footerVisible] = useReveal();
+  const flyerRef = useReveal(0);
+  const searchRef = useReveal(100);
+  const revealCard1 = useReveal(0);
+  const revealCard2 = useReveal(80);
+  const revealCard3 = useReveal(160);
+  const revealCard4 = useReveal(240);
+  const starterRef = useReveal(0);
+  const themesRef = useReveal(0);
+  const outilsRef = useReveal(0);
+  const footerRef = useReveal(0);
+  const cardRefs = [revealCard1, revealCard2, revealCard3, revealCard4];
 
-  // --- Count-up hooks ---
-  const exoCount = useCountUp(exerciseCount, gridVisible, 1000);
-  const metCount = useCountUp(methodeCount, gridVisible, 1000);
-  const lrnCount = useCountUp(learnCount, gridVisible, 1000);
+  // --- Count-up: separate IntersectionObserver trigger ---
+  const gridContainerRef = useRef<HTMLDivElement>(null);
+  const [gridInView, setGridInView] = useState(false);
+  useEffect(() => {
+    const el = gridContainerRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setGridInView(true); obs.disconnect(); } },
+      { threshold: 0.05 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  const exoCount = useCountUp(exerciseCount, gridInView, 1000);
+  const metCount = useCountUp(methodeCount, gridInView, 1000);
+  const lrnCount = useCountUp(learnCount, gridInView, 1000);
 
   // --- Entrance animation (once per session) ---
   const [showEntrance, setShowEntrance] = useState(false);
@@ -173,48 +189,37 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
       </div>
 
       {/* ── ZONE 2 : Accès rapide — grille 2×2 ────────────────────── */}
-      <div ref={gridRef as React.RefObject<HTMLDivElement>} className="grid grid-cols-2 gap-3">
+      <div ref={gridContainerRef} className="grid grid-cols-2 gap-3">
         {[
           { href: "/exercices", bg: "linear-gradient(135deg, #f97316, #f59e0b)", icon: <IconDumbbell />, count: exoCount, label: t("pages.home.exercicesLabel"), desc: t("pages.home.exercicesDesc") },
           { href: "/methodes", bg: "linear-gradient(135deg, #4f46e5, #7c3aed)", icon: <IconClipboard />, count: metCount, label: t("pages.home.methodesLabel"), desc: t("pages.home.methodesDesc") },
           { href: "/apprendre", bg: "linear-gradient(135deg, #16a34a, #22c55e)", icon: <IconBook />, count: lrnCount, label: t("pages.home.apprendreLabel"), desc: t("pages.home.apprendreDesc") },
           { href: "/parcours-bac", bg: "linear-gradient(135deg, #7c3aed, #d946ef)", icon: <IconTrophy />, count: null, label: t("pages.home.bacLabel"), desc: t("pages.home.bacDesc") },
         ].map((card, i) => (
-          <Link
-            key={card.href}
-            href={card.href}
-            className="tap-feedback group relative overflow-hidden rounded-2xl p-4 min-h-[130px] flex flex-col justify-between shadow-lg"
-            style={{
-              background: card.bg,
-              opacity: gridVisible ? 1 : 0,
-              transform: gridVisible ? "none" : "translateY(60px) scale(0.97)",
-              transition: "opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1)",
-              transitionDelay: `${i * 80}ms`,
-            }}
-          >
-            <div className="absolute top-3 right-3 text-white/20">{card.icon}</div>
-            {card.count !== null ? <span className="text-3xl font-black text-white">{card.count}</span> : <div className="flex-1" />}
-            <div>
-              <span className="text-sm font-bold text-white">{card.label}</span>
-              <span className="block text-[11px] text-white/90">{card.desc}</span>
-            </div>
-          </Link>
+          <div key={card.href} ref={cardRefs[i] as React.RefObject<HTMLDivElement>}>
+            <Link
+              href={card.href}
+              className="tap-feedback group relative overflow-hidden rounded-2xl p-4 min-h-[130px] flex flex-col justify-between shadow-lg"
+              style={{ background: card.bg }}
+            >
+              <div className="absolute top-3 right-3 text-white/20">{card.icon}</div>
+              {card.count !== null ? <span className="text-3xl font-black text-white">{card.count}</span> : <div className="flex-1" />}
+              <div>
+                <span className="text-sm font-bold text-white">{card.label}</span>
+                <span className="block text-[11px] text-white/90">{card.desc}</span>
+              </div>
+            </Link>
+          </div>
         ))}
       </div>
 
       {/* ── ZONE 3 : Favoris ou "Pour bien commencer" ──────────────── */}
       <div ref={starterRef as React.RefObject<HTMLDivElement>}>
-        <h2 className="text-base font-extrabold text-[color:var(--ink)] mb-3"
-          style={{
-            opacity: starterVisible ? 1 : 0,
-            transform: starterVisible ? "none" : "translateY(60px) scale(0.97)",
-            transition: "opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1)",
-          }}
-        >
+        <h2 className="text-base font-extrabold text-[color:var(--ink)] mb-3">
           {hasFavorites ? t("pages.home.favoritesTitle") : t("pages.home.startTitle")}
         </h2>
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 snap-x snap-mandatory scrollbar-none">
-          {(hasFavorites ? validFavorites.slice(0, 10) : starterExercises).map((item, i) => {
+          {(hasFavorites ? validFavorites.slice(0, 10) : starterExercises).map((item) => {
             const slug = typeof item === "string" ? item : item.slug;
             const entry = slugMap.get(slug);
             const title = typeof item === "string"
@@ -225,12 +230,6 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
                 key={slug}
                 href={`/exercices/${slug}`}
                 className="tap-feedback flex-shrink-0 w-36 rounded-xl overflow-hidden border border-white/10 bg-white/5 shadow-sm snap-start"
-                style={{
-                  opacity: starterVisible ? 1 : 0,
-                  transform: starterVisible ? "none" : "translateX(-40px) scale(0.97)",
-                  transition: "opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1)",
-                  transitionDelay: `${i * 100}ms`,
-                }}
               >
                 <div className="relative w-full aspect-video bg-zinc-800">
                   <Image
@@ -253,13 +252,7 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
 
       {/* ── ZONE 4 : Thèmes d'entraînement ─────────────────────────── */}
       <div ref={themesRef as React.RefObject<HTMLDivElement>}>
-        <h2 className="text-base font-extrabold text-[color:var(--ink)] mb-3"
-          style={{
-            opacity: themesVisible ? 1 : 0,
-            transform: themesVisible ? "none" : "translateY(60px) scale(0.97)",
-            transition: "opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1)",
-          }}
-        >
+        <h2 className="text-base font-extrabold text-[color:var(--ink)] mb-3">
           {t("pages.home.themesTitle")}
         </h2>
         <div className="grid grid-cols-3 gap-2">
@@ -267,18 +260,12 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
             { href: "/objectifs/endurance-de-force", bg: "linear-gradient(135deg, #059669, #34d399)", icon: <IconHeartbeat />, label: t("pages.home.themeEndurance"), glow: "0 0 20px rgba(52,211,153,0.3)" },
             { href: "/objectifs/gain-de-volume", bg: "linear-gradient(135deg, #3b82f6, #6366f1)", icon: <IconBarbell />, label: t("pages.home.themeVolume"), glow: "0 0 20px rgba(99,102,241,0.3)" },
             { href: "/objectifs/gain-de-puissance", bg: "linear-gradient(135deg, #f97316, #ef4444)", icon: <IconBolt />, label: t("pages.home.themePuissance"), glow: "0 0 20px rgba(249,115,22,0.3)" },
-          ].map((btn, i) => (
+          ].map((btn) => (
             <Link
               key={btn.href}
               href={btn.href}
               className="tap-feedback rounded-xl p-3 flex flex-col items-center gap-1.5 text-center shadow-md"
-              style={{
-                background: btn.bg,
-                opacity: themesVisible ? 1 : 0,
-                transform: themesVisible ? "none" : "translateY(60px) scale(0.97)",
-                transition: "opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1), box-shadow 0.2s ease",
-                transitionDelay: `${i * 80}ms`,
-              }}
+              style={{ background: btn.bg, transition: "box-shadow 0.2s ease" }}
               onPointerEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = btn.glow; }}
               onPointerLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = ""; }}
             >
@@ -291,13 +278,7 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
 
       {/* ── ZONE 5 : Outils ────────────────────────────────────────── */}
       <div ref={outilsRef as React.RefObject<HTMLDivElement>}>
-        <h2 className="text-base font-extrabold text-[color:var(--ink)] mb-3"
-          style={{
-            opacity: outilsVisible ? 1 : 0,
-            transform: outilsVisible ? "none" : "translateY(60px) scale(0.97)",
-            transition: "opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1)",
-          }}
-        >
+        <h2 className="text-base font-extrabold text-[color:var(--ink)] mb-3">
           {t("pages.home.outilsTitle")}
         </h2>
         <div className="grid grid-cols-3 gap-2">
@@ -305,17 +286,11 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
             { href: "/outils/calculateur-rm", icon: <IconCalculateur />, color: "text-cyan-400", label: t("pages.home.outilCalculateur") },
             { href: "/outils/timer", icon: <IconTimer />, color: "text-amber-400", label: t("pages.home.outilTimer") },
             { href: "/outils/carnet", icon: <IconCarnet />, color: "text-violet-400", label: t("pages.home.outilCarnet") },
-          ].map((tool, i) => (
+          ].map((tool) => (
             <Link
               key={tool.href}
               href={tool.href}
               className="tap-feedback rounded-xl p-3 flex flex-col items-center gap-1.5 text-center border border-white/10 bg-white/5"
-              style={{
-                opacity: outilsVisible ? 1 : 0,
-                transform: outilsVisible ? "none" : "translateY(60px) scale(0.97)",
-                transition: "opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1)",
-                transitionDelay: `${i * 80}ms`,
-              }}
             >
               <span className={tool.color}>{tool.icon}</span>
               <span className="text-[11px] font-semibold text-[color:var(--ink)]">{tool.label}</span>

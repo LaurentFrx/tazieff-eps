@@ -1,5 +1,16 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeAll } from "vitest";
+
+beforeAll(() => {
+  // jsdom doesn't provide IntersectionObserver — trigger callback immediately
+  globalThis.IntersectionObserver = class {
+    cb: IntersectionObserverCallback;
+    constructor(cb: IntersectionObserverCallback) { this.cb = cb; }
+    observe() { this.cb([{ isIntersecting: true } as IntersectionObserverEntry], this as unknown as IntersectionObserver); }
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof IntersectionObserver;
+});
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
@@ -16,6 +27,10 @@ vi.mock("@/lib/i18n/I18nProvider", () => ({
 
 vi.mock("@/hooks/useFavorites", () => ({
   useFavorites: () => ({ favorites: [], isFavorite: () => false, toggle: () => {}, set: () => {} }),
+}));
+
+vi.mock("@/hooks/useCountUp", () => ({
+  useCountUp: (target: number) => target,
 }));
 
 vi.mock("@/lib/search/search-index", () => ({

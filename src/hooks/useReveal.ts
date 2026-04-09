@@ -1,65 +1,42 @@
 "use client";
+import { useRef, useLayoutEffect } from "react";
 
-import { useLayoutEffect, useEffect, useRef, useState } from "react";
-
-const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
-
-const SPRING = "opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1)";
-const HIDDEN = "translateY(60px) scale(0.97)";
-
-/**
- * Observe-once reveal hook using useLayoutEffect to avoid flash.
- * Elements above the fold are shown instantly (no animation).
- * Elements below the fold animate in when they enter the viewport.
- * Returns [ref, visible] — attach ref to the element, the hook
- * manages all styles imperatively via el.style.
- */
-export function useReveal(delay = 0): [
-  React.RefObject<HTMLElement | null>,
-  boolean,
-] {
+export function useReveal(delay = 0) {
   const ref = useRef<HTMLElement | null>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const [visible, setVisible] = useState(false);
 
-  useIsomorphicLayoutEffect(() => {
+  useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
 
+    // Already visible on screen? Leave it as-is (no flash)
     const rect = el.getBoundingClientRect();
-    const isAboveFold = rect.top < window.innerHeight * 0.5;
+    const alreadyVisible = rect.top < window.innerHeight * 0.8;
 
-    if (isAboveFold) {
-      // Above the fold: show immediately, no animation, no flash
-      el.style.opacity = "1";
-      el.style.transform = "none";
-      el.style.transition = "none";
-      setVisible(true);
+    if (alreadyVisible) {
       return;
     }
 
-    // Below the fold: hide before paint, animate on scroll
+    // Not yet visible: hide the element
     el.style.opacity = "0";
-    el.style.transform = HIDDEN;
-    if (delay > 0) el.style.transitionDelay = `${delay}ms`;
+    el.style.transform = "translateY(60px) scale(0.97)";
 
-    observerRef.current = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          el.style.transition = SPRING;
-          if (delay > 0) el.style.transitionDelay = `${delay}ms`;
-          el.style.opacity = "1";
-          el.style.transform = "none";
-          setVisible(true);
-          observerRef.current?.disconnect();
-        }
-      },
-      { threshold: 0.05 },
-    );
-    observerRef.current.observe(el);
+    // Listen for scroll to reveal
+    function onScroll() {
+      const r = el!.getBoundingClientRect();
+      if (r.top < window.innerHeight * 0.85) {
+        setTimeout(() => {
+          el!.style.transition =
+            "opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1)";
+          el!.style.opacity = "1";
+          el!.style.transform = "none";
+        }, delay);
+        window.removeEventListener("scroll", onScroll, true);
+      }
+    }
 
-    return () => observerRef.current?.disconnect();
+    window.addEventListener("scroll", onScroll, { capture: true, passive: true });
+    return () => window.removeEventListener("scroll", onScroll, true);
   }, [delay]);
 
-  return [ref, visible];
+  return ref;
 }

@@ -49,6 +49,11 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useReveal } from "@/hooks/useReveal";
 import "./exercise-detail.css";
 
+function RevealStep({ delay, children }: { delay: number; children: React.ReactNode }) {
+  const ref = useReveal(delay);
+  return <div ref={ref as React.RefObject<HTMLDivElement>}>{children}</div>;
+}
+
 type ExerciseLiveDetailProps = {
   slug: string;
   locale: Lang;
@@ -2443,15 +2448,15 @@ export function ExerciseLiveDetail({
   }, []);
 
   // --- Section reveal hooks ---
-  const [musclesRef, musclesVisible] = useReveal();
-  const [dosageRef, dosageVisible] = useReveal();
-  const [timerRef, timerVisible] = useReveal();
-  const [mannequinRef, mannequinVisible] = useReveal();
-  const [resumeRef, resumeVisible] = useReveal();
-  const [executionRef, executionVisible] = useReveal();
-  const [respirationRef, respirationVisible] = useReveal();
-  const [conseilsRef, conseilsVisible] = useReveal();
-  const [securiteRef, securiteVisible] = useReveal();
+  const musclesRef = useReveal(0);
+  const dosageRef = useReveal(50);
+  const timerRef = useReveal(100);
+  const mannequinRef = useReveal(150);
+  const resumeRef = useReveal(0);
+  const executionRef = useReveal(0);
+  const respirationRef = useReveal(0);
+  const conseilsRef = useReveal(0);
+  const securiteRef = useReveal(50);
 
   // --- Favori burst ---
   const [favBursting, setFavBursting] = useState(false);
@@ -2680,7 +2685,7 @@ export function ExerciseLiveDetail({
       ) : null}
 
       {/* ─── 2. MUSCLES + EQUIPEMENT ─── */}
-      <div ref={musclesRef as React.RefObject<HTMLDivElement>} className={`flex flex-col gap-3 mt-1`}>
+      <div ref={musclesRef as React.RefObject<HTMLDivElement>} className="flex flex-col gap-3 mt-1">
         {/* Muscles */}
         {merged.frontmatter.muscles.length > 0 && (
           <div className="flex flex-wrap gap-2">
@@ -2732,7 +2737,7 @@ export function ExerciseLiveDetail({
       {/* ─── 5. MANNEQUIN ANATOMIQUE ─── */}
       {merged.frontmatter.muscles.length > 0 && (
         <div ref={mannequinRef as React.RefObject<HTMLDivElement>} style={{ display: "flex", justifyContent: "center", padding: "16px 0" }}>
-          <div style={{ width: 240 }} className={`mannequin-glow${mannequinVisible ? ' is-visible' : ''}`}>
+          <div style={{ width: 240 }} className="mannequin-glow is-visible">
             <ExerciseAnatomyThumb
               muscles={merged.frontmatter.muscles}
               translatedMuscles={translateTerms(merged.frontmatter.muscles, "muscles", lang)}
@@ -2815,21 +2820,13 @@ export function ExerciseLiveDetail({
                     .filter(l => !isDosageLine(l));
                   return steps.map((line, i) => {
                     const text = line.replace(/^-\s*/, '').trim();
-                    const translateDir = i % 2 === 0 ? "translateX(-40px)" : "translateX(40px)";
                     return (
-                      <div
-                        key={i}
-                        className="flex gap-3 items-start"
-                        style={{
-                          opacity: executionVisible ? 1 : 0,
-                          transform: executionVisible ? "none" : translateDir,
-                          transition: "opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1)",
-                          transitionDelay: `${i * 80}ms`,
-                        }}
-                      >
-                        <span className="text-2xl leading-none text-[#FF8C00] shrink-0 w-8 text-right" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>{i + 1}</span>
-                        <p className="text-sm text-white/80 leading-relaxed pt-0.5" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>{text}</p>
-                      </div>
+                      <RevealStep key={i} delay={i * 80}>
+                        <div className="flex gap-3 items-start">
+                          <span className="text-2xl leading-none text-[#FF8C00] shrink-0 w-8 text-right" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>{i + 1}</span>
+                          <p className="text-sm text-white/80 leading-relaxed pt-0.5" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>{text}</p>
+                        </div>
+                      </RevealStep>
                     );
                   });
                 })()}
