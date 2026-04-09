@@ -188,8 +188,7 @@ describe("ExerciseAnatomyThumb", () => {
     expect(
       screen.getByLabelText("exerciseAnatomy.musclesWorked"),
     ).toBeTruthy();
-    // SVG mannequin now renders inline instead of <img>
-    expect(screen.getByLabelText("Muscles du corps humain")).toBeTruthy();
+    expect(screen.getByTestId("mannequin-img")).toBeTruthy();
   });
 
   it("shows new 5-group labels on the thumb", async () => {
@@ -275,8 +274,7 @@ describe("ExerciseAnatomyThumb", () => {
     const thumb = screen.getByLabelText("exerciseAnatomy.musclesWorked");
     expect(thumb.className).not.toContain("scanning");
     expect(thumb.className).not.toContain("pre-scan");
-    // SVG mannequin now renders inline instead of <img>
-    expect(screen.getByLabelText("Muscles du corps humain")).toBeTruthy();
+    expect(screen.getByTestId("mannequin-img")).toBeTruthy();
   });
 
   it("links to anatomy page with anatomy-data group keys (not simplified 5-groups)", async () => {

@@ -7,6 +7,7 @@ import NextImage from "next/image";
 import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useSearchParams, useRouter } from "next/navigation";
 import DifficultyPill from "@/components/DifficultyPill";
+import ExerciseAnatomyThumb from "@/components/exercices/ExerciseAnatomyThumb";
 import { ExerciseMannequin3D } from "@/components/exercices/ExerciseMannequin3D";
 import { MUSCLE_GROUPS, matchesGroup } from "@/app/[locale]/apprendre/anatomie/anatomy-data";
 import { HeroMedia } from "@/components/media/HeroMedia";
@@ -2821,13 +2822,14 @@ export function ExerciseLiveDetail({
           }
         }
         return (
-          <div ref={mannequinRef as React.RefObject<HTMLDivElement>} style={{ margin: "-6px 0" }}>
-            <ExerciseMannequin3D
-              muscles={merged.frontmatter.muscles}
-              slug={slug}
-              anatomyGroups={anatomyGroups}
-              title={displayTitle}
-            />
+          <div ref={mannequinRef as React.RefObject<HTMLDivElement>} style={{ display: "flex", justifyContent: "center", margin: "-6px 0" }}>
+            <div style={{ width: 280 }} className="mannequin-glow is-visible">
+              <ExerciseMannequin3D
+                muscles={merged.frontmatter.muscles}
+                slug={slug}
+                anatomyGroups={anatomyGroups}
+              />
+            </div>
           </div>
         );
       })()}
