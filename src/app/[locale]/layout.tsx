@@ -4,6 +4,7 @@ import { InstallPwaBanner } from "@/components/InstallPwaBanner";
 import { OnlineStatus } from "@/components/OnlineStatus";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { AppProviders } from "@/components/providers/AppProviders";
+import { PageTransition } from "@/components/PageTransition";
 import type { Lang } from "@/lib/i18n/messages";
 
 const VALID_LOCALES: Lang[] = ["fr", "en", "es"];
@@ -29,7 +30,7 @@ export default async function LocaleLayout({
   return (
     <AppProviders initialLang={locale} initialTheme="dark">
       <div className="app-shell">
-        <main className="app-main">{children}</main>
+        <main className="app-main"><PageTransition>{children}</PageTransition></main>
       </div>
       <BottomTabBar />
       <TopBar />

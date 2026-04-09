@@ -4,7 +4,7 @@ import { useCountUp } from "@/hooks/useCountUp";
 
 export function AnimatedCount({
   target,
-  duration = 800,
+  duration = 1200,
 }: {
   target: number;
   duration?: number;

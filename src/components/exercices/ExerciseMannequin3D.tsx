@@ -138,9 +138,7 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups }: Props) {
           }}
         >
           {loading && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-8 h-8 border-2 border-white/20 border-t-[#FF8C00] rounded-full animate-spin" />
-            </div>
+            <div className="absolute inset-0 skeleton" />
           )}
           <div
             style={{ opacity: loading ? 0 : 1, transition: "opacity 0.5s ease", width: "100%", height: "100%" }}

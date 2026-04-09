@@ -66,6 +66,21 @@
   100% { transform: scale(1); }
 }
 
+/* ── iPad / tablet responsive ───────────────────────────────── */
+
+@media (min-width: 768px) {
+  .mannequin-glow {
+    max-width: 300px;
+  }
+}
+
+@media (min-width: 768px) and (orientation: landscape) {
+  .hero-parallax {
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+}
+
 /* ── Reduced motion ──────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {

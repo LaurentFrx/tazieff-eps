@@ -2,6 +2,10 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   color-scheme: light;
   /* Font aliases — anciennes variables → design system Sport Vibrant */
@@ -253,6 +257,25 @@ body:has(.anatomy-page) nav {
   transform: scale(0.95);
 }
 
+/* ── Chip interactions ─────────────────────────────────────── */
+
+.chip-active {
+  animation: chip-pulse 0.2s ease;
+}
+
+@keyframes chip-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* ── Accordion slide ──────────────────────────────────────── */
+
+.accordion-content {
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
 /* ── Reveal section (global) ────────────────────────────────── */
 
 .reveal-section {
@@ -277,6 +300,9 @@ body:has(.anatomy-page) nav {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   .reveal-section,
   .reveal-step {
     opacity: 1;
@@ -285,6 +311,9 @@ body:has(.anatomy-page) nav {
   }
   .tap-feedback:active {
     transform: none;
+  }
+  .page {
+    animation: none;
   }
 }
 
@@ -867,13 +896,29 @@ body:has(.anatomy-page) nav {
 
 @media (min-width: 768px) {
   .app-shell {
-    padding: calc(60px + env(safe-area-inset-top, 0px)) 40px calc(96px + env(safe-area-inset-bottom, 0px));
+    padding: calc(60px + env(safe-area-inset-top, 0px)) 24px calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .page {
+    max-width: 960px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .card-grid {
+    gap: 20px;
   }
 
   .block-row {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-shell {
+    padding: calc(60px + env(safe-area-inset-top, 0px)) 32px calc(96px + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -1137,11 +1182,34 @@ body:has(.anatomy-page) nav {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  animation: stt-enter 0.3s ease both;
+}
+
+@keyframes stt-enter {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .scroll-to-top:hover {
   background: color-mix(in srgb, var(--accent) 12%, var(--card));
+}
+
+.scroll-to-top:active {
+  transform: scale(0.9);
+}
+
+/* ── Skeleton shimmer ──────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #1a1a2e 25%, #252540 50%, #1a1a2e 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 16px;
 }
 
 /* ── Enseignant ─────────────────────────────── */
