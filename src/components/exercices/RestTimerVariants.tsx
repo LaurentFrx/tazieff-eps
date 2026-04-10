@@ -90,11 +90,11 @@ function useTimer(initialSeconds: number) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Countdown ring — compact (overlays the bracelet picker center)
+   Countdown ring — compact, sans fond (transparent)
    ═══════════════════════════════════════════════════════════════ */
 
-const RING_R = 26;
-const RING_STROKE = 3.5;
+const RING_R = 20;
+const RING_STROKE = 3;
 const RING_SIZE = (RING_R + RING_STROKE) * 2;
 const RING_CIRC = 2 * Math.PI * RING_R;
 
@@ -104,14 +104,12 @@ function CountdownRing({
   running,
   finished,
   onTap,
-  onReset,
 }: {
   timeLeft: number;
   total: number;
   running: boolean;
   finished: boolean;
   onTap: () => void;
-  onReset: () => void;
 }) {
   const isActive = running || finished;
   const progress = isActive ? 1 - timeLeft / total : 0;
@@ -121,16 +119,8 @@ function CountdownRing({
     <button
       type="button"
       onClick={(e) => { e.stopPropagation(); onTap(); }}
-      onDoubleClick={(e) => { e.stopPropagation(); onReset(); }}
-      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[5] flex items-center justify-center rounded-full transition-all duration-300"
-      style={{
-        width: RING_SIZE + 8,
-        height: RING_SIZE + 8,
-        background: isActive ? "rgba(4,4,10,0.92)" : "rgba(4,4,10,0.85)",
-        boxShadow: isActive
-          ? "0 0 20px rgba(255,140,0,0.25), 0 0 40px rgba(255,140,0,0.1)"
-          : "0 0 16px rgba(0,0,0,0.6)",
-      }}
+      className="relative shrink-0 flex items-center justify-center"
+      style={{ width: RING_SIZE, height: RING_SIZE }}
     >
       <svg width={RING_SIZE} height={RING_SIZE} style={{ transform: "rotate(-90deg)" }}>
         <circle cx={RING_R + RING_STROKE} cy={RING_R + RING_STROKE} r={RING_R} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={RING_STROKE} />
@@ -142,20 +132,15 @@ function CountdownRing({
           opacity={isActive || timeLeft < total ? 1 : 0}
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span
-          className="text-[13px] font-bold leading-none"
-          style={{
-            fontFamily: "var(--font-jetbrains), monospace",
-            color: finished ? "#00E676" : running ? "#FF8C00" : "rgba(255,255,255,0.9)",
-          }}
-        >
-          {formatTime(timeLeft)}
-        </span>
-        <span className="text-[8px] mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>
-          {running ? "pause" : finished ? "reset" : "start"}
-        </span>
-      </div>
+      <span
+        className="absolute text-[11px] font-bold leading-none"
+        style={{
+          fontFamily: "var(--font-jetbrains), monospace",
+          color: finished ? "#00E676" : running ? "#FF8C00" : "rgba(255,255,255,0.7)",
+        }}
+      >
+        {formatTime(timeLeft)}
+      </span>
     </button>
   );
 }
@@ -289,8 +274,7 @@ function HorizontalBraceletPicker({
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   EXPORT — Timer repos compact avec bracelet picker
-   Le ring countdown est superposé au centre du bracelet.
+   EXPORT — Timer repos : label + ring + bracelet sur une ligne
    ═══════════════════════════════════════════════════════════════ */
 
 export function RestTimerShowcase({ restRaw }: { restRaw: string | null }) {
@@ -300,14 +284,34 @@ export function RestTimerShowcase({ restRaw }: { restRaw: string | null }) {
 
   return (
     <div
-      className="relative rounded-2xl select-none transition-all duration-300 overflow-hidden"
+      className="flex items-center gap-3 rounded-2xl pl-4 pr-1 py-1.5 select-none transition-all duration-300 overflow-hidden"
       style={{
         background: isActive ? "rgba(255,140,0,0.10)" : "rgba(255,255,255,0.03)",
         border: `1px solid ${isActive ? "rgba(255,140,0,0.25)" : "rgba(255,255,255,0.06)"}`,
       }}
     >
-      {/* Bracelet picker behind */}
-      <div className="px-2 py-2">
+      {/* Label */}
+      <span
+        className="shrink-0 text-[11px] font-semibold uppercase tracking-wider"
+        style={{
+          fontFamily: "var(--font-dm-sans), sans-serif",
+          color: isActive ? "#FF8C00" : "rgba(255,255,255,0.35)",
+        }}
+      >
+        {timer.finished ? "Terminé !" : timer.running ? "Repos" : "Timer repos"}
+      </span>
+
+      {/* Countdown ring */}
+      <CountdownRing
+        timeLeft={timer.timeLeft}
+        total={timer.total}
+        running={timer.running}
+        finished={timer.finished}
+        onTap={timer.tap}
+      />
+
+      {/* Bracelet picker — takes remaining space */}
+      <div className="flex-1 min-w-0">
         <HorizontalBraceletPicker
           values={WHEEL_VALUES}
           defaultValue={WHEEL_VALUES.includes(timer.total) ? timer.total : 90}
@@ -315,16 +319,6 @@ export function RestTimerShowcase({ restRaw }: { restRaw: string | null }) {
           formatLabel={WHEEL_FORMAT}
         />
       </div>
-
-      {/* Countdown ring overlay — centered on the picker */}
-      <CountdownRing
-        timeLeft={timer.timeLeft}
-        total={timer.total}
-        running={timer.running}
-        finished={timer.finished}
-        onTap={timer.tap}
-        onReset={timer.reset}
-      />
     </div>
   );
 }
