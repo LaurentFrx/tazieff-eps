@@ -24,6 +24,7 @@ import type { Lang } from "@/lib/i18n/messages";
 import { ExerciseJsonLd } from "@/components/seo/ExerciseJsonLd";
 import { ExerciseQuickInfo } from "@/components/exercices/ExerciseQuickInfo";
 import { RestTimer } from "@/components/exercices/RestTimer";
+import { RestTimerShowcase } from "@/components/exercices/RestTimerVariants";
 import { translateTerms } from "@/lib/i18n/terms/translate";
 import { getMuscleGroup, type MuscleGroupId } from "@/lib/exercices/muscleGroups";
 const MarkdownRenderer = dynamic(
@@ -2810,6 +2811,9 @@ export function ExerciseLiveDetail({
       <div ref={timerRef as React.RefObject<HTMLDivElement>} className="tap-feedback">
         <RestTimer restRaw={parsedSections.restRaw} />
       </div>
+
+      {/* ─── 4b. TIMER REPOS — 7 VARIANTES À TESTER ─── */}
+      <RestTimerShowcase restRaw={parsedSections.restRaw} />
 
       {/* ─── 5. MANNEQUIN ANATOMIQUE 3D ─── */}
       {merged.frontmatter.muscles.length > 0 && (() => {
