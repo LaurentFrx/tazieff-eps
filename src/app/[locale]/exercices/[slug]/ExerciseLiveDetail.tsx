@@ -2737,7 +2737,7 @@ export function ExerciseLiveDetail({
 
       {/* ─── 1b. SWIPE NAV BAR ─── */}
       {(prevExercise || nextExercise) && (
-        <div className="flex items-center justify-between px-1 my-4 py-3 border-y border-white/5">
+        <div className="flex items-center justify-between px-1 my-2 py-3 border-y border-white/5">
           {prevExercise ? (
             <Link
               href={`/exercices/${prevExercise.slug}`}
