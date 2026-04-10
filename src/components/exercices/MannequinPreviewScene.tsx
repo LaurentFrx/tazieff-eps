@@ -143,11 +143,12 @@ export default function MannequinPreviewScene({ activeGroups, rotationY, onFrame
             hoveredMuscle={null}
             wireframe={false}
             showSkeleton={false}
-            showWireframe={false}
+            showWireframe={true}
             showMuscles={true}
             onHoverMuscle={noop}
             onClickMuscle={noop}
             onLongPressMuscle={noop}
+            silhouetteOpacity={0.12}
             ambientIntensity={0.9}
             mainLightIntensity={1.0}
             groupColorMap={groupColorMap}
