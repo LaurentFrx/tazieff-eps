@@ -90,11 +90,11 @@ function useTimer(initialSeconds: number) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Countdown ring — compact, sans fond (transparent)
+   Countdown ring — compact, sans fond
    ═══════════════════════════════════════════════════════════════ */
 
-const RING_R = 20;
-const RING_STROKE = 3;
+const RING_R = 18;
+const RING_STROKE = 2.5;
 const RING_SIZE = (RING_R + RING_STROKE) * 2;
 const RING_CIRC = 2 * Math.PI * RING_R;
 
@@ -118,12 +118,13 @@ function CountdownRing({
   return (
     <button
       type="button"
-      onClick={(e) => { e.stopPropagation(); onTap(); }}
+      onClick={onTap}
       className="relative shrink-0 flex items-center justify-center"
-      style={{ width: RING_SIZE, height: RING_SIZE }}
+      style={{ width: 44, height: 44 }}
+      aria-label={running ? "Pause" : finished ? "Reset" : "Démarrer"}
     >
       <svg width={RING_SIZE} height={RING_SIZE} style={{ transform: "rotate(-90deg)" }}>
-        <circle cx={RING_R + RING_STROKE} cy={RING_R + RING_STROKE} r={RING_R} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={RING_STROKE} />
+        <circle cx={RING_R + RING_STROKE} cy={RING_R + RING_STROKE} r={RING_R} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={RING_STROKE} />
         <circle
           cx={RING_R + RING_STROKE} cy={RING_R + RING_STROKE} r={RING_R} fill="none"
           stroke={finished ? "#00E676" : "#FF8C00"} strokeWidth={RING_STROKE} strokeLinecap="round"
@@ -136,7 +137,7 @@ function CountdownRing({
         className="absolute text-[11px] font-bold leading-none"
         style={{
           fontFamily: "var(--font-jetbrains), monospace",
-          color: finished ? "#00E676" : running ? "#FF8C00" : "rgba(255,255,255,0.7)",
+          color: finished ? "#00E676" : running ? "#FF8C00" : "white",
         }}
       >
         {formatTime(timeLeft)}
@@ -146,11 +147,11 @@ function CountdownRing({
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Horizontal bracelet picker — effets 3D accentués
+   Horizontal bracelet picker — items resserrés, effets accentués
    ═══════════════════════════════════════════════════════════════ */
 
-const ITEM_W = 58;
-const CYLINDER_R = 140; // rayon plus serré = courbe plus forte
+const ITEM_W = 44;       // resserré (était 58)
+const CYLINDER_R = 110;  // rayon plus serré = courbe plus forte
 
 function HorizontalBraceletPicker({
   values,
@@ -187,21 +188,19 @@ function HorizontalBraceletPicker({
       const dist = Math.abs(scrollCenter - itemCenter);
       if (dist < closestDist) { closestDist = dist; closestIdx = i; }
 
-      // Angle sur le cylindre (radians, capped ±80°)
       const maxAngle = (80 * Math.PI) / 180;
       const rawAngle = (scrollCenter - itemCenter) / CYLINDER_R;
       const angle = Math.min(Math.max(rawAngle, -maxAngle), maxAngle);
       const absAngle = Math.abs(angle);
 
-      // Projections 3D accentuées
       const cosA = Math.cos(absAngle);
-      const scale = cosA ** 1.3;                           // rétrécit plus vite
-      const opacity = Math.max(0.05, cosA ** 2.5);         // s'efface fortement
-      const translateZ = (1 - cosA) * -80;                 // recule plus profond
-      const rotateY = angle * (180 / Math.PI) * 0.85;      // rotation Y plus marquée
-      const translateX = Math.sin(angle) * -12;            // léger décalage latéral
+      const scale = cosA ** 1.5;
+      const opacity = Math.max(0.04, cosA ** 3);
+      const translateZ = (1 - cosA) * -100;
+      const rotateY = angle * (180 / Math.PI) * 0.9;
+      const translateX = Math.sin(angle) * -8;
 
-      item.style.transform = `perspective(300px) translateX(${translateX}px) rotateY(${rotateY}deg) scale(${scale}) translateZ(${translateZ}px)`;
+      item.style.transform = `perspective(250px) translateX(${translateX}px) rotateY(${rotateY}deg) scale(${scale}) translateZ(${translateZ}px)`;
       item.style.opacity = String(opacity);
     }
 
@@ -239,9 +238,9 @@ function HorizontalBraceletPicker({
         scrollSnapType: "x mandatory",
         WebkitOverflowScrolling: "touch",
         scrollbarWidth: "none",
-        height: 52,
-        maskImage: "linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%)",
-        WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%)",
+        height: 44,
+        maskImage: "linear-gradient(to right, transparent 0%, black 25%, black 75%, transparent 100%)",
+        WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 25%, black 75%, transparent 100%)",
       }}
     >
       <div className="shrink-0" style={{ width: padW }} aria-hidden="true" />
@@ -259,11 +258,11 @@ function HorizontalBraceletPicker({
               willChange: "transform, opacity",
             }}
           >
-            <span className="font-mono text-base font-bold text-white leading-none">
+            <span className="font-mono text-[15px] font-bold text-white leading-none">
               {lbl.main}
             </span>
             {lbl.unit && (
-              <span className="text-[8px] text-white/40 mt-0.5">{lbl.unit}</span>
+              <span className="text-[8px] text-white/30 mt-px">{lbl.unit}</span>
             )}
           </div>
         );
@@ -274,7 +273,7 @@ function HorizontalBraceletPicker({
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   EXPORT — Timer repos : label + ring + bracelet sur une ligne
+   EXPORT — Timer repos, style accordé avec le dosage recommandé
    ═══════════════════════════════════════════════════════════════ */
 
 export function RestTimerShowcase({ restRaw }: { restRaw: string | null }) {
@@ -283,41 +282,37 @@ export function RestTimerShowcase({ restRaw }: { restRaw: string | null }) {
   const isActive = timer.running || timer.finished;
 
   return (
-    <div
-      className="flex items-center gap-3 rounded-2xl pl-4 pr-1 py-1.5 select-none transition-all duration-300 overflow-hidden"
-      style={{
-        background: isActive ? "rgba(255,140,0,0.10)" : "rgba(255,255,255,0.03)",
-        border: `1px solid ${isActive ? "rgba(255,140,0,0.25)" : "rgba(255,255,255,0.06)"}`,
-      }}
-    >
-      {/* Label */}
-      <span
-        className="shrink-0 text-[11px] font-semibold uppercase tracking-wider"
-        style={{
-          fontFamily: "var(--font-dm-sans), sans-serif",
-          color: isActive ? "#FF8C00" : "rgba(255,255,255,0.35)",
-        }}
-      >
-        {timer.finished ? "Terminé !" : timer.running ? "Repos" : "Timer repos"}
-      </span>
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 select-none">
+      {/* Header — même typo que « Dosage recommandé » */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="text-xs font-semibold uppercase tracking-[0.2em] text-white/50">
+          Timer repos
+        </div>
+        {/* Ring countdown dans le header */}
+        <CountdownRing
+          timeLeft={timer.timeLeft}
+          total={timer.total}
+          running={timer.running}
+          finished={timer.finished}
+          onTap={timer.tap}
+        />
+      </div>
 
-      {/* Countdown ring */}
-      <CountdownRing
-        timeLeft={timer.timeLeft}
-        total={timer.total}
-        running={timer.running}
-        finished={timer.finished}
-        onTap={timer.tap}
+      {/* Bracelet picker — pleine largeur, centré */}
+      <HorizontalBraceletPicker
+        values={WHEEL_VALUES}
+        defaultValue={WHEEL_VALUES.includes(timer.total) ? timer.total : 90}
+        onChange={(val) => timer.adjustTotal(val)}
+        formatLabel={WHEEL_FORMAT}
       />
 
-      {/* Bracelet picker — takes remaining space */}
-      <div className="flex-1 min-w-0">
-        <HorizontalBraceletPicker
-          values={WHEEL_VALUES}
-          defaultValue={WHEEL_VALUES.includes(timer.total) ? timer.total : 90}
-          onChange={(val) => timer.adjustTotal(val)}
-          formatLabel={WHEEL_FORMAT}
-        />
+      {/* Instruction */}
+      <div className="mt-2 text-[11px] text-center" style={{ color: "rgba(255,255,255,0.25)" }}>
+        {timer.running
+          ? "Tap le cercle pour pause"
+          : timer.finished
+            ? "Tap le cercle pour reset"
+            : "Scroll pour ajuster · tap le cercle pour démarrer"}
       </div>
     </div>
   );
