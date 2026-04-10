@@ -35,7 +35,6 @@ const STROKE = 4;
 const SIZE = (RADIUS + STROKE) * 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
-const STEP = 15;
 const MIN_TIME = 15;
 const MAX_TIME = 300;
 
@@ -48,6 +47,13 @@ function vibrate() {
     navigator.vibrate(15);
   }
 }
+
+const WHEEL_VALUES = [15, 30, 45, 60, 75, 90, 105, 120, 150, 180, 210, 240, 300];
+
+const WHEEL_FORMAT = (v: number) => {
+  if (v >= 60) return { main: `${Math.floor(v / 60)}:${(v % 60).toString().padStart(2, "0")}`, unit: "min" };
+  return { main: String(v), unit: "s" };
+};
 
 /* Shared ring component */
 function TimerRing({
@@ -132,7 +138,7 @@ function useTimer(initialSeconds: number) {
     if (!running && !finished) setTimeLeft(clamped);
   };
 
-  return { total, timeLeft, running, finished, tap, reset, start, pause, adjustTotal, setTimeLeft };
+  return { total, timeLeft, running, finished, tap, reset, adjustTotal };
 }
 
 /* Shared wrapper with variant label */
@@ -150,173 +156,69 @@ function VariantWrapper({ label, children }: { label: string; children: React.Re
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   VARIANTE 1 — Boutons ± 15s
-   ═══════════════════════════════════════════════════════════════ */
-
-function V1_PlusMinus({ restRaw }: { restRaw: string | null }) {
-  const initial = parseRestSeconds(restRaw);
-  const timer = useTimer(initial);
-
+/* Shared timer bar (ring + labels + reset) */
+function TimerBar({
+  timer,
+  subtitle,
+  onTap,
+  children,
+}: {
+  timer: ReturnType<typeof useTimer>;
+  subtitle: string;
+  onTap?: () => void;
+  children?: React.ReactNode;
+}) {
+  const isActive = timer.running || timer.finished;
   return (
-    <VariantWrapper label="V1 — Boutons ± 15s">
-      <div
-        onClick={timer.tap}
-        role="button" tabIndex={0}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") timer.tap(); }}
-        className="flex items-center gap-3 rounded-2xl px-4 py-3 cursor-pointer select-none transition-all duration-300"
-        style={{
-          background: timer.running || timer.finished ? "rgba(255,140,0,0.12)" : "rgba(255,255,255,0.03)",
-          border: `1px solid ${timer.running || timer.finished ? "rgba(255,140,0,0.3)" : "rgba(255,255,255,0.06)"}`,
-        }}
-      >
-        {/* Minus button */}
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); timer.adjustTotal(timer.total - STEP); vibrate(); }}
-          className="flex items-center justify-center w-9 h-9 rounded-full bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70 active:scale-90 transition-all shrink-0"
-          aria-label="-15s"
-        >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="4" y1="8" x2="12" y2="8" /></svg>
-        </button>
-
+    <div
+      onClick={onTap ?? timer.tap}
+      role="button" tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") (onTap ?? timer.tap)(); }}
+      className="flex items-center gap-4 rounded-2xl px-4 py-3 cursor-pointer select-none transition-all duration-300"
+      style={{
+        background: isActive ? "rgba(255,140,0,0.12)" : "rgba(255,255,255,0.03)",
+        border: `1px solid ${isActive ? "rgba(255,140,0,0.3)" : "rgba(255,255,255,0.06)"}`,
+      }}
+    >
+      {children ?? (
         <TimerRing timeLeft={timer.timeLeft} totalSeconds={timer.total} running={timer.running} finished={timer.finished} />
-
-        {/* Plus button */}
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); timer.adjustTotal(timer.total + STEP); vibrate(); }}
-          className="flex items-center justify-center w-9 h-9 rounded-full bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70 active:scale-90 transition-all shrink-0"
-          aria-label="+15s"
-        >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="4" y1="8" x2="12" y2="8" /><line x1="8" y1="4" x2="8" y2="12" /></svg>
-        </button>
-
-        {/* Labels */}
-        <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-bold" style={{ fontFamily: "var(--font-dm-sans), sans-serif", color: timer.running || timer.finished ? "#FF8C00" : "rgba(255,255,255,0.45)" }}>
-            {timer.finished ? "Terminé !" : `Timer repos — ${formatTime(timer.total)}`}
-          </p>
-          <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-            {timer.running ? "Tap pour pause" : timer.finished ? "Tap pour reset" : "Tap pour démarrer"}
-          </p>
-        </div>
-
-        {(timer.running || (timer.timeLeft < timer.total && !timer.finished)) && (
-          <button type="button" onClick={(e) => { e.stopPropagation(); timer.reset(); }}
-            className="flex items-center justify-center w-[30px] h-[30px] rounded-full bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60 transition-colors shrink-0" aria-label="Reset">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
-          </button>
-        )}
+      )}
+      <div className="flex-1 min-w-0">
+        <p className="text-[13px] font-bold" style={{ fontFamily: "var(--font-dm-sans), sans-serif", color: isActive ? "#FF8C00" : "rgba(255,255,255,0.45)" }}>
+          {timer.finished ? "Terminé !" : `Timer repos — ${formatTime(timer.total)}`}
+        </p>
+        <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
+          {timer.running ? "Tap pour pause" : timer.finished ? "Tap pour reset" : subtitle}
+        </p>
       </div>
-    </VariantWrapper>
+      {(timer.running || (timer.timeLeft < timer.total && !timer.finished)) && (
+        <button type="button" onClick={(e) => { e.stopPropagation(); timer.reset(); }}
+          className="flex items-center justify-center w-[30px] h-[30px] rounded-full bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60 transition-colors shrink-0" aria-label="Reset">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
+        </button>
+      )}
+    </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   VARIANTE 2 — Swipe horizontal sur le composant
+   WP-A — Tap chiffre → Drawer inline sous le timer
+   Le wheel picker s'ouvre en dessous avec bouton OK.
    ═══════════════════════════════════════════════════════════════ */
 
-function V2_SwipeHorizontal({ restRaw }: { restRaw: string | null }) {
-  const initial = parseRestSeconds(restRaw);
-  const timer = useTimer(initial);
-  const touchStartX = useRef<number | null>(null);
-  const touchStartTotal = useRef(initial);
-  const [swiping, setSwiping] = useState(false);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (timer.running || timer.finished) return;
-    touchStartX.current = e.touches[0].clientX;
-    touchStartTotal.current = timer.total;
-    setSwiping(false);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (touchStartX.current === null || timer.running || timer.finished) return;
-    const dx = e.touches[0].clientX - touchStartX.current;
-    if (Math.abs(dx) > 10) setSwiping(true);
-    const steps = Math.round(dx / 30);
-    const newTotal = clampTime(touchStartTotal.current + steps * STEP);
-    timer.adjustTotal(newTotal);
-  };
-
-  const handleTouchEnd = () => {
-    if (swiping) {
-      vibrate();
-      setSwiping(false);
-      touchStartX.current = null;
-      return;
-    }
-    touchStartX.current = null;
-    setSwiping(false);
-    timer.tap();
-  };
-
-  return (
-    <VariantWrapper label="V2 — Swipe horizontal">
-      <div
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onClick={() => { if (!swiping) timer.tap(); }}
-        role="button" tabIndex={0}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") timer.tap(); }}
-        className="flex items-center gap-4 rounded-2xl px-4 py-3 cursor-pointer select-none transition-all duration-300"
-        style={{
-          background: swiping ? "rgba(255,140,0,0.08)" : timer.running || timer.finished ? "rgba(255,140,0,0.12)" : "rgba(255,255,255,0.03)",
-          border: `1px solid ${timer.running || timer.finished ? "rgba(255,140,0,0.3)" : "rgba(255,255,255,0.06)"}`,
-        }}
-      >
-        <TimerRing timeLeft={timer.timeLeft} totalSeconds={timer.total} running={timer.running} finished={timer.finished} />
-        <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-bold" style={{ fontFamily: "var(--font-dm-sans), sans-serif", color: timer.running || timer.finished ? "#FF8C00" : "rgba(255,255,255,0.45)" }}>
-            {timer.finished ? "Terminé !" : `Timer repos — ${formatTime(timer.total)}`}
-          </p>
-          <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-            {timer.running ? "Tap pour pause" : timer.finished ? "Tap pour reset" : "← Swipe pour ajuster →"}
-          </p>
-        </div>
-        {(timer.running || (timer.timeLeft < timer.total && !timer.finished)) && (
-          <button type="button" onClick={(e) => { e.stopPropagation(); timer.reset(); }}
-            className="flex items-center justify-center w-[30px] h-[30px] rounded-full bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60 transition-colors shrink-0" aria-label="Reset">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
-          </button>
-        )}
-      </div>
-    </VariantWrapper>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   VARIANTE 3 — Tap chiffre → Wheel Picker
-   ═══════════════════════════════════════════════════════════════ */
-
-const WHEEL_VALUES = [15, 30, 45, 60, 75, 90, 105, 120, 150, 180, 210, 240, 300];
-
-function V3_WheelPicker({ restRaw }: { restRaw: string | null }) {
+function WPA_DrawerInline({ restRaw }: { restRaw: string | null }) {
   const initial = parseRestSeconds(restRaw);
   const timer = useTimer(initial);
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  const handleNumberTap = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleNumberTap = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!timer.running && !timer.finished) {
-      setPickerOpen(!pickerOpen);
-    }
+    if (!timer.running && !timer.finished) setPickerOpen(!pickerOpen);
   };
 
   return (
-    <VariantWrapper label="V3 — Wheel Picker">
-      <div
-        onClick={timer.tap}
-        role="button" tabIndex={0}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") timer.tap(); }}
-        className="flex items-center gap-4 rounded-2xl px-4 py-3 cursor-pointer select-none transition-all duration-300"
-        style={{
-          background: timer.running || timer.finished ? "rgba(255,140,0,0.12)" : "rgba(255,255,255,0.03)",
-          border: `1px solid ${timer.running || timer.finished ? "rgba(255,140,0,0.3)" : "rgba(255,255,255,0.06)"}`,
-        }}
-      >
+    <VariantWrapper label="WP-A — Drawer inline (tap chiffre → roue en dessous)">
+      <TimerBar timer={timer} subtitle="Tap le chiffre pour ajuster">
         <TimerRing timeLeft={timer.timeLeft} totalSeconds={timer.total} running={timer.running} finished={timer.finished}>
           <button
             type="button"
@@ -327,26 +229,13 @@ function V3_WheelPicker({ restRaw }: { restRaw: string | null }) {
             {formatTime(timer.timeLeft)}
           </button>
         </TimerRing>
-        <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-bold" style={{ fontFamily: "var(--font-dm-sans), sans-serif", color: timer.running || timer.finished ? "#FF8C00" : "rgba(255,255,255,0.45)" }}>
-            {timer.finished ? "Terminé !" : `Timer repos — ${formatTime(timer.total)}`}
-          </p>
-          <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-            {pickerOpen ? "Scrolle pour choisir" : timer.running ? "Tap pour pause" : timer.finished ? "Tap pour reset" : "Tap le chiffre pour ajuster"}
-          </p>
-        </div>
-        {(timer.running || (timer.timeLeft < timer.total && !timer.finished)) && (
-          <button type="button" onClick={(e) => { e.stopPropagation(); timer.reset(); }}
-            className="flex items-center justify-center w-[30px] h-[30px] rounded-full bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60 transition-colors shrink-0" aria-label="Reset">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
-          </button>
-        )}
-      </div>
+      </TimerBar>
 
-      {/* Wheel picker drawer */}
       {pickerOpen && (
-        <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/40 backdrop-blur-md p-4"
-          onClick={(e) => e.stopPropagation()}>
+        <div
+          className="rounded-2xl overflow-hidden border border-[#FF8C00]/20 bg-black/60 backdrop-blur-md p-4 animate-in slide-in-from-top-2 duration-200"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="flex items-center gap-4">
             <div className="flex-1">
               <WheelPicker
@@ -357,16 +246,13 @@ function V3_WheelPicker({ restRaw }: { restRaw: string | null }) {
                 onChange={(val) => timer.adjustTotal(val)}
                 height={140}
                 itemHeight={44}
-                formatLabel={(v) => {
-                  if (v >= 60) return { main: `${Math.floor(v / 60)}:${(v % 60).toString().padStart(2, "0")}`, unit: "min" };
-                  return { main: String(v), unit: "s" };
-                }}
+                formatLabel={WHEEL_FORMAT}
               />
             </div>
             <button
               type="button"
               onClick={() => { setPickerOpen(false); vibrate(); }}
-              className="px-4 py-2 rounded-xl bg-[#FF8C00] text-white text-sm font-bold active:scale-95 transition-transform"
+              className="px-5 py-2.5 rounded-xl bg-[#FF8C00] text-white text-sm font-bold active:scale-95 transition-transform"
             >
               OK
             </button>
@@ -378,343 +264,264 @@ function V3_WheelPicker({ restRaw }: { restRaw: string | null }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   VARIANTE 4 — Presets chips
+   WP-B — Bottom sheet overlay
+   Tap chiffre → overlay sombre avec wheel picker centré.
    ═══════════════════════════════════════════════════════════════ */
 
-const PRESETS = [
-  { label: "30s", value: 30 },
-  { label: "45s", value: 45 },
-  { label: "1:00", value: 60 },
-  { label: "1:30", value: 90 },
-  { label: "2:00", value: 120 },
-  { label: "3:00", value: 180 },
-];
-
-function V4_Presets({ restRaw }: { restRaw: string | null }) {
+function WPB_BottomSheet({ restRaw }: { restRaw: string | null }) {
   const initial = parseRestSeconds(restRaw);
   const timer = useTimer(initial);
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  const handleNumberTap = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!timer.running && !timer.finished) setPickerOpen(true);
+  };
 
   return (
-    <VariantWrapper label="V4 — Presets chips">
-      <div
-        onClick={timer.tap}
-        role="button" tabIndex={0}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") timer.tap(); }}
-        className="flex items-center gap-4 rounded-2xl px-4 py-3 cursor-pointer select-none transition-all duration-300"
-        style={{
-          background: timer.running || timer.finished ? "rgba(255,140,0,0.12)" : "rgba(255,255,255,0.03)",
-          border: `1px solid ${timer.running || timer.finished ? "rgba(255,140,0,0.3)" : "rgba(255,255,255,0.06)"}`,
-        }}
-      >
-        <TimerRing timeLeft={timer.timeLeft} totalSeconds={timer.total} running={timer.running} finished={timer.finished} />
-        <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-bold" style={{ fontFamily: "var(--font-dm-sans), sans-serif", color: timer.running || timer.finished ? "#FF8C00" : "rgba(255,255,255,0.45)" }}>
-            {timer.finished ? "Terminé !" : "Timer repos"}
-          </p>
-          <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-            {timer.running ? "Tap pour pause" : timer.finished ? "Tap pour reset" : "Tap pour démarrer"}
-          </p>
-        </div>
-        {(timer.running || (timer.timeLeft < timer.total && !timer.finished)) && (
-          <button type="button" onClick={(e) => { e.stopPropagation(); timer.reset(); }}
-            className="flex items-center justify-center w-[30px] h-[30px] rounded-full bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60 transition-colors shrink-0" aria-label="Reset">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
-          </button>
-        )}
-      </div>
-      {/* Preset chips */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mt-1 px-1 no-scrollbar">
-        {PRESETS.map((p) => (
+    <VariantWrapper label="WP-B — Bottom sheet (tap chiffre → overlay plein écran)">
+      <TimerBar timer={timer} subtitle="Tap le chiffre pour ajuster">
+        <TimerRing timeLeft={timer.timeLeft} totalSeconds={timer.total} running={timer.running} finished={timer.finished}>
           <button
-            key={p.value}
             type="button"
-            onClick={() => { timer.adjustTotal(p.value); vibrate(); }}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-90 ${
-              timer.total === p.value
-                ? "bg-[#FF8C00] text-white shadow-[0_0_12px_rgba(255,140,0,0.3)]"
-                : "bg-white/5 text-white/50 border border-white/10 hover:bg-white/10"
-            }`}
+            onClick={handleNumberTap}
+            className="text-sm font-bold text-white hover:text-[#FF8C00] transition-colors"
             style={{ fontFamily: "var(--font-jetbrains), monospace" }}
           >
-            {p.label}
+            {formatTime(timer.timeLeft)}
           </button>
-        ))}
-      </div>
-    </VariantWrapper>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   VARIANTE 5 — Drag circulaire sur l'anneau
-   ═══════════════════════════════════════════════════════════════ */
-
-function V5_CircularDrag({ restRaw }: { restRaw: string | null }) {
-  const initial = parseRestSeconds(restRaw);
-  const timer = useTimer(initial);
-  const ringRef = useRef<HTMLDivElement>(null);
-  const dragging = useRef(false);
-  const startAngle = useRef(0);
-  const startTotal = useRef(initial);
-
-  const getAngle = (clientX: number, clientY: number) => {
-    const el = ringRef.current;
-    if (!el) return 0;
-    const rect = el.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    return Math.atan2(clientY - cy, clientX - cx) * (180 / Math.PI);
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (timer.running || timer.finished) return;
-    e.stopPropagation();
-    dragging.current = true;
-    startAngle.current = getAngle(e.touches[0].clientX, e.touches[0].clientY);
-    startTotal.current = timer.total;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!dragging.current) return;
-    e.stopPropagation();
-    const angle = getAngle(e.touches[0].clientX, e.touches[0].clientY);
-    let delta = angle - startAngle.current;
-    // Normalize to -180..180
-    if (delta > 180) delta -= 360;
-    if (delta < -180) delta += 360;
-    // Each 30° = 15s
-    const steps = Math.round(delta / 30);
-    timer.adjustTotal(startTotal.current + steps * STEP);
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (dragging.current) {
-      e.stopPropagation();
-      dragging.current = false;
-      vibrate();
-      return;
-    }
-  };
-
-  return (
-    <VariantWrapper label="V5 — Drag circulaire">
-      <div
-        onClick={timer.tap}
-        role="button" tabIndex={0}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") timer.tap(); }}
-        className="flex items-center gap-4 rounded-2xl px-4 py-3 cursor-pointer select-none transition-all duration-300"
-        style={{
-          background: timer.running || timer.finished ? "rgba(255,140,0,0.12)" : "rgba(255,255,255,0.03)",
-          border: `1px solid ${timer.running || timer.finished ? "rgba(255,140,0,0.3)" : "rgba(255,255,255,0.06)"}`,
-        }}
-      >
-        <div
-          ref={ringRef}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          style={{ touchAction: "none" }}
-        >
-          <TimerRing timeLeft={timer.timeLeft} totalSeconds={timer.total} running={timer.running} finished={timer.finished} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-bold" style={{ fontFamily: "var(--font-dm-sans), sans-serif", color: timer.running || timer.finished ? "#FF8C00" : "rgba(255,255,255,0.45)" }}>
-            {timer.finished ? "Terminé !" : `Timer repos — ${formatTime(timer.total)}`}
-          </p>
-          <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-            {timer.running ? "Tap pour pause" : timer.finished ? "Tap pour reset" : "Tourne l'anneau pour ajuster"}
-          </p>
-        </div>
-        {(timer.running || (timer.timeLeft < timer.total && !timer.finished)) && (
-          <button type="button" onClick={(e) => { e.stopPropagation(); timer.reset(); }}
-            className="flex items-center justify-center w-[30px] h-[30px] rounded-full bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60 transition-colors shrink-0" aria-label="Reset">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
-          </button>
-        )}
-      </div>
-    </VariantWrapper>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   VARIANTE 6 — Double-tap pour incrémenter
-   ═══════════════════════════════════════════════════════════════ */
-
-function V6_DoubleTap({ restRaw }: { restRaw: string | null }) {
-  const initial = parseRestSeconds(restRaw);
-  const timer = useTimer(initial);
-  const lastTapTime = useRef(0);
-  const tapTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const handleTap = () => {
-    const now = Date.now();
-    const delta = now - lastTapTime.current;
-    lastTapTime.current = now;
-
-    if (delta < 300) {
-      // Double tap → +15s
-      if (tapTimeout.current) clearTimeout(tapTimeout.current);
-      timer.adjustTotal(timer.total + STEP);
-      vibrate();
-      return;
-    }
-
-    // Single tap → wait to confirm it's not a double tap
-    tapTimeout.current = setTimeout(() => {
-      timer.tap();
-    }, 300);
-  };
-
-  const handleLabelTap = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    timer.adjustTotal(timer.total - STEP);
-    vibrate();
-  };
-
-  return (
-    <VariantWrapper label="V6 — Double-tap +15s / tap label -15s">
-      <div
-        onClick={handleTap}
-        role="button" tabIndex={0}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") timer.tap(); }}
-        className="flex items-center gap-4 rounded-2xl px-4 py-3 cursor-pointer select-none transition-all duration-300"
-        style={{
-          background: timer.running || timer.finished ? "rgba(255,140,0,0.12)" : "rgba(255,255,255,0.03)",
-          border: `1px solid ${timer.running || timer.finished ? "rgba(255,140,0,0.3)" : "rgba(255,255,255,0.06)"}`,
-        }}
-      >
-        <TimerRing timeLeft={timer.timeLeft} totalSeconds={timer.total} running={timer.running} finished={timer.finished} />
-        <div className="flex-1 min-w-0">
-          <p
-            className="text-[13px] font-bold"
-            style={{ fontFamily: "var(--font-dm-sans), sans-serif", color: timer.running || timer.finished ? "#FF8C00" : "rgba(255,255,255,0.45)" }}
-            onClick={handleLabelTap}
-          >
-            {timer.finished ? "Terminé !" : `Timer repos — ${formatTime(timer.total)}`}
-          </p>
-          <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-            {timer.running ? "Tap pause · 2× tap +15s" : timer.finished ? "Tap pour reset" : "Tap start · 2× tap +15s · tap label -15s"}
-          </p>
-        </div>
-        {(timer.running || (timer.timeLeft < timer.total && !timer.finished)) && (
-          <button type="button" onClick={(e) => { e.stopPropagation(); timer.reset(); }}
-            className="flex items-center justify-center w-[30px] h-[30px] rounded-full bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60 transition-colors shrink-0" aria-label="Reset">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
-          </button>
-        )}
-      </div>
-    </VariantWrapper>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   VARIANTE 7 — Stepper intégré au chiffre central
-   ═══════════════════════════════════════════════════════════════ */
-
-function V7_CenterStepper({ restRaw }: { restRaw: string | null }) {
-  const initial = parseRestSeconds(restRaw);
-  const timer = useTimer(initial);
-
-  const handleCenterTap = (e: React.MouseEvent) => {
-    if (timer.running || timer.finished) return;
-    e.stopPropagation();
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const half = rect.width / 2;
-    if (x < half) {
-      timer.adjustTotal(timer.total - STEP);
-    } else {
-      timer.adjustTotal(timer.total + STEP);
-    }
-    vibrate();
-  };
-
-  const handleCenterTouch = (e: React.TouchEvent) => {
-    if (timer.running || timer.finished) return;
-    e.stopPropagation();
-    const touch = e.touches[0];
-    if (!touch) return;
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const half = rect.width / 2;
-    if (x < half) {
-      timer.adjustTotal(timer.total - STEP);
-    } else {
-      timer.adjustTotal(timer.total + STEP);
-    }
-    vibrate();
-  };
-
-  return (
-    <VariantWrapper label="V7 — Stepper dans le chiffre (gauche -15s / droite +15s)">
-      <div
-        onClick={timer.tap}
-        role="button" tabIndex={0}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") timer.tap(); }}
-        className="flex items-center gap-4 rounded-2xl px-4 py-3 cursor-pointer select-none transition-all duration-300"
-        style={{
-          background: timer.running || timer.finished ? "rgba(255,140,0,0.12)" : "rgba(255,255,255,0.03)",
-          border: `1px solid ${timer.running || timer.finished ? "rgba(255,140,0,0.3)" : "rgba(255,255,255,0.06)"}`,
-        }}
-      >
-        <TimerRing timeLeft={timer.timeLeft} totalSeconds={timer.total} running={timer.running} finished={timer.finished}>
-          <div
-            onClick={handleCenterTap}
-            onTouchStart={handleCenterTouch}
-            className="relative w-full h-full flex items-center justify-center cursor-pointer"
-          >
-            {/* Visual separator */}
-            {!timer.running && !timer.finished && (
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-4 bg-white/10" />
-            )}
-            {/* Minus hint */}
-            {!timer.running && !timer.finished && (
-              <span className="absolute left-1 top-1/2 -translate-y-1/2 text-[7px] text-white/20">−</span>
-            )}
-            {/* Plus hint */}
-            {!timer.running && !timer.finished && (
-              <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[7px] text-white/20">+</span>
-            )}
-            <span className="text-sm font-bold text-white" style={{ fontFamily: "var(--font-jetbrains), monospace" }}>
-              {formatTime(timer.timeLeft)}
-            </span>
-          </div>
         </TimerRing>
-        <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-bold" style={{ fontFamily: "var(--font-dm-sans), sans-serif", color: timer.running || timer.finished ? "#FF8C00" : "rgba(255,255,255,0.45)" }}>
-            {timer.finished ? "Terminé !" : `Timer repos — ${formatTime(timer.total)}`}
-          </p>
-          <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-            {timer.running ? "Tap pour pause" : timer.finished ? "Tap pour reset" : "Tap gauche -15s · droite +15s"}
-          </p>
+      </TimerBar>
+
+      {pickerOpen && (
+        <div
+          className="fixed inset-0 z-[200] flex items-end justify-center"
+          onClick={() => { setPickerOpen(false); vibrate(); }}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+
+          {/* Sheet */}
+          <div
+            className="relative w-full max-w-md rounded-t-3xl border-t border-white/10 bg-[#0a0a12] p-6 pb-10 animate-in slide-in-from-bottom duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Handle */}
+            <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-white/20" />
+
+            <p className="text-center text-sm font-semibold text-white/60 mb-4">Temps de repos</p>
+
+            <WheelPicker
+              values={WHEEL_VALUES}
+              defaultValue={WHEEL_VALUES.includes(timer.total) ? timer.total : 90}
+              unit="s"
+              color="#FF8C00"
+              onChange={(val) => timer.adjustTotal(val)}
+              height={180}
+              itemHeight={48}
+              formatLabel={WHEEL_FORMAT}
+            />
+
+            <button
+              type="button"
+              onClick={() => { setPickerOpen(false); vibrate(); }}
+              className="mt-5 w-full py-3 rounded-2xl bg-[#FF8C00] text-white text-base font-bold active:scale-[0.97] transition-transform"
+            >
+              Confirmer
+            </button>
+          </div>
         </div>
-        {(timer.running || (timer.timeLeft < timer.total && !timer.finished)) && (
-          <button type="button" onClick={(e) => { e.stopPropagation(); timer.reset(); }}
-            className="flex items-center justify-center w-[30px] h-[30px] rounded-full bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60 transition-colors shrink-0" aria-label="Reset">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
-          </button>
-        )}
+      )}
+    </VariantWrapper>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WP-C — Wheel toujours visible
+   Le wheel picker est affiché en permanence à droite du timer,
+   compact (petite hauteur).
+   ═══════════════════════════════════════════════════════════════ */
+
+function WPC_AlwaysVisible({ restRaw }: { restRaw: string | null }) {
+  const initial = parseRestSeconds(restRaw);
+  const timer = useTimer(initial);
+  const isActive = timer.running || timer.finished;
+
+  return (
+    <VariantWrapper label="WP-C — Wheel toujours visible (inline à droite)">
+      <div
+        className="rounded-2xl px-4 py-3 select-none transition-all duration-300"
+        style={{
+          background: isActive ? "rgba(255,140,0,0.12)" : "rgba(255,255,255,0.03)",
+          border: `1px solid ${isActive ? "rgba(255,140,0,0.3)" : "rgba(255,255,255,0.06)"}`,
+        }}
+      >
+        {/* Top row: ring + labels + reset */}
+        <div className="flex items-center gap-4">
+          <div onClick={timer.tap} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") timer.tap(); }} className="cursor-pointer">
+            <TimerRing timeLeft={timer.timeLeft} totalSeconds={timer.total} running={timer.running} finished={timer.finished} />
+          </div>
+          <div className="cursor-pointer flex-1 min-w-0" onClick={timer.tap} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") timer.tap(); }}>
+            <p className="text-[13px] font-bold" style={{ fontFamily: "var(--font-dm-sans), sans-serif", color: isActive ? "#FF8C00" : "rgba(255,255,255,0.45)" }}>
+              {timer.finished ? "Terminé !" : "Timer repos"}
+            </p>
+            <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
+              {timer.running ? "Tap pour pause" : timer.finished ? "Tap pour reset" : "Tap pour démarrer"}
+            </p>
+          </div>
+          {(timer.running || (timer.timeLeft < timer.total && !timer.finished)) && (
+            <button type="button" onClick={timer.reset}
+              className="flex items-center justify-center w-[30px] h-[30px] rounded-full bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60 transition-colors shrink-0" aria-label="Reset">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
+            </button>
+          )}
+        </div>
+
+        {/* Wheel picker always visible below */}
+        <div className="mt-3 pt-3 border-t border-white/5">
+          <WheelPicker
+            values={WHEEL_VALUES}
+            defaultValue={WHEEL_VALUES.includes(timer.total) ? timer.total : 90}
+            unit="s"
+            color="#FF8C00"
+            onChange={(val) => timer.adjustTotal(val)}
+            height={100}
+            itemHeight={36}
+            formatLabel={WHEEL_FORMAT}
+          />
+        </div>
       </div>
     </VariantWrapper>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   EXPORT — Composant qui affiche les 7 variantes empilées
+   WP-D — Double wheel min:sec façon horloge iOS
+   Deux roues côte à côte : minutes (0-5) et secondes (00-45 par 15).
+   ═══════════════════════════════════════════════════════════════ */
+
+const MINUTES_VALUES = [0, 1, 2, 3, 4, 5];
+const SECONDS_VALUES = [0, 15, 30, 45];
+
+function WPD_DualWheel({ restRaw }: { restRaw: string | null }) {
+  const initial = parseRestSeconds(restRaw);
+  const timer = useTimer(initial);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const pickerMin = useRef(Math.floor(initial / 60));
+  const pickerSec = useRef(initial % 60);
+
+  // Snap seconds to nearest valid value
+  const snapSec = (s: number) => {
+    const valid = SECONDS_VALUES;
+    return valid.reduce((best, v) => Math.abs(v - s) < Math.abs(best - s) ? v : best, valid[0]);
+  };
+
+  const handleNumberTap = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!timer.running && !timer.finished) {
+      pickerMin.current = Math.floor(timer.total / 60);
+      pickerSec.current = snapSec(timer.total % 60);
+      setPickerOpen(true);
+    }
+  };
+
+  const applyPicker = () => {
+    const newTotal = pickerMin.current * 60 + pickerSec.current;
+    timer.adjustTotal(newTotal || 15);
+    setPickerOpen(false);
+    vibrate();
+  };
+
+  return (
+    <VariantWrapper label="WP-D — Double wheel min:sec (façon horloge iOS)">
+      <TimerBar timer={timer} subtitle="Tap le chiffre pour ajuster">
+        <TimerRing timeLeft={timer.timeLeft} totalSeconds={timer.total} running={timer.running} finished={timer.finished}>
+          <button
+            type="button"
+            onClick={handleNumberTap}
+            className="text-sm font-bold text-white hover:text-[#FF8C00] transition-colors"
+            style={{ fontFamily: "var(--font-jetbrains), monospace" }}
+          >
+            {formatTime(timer.timeLeft)}
+          </button>
+        </TimerRing>
+      </TimerBar>
+
+      {pickerOpen && (
+        <div
+          className="fixed inset-0 z-[200] flex items-end justify-center"
+          onClick={applyPicker}
+        >
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <div
+            className="relative w-full max-w-md rounded-t-3xl border-t border-white/10 bg-[#0a0a12] p-6 pb-10 animate-in slide-in-from-bottom duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-white/20" />
+            <p className="text-center text-sm font-semibold text-white/60 mb-4">Temps de repos</p>
+
+            <div className="flex items-center gap-2">
+              {/* Minutes wheel */}
+              <div className="flex-1">
+                <WheelPicker
+                  values={MINUTES_VALUES}
+                  defaultValue={pickerMin.current}
+                  unit="min"
+                  color="#FF8C00"
+                  onChange={(val) => { pickerMin.current = val; }}
+                  height={160}
+                  itemHeight={48}
+                  label="MIN"
+                />
+              </div>
+
+              {/* Separator */}
+              <span className="text-2xl font-bold text-white/30 mb-2">:</span>
+
+              {/* Seconds wheel */}
+              <div className="flex-1">
+                <WheelPicker
+                  values={SECONDS_VALUES}
+                  defaultValue={snapSec(pickerSec.current)}
+                  unit="s"
+                  color="#FF8C00"
+                  onChange={(val) => { pickerSec.current = val; }}
+                  height={160}
+                  itemHeight={48}
+                  label="SEC"
+                  formatLabel={(v) => ({ main: v.toString().padStart(2, "0") })}
+                />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={applyPicker}
+              className="mt-5 w-full py-3 rounded-2xl bg-[#FF8C00] text-white text-base font-bold active:scale-[0.97] transition-transform"
+            >
+              Confirmer
+            </button>
+          </div>
+        </div>
+      )}
+    </VariantWrapper>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   EXPORT — 4 variantes wheel picker empilées
    ═══════════════════════════════════════════════════════════════ */
 
 export function RestTimerShowcase({ restRaw }: { restRaw: string | null }) {
   return (
     <div className="flex flex-col gap-5">
       <div className="text-xs font-bold uppercase tracking-widest text-white/20 text-center">
-        — Timer repos — 7 variantes à tester —
+        — Wheel Picker — 4 variantes —
       </div>
-      <V1_PlusMinus restRaw={restRaw} />
-      <V2_SwipeHorizontal restRaw={restRaw} />
-      <V3_WheelPicker restRaw={restRaw} />
-      <V4_Presets restRaw={restRaw} />
-      <V5_CircularDrag restRaw={restRaw} />
-      <V6_DoubleTap restRaw={restRaw} />
-      <V7_CenterStepper restRaw={restRaw} />
+      <WPA_DrawerInline restRaw={restRaw} />
+      <WPB_BottomSheet restRaw={restRaw} />
+      <WPC_AlwaysVisible restRaw={restRaw} />
+      <WPD_DualWheel restRaw={restRaw} />
     </div>
   );
 }
