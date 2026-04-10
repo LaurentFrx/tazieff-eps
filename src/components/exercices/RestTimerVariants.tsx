@@ -509,19 +509,211 @@ function WPD_DualWheel({ restRaw }: { restRaw: string | null }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   EXPORT — 4 variantes wheel picker empilées
+   WP-E — Wheel picker horizontal « bracelet »
+   Scroll horizontal avec effet 3D cylindrique : les items
+   s'éloignent en taille/opacité comme sur un bracelet circulaire.
+   ═══════════════════════════════════════════════════════════════ */
+
+const ITEM_WIDTH = 64;
+const BRACELET_RADIUS = 200; // rayon virtuel du cylindre en px
+
+function HorizontalBraceletPicker({
+  values,
+  defaultValue,
+  onChange,
+  formatLabel: fmt,
+}: {
+  values: number[];
+  defaultValue: number;
+  onChange: (value: number) => void;
+  formatLabel: (v: number) => { main: string; unit?: string };
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const rafId = useRef(0);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  const lastIdx = useRef(-1);
+  const didInit = useRef(false);
+
+  const initIdx = Math.max(0, values.indexOf(defaultValue));
+
+  const applyVisuals = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const scrollCenter = el.scrollLeft + el.clientWidth / 2;
+    let closestIdx = 0;
+    let closestDist = Infinity;
+
+    for (let i = 0; i < itemRefs.current.length; i++) {
+      const item = itemRefs.current[i];
+      if (!item) continue;
+      const itemCenter = item.offsetLeft + ITEM_WIDTH / 2;
+      const dist = Math.abs(scrollCenter - itemCenter);
+
+      if (dist < closestDist) { closestDist = dist; closestIdx = i; }
+
+      // Angle sur le cylindre : dist / rayon (en radians, capped à ±π/2)
+      const angle = Math.min(Math.max((scrollCenter - itemCenter) / BRACELET_RADIUS, -Math.PI / 2), Math.PI / 2);
+      const absAngle = Math.abs(angle);
+
+      // Projection 3D du cylindre
+      const scale = Math.cos(absAngle);              // 1 au centre → 0 aux bords
+      const opacity = Math.max(0.1, Math.cos(absAngle) ** 1.5);
+      const translateZ = (1 - Math.cos(absAngle)) * -40;  // recule en Z
+      const rotateY = angle * (180 / Math.PI) * 0.6;      // légère rotation Y
+
+      item.style.transform = `perspective(400px) rotateY(${rotateY}deg) scale(${scale}) translateZ(${translateZ}px)`;
+      item.style.opacity = String(opacity);
+    }
+
+    if (closestIdx !== lastIdx.current) {
+      lastIdx.current = closestIdx;
+      onChangeRef.current(values[closestIdx]);
+      vibrate();
+    }
+  }, [values]);
+
+  const onScroll = useCallback(() => {
+    cancelAnimationFrame(rafId.current);
+    rafId.current = requestAnimationFrame(applyVisuals);
+  }, [applyVisuals]);
+
+  useEffect(() => {
+    if (didInit.current) return;
+    didInit.current = true;
+    const el = scrollRef.current;
+    if (!el) return;
+    // Scroll to center the initial value
+    const targetLeft = initIdx * ITEM_WIDTH - (el.clientWidth / 2 - ITEM_WIDTH / 2);
+    el.scrollLeft = targetLeft;
+    applyVisuals();
+  }, [initIdx, applyVisuals]);
+
+  useEffect(() => () => cancelAnimationFrame(rafId.current), []);
+
+  const padW = `calc(50% - ${ITEM_WIDTH / 2}px)`;
+
+  return (
+    <div className="relative">
+      {/* Selection indicator */}
+      <div
+        className="absolute left-1/2 top-0 bottom-0 -translate-x-1/2 rounded-xl border-2 border-[#FF8C00]/40 bg-[#FF8C00]/10 pointer-events-none z-[1]"
+        style={{ width: ITEM_WIDTH + 4 }}
+      />
+
+      {/* Horizontal scroll */}
+      <div
+        ref={scrollRef}
+        onScroll={onScroll}
+        className="flex items-center overflow-x-scroll outline-none"
+        style={{
+          scrollSnapType: "x mandatory",
+          WebkitOverflowScrolling: "touch",
+          scrollbarWidth: "none",
+          height: 56,
+          maskImage: "linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%)",
+        }}
+      >
+        {/* Left padding */}
+        <div className="shrink-0" style={{ width: padW }} aria-hidden="true" />
+
+        {values.map((v, i) => {
+          const lbl = fmt(v);
+          return (
+            <div
+              key={v}
+              ref={(el) => { itemRefs.current[i] = el; }}
+              className="shrink-0 flex flex-col items-center justify-center"
+              style={{
+                width: ITEM_WIDTH,
+                scrollSnapAlign: "center",
+                transition: "transform .12s ease-out, opacity .12s ease-out",
+                willChange: "transform, opacity",
+              }}
+            >
+              <span className="font-mono text-lg font-bold text-white leading-none">
+                {lbl.main}
+              </span>
+              {lbl.unit && (
+                <span className="text-[9px] text-white/50 mt-0.5">{lbl.unit}</span>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Right padding */}
+        <div className="shrink-0" style={{ width: padW }} aria-hidden="true" />
+      </div>
+    </div>
+  );
+}
+
+function WPE_HorizontalBracelet({ restRaw }: { restRaw: string | null }) {
+  const initial = parseRestSeconds(restRaw);
+  const timer = useTimer(initial);
+  const isActive = timer.running || timer.finished;
+
+  return (
+    <VariantWrapper label="WP-E — Horizontal bracelet (scroll 3D cylindrique)">
+      <div
+        className="rounded-2xl px-4 py-3 select-none transition-all duration-300"
+        style={{
+          background: isActive ? "rgba(255,140,0,0.12)" : "rgba(255,255,255,0.03)",
+          border: `1px solid ${isActive ? "rgba(255,140,0,0.3)" : "rgba(255,255,255,0.06)"}`,
+        }}
+      >
+        {/* Top row: ring + labels + reset */}
+        <div className="flex items-center gap-4">
+          <div onClick={timer.tap} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") timer.tap(); }} className="cursor-pointer">
+            <TimerRing timeLeft={timer.timeLeft} totalSeconds={timer.total} running={timer.running} finished={timer.finished} />
+          </div>
+          <div className="cursor-pointer flex-1 min-w-0" onClick={timer.tap} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") timer.tap(); }}>
+            <p className="text-[13px] font-bold" style={{ fontFamily: "var(--font-dm-sans), sans-serif", color: isActive ? "#FF8C00" : "rgba(255,255,255,0.45)" }}>
+              {timer.finished ? "Terminé !" : "Timer repos"}
+            </p>
+            <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
+              {timer.running ? "Tap pour pause" : timer.finished ? "Tap pour reset" : "Tap pour démarrer · scroll pour ajuster"}
+            </p>
+          </div>
+          {(timer.running || (timer.timeLeft < timer.total && !timer.finished)) && (
+            <button type="button" onClick={timer.reset}
+              className="flex items-center justify-center w-[30px] h-[30px] rounded-full bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60 transition-colors shrink-0" aria-label="Reset">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
+            </button>
+          )}
+        </div>
+
+        {/* Horizontal bracelet picker */}
+        <div className="mt-3 pt-3 border-t border-white/5">
+          <HorizontalBraceletPicker
+            values={WHEEL_VALUES}
+            defaultValue={WHEEL_VALUES.includes(timer.total) ? timer.total : 90}
+            onChange={(val) => timer.adjustTotal(val)}
+            formatLabel={WHEEL_FORMAT}
+          />
+        </div>
+      </div>
+    </VariantWrapper>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   EXPORT — 5 variantes wheel picker empilées
    ═══════════════════════════════════════════════════════════════ */
 
 export function RestTimerShowcase({ restRaw }: { restRaw: string | null }) {
   return (
     <div className="flex flex-col gap-5">
       <div className="text-xs font-bold uppercase tracking-widest text-white/20 text-center">
-        — Wheel Picker — 4 variantes —
+        — Wheel Picker — 5 variantes —
       </div>
       <WPA_DrawerInline restRaw={restRaw} />
       <WPB_BottomSheet restRaw={restRaw} />
       <WPC_AlwaysVisible restRaw={restRaw} />
       <WPD_DualWheel restRaw={restRaw} />
+      <WPE_HorizontalBracelet restRaw={restRaw} />
     </div>
   );
 }
