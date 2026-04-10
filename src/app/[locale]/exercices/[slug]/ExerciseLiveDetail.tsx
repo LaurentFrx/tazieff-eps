@@ -2719,7 +2719,7 @@ export function ExerciseLiveDetail({
           </div>
 
           {/* Gradient vers fond #04040A + titre overlay */}
-          <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-5 pt-20" style={{ background: 'linear-gradient(to top, #04040A 0%, rgba(4,4,10,0.7) 50%, transparent 100%)' }}>
+          <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-3 pt-20" style={{ background: 'linear-gradient(to top, #04040A 0%, rgba(4,4,10,0.7) 50%, transparent 100%)' }}>
             <h1 className="text-white text-3xl md:text-4xl leading-none tracking-wide" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
               {displayTitle}
             </h1>
