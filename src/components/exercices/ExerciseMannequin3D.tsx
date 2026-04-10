@@ -67,6 +67,11 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetGroup, setSheetGroup] = useState<string | null>(null);
   const [animateIn, setAnimateIn] = useState(false);
+  const [containerHeight, setContainerHeight] = useState(320);
+
+  const handleFrameComputed = useCallback((h: number) => {
+    setContainerHeight(Math.round(h));
+  }, []);
 
   // Orientation — face by default, dos only if majority posterior
   const initialRotationY = useMemo(() => {
@@ -187,7 +192,8 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
             border: "1px solid rgba(255,140,0,0.15)",
             cursor: "pointer",
             width: 280,
-            height: 320,
+            height: containerHeight,
+            transition: "height 0.3s ease",
           }}
         >
           <Mannequin3DErrorBoundary
@@ -203,6 +209,7 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
             <MannequinPreviewCanvas
               activeGroups={anatomyGroups}
               rotationY={previewRotationY}
+              onFrameComputed={handleFrameComputed}
             />
           </Mannequin3DErrorBoundary>
         </div>

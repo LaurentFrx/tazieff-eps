@@ -12,16 +12,17 @@ import MannequinPreviewScene from "./MannequinPreviewScene";
 type Props = {
   activeGroups: string[];
   rotationY: number;
+  onFrameComputed?: (containerHeight: number) => void;
 };
 
-export default function MannequinPreviewCanvas({ activeGroups, rotationY }: Props) {
+export default function MannequinPreviewCanvas({ activeGroups, rotationY, onFrameComputed }: Props) {
   return (
     <Canvas
       camera={{ position: [0, 1.0, 1.8], fov: 45, near: 0.01, far: 100 }}
       gl={{ antialias: true, stencil: false, alpha: true }}
       style={{ width: "100%", height: "100%", background: "transparent", pointerEvents: "none" }}
     >
-      <MannequinPreviewScene activeGroups={activeGroups} rotationY={rotationY} />
+      <MannequinPreviewScene activeGroups={activeGroups} rotationY={rotationY} onFrameComputed={onFrameComputed} />
     </Canvas>
   );
 }
