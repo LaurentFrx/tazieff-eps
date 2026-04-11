@@ -2718,43 +2718,42 @@ export function ExerciseLiveDetail({
             )}
           </div>
 
-          {/* Gradient vers fond #04040A + titre overlay */}
+          {/* Gradient vers fond #04040A + titre overlay + nav session */}
           <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-3 pt-20" style={{ background: 'linear-gradient(to top, #04040A 0%, rgba(4,4,10,0.7) 50%, transparent 100%)' }}>
             <h1 className="text-white text-3xl md:text-4xl leading-none tracking-wide" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
               {displayTitle}
             </h1>
+            {/* Navigation session inline dans le hero */}
+            {(prevExercise || nextExercise) && (
+              <div className="flex items-center gap-3 mt-2">
+                {prevExercise ? (
+                  <Link
+                    href={`/exercices/${prevExercise.slug}`}
+                    className="tap-feedback flex items-center gap-1 text-[10px] uppercase tracking-wider text-white/30 hover:text-white/60 transition-colors"
+                    style={{ fontFamily: "var(--font-jetbrains), monospace" }}
+                  >
+                    <svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12.5 15l-5-5 5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    {prevExercise.slug.toUpperCase()}
+                  </Link>
+                ) : null}
+                <span className="text-[11px] font-bold uppercase tracking-wider text-white/70" style={{ fontFamily: "var(--font-jetbrains), monospace" }}>
+                  {slug.toUpperCase()}
+                </span>
+                {nextExercise ? (
+                  <Link
+                    href={`/exercices/${nextExercise.slug}`}
+                    className="tap-feedback flex items-center gap-1 text-[10px] uppercase tracking-wider text-white/30 hover:text-white/60 transition-colors"
+                    style={{ fontFamily: "var(--font-jetbrains), monospace" }}
+                  >
+                    {nextExercise.slug.toUpperCase()}
+                    <svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M7.5 15l5-5-5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  </Link>
+                ) : null}
+              </div>
+            )}
           </div>
         </div>
       ) : null}
-
-      {/* ─── 2. LIGNE DE NAVIGATION ─── */}
-      {(prevExercise || nextExercise) && (
-        <div className="flex items-center justify-between px-1 mb-2 py-3 border-y border-white/5">
-          {prevExercise ? (
-            <Link
-              href={`/exercices/${prevExercise.slug}`}
-              className="tap-feedback flex items-center gap-1 text-[10px] uppercase tracking-wider text-white/40 hover:text-white/60 transition-colors"
-              style={{ fontFamily: "var(--font-jetbrains), monospace" }}
-            >
-              <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12.5 15l-5-5 5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              {prevExercise.slug.toUpperCase()}
-            </Link>
-          ) : <span />}
-          <span className="text-[13px] font-bold uppercase tracking-wider text-white" style={{ fontFamily: "var(--font-jetbrains), monospace" }}>
-            {slug.toUpperCase()}
-          </span>
-          {nextExercise ? (
-            <Link
-              href={`/exercices/${nextExercise.slug}`}
-              className="tap-feedback flex items-center gap-1 text-[10px] uppercase tracking-wider text-white/40 hover:text-white/60 transition-colors"
-              style={{ fontFamily: "var(--font-jetbrains), monospace" }}
-            >
-              {nextExercise.slug.toUpperCase()}
-              <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7.5 15l5-5-5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </Link>
-          ) : <span />}
-        </div>
-      )}
 
       {/* ─── 3. MATERIEL + NIVEAU ─── */}
       {(merged.frontmatter.equipment?.length || difficulty) && (
