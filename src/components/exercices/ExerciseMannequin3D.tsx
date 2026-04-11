@@ -129,7 +129,11 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
   const handleOpen = useCallback(() => setFullscreen(true), []);
   const handleClose = useCallback(() => {
     setAnimateIn(false);
-    setTimeout(() => setFullscreen(false), 250);
+    setTimeout(() => {
+      setFullscreen(false);
+      // Dispose preview canvas WebGL context when closing fullscreen
+      setCanvasLoaded(false);
+    }, 250);
   }, []);
 
   const anatomyHref = `/apprendre/anatomie?muscles=${anatomyGroups.join(",")}&from=exercice&slug=${slug}`;
@@ -193,9 +197,11 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
               fallback={
                 <Link
                   href={anatomyHref}
-                  style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", color: "rgba(255,255,255,0.4)", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em" }}
+                  style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", gap: 8, color: "rgba(255,255,255,0.5)", fontSize: 12, textDecoration: "none" }}
                 >
-                  {t("exerciseAnatomy.tapToExplore")}
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <span>3D non disponible</span>
+                  <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)" }}>Voir l&apos;anatomie →</span>
                 </Link>
               }
             >
@@ -206,11 +212,11 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
               />
             </Mannequin3DErrorBoundary>
           ) : (
-            /* Static placeholder — no WebGL context created */
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", gap: 12 }}>
+            /* Static placeholder — zero WebGL context */
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", gap: 8 }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/anatomy/mini-mannequin.webp" alt="" style={{ height: 180, opacity: 0.5, pointerEvents: "none" }} />
-              <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.4)" }}>
+              <img src="/images/anatomy/mini-mannequin.webp" alt="" style={{ height: 160, opacity: 0.35, pointerEvents: "none", filter: "grayscale(1)" }} />
+              <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-bebas), sans-serif" }}>
                 {t("exerciseAnatomy.tapToExplore")}
               </span>
             </div>
@@ -287,10 +293,12 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
             fallback={
               <Link
                 href={anatomyHref}
-                style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", color: "rgba(255,255,255,0.5)", fontSize: 14 }}
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", gap: 12, color: "rgba(255,255,255,0.5)", fontSize: 14, textDecoration: "none" }}
                 onClick={handleClose}
               >
-                {t("exerciseAnatomy.tapToExplore")}
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>3D non disponible sur cet appareil</span>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>Voir l&apos;anatomie en ligne →</span>
               </Link>
             }
           >
