@@ -22,7 +22,7 @@ import type { ExerciseFrontmatter } from "@/lib/content/schema";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Lang } from "@/lib/i18n/messages";
 import { ExerciseJsonLd } from "@/components/seo/ExerciseJsonLd";
-import { ExerciseQuickInfo, parseDosage } from "@/components/exercices/ExerciseQuickInfo";
+import { ExerciseQuickInfo } from "@/components/exercices/ExerciseQuickInfo";
 import { RestTimer } from "@/components/exercices/RestTimer";
 import { translateTerms } from "@/lib/i18n/terms/translate";
 import { getMuscleGroup, type MuscleGroupId } from "@/lib/exercices/muscleGroups";
@@ -2625,12 +2625,12 @@ export function ExerciseLiveDetail({
         </div>
       </div>
 
-      {/* ─── ZONE 1 — HERO IMMERSIF (45vh) ─── */}
+      {/* ─── 1. HERO MEDIA ─── */}
       {hero ? (
         <div
           ref={heroContainerRef}
           className="relative -mx-4 sm:-mx-6 md:mx-0 md:rounded-2xl overflow-hidden"
-          style={{ height: '45vh', minHeight: 280, touchAction: "pan-y" }}
+          style={{ touchAction: "pan-y" }}
           onTouchStart={handleSwipeStart}
           onTouchEnd={handleSwipeEnd}
         >
@@ -2735,15 +2735,84 @@ export function ExerciseLiveDetail({
         </div>
       ) : null}
 
-      {/* ─── ZONE 2 — DASHBOARD ─── */}
-      {(() => {
-        const dosageData = parseDosage(merged.content);
-        const dosageCols = dosageData ? [
-          dosageData.sets ? { label: 'Séries', value: dosageData.sets } : null,
-          dosageData.reps ? { label: /rep/i.test(dosageData.reps) ? 'Reps' : 'Durée', value: dosageData.reps.replace(/\s*reps?/i, '') } : null,
-          dosageData.rest ? { label: 'Repos', value: dosageData.rest } : null,
-        ].filter(Boolean) as { label: string; value: string }[] : [];
+      {/* ─── 1b. SWIPE NAV BAR ─── */}
+      {(prevExercise || nextExercise) && (
+        <div className="flex items-center justify-between px-1 mb-2 py-3 border-y border-white/5">
+          {prevExercise ? (
+            <Link
+              href={`/exercices/${prevExercise.slug}`}
+              className="tap-feedback flex items-center gap-1 text-[10px] uppercase tracking-wider text-white/40 hover:text-white/60 transition-colors"
+              style={{ fontFamily: "var(--font-jetbrains), monospace" }}
+            >
+              <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12.5 15l-5-5 5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              {prevExercise.slug.toUpperCase()}
+            </Link>
+          ) : <span />}
+          {nextExercise ? (
+            <Link
+              href={`/exercices/${nextExercise.slug}`}
+              className="tap-feedback flex items-center gap-1 text-[10px] uppercase tracking-wider text-white/40 hover:text-white/60 transition-colors"
+              style={{ fontFamily: "var(--font-jetbrains), monospace" }}
+            >
+              {nextExercise.slug.toUpperCase()}
+              <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7.5 15l5-5-5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </Link>
+          ) : <span />}
+        </div>
+      )}
 
+      {/* ─── 2. MUSCLES + EQUIPEMENT ─── */}
+      <div ref={musclesRef as React.RefObject<HTMLDivElement>} className="flex flex-col gap-3 mt-1">
+        {/* Muscles */}
+        {merged.frontmatter.muscles.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {merged.frontmatter.muscles.map((muscle, i) => {
+              const group = getMuscleGroup(muscle);
+              const translated = translateTerms([muscle], "muscles", lang)[0];
+              const isPrimary = i === 0;
+              if (!group) {
+                return (
+                  <span key={muscle} className={`tap-feedback inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium capitalize ${isPrimary ? 'bg-[#FF8C00] text-white' : 'bg-transparent border border-[#FF8C00]/40 text-[#FF8C00]'}`}>
+                    {translated}
+                  </span>
+                );
+              }
+              return (
+                <Link key={muscle} href={`/exercices?muscle=${group}`} title={t("exerciseDetail.filterByMuscle")} className={`tap-feedback inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors ${isPrimary ? 'bg-[#FF8C00] text-white hover:bg-[#FF8C00]/90' : 'bg-transparent border border-[#FF8C00]/40 text-[#FF8C00] hover:bg-[#FF8C00]/10'}`}>
+                  {translated}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+        {/* Equipement */}
+        {merged.frontmatter.equipment && merged.frontmatter.equipment.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {translateTerms(merged.frontmatter.equipment, "equipment", lang).map((eq) => (
+              <span key={eq} className="tap-feedback inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 capitalize">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3 opacity-50"><rect x="2" y="10" width="20" height="4" rx="1" /><line x1="6" y1="7" x2="6" y2="17" /><line x1="18" y1="7" x2="18" y2="17" /></svg>
+                {eq}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ─── 3. DOSAGE RECOMMANDE ─── */}
+      <div ref={dosageRef as React.RefObject<HTMLDivElement>} className="tap-feedback">
+        <ExerciseQuickInfo
+          content={merged.content}
+          securite={merged.frontmatter.consignes_securite ?? ''}
+        />
+      </div>
+
+      {/* ─── 4. TIMER REPOS ─── */}
+      <div ref={timerRef as React.RefObject<HTMLDivElement>} className="tap-feedback">
+        <RestTimer restRaw={parsedSections.restRaw} />
+      </div>
+
+      {/* ─── 5. MANNEQUIN ANATOMIQUE 3D ─── */}
+      {merged.frontmatter.muscles.length > 0 && (() => {
         const anatomyGroups: string[] = [];
         for (const muscle of merged.frontmatter.muscles) {
           for (const [key, group] of Object.entries(MUSCLE_GROUPS)) {
@@ -2752,115 +2821,14 @@ export function ExerciseLiveDetail({
             }
           }
         }
-
         return (
-          <div className="flex flex-col gap-4 mt-1">
-
-            {/* A. DOSAGE — 3 colonnes */}
-            {dosageCols.length > 0 && (
-              <div ref={dosageRef as React.RefObject<HTMLDivElement>}>
-                <div className={`grid gap-0`} style={{ gridTemplateColumns: `repeat(${dosageCols.length}, 1fr)` }}>
-                  {dosageCols.map((col, i) => (
-                    <div key={col.label} className="text-center py-3" style={{ borderRight: i < dosageCols.length - 1 ? '1px solid rgba(255,255,255,0.06)' : undefined }}>
-                      <div className="text-[9px] font-semibold uppercase tracking-[0.2em] mb-1" style={{ color: '#00E5FF', fontFamily: 'var(--font-jetbrains), monospace' }}>{col.label}</div>
-                      <div className="text-[28px] font-bold text-white leading-none" style={{ fontFamily: 'var(--font-jetbrains), monospace' }}>{col.value}</div>
-                    </div>
-                  ))}
-                </div>
-                {dosageData?.note && (
-                  <p className="text-[13px] italic text-white/40 mt-1 text-center">{dosageData.note}</p>
-                )}
-                <Link href="/methodes" className="block text-[11px] text-center mt-1.5 transition-colors" style={{ color: '#FF006E' }}>
-                  Méthodes compatibles →
-                </Link>
-              </div>
-            )}
-
-            {/* B. CHIPS MUSCLES + EQUIPEMENT */}
-            <div ref={musclesRef as React.RefObject<HTMLDivElement>} className="flex flex-wrap gap-2">
-              {merged.frontmatter.muscles.map((muscle, i) => {
-                const group = getMuscleGroup(muscle);
-                const translated = translateTerms([muscle], "muscles", lang)[0];
-                const isPrimary = i === 0;
-                const chip = (
-                  <span className={`inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium capitalize ${isPrimary ? 'text-white' : 'text-[#FF006E]'}`}
-                    style={isPrimary ? { background: '#FF006E' } : { border: '1px solid rgba(255,0,110,0.4)' }}>
-                    {translated}
-                  </span>
-                );
-                return group ? (
-                  <Link key={muscle} href={`/exercices?muscle=${group}`} className="tap-feedback transition-colors hover:opacity-80">{chip}</Link>
-                ) : (
-                  <span key={muscle} className="tap-feedback">{chip}</span>
-                );
-              })}
-              {merged.frontmatter.equipment?.map((eq) => {
-                const translated = translateTerms([eq], "equipment", lang)[0];
-                return (
-                  <span key={eq} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium capitalize" style={{ border: '1px solid rgba(0,229,255,0.3)', color: '#00E5FF' }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3 opacity-50"><rect x="2" y="10" width="20" height="4" rx="1" /><line x1="6" y1="7" x2="6" y2="17" /><line x1="18" y1="7" x2="18" y2="17" /></svg>
-                    {translated}
-                  </span>
-                );
-              })}
-            </div>
-
-            {/* C. DOTS DE PAGINATION */}
-            {sessionSiblings.length > 1 && (
-              <div className="flex justify-center items-center gap-1.5 py-1">
-                {sessionSiblings.map((sib, i) => {
-                  const isActive = sib.slug === slug;
-                  return isActive ? (
-                    <span key={sib.slug} className="rounded-full" style={{ width: 18, height: 4, background: '#00E5FF' }} />
-                  ) : (
-                    <Link key={sib.slug} href={`/exercices/${sib.slug}`} className="rounded-full transition-colors hover:bg-white/20" style={{ width: 4, height: 4, background: 'rgba(255,255,255,0.2)' }} />
-                  );
-                })}
-              </div>
-            )}
-
-            {/* D. BARRE D'ACTIONS */}
-            <div ref={timerRef as React.RefObject<HTMLDivElement>} className="flex gap-3">
-              {/* Timer repos — flex 2 */}
-              <div className="flex-[2] min-w-0">
-                <RestTimer restRaw={parsedSections.restRaw} />
-              </div>
-              {/* Muscles — carré 56px */}
-              {merged.frontmatter.muscles.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => { const el = document.getElementById('mannequin-section'); el?.scrollIntoView({ behavior: 'smooth' }); }}
-                  className="flex-none flex flex-col items-center justify-center rounded-2xl cursor-pointer border-none transition-colors hover:bg-white/10"
-                  style={{ width: 56, height: 56, background: 'rgba(255,0,110,0.08)', border: '1px solid rgba(255,0,110,0.25)' }}
-                  aria-label="Muscles"
-                >
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF006E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6.5 6.5c1.5-2.5 4-3 5.5-3s4 .5 5.5 3c1 1.7 1 4-.5 6.5-1 1.7-3 4-5 6.5-2-2.5-4-4.8-5-6.5-1.5-2.5-1.5-4.8-.5-6.5z"/><circle cx="12" cy="10" r="2"/></svg>
-                  <span className="text-[8px] mt-0.5 uppercase tracking-wider font-semibold" style={{ color: '#FF006E' }}>Muscles</span>
-                </button>
-              )}
-              {/* Methodes — carré 56px */}
-              <Link
-                href="/methodes"
-                className="flex-none flex flex-col items-center justify-center rounded-2xl transition-colors hover:bg-white/10"
-                style={{ width: 56, height: 56, background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.25)' }}
-                aria-label="Méthodes"
-              >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00E5FF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><line x1="9" y1="7" x2="16" y2="7"/><line x1="9" y1="11" x2="14" y2="11"/></svg>
-                <span className="text-[8px] mt-0.5 uppercase tracking-wider font-semibold" style={{ color: '#00E5FF' }}>Méthodes</span>
-              </Link>
-            </div>
-
-            {/* Mannequin 3D (inline below action bar) */}
-            {merged.frontmatter.muscles.length > 0 && (
-              <div id="mannequin-section" ref={mannequinRef as React.RefObject<HTMLDivElement>} style={{ margin: "-6px 0" }}>
-                <ExerciseMannequin3D
-                  muscles={merged.frontmatter.muscles}
-                  slug={slug}
-                  anatomyGroups={anatomyGroups}
-                  title={displayTitle}
-                />
-              </div>
-            )}
+          <div ref={mannequinRef as React.RefObject<HTMLDivElement>} style={{ margin: "-6px 0" }}>
+            <ExerciseMannequin3D
+              muscles={merged.frontmatter.muscles}
+              slug={slug}
+              anatomyGroups={anatomyGroups}
+              title={displayTitle}
+            />
           </div>
         );
       })()}
@@ -2918,7 +2886,7 @@ export function ExerciseLiveDetail({
         <div className="flex flex-col gap-0">
           {/* 6. RESUME */}
           {parsedSections.resume && parsedSections.resume.body && (
-            <div ref={resumeRef as React.RefObject<HTMLDivElement>} className="border-l-2 pl-4 py-1 mb-4" style={{ borderColor: '#00E5FF' }}>
+            <div ref={resumeRef as React.RefObject<HTMLDivElement>} className="border-l-2 border-[#FF8C00] pl-4 py-1 mb-4">
               <p className="text-[15px] text-white/90 leading-relaxed" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>
                 {parsedSections.resume.body}
               </p>
@@ -2928,7 +2896,7 @@ export function ExerciseLiveDetail({
           {/* 7. EXECUTION (dosage lines filtered) */}
           {parsedSections.execution && parsedSections.execution.body && (
             <div ref={executionRef as React.RefObject<HTMLDivElement>} className="mb-4">
-              <h2 className="text-xl uppercase tracking-wider mb-3 mt-1" style={{ fontFamily: 'var(--font-bebas), sans-serif', color: '#00E5FF' }}>
+              <h2 className="text-xl uppercase tracking-wider text-white mb-3 mt-1" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
                 {parsedSections.execution.heading}
               </h2>
               <div className="flex flex-col gap-2.5">
@@ -2941,8 +2909,8 @@ export function ExerciseLiveDetail({
                     return (
                       <RevealStep key={i} delay={i * 80}>
                         <div className="flex gap-3 items-start">
-                          <span className="text-[28px] leading-none shrink-0 w-8 text-right" style={{ fontFamily: 'var(--font-bebas), sans-serif', color: '#7B2FFF' }}>{i + 1}</span>
-                          <p className="text-[15px] text-white/80 leading-relaxed pt-0.5" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>{text}</p>
+                          <span className="text-2xl leading-none text-[#FF8C00] shrink-0 w-8 text-right" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>{i + 1}</span>
+                          <p className="text-sm text-white/80 leading-relaxed pt-0.5" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>{text}</p>
                         </div>
                       </RevealStep>
                     );
@@ -2958,7 +2926,7 @@ export function ExerciseLiveDetail({
           {/* 8. RESPIRATION */}
           {parsedSections.respiration && parsedSections.respiration.body && (
             <div ref={respirationRef as React.RefObject<HTMLDivElement>} className="mb-4">
-              <h2 className="text-xl uppercase tracking-wider mb-2 mt-2" style={{ fontFamily: 'var(--font-bebas), sans-serif', color: '#FF006E' }}>
+              <h2 className="text-xl uppercase tracking-wider text-white mb-2 mt-2" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
                 {parsedSections.respiration.heading}
               </h2>
               <p className="text-sm text-white/70 leading-relaxed" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>
@@ -2988,7 +2956,7 @@ export function ExerciseLiveDetail({
                   <ul className="flex flex-col gap-1.5 pl-1">
                     {parsedSections.conseils.body.split('\n').filter(l => l.trim().startsWith('-')).map((line, i) => (
                       <li key={i} className="flex gap-2 items-start text-sm text-white/70 leading-relaxed">
-                        <span className="mt-1 shrink-0" style={{ color: '#00E5FF' }}>•</span>
+                        <span className="text-[#FF8C00] mt-1 shrink-0">•</span>
                         <span>{line.replace(/^-\s*/, '').trim()}</span>
                       </li>
                     ))}

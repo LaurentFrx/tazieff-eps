@@ -96,9 +96,6 @@ function parseDosage(content: string): DosageData | null {
   return null;
 }
 
-export type { DosageData };
-export { parseDosage };
-
 interface ExerciseQuickInfoProps {
   content: string;
   securite: string;
