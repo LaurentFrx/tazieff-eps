@@ -36,9 +36,6 @@ class Mannequin3DErrorBoundary extends Component<
   static getDerivedStateFromError() {
     return { hasError: true };
   }
-  componentDidCatch(error: Error) {
-    console.error("[MannequinPreview] render error:", error);
-  }
   render() {
     return this.state.hasError ? this.props.fallback : this.props.children;
   }
@@ -70,8 +67,7 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetGroup, setSheetGroup] = useState<string | null>(null);
   const [animateIn, setAnimateIn] = useState(false);
-  const [containerHeight, setContainerHeight] = useState(350);
-  const [canvasLoaded, setCanvasLoaded] = useState(false);
+  const [containerHeight, setContainerHeight] = useState(320);
 
   const handleFrameComputed = useCallback((h: number) => {
     setContainerHeight(Math.round(h));
@@ -129,11 +125,7 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
   const handleOpen = useCallback(() => setFullscreen(true), []);
   const handleClose = useCallback(() => {
     setAnimateIn(false);
-    setTimeout(() => {
-      setFullscreen(false);
-      // Dispose preview canvas WebGL context when closing fullscreen
-      setCanvasLoaded(false);
-    }, 250);
+    setTimeout(() => setFullscreen(false), 250);
   }, []);
 
   const anatomyHref = `/apprendre/anatomie?muscles=${anatomyGroups.join(",")}&from=exercice&slug=${slug}`;
@@ -169,16 +161,29 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
   return (
     <>
       {/* ─── MINIATURE PREVIEW ─── */}
-      <div style={{ position: "relative", width: "100%" }}>
+      <div style={{ position: "relative", width: "100%", maxWidth: 280, margin: "0 auto" }}>
+        {/* Glow pulse */}
+        <div
+          style={{
+            position: "absolute",
+            inset: -16,
+            borderRadius: 24,
+            background: "radial-gradient(ellipse at center, rgba(255,140,0,0.12) 0%, transparent 70%)",
+            animation: "mannequinGlow 3s ease-in-out infinite",
+            pointerEvents: "none",
+          }}
+        />
+
         {/* Legend */}
         <div style={{ marginBottom: 8 }}>{legend}</div>
 
-        {/* Preview container — static placeholder until tap, then 3D canvas */}
+        {/* 3D Preview canvas */}
         <div
-          onClick={() => { if (!canvasLoaded) { setCanvasLoaded(true); } else { handleOpen(); } }}
+          onClick={handleOpen}
+          className="tap-feedback"
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { if (!canvasLoaded) setCanvasLoaded(true); else handleOpen(); } }}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleOpen(); }}
           style={{
             position: "relative",
             borderRadius: 20,
@@ -186,49 +191,33 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
             background: "#0a0a14",
             border: "1px solid rgba(255,140,0,0.15)",
             cursor: "pointer",
-            width: "100%",
-            minHeight: 280,
-            height: canvasLoaded ? containerHeight : 280,
+            width: 280,
+            height: containerHeight,
             transition: "height 0.3s ease",
           }}
         >
-          {canvasLoaded ? (
-            <Mannequin3DErrorBoundary
-              fallback={
-                <Link
-                  href={anatomyHref}
-                  style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", gap: 8, color: "rgba(255,255,255,0.5)", fontSize: 12, textDecoration: "none" }}
-                >
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  <span>3D non disponible</span>
-                  <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)" }}>Voir l&apos;anatomie →</span>
-                </Link>
-              }
-            >
-              <MannequinPreviewCanvas
-                activeGroups={anatomyGroups}
-                rotationY={previewRotationY}
-                onFrameComputed={handleFrameComputed}
-              />
-            </Mannequin3DErrorBoundary>
-          ) : (
-            /* Static placeholder — zero WebGL context */
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", gap: 8 }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/anatomy/mini-mannequin.webp" alt="" style={{ height: 160, opacity: 0.35, pointerEvents: "none", filter: "grayscale(1)" }} />
-              <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-bebas), sans-serif" }}>
+          <Mannequin3DErrorBoundary
+            fallback={
+              <Link
+                href={anatomyHref}
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", color: "rgba(255,255,255,0.4)", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em" }}
+              >
                 {t("exerciseAnatomy.tapToExplore")}
-              </span>
-            </div>
-          )}
+              </Link>
+            }
+          >
+            <MannequinPreviewCanvas
+              activeGroups={anatomyGroups}
+              rotationY={previewRotationY}
+              onFrameComputed={handleFrameComputed}
+            />
+          </Mannequin3DErrorBoundary>
         </div>
 
-        {/* Tap label (only when canvas is loaded) */}
-        {canvasLoaded && (
-          <div style={{ textAlign: "center", marginTop: 10, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.35)" }}>
-            {t("exerciseAnatomy.tapToExplore")}
-          </div>
-        )}
+        {/* Tap label */}
+        <div style={{ textAlign: "center", marginTop: 10, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.35)" }}>
+          {t("exerciseAnatomy.tapToExplore")}
+        </div>
       </div>
 
       {/* ─── FULLSCREEN OVERLAY ─── */}
@@ -293,12 +282,10 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
             fallback={
               <Link
                 href={anatomyHref}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", gap: 12, color: "rgba(255,255,255,0.5)", fontSize: 14, textDecoration: "none" }}
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", color: "rgba(255,255,255,0.5)", fontSize: 14 }}
                 onClick={handleClose}
               >
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <span>3D non disponible sur cet appareil</span>
-                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>Voir l&apos;anatomie en ligne →</span>
+                {t("exerciseAnatomy.tapToExplore")}
               </Link>
             }
           >
