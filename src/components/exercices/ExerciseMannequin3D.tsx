@@ -162,25 +162,12 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
     <>
       {/* ─── MINIATURE PREVIEW ─── */}
       <div style={{ position: "relative", width: "100%", maxWidth: 280, margin: "0 auto" }}>
-        {/* Glow pulse */}
-        <div
-          style={{
-            position: "absolute",
-            inset: -16,
-            borderRadius: 24,
-            background: "radial-gradient(ellipse at center, rgba(255,140,0,0.12) 0%, transparent 70%)",
-            animation: "mannequinGlow 3s ease-in-out infinite",
-            pointerEvents: "none",
-          }}
-        />
-
         {/* Legend */}
         <div style={{ marginBottom: 8 }}>{legend}</div>
 
         {/* 3D Preview canvas */}
         <div
           onClick={handleOpen}
-          className="tap-feedback"
           role="button"
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleOpen(); }}
