@@ -231,8 +231,8 @@ export function RestTimer({ restRaw }: RestTimerProps) {
       <div className="flex items-center px-3" style={{ height: 94 }}>
 
         {/* Label */}
-        <div className="flex-none text-[11px] font-semibold tracking-wider uppercase leading-tight"
-          style={{ color: "#0891b2", minWidth: 48 }}>
+        <div className="flex-none uppercase tracking-wider leading-tight"
+          style={{ color: "#00E5FF", minWidth: 48, fontFamily: "var(--font-bebas), sans-serif", fontSize: 16 }}>
           TIMER<br />REPOS
         </div>
 
