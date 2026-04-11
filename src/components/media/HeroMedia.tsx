@@ -271,6 +271,7 @@ export function HeroMedia(props: HeroMediaProps) {
             aria-label={alt}
             onClick={() => setShowFullscreen(true)}
             style={{ cursor: "pointer" }}
+            onError={() => setVideoError(true)}
           >
             <source src={`${props.src}.webm`} type="video/webm" />
             <source src={`${props.src}.mp4`} type="video/mp4" />

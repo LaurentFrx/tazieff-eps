@@ -71,6 +71,7 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
   const [sheetGroup, setSheetGroup] = useState<string | null>(null);
   const [animateIn, setAnimateIn] = useState(false);
   const [containerHeight, setContainerHeight] = useState(350);
+  const [canvasLoaded, setCanvasLoaded] = useState(false);
 
   const handleFrameComputed = useCallback((h: number) => {
     setContainerHeight(Math.round(h));
@@ -168,12 +169,12 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
         {/* Legend */}
         <div style={{ marginBottom: 8 }}>{legend}</div>
 
-        {/* 3D Preview canvas */}
+        {/* Preview container — static placeholder until tap, then 3D canvas */}
         <div
-          onClick={handleOpen}
+          onClick={() => { if (!canvasLoaded) { setCanvasLoaded(true); } else { handleOpen(); } }}
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleOpen(); }}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { if (!canvasLoaded) setCanvasLoaded(true); else handleOpen(); } }}
           style={{
             position: "relative",
             borderRadius: 20,
@@ -182,33 +183,46 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
             border: "1px solid rgba(255,140,0,0.15)",
             cursor: "pointer",
             width: "100%",
-            minHeight: 350,
-            height: containerHeight,
+            minHeight: 280,
+            height: canvasLoaded ? containerHeight : 280,
             transition: "height 0.3s ease",
           }}
         >
-          <Mannequin3DErrorBoundary
-            fallback={
-              <Link
-                href={anatomyHref}
-                style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", color: "rgba(255,255,255,0.4)", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em" }}
-              >
+          {canvasLoaded ? (
+            <Mannequin3DErrorBoundary
+              fallback={
+                <Link
+                  href={anatomyHref}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", color: "rgba(255,255,255,0.4)", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em" }}
+                >
+                  {t("exerciseAnatomy.tapToExplore")}
+                </Link>
+              }
+            >
+              <MannequinPreviewCanvas
+                activeGroups={anatomyGroups}
+                rotationY={previewRotationY}
+                onFrameComputed={handleFrameComputed}
+              />
+            </Mannequin3DErrorBoundary>
+          ) : (
+            /* Static placeholder — no WebGL context created */
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", gap: 12 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/images/anatomy/mini-mannequin.webp" alt="" style={{ height: 180, opacity: 0.5, pointerEvents: "none" }} />
+              <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.4)" }}>
                 {t("exerciseAnatomy.tapToExplore")}
-              </Link>
-            }
-          >
-            <MannequinPreviewCanvas
-              activeGroups={anatomyGroups}
-              rotationY={previewRotationY}
-              onFrameComputed={handleFrameComputed}
-            />
-          </Mannequin3DErrorBoundary>
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Tap label */}
-        <div style={{ textAlign: "center", marginTop: 10, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.35)" }}>
-          {t("exerciseAnatomy.tapToExplore")}
-        </div>
+        {/* Tap label (only when canvas is loaded) */}
+        {canvasLoaded && (
+          <div style={{ textAlign: "center", marginTop: 10, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.35)" }}>
+            {t("exerciseAnatomy.tapToExplore")}
+          </div>
+        )}
       </div>
 
       {/* ─── FULLSCREEN OVERLAY ─── */}
