@@ -2842,7 +2842,7 @@ export function ExerciseLiveDetail({
             .map((section) => (
             <section key={section.id}>
               {section.title ? (
-                <h2 className="text-xl uppercase tracking-wider mb-3 mt-1" style={{ fontFamily: 'var(--font-bebas), sans-serif', color: '#00E5FF' }}>{section.title}</h2>
+                <h2 className="text-xl uppercase tracking-wider mb-3 mt-1" style={{ fontFamily: 'var(--font-bebas), sans-serif', color: /^s[eé]curit[eé]/i.test(section.title) ? '#FF006E' : '#00E5FF' }}>{section.title}</h2>
               ) : null}
               <div className="flex flex-col gap-3">
                 {section.blocks.map((block, blockIndex) => {
