@@ -161,7 +161,7 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
   return (
     <>
       {/* ─── MINIATURE PREVIEW ─── */}
-      <div style={{ position: "relative", width: "100%", maxWidth: 280, margin: "0 auto" }}>
+      <div style={{ position: "relative", width: "100%" }}>
         {/* Legend */}
         <div style={{ marginBottom: 8 }}>{legend}</div>
 
@@ -178,7 +178,7 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
             background: "#0a0a14",
             border: "1px solid rgba(255,140,0,0.15)",
             cursor: "pointer",
-            width: 280,
+            width: "100%",
             height: containerHeight,
             transition: "height 0.3s ease",
           }}
