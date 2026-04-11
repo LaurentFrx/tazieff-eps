@@ -2440,18 +2440,23 @@ export function ExerciseLiveDetail({
     return () => observer.disconnect();
   }, []);
 
-  // --- Parallax hero ---
+  // --- Parallax hero (RAF-throttled) ---
   const heroImgRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReduced) return;
+    let rafId = 0;
     const onScroll = () => {
-      const y = window.scrollY;
-      if (y > 500 || !heroImgRef.current) return;
-      heroImgRef.current.style.transform = `translateY(${y * 0.3}px) scale(1.05)`;
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        const y = window.scrollY;
+        if (y > 500 || !heroImgRef.current) return;
+        heroImgRef.current.style.transform = `translateY(${y * 0.3}px) scale(1.05)`;
+      });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => { window.removeEventListener("scroll", onScroll); cancelAnimationFrame(rafId); };
   }, []);
 
   // --- Section reveal hooks ---
