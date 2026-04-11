@@ -2725,7 +2725,7 @@ export function ExerciseLiveDetail({
             </h1>
             {/* Navigation session inline dans le hero */}
             {(prevExercise || nextExercise) && (
-              <div className="flex items-center gap-3 mt-2">
+              <div className="flex items-center justify-between mt-2" style={{ maxWidth: 240 }}>
                 {prevExercise ? (
                   <Link
                     href={`/exercices/${prevExercise.slug}`}
@@ -2735,7 +2735,7 @@ export function ExerciseLiveDetail({
                     <svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12.5 15l-5-5 5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     {prevExercise.slug.toUpperCase()}
                   </Link>
-                ) : null}
+                ) : <span />}
                 <span className="text-[11px] font-bold uppercase tracking-wider text-white/70" style={{ fontFamily: "var(--font-jetbrains), monospace" }}>
                   {slug.toUpperCase()}
                 </span>
@@ -2748,7 +2748,7 @@ export function ExerciseLiveDetail({
                     {nextExercise.slug.toUpperCase()}
                     <svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M7.5 15l5-5-5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   </Link>
-                ) : null}
+                ) : <span />}
               </div>
             )}
           </div>
