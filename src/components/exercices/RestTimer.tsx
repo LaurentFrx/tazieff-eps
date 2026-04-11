@@ -364,14 +364,6 @@ export function RestTimer({ restRaw }: RestTimerProps) {
         </button>
       </div>
 
-      {/* Hint */}
-      <p className="text-center text-[10px] pb-2 -mt-0.5"
-        style={{ color: "rgba(255,255,255,0.3)" }}>
-        {phase === "finished" ? "Terminé !"
-          : phase === "running" ? "Tap le cercle pour pause"
-          : phase === "paused" ? "Tap le cercle pour reprendre"
-          : "Tap le cercle pour démarrer"}
-      </p>
     </div>
   );
 }
