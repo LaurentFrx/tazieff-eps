@@ -29,17 +29,21 @@ function formatTime(seconds: number): string {
   return `${s}s`;
 }
 
-const MIN_TIME = 15;
-const MAX_TIME = 300;
-function clampTime(val: number): number {
-  return Math.min(MAX_TIME, Math.max(MIN_TIME, val));
-}
-
 function vibrate(ms = 15) {
   if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate(ms);
 }
 
-const WHEEL_VALUES = [15, 30, 45, 60, 75, 90, 105, 120, 150, 180, 210, 240, 300];
+const WHEEL_VALUES = [15, 30, 45, 60, 90, 120];
+
+function snapToWheel(seconds: number): number {
+  let best = WHEEL_VALUES[0];
+  let bestDist = Infinity;
+  for (const v of WHEEL_VALUES) {
+    const d = Math.abs(v - seconds);
+    if (d < bestDist) { bestDist = d; best = v; }
+  }
+  return best;
+}
 
 const WHEEL_FORMAT = (v: number) => {
   if (v >= 60) return { main: `${Math.floor(v / 60)}:${(v % 60).toString().padStart(2, "0")}`, unit: "min" };
@@ -81,83 +85,84 @@ function useTimer(initialSeconds: number) {
     if (running) setRunning(false); else setRunning(true);
   };
   const adjustTotal = (newTotal: number) => {
-    const clamped = clampTime(newTotal);
-    setTotal(clamped);
-    if (!running && !finished) setTimeLeft(clamped);
+    setTotal(newTotal);
+    if (!running && !finished) setTimeLeft(newTotal);
   };
 
   return { total, timeLeft, running, finished, tap, reset, adjustTotal };
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Countdown ring — compact, sans fond
+   Countdown ring — 60px, compact
    ═══════════════════════════════════════════════════════════════ */
 
-const RING_R = 18;
-const RING_STROKE = 2.5;
+const RING_R = 27;
+const RING_STROKE = 3;
 const RING_SIZE = (RING_R + RING_STROKE) * 2;
 const RING_CIRC = 2 * Math.PI * RING_R;
 
 function CountdownRing({
-  timeLeft,
-  total,
-  running,
-  finished,
-  onTap,
+  timeLeft, total, running, finished, onTap,
 }: {
-  timeLeft: number;
-  total: number;
-  running: boolean;
-  finished: boolean;
-  onTap: () => void;
+  timeLeft: number; total: number; running: boolean; finished: boolean; onTap: () => void;
 }) {
   const isActive = running || finished;
   const progress = isActive ? 1 - timeLeft / total : 0;
   const dashOffset = RING_CIRC * (1 - progress);
+  const pulse = running && timeLeft <= 3 && timeLeft > 0;
 
   return (
     <button
       type="button"
       onClick={onTap}
       className="relative shrink-0 flex items-center justify-center"
-      style={{ width: 44, height: 44 }}
-      aria-label={running ? "Pause" : finished ? "Reset" : "Démarrer"}
+      style={{ width: 60, height: 60 }}
+      aria-label={running ? "Pause" : finished ? "Reset" : "Démarrer le timer"}
     >
       <svg width={RING_SIZE} height={RING_SIZE} style={{ transform: "rotate(-90deg)" }}>
-        <circle cx={RING_R + RING_STROKE} cy={RING_R + RING_STROKE} r={RING_R} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={RING_STROKE} />
         <circle
-          cx={RING_R + RING_STROKE} cy={RING_R + RING_STROKE} r={RING_R} fill="none"
-          stroke={finished ? "#00E676" : "#FF8C00"} strokeWidth={RING_STROKE} strokeLinecap="round"
-          strokeDasharray={RING_CIRC} strokeDashoffset={dashOffset}
-          style={{ transition: running ? "stroke-dashoffset 1s linear, stroke 0.3s ease" : "stroke-dashoffset 0.3s ease, stroke 0.3s ease" }}
-          opacity={isActive || timeLeft < total ? 1 : 0}
+          cx={RING_R + RING_STROKE} cy={RING_R + RING_STROKE} r={RING_R}
+          fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={RING_STROKE}
         />
+        {isActive && (
+          <circle
+            cx={RING_R + RING_STROKE} cy={RING_R + RING_STROKE} r={RING_R}
+            fill="none"
+            stroke={finished ? "#00E676" : "#FF8C00"}
+            strokeWidth={RING_STROKE} strokeLinecap="round"
+            strokeDasharray={RING_CIRC} strokeDashoffset={dashOffset}
+            style={{
+              transition: running
+                ? "stroke-dashoffset 1s linear, stroke 0.3s ease"
+                : "stroke-dashoffset 0.3s ease, stroke 0.3s ease",
+            }}
+          />
+        )}
       </svg>
       <span
-        className="absolute text-[11px] font-bold leading-none"
+        className="absolute font-bold leading-none"
         style={{
           fontFamily: "var(--font-jetbrains), monospace",
-          color: finished ? "#00E676" : running ? "#FF8C00" : "white",
+          fontSize: finished ? 10 : 15,
+          color: finished ? "#00E676" : running ? "#FF8C00" : "rgba(255,255,255,0.7)",
+          animation: pulse ? "pulse 1s ease-in-out infinite" : undefined,
         }}
       >
-        {formatTime(timeLeft)}
+        {finished ? "Terminé" : formatTime(timeLeft)}
       </span>
     </button>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Horizontal bracelet picker — items resserrés, effets accentués
+   Horizontal bracelet picker — 3D cylinder effect
    ═══════════════════════════════════════════════════════════════ */
 
-const ITEM_W = 44;       // resserré (était 58)
-const CYLINDER_R = 110;  // rayon plus serré = courbe plus forte
+const ITEM_W = 44;
+const CYLINDER_R = 110;
 
 function HorizontalBraceletPicker({
-  values,
-  defaultValue,
-  onChange,
-  formatLabel: fmt,
+  values, defaultValue, onChange, formatLabel: fmt,
 }: {
   values: number[];
   defaultValue: number;
@@ -273,22 +278,48 @@ function HorizontalBraceletPicker({
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   EXPORT — Timer repos, style accordé avec le dosage recommandé
+   EXPORT — Timer repos compact (une seule ligne)
    ═══════════════════════════════════════════════════════════════ */
 
 export function RestTimerShowcase({ restRaw }: { restRaw: string | null }) {
-  const initial = parseRestSeconds(restRaw);
+  const initial = snapToWheel(parseRestSeconds(restRaw));
   const timer = useTimer(initial);
   const isActive = timer.running || timer.finished;
+  const resetRef = useRef(timer.reset);
+  resetRef.current = timer.reset;
+
+  /* Auto-reset 3s après la fin */
+  useEffect(() => {
+    if (!timer.finished) return;
+    const id = setTimeout(() => resetRef.current(), 3000);
+    return () => clearTimeout(id);
+  }, [timer.finished]);
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 select-none">
-      {/* Header — même typo que « Dosage recommandé » */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="text-xs font-semibold uppercase tracking-[0.2em] text-white/50">
-          Timer repos
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-2.5 select-none">
+      <div className="flex items-center gap-3">
+        {/* Label */}
+        <div className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/40 shrink-0 leading-tight">
+          Timer<br />repos
         </div>
-        {/* Ring countdown dans le header */}
+
+        {/* Zone centrale : bracelet (repos) ou statut (actif) */}
+        <div className="flex-1 min-w-0 flex items-center justify-center">
+          {!isActive ? (
+            <HorizontalBraceletPicker
+              values={WHEEL_VALUES}
+              defaultValue={WHEEL_VALUES.includes(timer.total) ? timer.total : 90}
+              onChange={timer.adjustTotal}
+              formatLabel={WHEEL_FORMAT}
+            />
+          ) : (
+            <p className="text-[11px] text-white/25 text-center">
+              {timer.finished ? "Terminé !" : "Tap pour pause"}
+            </p>
+          )}
+        </div>
+
+        {/* Anneau countdown — toujours visible */}
         <CountdownRing
           timeLeft={timer.timeLeft}
           total={timer.total}
@@ -296,23 +327,6 @@ export function RestTimerShowcase({ restRaw }: { restRaw: string | null }) {
           finished={timer.finished}
           onTap={timer.tap}
         />
-      </div>
-
-      {/* Bracelet picker — pleine largeur, centré */}
-      <HorizontalBraceletPicker
-        values={WHEEL_VALUES}
-        defaultValue={WHEEL_VALUES.includes(timer.total) ? timer.total : 90}
-        onChange={(val) => timer.adjustTotal(val)}
-        formatLabel={WHEEL_FORMAT}
-      />
-
-      {/* Instruction */}
-      <div className="mt-2 text-[11px] text-center" style={{ color: "rgba(255,255,255,0.25)" }}>
-        {timer.running
-          ? "Tap le cercle pour pause"
-          : timer.finished
-            ? "Tap le cercle pour reset"
-            : "Scroll pour ajuster · tap le cercle pour démarrer"}
       </div>
     </div>
   );
