@@ -67,7 +67,7 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetGroup, setSheetGroup] = useState<string | null>(null);
   const [animateIn, setAnimateIn] = useState(false);
-  const [containerHeight, setContainerHeight] = useState(320);
+  const [containerHeight, setContainerHeight] = useState(350);
 
   const handleFrameComputed = useCallback((h: number) => {
     setContainerHeight(Math.round(h));
@@ -179,6 +179,7 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups, title }: Pro
             border: "1px solid rgba(255,140,0,0.15)",
             cursor: "pointer",
             width: "100%",
+            minHeight: 350,
             height: containerHeight,
             transition: "height 0.3s ease",
           }}
