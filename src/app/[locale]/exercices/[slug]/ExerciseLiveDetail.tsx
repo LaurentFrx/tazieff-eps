@@ -2966,7 +2966,7 @@ export function ExerciseLiveDetail({
             </div>
           )}
 
-          {/* 10. SECURITE (collapsible, accent jaune) */}
+          {/* 10. SECURITE (collapsible, accent magenta) */}
           {parsedSections.securite && parsedSections.securite.body && (
             <div ref={securiteRef as React.RefObject<HTMLDivElement>} className="mb-1">
               <button
