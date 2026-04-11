@@ -2974,15 +2974,15 @@ export function ExerciseLiveDetail({
                 onClick={() => setSecuriteOpen(!securiteOpen)}
                 className="tap-feedback flex items-center justify-between w-full py-2 text-left"
               >
-                <h2 className="flex items-center gap-2 text-xl uppercase tracking-wider text-[#FBBF24]" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                <h2 className="flex items-center gap-2 text-xl uppercase tracking-wider" style={{ fontFamily: 'var(--font-bebas), sans-serif', color: '#FF006E' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#FF006E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
                   {parsedSections.securite.heading}
                 </h2>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`w-5 h-5 text-[#FBBF24]/40 transition-transform duration-200 ${securiteOpen ? 'rotate-180' : ''}`}><path d="M6 9l6 6 6-6" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`w-5 h-5 transition-transform duration-200 ${securiteOpen ? 'rotate-180' : ''}`} style={{ color: 'rgba(255,0,110,0.4)' }}><path d="M6 9l6 6 6-6" /></svg>
               </button>
               {securiteOpen && (
-                <div className="rounded-xl bg-[#FBBF24]/5 border border-[#FBBF24]/15 px-4 py-3 mb-1">
-                  <p className="text-sm text-[#FBBF24]/80 leading-relaxed">
+                <div className="rounded-xl px-4 py-3 mb-1" style={{ background: 'rgba(255,0,110,0.05)', border: '1px solid rgba(255,0,110,0.15)' }}>
+                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,0,110,0.8)' }}>
                     {parsedSections.securite.body}
                   </p>
                 </div>
