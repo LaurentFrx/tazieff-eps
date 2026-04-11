@@ -36,6 +36,9 @@ class Mannequin3DErrorBoundary extends Component<
   static getDerivedStateFromError() {
     return { hasError: true };
   }
+  componentDidCatch(error: Error) {
+    console.error("[MannequinPreview] render error:", error);
+  }
   render() {
     return this.state.hasError ? this.props.fallback : this.props.children;
   }
