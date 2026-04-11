@@ -23,7 +23,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Lang } from "@/lib/i18n/messages";
 import { ExerciseJsonLd } from "@/components/seo/ExerciseJsonLd";
 import { ExerciseQuickInfo } from "@/components/exercices/ExerciseQuickInfo";
-import { RestTimerShowcase } from "@/components/exercices/RestTimerVariants";
+import { RestTimer } from "@/components/exercices/RestTimer";
 import { translateTerms } from "@/lib/i18n/terms/translate";
 import { getMuscleGroup, type MuscleGroupId } from "@/lib/exercices/muscleGroups";
 const MarkdownRenderer = dynamic(
@@ -2807,8 +2807,8 @@ export function ExerciseLiveDetail({
       </div>
 
       {/* ─── 4. TIMER REPOS ─── */}
-      <div ref={timerRef as React.RefObject<HTMLDivElement>}>
-        <RestTimerShowcase restRaw={parsedSections.restRaw} />
+      <div ref={timerRef as React.RefObject<HTMLDivElement>} className="tap-feedback">
+        <RestTimer restRaw={parsedSections.restRaw} />
       </div>
 
       {/* ─── 5. MANNEQUIN ANATOMIQUE 3D ─── */}

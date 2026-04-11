@@ -1,291 +1,181 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useMemo, useRef } from 'react';
+import { WheelPicker, type WheelPickerHandle } from '@/components/tools/WheelPicker';
+import { CountdownRing, type RingPhase } from '@/components/tools/CountdownRing';
 import { useTimerContext, type TimerDisplayConfig } from '@/contexts/TimerContext';
 import type { TimerPreset } from '@/hooks/useTimer';
 import { unlockAudio } from '@/lib/timer-audio';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { VoiceSelector } from '@/components/timer/VoiceSelector';
+import { VoiceOnIcon, VoiceOffIcon } from '@/components/timer/VoiceIcons';
 
-/* ─── Constants ─── */
+const DURATION_VALUES = [10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 300];
 
-const VALUES = [15, 30, 45, 60, 90, 120];
-const DEFAULT_INDEX = 3; // 60s
+const QUICK_PRESETS = [
+  { label: '30s', value: 30 },
+  { label: '1 min', value: 60 },
+  { label: '2 min', value: 120 },
+  { label: '5 min', value: 300 },
+];
 
-/** Circle-ring dimensions */
-const SIZE = 62;
-const CX = SIZE / 2;
-const CY = SIZE / 2;
-const R = 26;
-const STROKE = 4;
-const CIRC = 2 * Math.PI * R;
+/* ─── Icons ─── */
 
-/* ─── Helpers ─── */
+const PauseIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></svg>
+);
+const PlayIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21" /></svg>
+);
+const StopIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="#ef4444"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
+);
 
-function fmtTime(s: number): string {
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${m}:${String(sec).padStart(2, '0')}`;
-}
-
-function mkPreset(dur: number): TimerPreset {
-  return {
-    name: 'REPOS', prepareDuration: 3, workDuration: dur,
-    restDuration: 0, rounds: 1, cycles: 1,
-    recoveryDuration: 0, restBetweenDuration: 0, cooldownDuration: 0,
-  };
-}
-
-function mkConfig(dur: number): TimerDisplayConfig {
-  return {
-    ringPhases: [{ type: 'rest', duration: dur, color: '#f97316' }],
-    ringTotal: dur,
-    phaseColorMap: { prepare: '#6366f1', work: '#f97316' },
-    phaseGradientMap: {
-      prepare: 'linear-gradient(135deg, #4f46e5, #6366f1)',
-      work: 'linear-gradient(135deg, #ea580c, #f97316)',
-    },
-  };
-}
-
-/* ─── Component ─── */
+/* ─── Main ─── */
 
 interface ReposTimerProps { onBack: () => void }
 
 export function ReposTimer({ onBack }: ReposTimerProps) {
   const { t } = useI18n();
   const ctx = useTimerContext();
-  const [idx, setIdx] = useState(DEFAULT_INDEX);
-  const [showDone, setShowDone] = useState(false);
-  const touchX = useRef(0);
-  const touchY = useRef(0);
-  const didSwipe = useRef(false);
+  const [duration, setDuration] = useState(60);
+  const pickerRef = useRef<WheelPickerHandle>(null);
 
-  const duration = VALUES[idx];
+  const preset: TimerPreset = useMemo(() => ({
+    name: 'REPOS', prepareDuration: 3, workDuration: duration,
+    restDuration: 0, rounds: 1, cycles: 1, recoveryDuration: 0, restBetweenDuration: 0, cooldownDuration: 0,
+  }), [duration]);
 
-  /* ── Done flash (green ring 2 s) ── */
+  const displayConfig: TimerDisplayConfig = useMemo(() => ({
+    ringPhases: [{ type: 'rest', duration, color: '#06b6d4' }],
+    ringTotal: duration,
+    phaseColorMap: { prepare: '#6366f1', work: '#06b6d4' },
+    phaseGradientMap: {
+      prepare: 'linear-gradient(135deg, #4f46e5, #6366f1)',
+      work: 'linear-gradient(135deg, #0891b2, #06b6d4)',
+    },
+  }), [duration]);
 
-  useEffect(() => {
-    if (ctx?.state.status === 'done' && ctx.timerType === 'repos') setShowDone(true);
-  }, [ctx?.state.status, ctx?.timerType]);
-
-  useEffect(() => {
-    if (!showDone) return;
-    const id = setTimeout(() => setShowDone(false), 2000);
-    return () => clearTimeout(id);
-  }, [showDone]);
-
-  /* ── Derived state ── */
-
-  const isActive = !!(ctx?.isActive && ctx.timerType === 'repos');
-  const inCountdown = isActive || showDone;
-  const isPaused = ctx?.state.status === 'paused';
-
-  /* ── Timer actions ── */
-
-  const start = useCallback(() => {
+  const handleStart = () => {
     unlockAudio();
-    ctx?.startTimer('repos', mkPreset(duration), mkConfig(duration));
-  }, [ctx, duration]);
+    ctx?.startTimer('repos', preset, displayConfig);
+  };
 
-  const handleTap = useCallback(() => {
-    if (showDone) return;
-    if (!isActive) start();
-    else if (ctx?.state.status === 'running') ctx.pause();
-    else if (isPaused) ctx?.resume();
-  }, [isActive, showDone, ctx, isPaused, start]);
+  const handleQuickStart = (value: number) => {
+    unlockAudio();
+    pickerRef.current?.scrollToValue(value);
+    setDuration(value);
+    const qPreset: TimerPreset = { name: 'REPOS', prepareDuration: 3, workDuration: value, restDuration: 0, rounds: 1, cycles: 1, recoveryDuration: 0, restBetweenDuration: 0, cooldownDuration: 0 };
+    const qPhases: RingPhase[] = [{ type: 'rest', duration: value, color: '#06b6d4' }];
+    const qConfig: TimerDisplayConfig = { ringPhases: qPhases, ringTotal: value, phaseColorMap: { prepare: '#6366f1', work: '#06b6d4' }, phaseGradientMap: { prepare: 'linear-gradient(135deg, #4f46e5, #6366f1)', work: 'linear-gradient(135deg, #0891b2, #06b6d4)' } };
+    ctx?.startTimer('repos', qPreset, qConfig);
+  };
 
-  const handleBack = useCallback(() => {
-    if (isActive) ctx?.stop();
-    onBack();
-  }, [isActive, ctx, onBack]);
-
-  /* ── Swipe gestures (horizontal only) ── */
-
-  const onTS = useCallback((e: React.TouchEvent) => {
-    if (inCountdown) return;
-    touchX.current = e.touches[0].clientX;
-    touchY.current = e.touches[0].clientY;
-    didSwipe.current = false;
-  }, [inCountdown]);
-
-  const onTM = useCallback((e: React.TouchEvent) => {
-    if (inCountdown || didSwipe.current) return;
-    const dx = e.touches[0].clientX - touchX.current;
-    const dy = e.touches[0].clientY - touchY.current;
-    if (Math.abs(dx) < 30 || Math.abs(dy) > Math.abs(dx)) return;
-    didSwipe.current = true;
-    setIdx(i => dx < 0 ? Math.min(i + 1, VALUES.length - 1) : Math.max(i - 1, 0));
-  }, [inCountdown]);
-
-  /* ── Ring state from context ── */
-
-  const sl = ctx?.state.secondsLeft ?? 0;
-  const phase = ctx?.state.phases[ctx.state.activePhaseIndex];
-  const totalPhase = phase?.duration ?? 1;
-  const fraction = totalPhase > 0 ? (totalPhase - sl) / totalPhase : 0;
-  const isPrepare = phase?.type === 'prepare';
-  const isLast3 = sl > 0 && sl <= 3 && !isPrepare && isActive;
-
-  // Ring color & offset
-  let ringStroke: string;
-  let ringOffset: number;
-  let ringOpacity: number;
-
-  if (showDone) {
-    ringStroke = '#22c55e'; ringOffset = 0; ringOpacity = 1;
-  } else if (isActive) {
-    ringStroke = isPrepare ? '#6366f1' : '#f97316';
-    ringOffset = CIRC * fraction; // depletes as time passes
-    ringOpacity = 1;
-  } else {
-    ringStroke = 'currentColor'; ringOffset = 0; ringOpacity = 0.15;
+  if (ctx?.isActive && ctx.timerType === 'repos') {
+    return <ReposCountdown onBack={onBack} />;
   }
-
-  const prevVal = idx > 0 ? VALUES[idx - 1] : null;
-  const nextVal = idx < VALUES.length - 1 ? VALUES[idx + 1] : null;
-
-  /* ─── Render ─── */
 
   return (
     <section className="page">
-      {/* Banner */}
-      <div className="relative overflow-hidden rounded-2xl px-5 pt-5 pb-4"
-        style={{ background: 'linear-gradient(135deg, #0891b2, #06b6d4)' }}>
-        <button onClick={handleBack}
-          className="text-[13px] text-white/70 mb-2 cursor-pointer bg-transparent border-none">
-          ← Retour
-        </button>
-        <h1 className="text-[22px] font-bold text-white">{t('timer.presets.repos.name')}</h1>
-        <p className="text-[12px] text-white/70 mt-0.5">Chrono de repos entre séries</p>
+      <div className="relative overflow-hidden rounded-2xl px-5 pt-5 pb-4" style={{ background: 'linear-gradient(135deg, #0891b2, #06b6d4)' }}>
+        <button onClick={onBack} className="text-[13px] text-white/70 mb-2 cursor-pointer bg-transparent border-none">← Retour</button>
+        <h1 className="text-[22px] font-bold text-white">Repos</h1>
+        <p className="text-[12px] text-white/70 mt-0.5">Chrono de repos entre s&eacute;ries</p>
       </div>
 
-      {/* ── Compact timer line — 70 px ── */}
-      <div
-        className="flex items-center mt-4 px-4"
-        style={{ height: 70 }}
-        onTouchStart={onTS}
-        onTouchMove={onTM}
-      >
-        {/* Label */}
-        <div className="flex-none text-[11px] font-semibold tracking-wider uppercase leading-tight mr-4"
-          style={{ color: '#0891b2' }}>
-          TIMER<br />REPOS
-        </div>
-
-        {/* Swipeable picker area */}
-        <div className="flex-1 flex items-center justify-center">
-
-          {/* Previous value */}
-          <button
-            className="font-mono text-[18px] font-bold transition-all duration-300 select-none bg-transparent border-none cursor-pointer p-0"
-            style={{
-              opacity: inCountdown ? 0 : (prevVal !== null ? 0.25 : 0),
-              transform: `translateX(${inCountdown ? '-10px' : '0'})`,
-              minWidth: 36, textAlign: 'right' as const,
-              pointerEvents: inCountdown || prevVal === null ? 'none' : 'auto',
-            }}
-            onClick={() => prevVal !== null && setIdx(i => i - 1)}
-            tabIndex={-1}
-            aria-hidden
-          >
-            {prevVal ?? ''}
-          </button>
-
-          {/* ── Center circle (ring + value) ── */}
-          <button
-            onClick={handleTap}
-            className="relative flex-none mx-3 cursor-pointer bg-transparent border-none p-0 select-none active:scale-95 transition-transform"
-            style={{ width: SIZE, height: SIZE }}
-            aria-label={showDone ? 'Terminé' : isActive ? 'Pause / Reprendre' : 'Démarrer le timer'}
-          >
-            <style>{`
-              @keyframes cdp{0%,100%{transform:scale(1)}40%{transform:scale(1.3)}}
-              @keyframes vpop{0%{transform:scale(0.85);opacity:.5}100%{transform:scale(1);opacity:1}}
-            `}</style>
-
-            <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}
-              style={{ transform: 'rotate(-90deg)' }}>
-              {/* Background track */}
-              <circle cx={CX} cy={CY} r={R} fill="none"
-                stroke="currentColor" strokeWidth={STROKE} strokeOpacity={0.06} />
-              {/* Active / progress arc */}
-              <circle cx={CX} cy={CY} r={R} fill="none"
-                stroke={ringStroke} strokeWidth={STROKE} strokeLinecap="round"
-                strokeDasharray={CIRC} strokeDashoffset={ringOffset}
-                strokeOpacity={ringOpacity}
-                style={{ transition: 'stroke-dashoffset .3s linear, stroke .3s ease, stroke-opacity .3s ease' }}
-              />
-            </svg>
-
-            {/* Center text */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              {showDone ? (
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-                  stroke="#22c55e" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              ) : isActive ? (
-                <span
-                  key={isLast3 ? `cd-${sl}` : 'stable'}
-                  className="font-mono font-bold leading-none"
-                  style={{
-                    fontSize: isPrepare ? 24 : 15,
-                    color: isPrepare ? '#6366f1' : isLast3 ? '#f97316' : undefined,
-                    animation: isLast3 ? 'cdp .3s ease-out' : undefined,
-                  }}
-                >
-                  {isPrepare ? sl : fmtTime(sl)}
-                </span>
-              ) : (
-                <span key={duration} className="font-mono font-bold leading-none"
-                  style={{ fontSize: 16, animation: 'vpop .2s ease-out' }}>
-                  {duration}<span className="text-[9px] ml-px opacity-40">s</span>
-                </span>
-              )}
-            </div>
-          </button>
-
-          {/* Next value — or stop button during countdown */}
-          {isActive && !showDone ? (
-            <button
-              onClick={() => ctx?.stop()}
-              className="flex-none w-8 h-8 rounded-full flex items-center justify-center border-none cursor-pointer ml-1"
-              style={{ background: 'rgba(239,68,68,.12)' }}
-              aria-label="Stop"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="#ef4444">
-                <rect x="6" y="6" width="12" height="12" rx="2" />
-              </svg>
-            </button>
-          ) : (
-            <button
-              className="font-mono text-[18px] font-bold transition-all duration-300 select-none bg-transparent border-none cursor-pointer p-0"
-              style={{
-                opacity: inCountdown ? 0 : (nextVal !== null ? 0.25 : 0),
-                transform: `translateX(${inCountdown ? '10px' : '0'})`,
-                minWidth: 36, textAlign: 'left' as const,
-                pointerEvents: inCountdown || nextVal === null ? 'none' : 'auto',
-              }}
-              onClick={() => nextVal !== null && setIdx(i => i + 1)}
-              tabIndex={-1}
-              aria-hidden
-            >
-              {nextVal ?? ''}
-            </button>
-          )}
+      <div className="rounded-2xl p-4 bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.06] max-w-[280px] mx-auto">
+        <div className="text-[11px] font-semibold tracking-wider text-center uppercase mb-2" style={{ color: '#06b6d4' }}>Dur&eacute;e</div>
+        <div className="flex justify-center">
+          <div style={{ width: 160 }}>
+            <WheelPicker ref={pickerRef} values={DURATION_VALUES} defaultValue={60} unit="s" color="#06b6d4" onChange={setDuration} />
+          </div>
         </div>
       </div>
 
-      {/* Hint */}
-      <p className="text-center text-[11px] mt-1.5 text-zinc-400 dark:text-zinc-500">
-        {showDone ? 'Terminé !'
-          : isActive ? (isPaused ? 'Tap pour reprendre' : 'Tap pour pause')
-          : 'Swipe ← → · Tap pour démarrer'}
-      </p>
+      <div className="flex gap-2 mt-4 justify-center">
+        {QUICK_PRESETS.map((qp) => (
+          <button key={qp.value} onClick={() => handleQuickStart(qp.value)}
+            className="rounded-xl px-4 py-2.5 text-[14px] font-bold cursor-pointer border transition-all active:scale-95"
+            style={{ background: duration === qp.value ? 'rgba(6,182,212,0.3)' : 'rgba(6,182,212,0.15)', borderColor: 'rgba(6,182,212,0.25)', color: '#22d3ee' }}>
+            {qp.label}
+          </button>
+        ))}
+      </div>
 
-      {/* Voice selector */}
       <VoiceSelector />
+
+      <button onClick={handleStart} className="w-full mt-4 cursor-pointer border-none" style={{ height: 56, borderRadius: 14, background: 'linear-gradient(135deg, #0891b2, #06b6d4)', color: '#fff', fontSize: 16, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+        {t('timer.controls.start')}
+      </button>
+    </section>
+  );
+}
+
+/* ─── Countdown ─── */
+
+function ReposCountdown({ onBack }: { onBack: () => void }) {
+  const { t } = useI18n();
+  const ctx = useTimerContext()!;
+  const { state, displayConfig, voiceOn, toggleVoice, pause, resume, stop } = ctx;
+
+  if (state.status === 'done') return null;
+
+  const activePhase = state.phases[state.activePhaseIndex];
+  const isPrepare = activePhase?.type === 'prepare';
+
+  const phaseColor = isPrepare ? '#6366f1' : '#06b6d4';
+  const bannerGradient = isPrepare
+    ? 'linear-gradient(135deg, #4f46e5, #6366f1)'
+    : 'linear-gradient(135deg, #0891b2, #06b6d4)';
+
+  const prepareOffset = state.phases.length > 0 && state.phases[0].type === 'prepare' ? 1 : 0;
+  const prepareTime = prepareOffset > 0 ? state.phases[0].duration : 0;
+  const ringElapsed = Math.max(0, state.elapsedSeconds - prepareTime);
+
+  const isRunning = state.status === 'running';
+  const isPaused = state.status === 'paused';
+
+  return (
+    <section className="page">
+      <div className="relative overflow-hidden rounded-2xl px-5 pt-4 pb-3 transition-all duration-500" style={{ background: bannerGradient }}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <button onClick={onBack} className="flex items-center text-white/70 bg-transparent border-none cursor-pointer p-2 -ml-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <div>
+              <div className="text-[18px] font-bold text-white">Repos</div>
+              <div className="text-[13px] font-semibold tracking-wider text-white/80">
+                {isPrepare ? t('timer.phases.prepare') : t('timer.phases.rest')}
+              </div>
+            </div>
+          </div>
+          <button onClick={toggleVoice} className="flex items-center justify-center w-11 h-11 rounded-full border-none cursor-pointer" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}>
+            {voiceOn ? <VoiceOnIcon /> : <VoiceOffIcon />}
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-col items-center py-6">
+        <CountdownRing
+          currentSeconds={state.secondsLeft}
+          totalPhaseSeconds={activePhase?.duration ?? 1}
+          totalElapsed={isPrepare ? 0 : ringElapsed}
+          totalDuration={displayConfig?.ringTotal ?? 1}
+          phases={displayConfig?.ringPhases ?? []}
+          currentPhaseIndex={0}
+          phaseColor={phaseColor}
+        />
+      </div>
+
+      <div className="flex items-center justify-center gap-4">
+        <button onClick={stop} className="w-14 h-14 rounded-full flex items-center justify-center border-none cursor-pointer bg-red-500/15" aria-label="Stop"><StopIcon /></button>
+        {isRunning ? (
+          <button onClick={pause} className="w-[72px] h-[72px] rounded-full flex items-center justify-center border-none cursor-pointer text-white shadow-lg" style={{ background: '#06b6d4' }} aria-label="Pause"><PauseIcon /></button>
+        ) : isPaused ? (
+          <button onClick={resume} className="w-[72px] h-[72px] rounded-full flex items-center justify-center border-none cursor-pointer text-white shadow-lg" style={{ background: '#06b6d4' }} aria-label="Resume"><PlayIcon /></button>
+        ) : null}
+      </div>
     </section>
   );
 }
