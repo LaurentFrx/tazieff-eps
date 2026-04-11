@@ -8,6 +8,7 @@ import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useSearchParams, useRouter } from "next/navigation";
 import DifficultyPill from "@/components/DifficultyPill";
 import ExerciseAnatomyThumb from "@/components/exercices/ExerciseAnatomyThumb";
+import { ExerciseMannequin3D } from "@/components/exercices/ExerciseMannequin3D";
 import { MUSCLE_GROUPS, matchesGroup } from "@/app/[locale]/apprendre/anatomie/anatomy-data";
 import { HeroMedia } from "@/components/media/HeroMedia";
 import {
@@ -2810,7 +2811,7 @@ export function ExerciseLiveDetail({
         <RestTimer restRaw={parsedSections.restRaw} />
       </div>
 
-      {/* ─── 5. MANNEQUIN ANATOMIQUE ─── */}
+      {/* ─── 5. MANNEQUIN ANATOMIQUE 3D ─── */}
       {merged.frontmatter.muscles.length > 0 && (() => {
         const anatomyGroups: string[] = [];
         for (const muscle of merged.frontmatter.muscles) {
@@ -2820,22 +2821,14 @@ export function ExerciseLiveDetail({
             }
           }
         }
-        const anatomyHref = `/apprendre/anatomie?muscles=${anatomyGroups.join(",")}&from=exercice&slug=${slug}`;
         return (
-          <div ref={mannequinRef as React.RefObject<HTMLDivElement>}>
-            <Link
-              href={anatomyHref}
-              className="block rounded-2xl overflow-hidden"
-              style={{ background: "#0a0a14", border: "1px solid rgba(255,140,0,0.15)" }}
-            >
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "24px 0 16px" }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/images/anatomy/mini-mannequin.webp" alt="" style={{ height: 180, opacity: 0.6, pointerEvents: "none" }} />
-                <span style={{ marginTop: 12, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.35)" }}>
-                  {t("exerciseAnatomy.tapToExplore")}
-                </span>
-              </div>
-            </Link>
+          <div ref={mannequinRef as React.RefObject<HTMLDivElement>} style={{ margin: "-6px 0" }}>
+            <ExerciseMannequin3D
+              muscles={merged.frontmatter.muscles}
+              slug={slug}
+              anatomyGroups={anatomyGroups}
+              title={displayTitle}
+            />
           </div>
         );
       })()}
