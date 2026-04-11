@@ -2842,7 +2842,7 @@ export function ExerciseLiveDetail({
             .map((section) => (
             <section key={section.id}>
               {section.title ? (
-                <h2 className="text-xl uppercase tracking-wider text-white mb-3 mt-1" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>{section.title}</h2>
+                <h2 className="text-xl uppercase tracking-wider mb-3 mt-1" style={{ fontFamily: 'var(--font-bebas), sans-serif', color: '#00E5FF' }}>{section.title}</h2>
               ) : null}
               <div className="flex flex-col gap-3">
                 {section.blocks.map((block, blockIndex) => {
@@ -2896,7 +2896,7 @@ export function ExerciseLiveDetail({
           {/* 7. EXECUTION (dosage lines filtered) */}
           {parsedSections.execution && parsedSections.execution.body && (
             <div ref={executionRef as React.RefObject<HTMLDivElement>} className="mb-4">
-              <h2 className="text-xl uppercase tracking-wider text-white mb-3 mt-1" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
+              <h2 className="text-xl uppercase tracking-wider mb-3 mt-1" style={{ fontFamily: 'var(--font-bebas), sans-serif', color: '#00E5FF' }}>
                 {parsedSections.execution.heading}
               </h2>
               <div className="flex flex-col gap-2.5">
@@ -2926,7 +2926,7 @@ export function ExerciseLiveDetail({
           {/* 8. RESPIRATION */}
           {parsedSections.respiration && parsedSections.respiration.body && (
             <div ref={respirationRef as React.RefObject<HTMLDivElement>} className="mb-4">
-              <h2 className="text-xl uppercase tracking-wider text-white mb-2 mt-2" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
+              <h2 className="text-xl uppercase tracking-wider mb-2 mt-2" style={{ fontFamily: 'var(--font-bebas), sans-serif', color: '#00E5FF' }}>
                 {parsedSections.respiration.heading}
               </h2>
               <p className="text-sm text-white/70 leading-relaxed" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>
@@ -2946,7 +2946,7 @@ export function ExerciseLiveDetail({
                 onClick={() => setConseilsOpen(!conseilsOpen)}
                 className="tap-feedback flex items-center justify-between w-full py-2 text-left"
               >
-                <h2 className="text-xl uppercase tracking-wider text-white" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
+                <h2 className="text-xl uppercase tracking-wider" style={{ fontFamily: 'var(--font-bebas), sans-serif', color: '#00E5FF' }}>
                   {parsedSections.conseils.heading}
                 </h2>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`w-5 h-5 text-white/40 transition-transform duration-200 ${conseilsOpen ? 'rotate-180' : ''}`}><path d="M6 9l6 6 6-6" /></svg>
@@ -2993,7 +2993,7 @@ export function ExerciseLiveDetail({
           {/* Erreurs courantes (si présent, dans le flux) */}
           {parsedSections.erreurs && parsedSections.erreurs.body && (
             <div className="mb-4">
-              <h2 className="text-xl uppercase tracking-wider text-white mb-2 mt-2" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
+              <h2 className="text-xl uppercase tracking-wider mb-2 mt-2" style={{ fontFamily: 'var(--font-bebas), sans-serif', color: '#00E5FF' }}>
                 {parsedSections.erreurs.heading}
               </h2>
               <ul className="flex flex-col gap-1.5 pl-1">
