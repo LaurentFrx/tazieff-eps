@@ -14,14 +14,63 @@ type Phase = "idle" | "running" | "paused" | "finished";
 
 /* ─── Constants ─── */
 
-const VALUES = [15, 30, 45, 60, 90, 120];
+// FIX 5 — plage étendue jusqu'à 5 minutes
+const VALUES = [15, 30, 45, 60, 90, 120, 150, 180, 210, 240, 270, 300];
 
-const SIZE = 60;
-const CX = SIZE / 2;
-const CY = SIZE / 2;
-const R = 25;
-const STK = 4;
-const CIRC = 2 * Math.PI * R;
+// SVG viewBox (fixed, the button scales)
+const VB = 90;
+const C = VB / 2; // center = 45
+
+// Camembert (pie): thick-stroke trick — stroke fills the circle
+const PIE_R = 20;
+const PIE_STK = PIE_R * 2; // 40
+const PIE_C = 2 * Math.PI * PIE_R; // ≈125.66
+
+// Idle thin ring
+const RING_R = 36;
+const RING_STK = 3;
+
+// FIX 3 — circle sizes
+const SZ_IDLE = 80;
+const SZ_ACTIVE = 90;
+
+/* ─── Audio (FIX 6) ─── */
+
+let audioCtx: AudioContext | null = null;
+
+/** Create AudioContext on user gesture (iOS requirement) */
+function ensureAudio() {
+  try {
+    if (!audioCtx) {
+      const Ctor = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      audioCtx = new Ctor();
+    }
+    if (audioCtx.state === "suspended") audioCtx.resume();
+  } catch { /* Web Audio not available */ }
+}
+
+function beep(freq: number, ms: number, startAt = 0) {
+  if (!audioCtx) return;
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.frequency.value = freq;
+    gain.gain.value = 0.3;
+    const t = audioCtx.currentTime + startAt;
+    osc.start(t);
+    osc.stop(t + ms / 1000);
+  } catch { /* noop */ }
+}
+
+function beepWarning() { beep(800, 150); }
+
+function beepFinish() {
+  beep(800, 150, 0);
+  beep(1000, 150, 0.25);
+  beep(1200, 200, 0.50);
+}
 
 /* ─── Helpers ─── */
 
@@ -47,7 +96,6 @@ function parseRestSeconds(raw: string | null): number {
   return 90;
 }
 
-/** Snap a duration to the closest picker value */
 function snap(seconds: number): number {
   let best = VALUES[0];
   let bestDiff = Math.abs(seconds - VALUES[0]);
@@ -64,6 +112,14 @@ function fmtTime(s: number): string {
   return m > 0 ? `${m}:${String(sec).padStart(2, "0")}` : `${s}`;
 }
 
+// FIX 5 — picker labels: 15s, 30s, 45s, 1:00, 1:30, …, 5:00
+function fmtLabel(v: number): string {
+  if (v < 60) return `${v}s`;
+  const m = Math.floor(v / 60);
+  const s = v % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
 /* ─── Component ─── */
 
 export function RestTimer({ restRaw }: RestTimerProps) {
@@ -72,6 +128,7 @@ export function RestTimer({ restRaw }: RestTimerProps) {
   const [timeLeft, setTimeLeft] = useState(defaultDur);
   const [phase, setPhase] = useState<Phase>("idle");
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const beeped15 = useRef(false);
 
   const duration = pickerValue.dur;
 
@@ -93,11 +150,18 @@ export function RestTimer({ restRaw }: RestTimerProps) {
   /* ── Countdown tick ── */
   useEffect(() => {
     if (phase !== "running") { cleanup(); return; }
+    beeped15.current = false;
     intervalRef.current = setInterval(() => {
       setTimeLeft((prev) => {
+        // FIX 6 — bip à 15s
+        if (prev === 16 && !beeped15.current) {
+          beeped15.current = true;
+          beepWarning();
+        }
         if (prev <= 1) {
           cleanup();
           setPhase("finished");
+          beepFinish(); // FIX 6 — triple bip fin
           if (typeof navigator !== "undefined" && "vibrate" in navigator) {
             navigator.vibrate(200);
           }
@@ -121,9 +185,15 @@ export function RestTimer({ restRaw }: RestTimerProps) {
 
   /* ── Tap circle ── */
   const handleTap = () => {
-    if (phase === "idle") { setTimeLeft(duration); setPhase("running"); }
-    else if (phase === "running") setPhase("paused");
-    else if (phase === "paused") setPhase("running");
+    if (phase === "idle") {
+      ensureAudio(); // FIX 6 — create AudioContext on gesture (iOS)
+      setTimeLeft(duration);
+      setPhase("running");
+    } else if (phase === "running") {
+      setPhase("paused");
+    } else if (phase === "paused") {
+      setPhase("running");
+    }
   };
 
   /* ── Stop (reset) ── */
@@ -134,24 +204,11 @@ export function RestTimer({ restRaw }: RestTimerProps) {
     setTimeLeft(duration);
   };
 
-  /* ── Ring visuals ── */
-  const progress = phase !== "idle" ? 1 - timeLeft / duration : 0;
+  /* ── Visuals ── */
+  const isActive = phase === "running" || phase === "paused";
+  const fraction = phase !== "idle" ? (duration - timeLeft) / duration : 0; // 0→1 as time passes
   const isLast3 = phase === "running" && timeLeft > 0 && timeLeft <= 3;
-
-  let ringStroke: string;
-  let ringOffset: number;
-  let ringOpacity: number;
-
-  if (phase === "finished") {
-    ringStroke = "#22c55e"; ringOffset = 0; ringOpacity = 1;
-  } else if (phase === "running" || phase === "paused") {
-    ringStroke = "#f97316"; ringOffset = CIRC * progress; ringOpacity = 1;
-  } else {
-    ringStroke = "#f97316"; ringOffset = 0; ringOpacity = 0.15;
-  }
-
-  const showPicker = phase === "idle";
-  const showStop = phase === "running" || phase === "paused";
+  const circleSize = isActive || phase === "finished" ? SZ_ACTIVE : SZ_IDLE;
 
   /* ─── Render ─── */
 
@@ -161,7 +218,7 @@ export function RestTimer({ restRaw }: RestTimerProps) {
 
       <style>{`
         @keyframes cdp{0%,100%{transform:scale(1)}40%{transform:scale(1.3)}}
-        @keyframes vpop{0%{transform:scale(.85);opacity:.5}100%{transform:scale(1);opacity:1}}
+        @keyframes pulse-pause{0%,100%{opacity:1}50%{opacity:.4}}
         .rest-pk > div:last-child {
           background: rgba(249,115,22,0.06) !important;
           border-radius: 6px !important;
@@ -171,7 +228,7 @@ export function RestTimer({ restRaw }: RestTimerProps) {
         }
       `}</style>
 
-      <div className="flex items-center px-3" style={{ height: 80 }}>
+      <div className="flex items-center px-3" style={{ height: 94 }}>
 
         {/* Label */}
         <div className="flex-none text-[11px] font-semibold tracking-wider uppercase leading-tight"
@@ -180,15 +237,16 @@ export function RestTimer({ restRaw }: RestTimerProps) {
         </div>
 
         {/* Picker zone — or stop button */}
-        <div className="flex-1 relative" style={{ height: 80 }}>
-          {showPicker ? (
+        <div className="flex-1 relative" style={{ height: 86 }}>
+          {phase === "idle" ? (
             <Picker
               className="rest-pk"
               value={pickerValue}
               onChange={(val) => setPickerValue(val)}
-              height={80}
+              height={86}
               itemHeight={34}
               wheelMode="natural"
+              style={{ touchAction: "none" }}  /* FIX 1 — isoler scroll iOS */
             >
               <Picker.Column name="dur">
                 {VALUES.map((v) => (
@@ -202,14 +260,14 @@ export function RestTimer({ restRaw }: RestTimerProps) {
                           transition: "all .15s ease",
                         }}
                       >
-                        {v}<span className="text-[10px] ml-0.5 opacity-60">s</span>
+                        {fmtLabel(v)}
                       </span>
                     )}
                   </Picker.Item>
                 ))}
               </Picker.Column>
             </Picker>
-          ) : showStop ? (
+          ) : isActive ? (
             <div className="flex items-center justify-center h-full">
               <button
                 onClick={handleStop}
@@ -225,54 +283,84 @@ export function RestTimer({ restRaw }: RestTimerProps) {
           ) : null}
         </div>
 
-        {/* Circle with SVG ring */}
+        {/* ── Circle (FIX 2, 3, 4) ── */}
         <button
           onClick={handleTap}
-          className="relative flex-none cursor-pointer bg-transparent border-none p-0 select-none active:scale-95 transition-transform ml-2"
-          style={{ width: SIZE, height: SIZE }}
+          className="relative flex-none cursor-pointer bg-transparent border-none p-0 select-none active:scale-95"
+          style={{
+            width: circleSize,
+            height: circleSize,
+            transition: "width .3s ease, height .3s ease",
+            marginLeft: 8,
+          }}
           aria-label={phase === "finished" ? "Terminé" : phase === "running" ? "Pause" : phase === "paused" ? "Reprendre" : "Démarrer"}
         >
-          <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}
-            style={{ transform: "rotate(-90deg)" }}>
-            {/* Background track */}
-            <circle cx={CX} cy={CY} r={R} fill="none"
-              stroke="white" strokeWidth={STK} strokeOpacity={0.06} />
-            {/* Active / progress arc */}
-            <circle cx={CX} cy={CY} r={R} fill="none"
-              stroke={ringStroke} strokeWidth={STK} strokeLinecap="round"
-              strokeDasharray={CIRC} strokeDashoffset={ringOffset}
-              strokeOpacity={ringOpacity}
-              style={{ transition: "stroke-dashoffset .3s linear, stroke .3s ease, stroke-opacity .3s ease" }}
-            />
+          <svg width="100%" height="100%" viewBox={`0 0 ${VB} ${VB}`}>
+
+            {phase === "idle" ? (
+              <>
+                {/* Idle: thin ring + play icon */}
+                <circle cx={C} cy={C} r={RING_R} fill="none"
+                  stroke="#f97316" strokeWidth={RING_STK} strokeOpacity={0.15} />
+                {/* Play triangle */}
+                <polygon points="36,28 36,62 60,45" fill="#FF8C00" opacity={0.8} />
+              </>
+            ) : phase === "finished" ? (
+              <>
+                {/* Full green pie */}
+                <circle cx={C} cy={C} r={PIE_R} fill="none"
+                  stroke="#22c55e" strokeWidth={PIE_STK} strokeOpacity={0.9} />
+                {/* Check mark */}
+                <polyline points="32,46 40,54 58,36" fill="none"
+                  stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+              </>
+            ) : (
+              <>
+                {/* FIX 4 — Camembert: background (dark) */}
+                <circle cx={C} cy={C} r={PIE_R} fill="none"
+                  stroke="rgba(255,255,255,0.08)" strokeWidth={PIE_STK} />
+                {/* Foreground pie (orange, depleting) */}
+                <circle cx={C} cy={C} r={PIE_R} fill="none"
+                  stroke="#FF8C00" strokeWidth={PIE_STK}
+                  strokeDasharray={PIE_C}
+                  strokeDashoffset={PIE_C * fraction}
+                  transform={`rotate(-90 ${C} ${C})`}
+                  style={{
+                    transition: "stroke-dashoffset 1s linear",
+                    opacity: phase === "paused" ? 0.6 : 1,
+                  }}
+                />
+                {/* Time text */}
+                <text
+                  x={C} y={phase === "paused" ? C - 4 : C + 1}
+                  textAnchor="middle" dominantBaseline="central"
+                  fill="#fff" fontFamily="var(--font-jetbrains), monospace"
+                  fontWeight="bold"
+                  fontSize={isLast3 ? 22 : 18}
+                >
+                  {fmtTime(timeLeft)}
+                </text>
+                {/* FIX 2 — Pause icon overlay */}
+                {phase === "paused" && (
+                  <g opacity={0.6} style={{ animation: "pulse-pause 1.5s ease infinite" }}>
+                    <rect x="37" y="52" width="5" height="14" rx="1.5" fill="#fff" />
+                    <rect x="48" y="52" width="5" height="14" rx="1.5" fill="#fff" />
+                  </g>
+                )}
+              </>
+            )}
           </svg>
 
-          {/* Center content */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            {phase === "finished" ? (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                stroke="#22c55e" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            ) : phase === "running" || phase === "paused" ? (
-              <span
-                key={isLast3 ? `cd-${timeLeft}` : "stable"}
-                className="font-mono font-bold leading-none"
-                style={{
-                  fontSize: 15,
-                  color: isLast3 ? "#f97316" : "#fff",
-                  opacity: phase === "paused" ? 0.5 : 1,
-                  animation: isLast3 ? "cdp .3s ease-out" : undefined,
-                }}
-              >
-                {fmtTime(timeLeft)}
-              </span>
-            ) : (
-              <span key={duration} className="font-mono font-bold leading-none"
-                style={{ fontSize: 16, color: "#fff", animation: "vpop .2s ease-out" }}>
-                {duration}<span className="text-[9px] ml-px opacity-50">s</span>
-              </span>
-            )}
-          </div>
+          {/* Countdown pulse at 3-2-1 (overlay) */}
+          {isLast3 && (
+            <div key={`cd-${timeLeft}`} className="absolute inset-0 rounded-full"
+              style={{
+                border: "2px solid #FF8C00",
+                animation: "cdp .3s ease-out",
+                pointerEvents: "none",
+              }}
+            />
+          )}
         </button>
       </div>
 
