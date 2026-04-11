@@ -2723,21 +2723,20 @@ export function ExerciseLiveDetail({
             <h1 className="text-white text-3xl md:text-4xl leading-none tracking-wide" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
               {displayTitle}
             </h1>
-            <div className="flex flex-wrap items-center gap-2 mt-2">
-              {sessionLabel && (
+            {sessionLabel && (
+              <div className="flex flex-wrap items-center gap-2 mt-2">
                 <span className="inline-flex items-center rounded-full bg-white/10 backdrop-blur-sm px-2.5 py-0.5 text-[11px] font-semibold text-white/80 uppercase tracking-wider" style={{ fontFamily: 'var(--font-jetbrains), monospace' }}>
                   {sessionLabel}
                 </span>
-              )}
-              <DifficultyPill level={difficulty} />
-            </div>
+              </div>
+            )}
           </div>
         </div>
       ) : null}
 
-      {/* ─── 1b. SWIPE NAV BAR ─── */}
+      {/* ─── 2. LIGNE DE NAVIGATION ─── */}
       {(prevExercise || nextExercise) && (
-        <div className="flex items-center justify-between px-1 mb-2 py-3 border-y border-white/5">
+        <div className="flex items-center justify-center gap-4 px-1 mb-2 py-3 border-y border-white/5">
           {prevExercise ? (
             <Link
               href={`/exercices/${prevExercise.slug}`}
@@ -2747,7 +2746,10 @@ export function ExerciseLiveDetail({
               <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12.5 15l-5-5 5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
               {prevExercise.slug.toUpperCase()}
             </Link>
-          ) : <span />}
+          ) : <span style={{ width: 60 }} />}
+          <span className="text-[13px] font-bold uppercase tracking-wider text-white" style={{ fontFamily: "var(--font-jetbrains), monospace" }}>
+            {slug.toUpperCase()}
+          </span>
           {nextExercise ? (
             <Link
               href={`/exercices/${nextExercise.slug}`}
@@ -2757,46 +2759,9 @@ export function ExerciseLiveDetail({
               {nextExercise.slug.toUpperCase()}
               <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7.5 15l5-5-5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </Link>
-          ) : <span />}
+          ) : <span style={{ width: 60 }} />}
         </div>
       )}
-
-      {/* ─── 2. MUSCLES + EQUIPEMENT ─── */}
-      <div ref={musclesRef as React.RefObject<HTMLDivElement>} className="flex flex-col gap-3 mt-1">
-        {/* Muscles */}
-        {merged.frontmatter.muscles.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {merged.frontmatter.muscles.map((muscle, i) => {
-              const group = getMuscleGroup(muscle);
-              const translated = translateTerms([muscle], "muscles", lang)[0];
-              const isPrimary = i === 0;
-              if (!group) {
-                return (
-                  <span key={muscle} className={`tap-feedback inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium capitalize ${isPrimary ? 'bg-[#FF8C00] text-white' : 'bg-transparent border border-[#FF8C00]/40 text-[#FF8C00]'}`}>
-                    {translated}
-                  </span>
-                );
-              }
-              return (
-                <Link key={muscle} href={`/exercices?muscle=${group}`} title={t("exerciseDetail.filterByMuscle")} className={`tap-feedback inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors ${isPrimary ? 'bg-[#FF8C00] text-white hover:bg-[#FF8C00]/90' : 'bg-transparent border border-[#FF8C00]/40 text-[#FF8C00] hover:bg-[#FF8C00]/10'}`}>
-                  {translated}
-                </Link>
-              );
-            })}
-          </div>
-        )}
-        {/* Equipement */}
-        {merged.frontmatter.equipment && merged.frontmatter.equipment.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {translateTerms(merged.frontmatter.equipment, "equipment", lang).map((eq) => (
-              <span key={eq} className="tap-feedback inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 capitalize">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3 opacity-50"><rect x="2" y="10" width="20" height="4" rx="1" /><line x1="6" y1="7" x2="6" y2="17" /><line x1="18" y1="7" x2="18" y2="17" /></svg>
-                {eq}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
 
       {/* ─── 3. DOSAGE RECOMMANDE ─── */}
       <div ref={dosageRef as React.RefObject<HTMLDivElement>} className="tap-feedback">
@@ -2811,7 +2776,45 @@ export function ExerciseLiveDetail({
         <RestTimer restRaw={parsedSections.restRaw} />
       </div>
 
-      {/* ─── 5. MANNEQUIN ANATOMIQUE 3D ─── */}
+      {/* ─── 5. CHIPS MUSCLES ─── */}
+      {merged.frontmatter.muscles.length > 0 && (
+        <div ref={musclesRef as React.RefObject<HTMLDivElement>} className="flex flex-wrap gap-2">
+          {merged.frontmatter.muscles.map((muscle, i) => {
+            const group = getMuscleGroup(muscle);
+            const translated = translateTerms([muscle], "muscles", lang)[0];
+            const isPrimary = i === 0;
+            if (!group) {
+              return (
+                <span key={muscle} className={`tap-feedback inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium capitalize ${isPrimary ? 'bg-[#FF8C00] text-white' : 'bg-transparent border border-[#FF8C00]/40 text-[#FF8C00]'}`}>
+                  {translated}
+                </span>
+              );
+            }
+            return (
+              <Link key={muscle} href={`/exercices?muscle=${group}`} title={t("exerciseDetail.filterByMuscle")} className={`tap-feedback inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-colors ${isPrimary ? 'bg-[#FF8C00] text-white hover:bg-[#FF8C00]/90' : 'bg-transparent border border-[#FF8C00]/40 text-[#FF8C00] hover:bg-[#FF8C00]/10'}`}>
+                {translated}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ─── 6. MATERIEL + NIVEAU ─── */}
+      {(merged.frontmatter.equipment?.length || difficulty) && (
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap gap-2">
+            {merged.frontmatter.equipment && merged.frontmatter.equipment.length > 0 && translateTerms(merged.frontmatter.equipment, "equipment", lang).map((eq) => (
+              <span key={eq} className="tap-feedback inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 capitalize">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3 opacity-50"><rect x="2" y="10" width="20" height="4" rx="1" /><line x1="6" y1="7" x2="6" y2="17" /><line x1="18" y1="7" x2="18" y2="17" /></svg>
+                {eq}
+              </span>
+            ))}
+          </div>
+          <DifficultyPill level={difficulty} />
+        </div>
+      )}
+
+      {/* ─── 7. MANNEQUIN ANATOMIQUE 3D ─── */}
       {merged.frontmatter.muscles.length > 0 && (() => {
         const anatomyGroups: string[] = [];
         for (const muscle of merged.frontmatter.muscles) {
