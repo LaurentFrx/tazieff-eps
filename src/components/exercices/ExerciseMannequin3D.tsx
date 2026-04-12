@@ -5,8 +5,7 @@ import type { ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { POSTERIOR_GROUPS } from "@/app/[locale]/apprendre/anatomie/anatomy-data";
-import { getExerciseMuscleGroups } from "@/lib/exercices/muscle-groups";
+import { getMuscleGroups, MUSCLE_GROUP_COLORS, type MuscleGroupId } from "@/lib/exercices/muscleGroups";
 
 /* ── Dynamic imports (Three.js heavy, SSR incompatible) ─── */
 
@@ -34,13 +33,7 @@ class Mannequin3DErrorBoundary extends Component<
 
 /* ── Constants ─── */
 
-const GROUP_COLORS: Record<string, string> = {
-  dos: "#3b82f6",
-  "membres-inferieurs": "#22c55e",
-  "membres-superieurs": "#f97316",
-  abdominaux: "#a855f7",
-  pectoraux: "#ef4444",
-};
+const POSTERIOR_GROUPS = new Set(["dorsaux", "fessiers", "mollets"]);
 
 /* ── Component ─── */
 
@@ -69,8 +62,8 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups }: Props) {
   // Preview rotation: slight 3/4 turn from the orientation base
   const previewRotationY = initialRotationY - 0.4;
 
-  // Legend — simplified muscle group keys
-  const groupKeys = useMemo(() => getExerciseMuscleGroups(muscles), [muscles]);
+  // Legend — unified 8-group keys
+  const groupKeys = useMemo(() => getMuscleGroups(muscles), [muscles]);
 
   const anatomyHref = `/apprendre/anatomie?muscles=${anatomyGroups.join(",")}&from=exercice&slug=${slug}`;
 
@@ -95,7 +88,7 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups }: Props) {
             color: "rgba(255,255,255,0.6)",
           }}
         >
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: GROUP_COLORS[key] ?? "#888", flexShrink: 0 }} />
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: MUSCLE_GROUP_COLORS[key as MuscleGroupId] ?? "#888", flexShrink: 0 }} />
           {t(`filters.muscleGroups.${key}`)}
         </span>
       ))}

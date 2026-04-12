@@ -11,40 +11,40 @@ import {
 /* ── getMuscleGroup unit tests ──────────────────────────────────────────── */
 
 describe("getMuscleGroup", () => {
-  it("maps 'grand dorsal' to dos", () => {
-    expect(getMuscleGroup("grand dorsal")).toBe("dos");
+  it("maps 'grand dorsal' to dorsaux", () => {
+    expect(getMuscleGroup("grand dorsal")).toBe("dorsaux");
   });
-  it("maps 'Trapeze' (case-insensitive) to dos", () => {
-    expect(getMuscleGroup("Trapeze")).toBe("dos");
+  it("maps 'Trapeze' (case-insensitive) to dorsaux", () => {
+    expect(getMuscleGroup("Trapeze")).toBe("dorsaux");
   });
-  it("maps 'LOMBAIRES' (uppercase) to dos", () => {
-    expect(getMuscleGroup("LOMBAIRES")).toBe("dos");
+  it("maps 'LOMBAIRES' (uppercase) to dorsaux", () => {
+    expect(getMuscleGroup("LOMBAIRES")).toBe("dorsaux");
   });
-  it("maps 'Érecteurs du rachis' (accented) to dos", () => {
-    expect(getMuscleGroup("Érecteurs du rachis")).toBe("dos");
-  });
-
-  it("maps 'quadriceps' to membres-inferieurs", () => {
-    expect(getMuscleGroup("quadriceps")).toBe("membres-inferieurs");
-  });
-  it("maps 'Ischio-jambiers' to membres-inferieurs", () => {
-    expect(getMuscleGroup("Ischio-jambiers")).toBe("membres-inferieurs");
-  });
-  it("maps 'mollets' to membres-inferieurs", () => {
-    expect(getMuscleGroup("mollets")).toBe("membres-inferieurs");
-  });
-  it("maps 'Grand fessier' to membres-inferieurs", () => {
-    expect(getMuscleGroup("Grand fessier")).toBe("membres-inferieurs");
+  it("maps 'Érecteurs du rachis' (accented) to dorsaux", () => {
+    expect(getMuscleGroup("Érecteurs du rachis")).toBe("dorsaux");
   });
 
-  it("maps 'deltoides' to membres-superieurs", () => {
-    expect(getMuscleGroup("deltoides")).toBe("membres-superieurs");
+  it("maps 'quadriceps' to cuisses", () => {
+    expect(getMuscleGroup("quadriceps")).toBe("cuisses");
   });
-  it("maps 'Biceps' to membres-superieurs", () => {
-    expect(getMuscleGroup("Biceps")).toBe("membres-superieurs");
+  it("maps 'Ischio-jambiers' to cuisses", () => {
+    expect(getMuscleGroup("Ischio-jambiers")).toBe("cuisses");
   });
-  it("maps 'triceps' to membres-superieurs", () => {
-    expect(getMuscleGroup("triceps")).toBe("membres-superieurs");
+  it("maps 'mollets' to mollets", () => {
+    expect(getMuscleGroup("mollets")).toBe("mollets");
+  });
+  it("maps 'Grand fessier' to fessiers", () => {
+    expect(getMuscleGroup("Grand fessier")).toBe("fessiers");
+  });
+
+  it("maps 'deltoides' to epaules", () => {
+    expect(getMuscleGroup("deltoides")).toBe("epaules");
+  });
+  it("maps 'Biceps' to bras", () => {
+    expect(getMuscleGroup("Biceps")).toBe("bras");
+  });
+  it("maps 'triceps' to bras", () => {
+    expect(getMuscleGroup("triceps")).toBe("bras");
   });
 
   it("maps 'obliques' to abdominaux", () => {
@@ -67,11 +67,28 @@ describe("getMuscleGroup", () => {
     expect(getMuscleGroup("grand pectoral")).toBe("pectoraux");
   });
 
-  it("returns null for unknown muscle", () => {
-    // Suppress console.warn in test
-    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+  it("returns null for phantom muscles", () => {
     expect(getMuscleGroup("cardio")).toBeNull();
-    spy.mockRestore();
+    expect(getMuscleGroup("coordination")).toBeNull();
+    expect(getMuscleGroup("anti-rotation")).toBeNull();
+    expect(getMuscleGroup("rotation")).toBeNull();
+  });
+
+  // Critical: false positive prevention
+  it("maps 'biceps femoral' to cuisses (not bras)", () => {
+    expect(getMuscleGroup("biceps femoral")).toBe("cuisses");
+  });
+  it("maps 'triceps sural' to mollets (not bras)", () => {
+    expect(getMuscleGroup("triceps sural")).toBe("mollets");
+  });
+  it("maps 'triceps brachial' to bras (not mollets)", () => {
+    expect(getMuscleGroup("triceps brachial")).toBe("bras");
+  });
+  it("maps 'stabilisateurs' to abdominaux", () => {
+    expect(getMuscleGroup("stabilisateurs")).toBe("abdominaux");
+  });
+  it("maps 'stabilisateurs profonds' to null (phantom)", () => {
+    expect(getMuscleGroup("stabilisateurs profonds")).toBeNull();
   });
 });
 
@@ -80,7 +97,7 @@ describe("getMuscleGroup", () => {
 describe("getMuscleGroupsForExercise", () => {
   it("returns multiple groups for multi-muscle exercise", () => {
     const result = getMuscleGroupsForExercise(["deltoides", "pectoraux", "grand droit"]);
-    expect(result).toContain("membres-superieurs");
+    expect(result).toContain("epaules");
     expect(result).toContain("pectoraux");
     expect(result).toContain("abdominaux");
     expect(result).toHaveLength(3);
@@ -91,30 +108,28 @@ describe("getMuscleGroupsForExercise", () => {
     expect(result).toEqual(["abdominaux"]);
   });
 
-  it("returns empty for unrecognized muscle tags", () => {
-    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const result = getMuscleGroupsForExercise(["cardio", "endurance"]);
+  it("returns empty for phantom muscle tags", () => {
+    const result = getMuscleGroupsForExercise(["cardio", "coordination"]);
     expect(result).toHaveLength(0);
-    spy.mockRestore();
   });
 
   it("handles empty input", () => {
     expect(getMuscleGroupsForExercise([])).toHaveLength(0);
   });
 
-  it("preserves canonical order: dos, membres-inferieurs, membres-superieurs, abdominaux, pectoraux", () => {
+  it("preserves canonical order", () => {
     const result = getMuscleGroupsForExercise(["pectoraux", "grand dorsal", "quadriceps"]);
-    expect(result).toEqual(["dos", "membres-inferieurs", "pectoraux"]);
+    expect(result).toEqual(["pectoraux", "dorsaux", "cuisses"]);
   });
 });
 
 /* ── getExerciseMuscleGroups (bridge) tests ─────────────────────────────── */
 
 describe("getExerciseMuscleGroups", () => {
-  it("maps pectoraux + triceps to pectoraux + membres-superieurs", () => {
+  it("maps pectoraux + triceps to pectoraux + bras", () => {
     const result = getExerciseMuscleGroups(["Pectoraux", "triceps"]);
     expect(result).toContain("pectoraux");
-    expect(result).toContain("membres-superieurs");
+    expect(result).toContain("bras");
   });
 
   it("maps abdos variants to abdominaux group", () => {
@@ -123,14 +138,14 @@ describe("getExerciseMuscleGroups", () => {
     expect(result).toHaveLength(1);
   });
 
-  it("maps dos-related terms", () => {
+  it("maps dos-related terms to dorsaux", () => {
     const result = getExerciseMuscleGroups(["Grand dorsal", "Trapèzes"]);
-    expect(result).toContain("dos");
+    expect(result).toContain("dorsaux");
   });
 
-  it("maps ischio-jambiers to membres-inferieurs", () => {
+  it("maps ischio-jambiers to cuisses", () => {
     const result = getExerciseMuscleGroups(["Ischio-jambiers"]);
-    expect(result).toContain("membres-inferieurs");
+    expect(result).toContain("cuisses");
   });
 });
 
@@ -191,7 +206,7 @@ describe("ExerciseAnatomyThumb", () => {
     expect(screen.getByTestId("mannequin-img")).toBeTruthy();
   });
 
-  it("shows new 5-group labels on the thumb", async () => {
+  it("shows new 8-group labels on the thumb", async () => {
     await act(async () => {
       render(
         <ExerciseAnatomyThumb
@@ -203,11 +218,10 @@ describe("ExerciseAnatomyThumb", () => {
     });
 
     expect(screen.getByText("filters.muscleGroups.pectoraux")).toBeTruthy();
-    expect(screen.getByText("filters.muscleGroups.membres-superieurs")).toBeTruthy();
+    expect(screen.getByText("filters.muscleGroups.bras")).toBeTruthy();
   });
 
   it("renders fallback chips for unrecognized muscles", async () => {
-    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
     await act(async () => {
       render(
         <ExerciseAnatomyThumb
@@ -220,13 +234,11 @@ describe("ExerciseAnatomyThumb", () => {
 
     expect(screen.getByText("Cardio")).toBeTruthy();
     expect(screen.queryByTestId("mannequin-img")).toBeNull();
-    spy.mockRestore();
   });
 
   // IMPORTANT : test anti-régression — bug récurrent.
-  // Quand ouvert depuis un exercice, seuls les muscles de l'exercice sont surlignés.
-  // "rotation" / "anti-rotation" NE DOIVENT PAS matcher le groupe abdominaux.
-  it("does NOT include abdominaux group for a back exercise with 'rotation' muscle", async () => {
+  // "rotation" / "anti-rotation" NE DOIVENT PAS matcher un groupe.
+  it("does NOT include any group for a back exercise with 'rotation' phantom muscle", async () => {
     await act(async () => {
       render(
         <ExerciseAnatomyThumb
@@ -239,11 +251,11 @@ describe("ExerciseAnatomyThumb", () => {
 
     const link = screen.getByLabelText("exerciseAnatomy.musclesWorked");
     const href = link.getAttribute("href") ?? "";
-    expect(href).toContain("dos");
+    expect(href).toContain("dorsaux");
     expect(href).not.toContain("abdominaux");
   });
 
-  it("does NOT include abdominaux group for 'Coiffe des rotateurs'", async () => {
+  it("maps 'Coiffe des rotateurs' to epaules", async () => {
     await act(async () => {
       render(
         <ExerciseAnatomyThumb
@@ -277,7 +289,7 @@ describe("ExerciseAnatomyThumb", () => {
     expect(screen.getByTestId("mannequin-img")).toBeTruthy();
   });
 
-  it("links to anatomy page with anatomy-data group keys (not simplified 5-groups)", async () => {
+  it("links to anatomy page with unified 8-group keys", async () => {
     await act(async () => {
       render(
         <ExerciseAnatomyThumb
@@ -292,10 +304,8 @@ describe("ExerciseAnatomyThumb", () => {
     expect(link.tagName).toBe("A");
     const href = link.getAttribute("href");
     expect(href).toContain("/apprendre/anatomie");
-    // href uses anatomy-data keys (pectoraux, triceps), NOT simplified groups
     expect(href).toContain("pectoraux");
-    expect(href).toContain("triceps");
-    expect(href).not.toContain("membres-superieurs");
+    expect(href).toContain("bras");
     expect(href).toContain("from=exercice");
     expect(href).toContain("slug=s3-03");
   });

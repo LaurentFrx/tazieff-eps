@@ -1,231 +1,91 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   Anatomy data – muscle groups (Diapo p.31)
+   Anatomy data – aligned with the unified 8-group system from muscleGroups.ts
    Ordered: haut du corps → tronc → bas du corps
    ═══════════════════════════════════════════════════════════════════════════ */
 
+import {
+  type MuscleGroupId,
+  MUSCLE_GROUP_IDS,
+  MUSCLE_GROUP_COLORS,
+  MESH_KEYWORDS,
+  getGroupForMeshNode,
+  getMuscleGroup,
+  GROUP_OFFICIAL_MUSCLES,
+} from "@/lib/exercices/muscleGroups";
+
+/* ── Re-export MuscleGroupId for consumers ─────────────────────────────── */
+
 export type MuscleGroup = {
-  id: string;
+  id: MuscleGroupId;
   color: string;
   /** Keywords to match GLB mesh node names to this group */
   keywords: string[];
-  /** Terms matching exercise.muscles tags from the catalog */
-  exerciseSearchTerms: string[];
 };
 
-/* ── Muscle groups (insertion order = side panel display order) ────────── */
+/* ── Build MUSCLE_GROUPS from the unified source ───────────────────────── */
 
-export const MUSCLE_GROUPS: Record<string, MuscleGroup> = {
-  /* ── HAUT DU CORPS ─── */
-  pectoraux: {
-    id: "pectoraux",
-    color: "#f97316",
-    keywords: ["pectoralis", "serratus"],
-    exerciseSearchTerms: [
-      "pectora",
-      "portion claviculaire",
-      "dentel",
-      "dentele",
-      "dentelé",
-    ],
-  },
-  epaules: {
-    id: "epaules",
-    color: "#22c55e",
-    keywords: ["deltoid", "supraspinatus", "infraspinatus", "teres", "subscapularis"],
-    exerciseSearchTerms: [
-      "deltoide",
-      "deltoïde",
-      "epaule",
-      "épaule",
-      "coiffe",
-    ],
-  },
-  bras_anterieurs: {
-    id: "bras_anterieurs",
-    color: "#38bdf8",
-    keywords: ["biceps brachii", "brachialis", "coracobrachialis", "brachioradialis", "extensor digitorum", "flexor carpi"],
-    exerciseSearchTerms: ["biceps", "brachial", "avant-bras"],
-  },
-  triceps: {
-    id: "triceps",
-    color: "#818cf8",
-    keywords: ["triceps"],
-    // Pas de termes de mouvement (extension, dips) — faux positifs
-    exerciseSearchTerms: ["triceps"],
-  },
-  /* ── TRONC ─── */
-  abdominaux: {
-    id: "abdominaux",
-    color: "#eab308",
-    keywords: ["abdominis", "oblique", "transversus"],
-    // IMPORTANT : bug récurrent. Ne pas ajouter de termes de mouvement ici
-    // (rotation, gainage, extension…) car ils provoquent des faux positifs
-    // quand l'explorateur anatomie est ouvert depuis un exercice.
-    exerciseSearchTerms: [
-      "abdomin",
-      "abdos",
-      "grand droit",
-      "oblique",
-      "transverse",
-    ],
-  },
-  dos: {
-    id: "dos",
-    color: "#ef4444",
-    keywords: [
-      "iliocostalis",
-      "longissimus",
-      "spinalis",
-      "trapezius",
-      "rhomboid",
-      "latissimus",
-      "quadratus lumborum",
-      "erector spinae",
-      "levator scapulae",
-      "sternocleidomastoid",
-    ],
-    exerciseSearchTerms: [
-      "grand dorsal",
-      "dorsaux",
-      "dorsal",
-      "trapeze",
-      "trapèze",
-      "trapezes",
-      "rhomboide",
-      "rhomboïde",
-      "erecteur",
-      "érecteur",
-      "carre des lombes",
-      "carré des lombes",
-      "lombaire",
-    ],
-  },
-  /* ── BAS DU CORPS ─── */
-  fessiers: {
-    id: "fessiers",
-    color: "#ec4899",
-    keywords: ["gluteus", "tensor fasciae", "piriformis"],
-    exerciseSearchTerms: [
-      "fessier",
-      "abducteur",
-    ],
-  },
-  cuisses_avant: {
-    id: "cuisses_avant",
-    color: "#14b8a6",
-    keywords: ["rectus femoris", "vastus", "sartorius"],
-    exerciseSearchTerms: ["quadricep", "extension jambe"],
-  },
-  cuisses_arriere: {
-    id: "cuisses_arriere",
-    color: "#06b6d4",
-    keywords: [
-      "semimembranosus",
-      "semitendinosus",
-      "biceps femoris",
-      "popliteus",
-    ],
-    exerciseSearchTerms: ["ischio", "leg curl"],
-  },
-  adducteurs: {
-    id: "adducteurs",
-    color: "#d946ef",
-    keywords: ["adductor", "gracilis"],
-    exerciseSearchTerms: ["adducteur", "adduction"],
-  },
-  mollets: {
-    id: "mollets",
-    color: "#f472b6",
-    keywords: ["gastrocnemius", "soleus", "tibialis", "fibularis"],
-    exerciseSearchTerms: [
-      "mollet",
-      "gastrocnemien",
-      "gastrocnémien",
-      "soleaire",
-      "soléaire",
-    ],
-  },
-  /* ── NON LISTÉ PAR FRED — meshes existants dans le GLB ─── */
-  flechisseurs: {
-    id: "flechisseurs",
-    color: "#a78bfa",
-    keywords: ["iliacus", "psoas"],
-    exerciseSearchTerms: [
-      "psoas",
-      "ilio-psoas",
-      "iliaque",
-      "flechisseur",
-      "fléchisseur",
-      "hanche",
-    ],
-  },
-};
+export const MUSCLE_GROUPS: Record<string, MuscleGroup> = {};
+
+for (const id of MUSCLE_GROUP_IDS) {
+  MUSCLE_GROUPS[id] = {
+    id,
+    color: MUSCLE_GROUP_COLORS[id],
+    keywords: MESH_KEYWORDS[id],
+  };
+}
 
 /* ── Sub-muscles per group (French display names for bottom sheets) ──────── */
 
-export const GROUP_MUSCLES: Record<string, string[]> = {
-  pectoraux: ["Grand pectoral", "Petit pectoral", "Dentelé antérieur"],
-  epaules: ["Deltoïde antérieur", "Deltoïde moyen", "Deltoïde postérieur", "Supra-épineux", "Infra-épineux", "Grand rond", "Petit rond", "Subscapulaire"],
-  bras_anterieurs: ["Biceps brachial", "Brachial", "Brachio-radial", "Extenseur des doigts", "Fléchisseur radial du carpe", "Fléchisseur ulnaire du carpe"],
-  triceps: ["Triceps brachial"],
-  abdominaux: ["Grand droit", "Oblique externe", "Oblique interne", "Transverse"],
-  dos: ["Trapèzes", "Grand dorsal", "Rhomboïdes", "Spinaux", "Carré des lombes"],
-  fessiers: ["Grand fessier", "Moyen fessier", "Tenseur du fascia lata", "Piriforme"],
-  cuisses_avant: ["Droit fémoral", "Vaste latéral", "Vaste médial", "Vaste intermédiaire", "Couturier"],
-  cuisses_arriere: ["Biceps fémoral", "Semi-tendineux", "Semi-membraneux", "Poplité"],
-  adducteurs: ["Grand adducteur", "Long adducteur", "Gracile"],
-  mollets: ["Gastrocnémiens", "Soléaire", "Tibial antérieur", "Long fibulaire", "Court fibulaire"],
-  flechisseurs: ["Psoas-iliaque"],
-};
+export const GROUP_MUSCLES: Record<string, string[]> = {};
+
+for (const id of MUSCLE_GROUP_IDS) {
+  GROUP_MUSCLES[id] = GROUP_OFFICIAL_MUSCLES[id].map((m) =>
+    m.oldName ? `${m.name} (${m.oldName})` : m.name,
+  );
+}
 
 /* ── 3D anchor positions per group (model space, before MANNEQUIN_SCALE) ── */
 
 export const GROUP_ANCHORS: Record<string, [number, number, number]> = {
   pectoraux: [0, 1.20, 0.12],
   epaules: [0.20, 1.35, 0.02],
-  bras_anterieurs: [0.26, 1.10, 0.06],
-  triceps: [-0.26, 1.10, -0.06],
+  bras: [0.26, 1.10, 0.06],
   abdominaux: [0, 0.90, 0.11],
-  dos: [0, 1.15, -0.12],
+  dorsaux: [0, 1.15, -0.12],
   fessiers: [0.10, 0.68, -0.12],
-  cuisses_avant: [0.12, 0.45, 0.08],
-  cuisses_arriere: [-0.12, 0.42, -0.08],
-  adducteurs: [0.10, 0.50, 0.06],
+  cuisses: [0.12, 0.45, 0.08],
   mollets: [0.08, 0.15, -0.04],
-  flechisseurs: [0.08, 0.72, 0.06],
 };
 
 /* ── Posterior-dominant groups (for camera orientation) ─────────────────── */
 
-export const POSTERIOR_GROUPS = new Set([
-  "dos",
-  "triceps",
+export const POSTERIOR_GROUPS = new Set<string>([
+  "dorsaux",
   "fessiers",
-  "cuisses_arriere",
   "mollets",
 ]);
 
-/* ── French display names for individual muscles ─────────────────────────── */
+/* ── French display names for individual muscles (GLB mesh → FR) ───────── */
 
 export const MUSCLE_FR_NAMES: Record<string, string> = {
-  /* Dos */
-  "iliocostalis lumborum": "Spinaux",
-  "iliocostalis thoracis": "Spinaux",
-  "iliocostalis colli": "Spinaux",
-  "longissimus thoracis": "Spinaux",
-  "longissimus capitis": "Spinaux",
-  "longissimus colli": "Spinaux",
-  "spinalis capitis": "Spinaux",
-  "spinalis colli": "Spinaux",
-  "spinalis thoracis": "Spinaux",
-  "ascending part of trapezius": "Trapèzes",
-  "descending part of trapezius": "Trapèzes",
-  "transverse part of trapezius": "Trapèzes",
-  "rhomboid major": "Rhomboïdes",
-  "rhomboid minor": "Rhomboïdes",
+  /* Dos / Dorsaux */
+  "iliocostalis lumborum": "Érecteurs du rachis",
+  "iliocostalis thoracis": "Érecteurs du rachis",
+  "iliocostalis colli": "Érecteurs du rachis",
+  "longissimus thoracis": "Érecteurs du rachis",
+  "longissimus capitis": "Érecteurs du rachis",
+  "longissimus colli": "Érecteurs du rachis",
+  "spinalis capitis": "Érecteurs du rachis",
+  "spinalis colli": "Érecteurs du rachis",
+  "spinalis thoracis": "Érecteurs du rachis",
+  "ascending part of trapezius": "Trapèze",
+  "descending part of trapezius": "Trapèze",
+  "transverse part of trapezius": "Trapèze",
+  "rhomboid major": "Rhomboïde",
+  "rhomboid minor": "Rhomboïde",
   "latissimus dorsi": "Grand dorsal",
-  "quadratus lumborum": "Carré des lombes",
-  "erector spinae": "Spinaux",
+  "quadratus lumborum": "Érecteurs du rachis",
+  "erector spinae": "Érecteurs du rachis",
   "levator scapulae": "Élévateur de la scapula",
   "sternocleidomastoid": "Sterno-cléido-mastoïdien",
   /* Pectoraux */
@@ -235,10 +95,10 @@ export const MUSCLE_FR_NAMES: Record<string, string> = {
   "pectoralis minor": "Petit pectoral",
   "serratus anterior": "Dentelé antérieur",
   /* Abdominaux */
-  "rectus abdominis": "Grand droit",
+  "rectus abdominis": "Droit de l'abdomen",
   "external abdominal oblique": "Oblique externe",
   "internal abdominal oblique": "Oblique interne",
-  "transversus abdominis": "Transverse",
+  "transversus abdominis": "Transverse de l'abdomen",
   /* Épaules */
   "acromial part of deltoid": "Deltoïde moyen",
   "clavicular part of deltoid": "Deltoïde antérieur",
@@ -248,7 +108,7 @@ export const MUSCLE_FR_NAMES: Record<string, string> = {
   "teres major": "Grand rond",
   "teres minor": "Petit rond",
   subscapularis: "Subscapulaire",
-  /* Bras antérieurs */
+  /* Bras */
   "long head of biceps brachii": "Biceps brachial",
   "short head of biceps brachii": "Biceps brachial",
   brachialis: "Brachial",
@@ -258,36 +118,32 @@ export const MUSCLE_FR_NAMES: Record<string, string> = {
   "flexor carpi radialis": "Fléchisseur radial du carpe",
   "humeral head of flexor carpi ulnaris": "Fléchisseur ulnaire du carpe",
   "ulnar head of flexor carpi ulnaris": "Fléchisseur ulnaire du carpe",
-  /* Triceps */
   "medial head of triceps brachii": "Triceps brachial",
   "lateral head of triceps brachii": "Triceps brachial",
   "long head of triceps brachii": "Triceps brachial",
-  /* Fléchisseurs de hanche */
-  iliacus: "Psoas-iliaque",
-  "psoas major": "Psoas-iliaque",
+  /* Cuisses */
+  iliacus: "Ilio-psoas",
+  "psoas major": "Ilio-psoas",
+  "rectus femoris": "Quadriceps fémoral",
+  "vastus lateralis": "Quadriceps fémoral",
+  "vastus medialis": "Quadriceps fémoral",
+  "vastus intermedius": "Quadriceps fémoral",
+  sartorius: "Sartorius",
+  "long head of biceps femoris": "Ischio-jambiers",
+  "short head of biceps femoris": "Ischio-jambiers",
+  semimembranosus: "Ischio-jambiers",
+  semitendinosus: "Ischio-jambiers",
+  popliteus: "Ischio-jambiers",
+  "adductor magnus": "Adducteurs",
+  "adductor longus": "Adducteurs",
+  "adductor brevis": "Adducteurs",
+  gracilis: "Adducteurs",
   /* Fessiers */
-  "gluteus medius": "Moyen fessier",
-  "gluteus maximus": "Grand fessier",
-  "gluteus minimus": "Petit fessier",
+  "gluteus medius": "Moyen glutéal",
+  "gluteus maximus": "Grand glutéal",
+  "gluteus minimus": "Petit glutéal",
   "tensor fasciae latae": "Tenseur du fascia lata",
   piriformis: "Piriforme",
-  /* Cuisses avant */
-  "rectus femoris": "Droit fémoral",
-  "vastus lateralis": "Vaste latéral",
-  "vastus medialis": "Vaste médial",
-  "vastus intermedius": "Vaste intermédiaire",
-  sartorius: "Couturier",
-  /* Cuisses arrière */
-  "long head of biceps femoris": "Biceps fémoral",
-  "short head of biceps femoris": "Biceps fémoral",
-  semimembranosus: "Semi-membraneux",
-  semitendinosus: "Semi-tendineux",
-  popliteus: "Poplité",
-  /* Adducteurs */
-  "adductor magnus": "Grand adducteur",
-  "adductor longus": "Long adducteur",
-  "adductor brevis": "Court adducteur",
-  gracilis: "Gracile",
   /* Mollets */
   "lateral head of gastrocnemius": "Gastrocnémiens",
   "medial head of gastrocnemius": "Gastrocnémiens",
@@ -348,14 +204,10 @@ export function getSide(raw: string): string {
   return "";
 }
 
-/* ── Find which group a mesh node belongs to ─────────────────────────────── */
+/* ── Find which group a mesh node belongs to (delegates to muscleGroups.ts) ── */
 
 export function getGroupForNode(raw: string): string | null {
-  const norm = raw.toLowerCase();
-  for (const [key, group] of Object.entries(MUSCLE_GROUPS)) {
-    if (group.keywords.some((kw) => norm.includes(kw))) return key;
-  }
-  return null;
+  return getGroupForMeshNode(raw);
 }
 
 /* ── Layered groups (overlapping muscles — sub-menu system) ──────────────── */
@@ -378,47 +230,41 @@ export const LAYERED_GROUPS: Record<string, LayeredMuscle[]> = {
     { name: "Petit rond", color: "#9B59B6" },
     { name: "Subscapulaire", color: "#1ABC9C" },
   ],
-  bras_anterieurs: [
+  bras: [
     { name: "Biceps brachial", color: "#E74C3C" },
     { name: "Brachial", color: "#2ECC71" },
     { name: "Brachio-radial", color: "#F39C12" },
+    { name: "Triceps brachial", color: "#9B59B6" },
     { name: "Extenseur des doigts", color: "#3498DB" },
-    { name: "Fléchisseur radial du carpe", color: "#9B59B6" },
-    { name: "Fléchisseur ulnaire du carpe", color: "#1ABC9C" },
+    { name: "Fléchisseur radial du carpe", color: "#1ABC9C" },
+    { name: "Fléchisseur ulnaire du carpe", color: "#E67E22" },
   ],
   abdominaux: [
-    { name: "Grand droit", color: "#E74C3C" },
+    { name: "Droit de l'abdomen", color: "#E74C3C" },
     { name: "Oblique externe", color: "#3498DB" },
     { name: "Oblique interne", color: "#2ECC71" },
-    { name: "Transverse", color: "#F39C12" },
+    { name: "Transverse de l'abdomen", color: "#F39C12" },
   ],
-  dos: [
-    { name: "Trapèzes", color: "#E74C3C" },
+  dorsaux: [
+    { name: "Trapèze", color: "#E74C3C" },
     { name: "Grand dorsal", color: "#3498DB" },
-    { name: "Rhomboïdes", color: "#2ECC71" },
-    { name: "Spinaux", color: "#F39C12" },
-    { name: "Carré des lombes", color: "#9B59B6" },
+    { name: "Rhomboïde", color: "#2ECC71" },
+    { name: "Érecteurs du rachis", color: "#F39C12" },
+    { name: "Infra-épineux", color: "#9B59B6" },
+    { name: "Grand rond", color: "#1ABC9C" },
+    { name: "Petit rond", color: "#E67E22" },
   ],
   fessiers: [
-    { name: "Grand fessier", color: "#E74C3C" },
-    { name: "Moyen fessier", color: "#3498DB" },
+    { name: "Grand glutéal", color: "#E74C3C" },
+    { name: "Moyen glutéal", color: "#3498DB" },
+    { name: "Piriforme", color: "#2ECC71" },
   ],
-  cuisses_avant: [
-    { name: "Droit fémoral", color: "#E74C3C" },
-    { name: "Vaste latéral", color: "#3498DB" },
-    { name: "Vaste médial", color: "#2ECC71" },
-    { name: "Vaste intermédiaire", color: "#F39C12" },
-    { name: "Couturier", color: "#9B59B6" },
-  ],
-  cuisses_arriere: [
-    { name: "Biceps fémoral", color: "#E74C3C" },
-    { name: "Semi-tendineux", color: "#3498DB" },
-    { name: "Semi-membraneux", color: "#2ECC71" },
-  ],
-  adducteurs: [
-    { name: "Grand adducteur", color: "#E74C3C" },
-    { name: "Long adducteur", color: "#3498DB" },
-    { name: "Gracile", color: "#2ECC71" },
+  cuisses: [
+    { name: "Quadriceps fémoral", color: "#E74C3C" },
+    { name: "Ischio-jambiers", color: "#3498DB" },
+    { name: "Adducteurs", color: "#2ECC71" },
+    { name: "Ilio-psoas", color: "#F39C12" },
+    { name: "Sartorius", color: "#9B59B6" },
   ],
   mollets: [
     { name: "Gastrocnémiens", color: "#E74C3C" },
@@ -449,6 +295,6 @@ export function matchesGroup(
   group: MuscleGroup,
   muscleLabel: string,
 ): boolean {
-  const lower = muscleLabel.toLowerCase();
-  return group.exerciseSearchTerms.some((term) => lower.includes(term));
+  const matched = getMuscleGroup(muscleLabel);
+  return matched === group.id;
 }

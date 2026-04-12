@@ -11,7 +11,7 @@ import { useRef, useCallback, useMemo } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import HologramMannequin from "@/app/[locale]/apprendre/anatomie/HologramMannequin";
-import { getGroupForNode } from "@/app/[locale]/apprendre/anatomie/anatomy-data";
+import { getGroupForMeshNode, MUSCLE_GROUP_COLORS, type MuscleGroupId } from "@/lib/exercices/muscleGroups";
 
 type Props = {
   activeGroups: string[];
@@ -19,38 +19,13 @@ type Props = {
   onFrameComputed?: (containerHeight: number) => void;
 };
 
-/* ── Map anatomy-data group keys → simplified 5-group legend colors ─── */
-
-const GROUP_COLORS: Record<string, string> = {
-  dos: "#3b82f6",
-  "membres-inferieurs": "#22c55e",
-  "membres-superieurs": "#f97316",
-  abdominaux: "#a855f7",
-  pectoraux: "#ef4444",
-};
-
-const ANATOMY_TO_SIMPLIFIED: Record<string, string> = {
-  pectoraux: "pectoraux",
-  epaules: "membres-superieurs",
-  bras_anterieurs: "membres-superieurs",
-  triceps: "membres-superieurs",
-  abdominaux: "abdominaux",
-  dos: "dos",
-  fessiers: "membres-inferieurs",
-  cuisses_avant: "membres-inferieurs",
-  cuisses_arriere: "membres-inferieurs",
-  adducteurs: "membres-inferieurs",
-  mollets: "membres-inferieurs",
-  flechisseurs: "membres-inferieurs",
-};
-
-/** Build mapping: anatomy groupKey → hex color matching the 5-group legend */
+/** Build mapping: group key → hex color */
 function buildGroupColorMap(activeGroups: string[]): Record<string, string> {
   const map: Record<string, string> = {};
   for (const key of activeGroups) {
-    const simplified = ANATOMY_TO_SIMPLIFIED[key];
-    if (simplified && GROUP_COLORS[simplified]) {
-      map[key] = GROUP_COLORS[simplified];
+    const color = MUSCLE_GROUP_COLORS[key as MuscleGroupId];
+    if (color) {
+      map[key] = color;
     }
   }
   return map;
@@ -78,7 +53,7 @@ export default function MannequinPreviewScene({ activeGroups, rotationY, onFrame
     let hasActiveMesh = false;
     m.traverse((child) => {
       if ((child as THREE.Mesh).isMesh && child.name) {
-        const groupKey = getGroupForNode(child.name);
+        const groupKey = getGroupForMeshNode(child.name);
         if (groupKey && activeGroups.includes(groupKey)) {
           activeBox.expandByObject(child);
           hasActiveMesh = true;
@@ -100,7 +75,7 @@ export default function MannequinPreviewScene({ activeGroups, rotationY, onFrame
       activeBox.makeEmpty();
       m.traverse((child) => {
         if ((child as THREE.Mesh).isMesh && child.name) {
-          const groupKey = getGroupForNode(child.name);
+          const groupKey = getGroupForMeshNode(child.name);
           if (groupKey && activeGroups.includes(groupKey)) {
             activeBox.expandByObject(child);
           }

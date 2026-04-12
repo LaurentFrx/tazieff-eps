@@ -9,7 +9,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import DifficultyPill from "@/components/DifficultyPill";
 import ExerciseAnatomyThumb from "@/components/exercices/ExerciseAnatomyThumb";
 import { ExerciseMannequin3D } from "@/components/exercices/ExerciseMannequin3D";
-import { MUSCLE_GROUPS, matchesGroup } from "@/app/[locale]/apprendre/anatomie/anatomy-data";
 import { HeroMedia } from "@/components/media/HeroMedia";
 import {
   getFavoritesSnapshot,
@@ -25,7 +24,7 @@ import { ExerciseJsonLd } from "@/components/seo/ExerciseJsonLd";
 import { ExerciseQuickInfo } from "@/components/exercices/ExerciseQuickInfo";
 import { RestTimer } from "@/components/exercices/RestTimer";
 import { translateTerms } from "@/lib/i18n/terms/translate";
-import { getMuscleGroup, type MuscleGroupId } from "@/lib/exercices/muscleGroups";
+import { getMuscleGroup, getMuscleGroups, getMuscleDisplayName, MUSCLE_GROUP_COLORS, type MuscleGroupId } from "@/lib/exercices/muscleGroups";
 const MarkdownRenderer = dynamic(
   () => import("@/components/MarkdownRenderer"),
   {
@@ -2793,18 +2792,28 @@ export function ExerciseLiveDetail({
         <div ref={musclesRef as React.RefObject<HTMLDivElement>} className="flex flex-wrap gap-2">
           {merged.frontmatter.muscles.map((muscle, i) => {
             const group = getMuscleGroup(muscle);
-            const translated = translateTerms([muscle], "muscles", lang)[0];
             const isPrimary = i === 0;
             if (!group) {
-              return (
-                <span key={muscle} className={`tap-feedback inline-flex items-center rounded-full px-3 py-2 text-xs font-medium capitalize ${isPrimary ? 'bg-[#FF8C00] text-white' : 'bg-transparent border border-[#FF8C00]/40 text-[#FF8C00]'}`}>
-                  {translated}
-                </span>
-              );
+              // Fantôme (cardio, coordination…) — pas de chip
+              return null;
             }
+            const color = MUSCLE_GROUP_COLORS[group];
+            const display = getMuscleDisplayName(muscle);
+            const label = display.oldName && display.oldName !== display.official
+              ? `${display.official} (${display.oldName})`
+              : display.official;
             return (
-              <Link key={muscle} href={`/exercices?muscle=${group}`} title={t("exerciseDetail.filterByMuscle")} className={`tap-feedback inline-flex items-center rounded-full px-3 py-2 text-xs font-medium capitalize transition-colors ${isPrimary ? 'bg-[#FF8C00] text-white hover:bg-[#FF8C00]/90' : 'bg-transparent border border-[#FF8C00]/40 text-[#FF8C00] hover:bg-[#FF8C00]/10'}`}>
-                {translated}
+              <Link
+                key={muscle}
+                href={`/exercices?muscle=${group}`}
+                title={t("exerciseDetail.filterByMuscle")}
+                className="tap-feedback inline-flex items-center rounded-full px-3 py-2 text-xs font-medium capitalize transition-colors"
+                style={isPrimary
+                  ? { backgroundColor: color, color: "white" }
+                  : { backgroundColor: "transparent", border: `1px solid ${color}66`, color }
+                }
+              >
+                {label}
               </Link>
             );
           })}
@@ -2813,14 +2822,7 @@ export function ExerciseLiveDetail({
 
       {/* ─── 7. MANNEQUIN ANATOMIQUE 3D ─── */}
       {merged.frontmatter.muscles.length > 0 && (() => {
-        const anatomyGroups: string[] = [];
-        for (const muscle of merged.frontmatter.muscles) {
-          for (const [key, group] of Object.entries(MUSCLE_GROUPS)) {
-            if (matchesGroup(group, muscle) && !anatomyGroups.includes(key)) {
-              anatomyGroups.push(key);
-            }
-          }
-        }
+        const anatomyGroups = getMuscleGroups(merged.frontmatter.muscles);
         return (
           <div ref={mannequinRef as React.RefObject<HTMLDivElement>} style={{ margin: "-6px 0" }}>
             <ExerciseMannequin3D

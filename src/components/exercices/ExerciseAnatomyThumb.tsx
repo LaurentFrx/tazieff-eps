@@ -2,33 +2,8 @@
 
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { getExerciseMuscleGroups } from "@/lib/exercices/muscle-groups";
-import { MUSCLE_GROUPS, matchesGroup } from "@/app/[locale]/apprendre/anatomie/anatomy-data";
+import { getMuscleGroups, MUSCLE_GROUP_COLORS, type MuscleGroupId } from "@/lib/exercices/muscleGroups";
 import "./exercise-anatomy.css";
-
-const GROUP_COLORS: Record<string, string> = {
-  dos: "#3b82f6",
-  "membres-inferieurs": "#22c55e",
-  "membres-superieurs": "#f97316",
-  abdominaux: "#a855f7",
-  pectoraux: "#ef4444",
-};
-
-// IMPORTANT : bug récurrent. Ne pas supprimer ce filtrage.
-// Quand ouvert depuis un exercice, seuls les muscles de l'exercice sont surlignés.
-// Les exerciseSearchTerms dans anatomy-data ne doivent contenir QUE des noms
-// de muscles, jamais des noms de mouvements (rotation, extension, gainage…).
-function getAnatomyGroupKeys(muscles: string[]): string[] {
-  const groups = new Set<string>();
-  for (const muscle of muscles) {
-    for (const [key, group] of Object.entries(MUSCLE_GROUPS)) {
-      if (matchesGroup(group, muscle)) {
-        groups.add(key);
-      }
-    }
-  }
-  return Array.from(groups);
-}
 
 type Props = {
   muscles: string[];
@@ -43,8 +18,8 @@ export default function ExerciseAnatomyThumb({
 }: Props) {
   const { t } = useI18n();
 
-  // 5 simplified groups for badge display
-  const groupKeys = getExerciseMuscleGroups(muscles);
+  // 8 unified groups for badge display
+  const groupKeys = getMuscleGroups(muscles);
 
   /* No matched groups → fallback to text chips */
   if (groupKeys.length === 0) {
@@ -62,9 +37,8 @@ export default function ExerciseAnatomyThumb({
     );
   }
 
-  // anatomy-data groups for the anatomy page link
-  const anatomyKeys = getAnatomyGroupKeys(muscles);
-  const href = `/apprendre/anatomie?muscles=${anatomyKeys.join(",")}&from=exercice&slug=${slug}`;
+  // Use unified 8-group keys for anatomy page link
+  const href = `/apprendre/anatomie?muscles=${groupKeys.join(",")}&from=exercice&slug=${slug}`;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, width: "100%" }}>
@@ -73,7 +47,7 @@ export default function ExerciseAnatomyThumb({
           <span key={key} className="exo-anatomy-thumb-label">
             <span
               className="exo-anatomy-thumb-dot"
-              style={{ background: GROUP_COLORS[key] ?? "#888" }}
+              style={{ background: MUSCLE_GROUP_COLORS[key as MuscleGroupId] ?? "#888" }}
             />
             {t(`filters.muscleGroups.${key}`)}
           </span>

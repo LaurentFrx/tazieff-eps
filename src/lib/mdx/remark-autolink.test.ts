@@ -53,7 +53,7 @@ describe("remarkAutolink", () => {
     const tree = parse("Les biceps sont importants. Tes biceps sont forts. Les biceps au top.");
     const links = findLinks(tree);
     expect(links.length).toBe(1);
-    expect(links[0].url).toBe("/apprendre/anatomie?muscles=bras_anterieurs");
+    expect(links[0].url).toBe("/apprendre/anatomie?muscles=bras");
   });
 
   it("links method terms", () => {

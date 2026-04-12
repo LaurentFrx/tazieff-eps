@@ -145,30 +145,28 @@ describe("Static learn pages — MDX content", () => {
   });
 });
 
-/* ── Anatomy data (12 muscle groups) ──────────────────────────────── */
+/* ── Anatomy data (8 unified muscle groups) ─────────────────────────── */
 
 describe("Anatomy data — MUSCLE_GROUPS", () => {
   const groupKeys = Object.keys(MUSCLE_GROUPS);
 
-  it("defines exactly 12 muscle groups", () => {
-    expect(groupKeys).toHaveLength(12);
+  it("defines exactly 8 muscle groups", () => {
+    expect(groupKeys).toHaveLength(8);
   });
 
-  it("each group has id, color, keywords, exerciseSearchTerms", () => {
+  it("each group has id, color, keywords", () => {
     for (const key of groupKeys) {
       const group = MUSCLE_GROUPS[key];
       expect(group.id).toBe(key);
-      expect(group.color).toMatch(/^#[0-9a-f]{6}$/);
+      expect(group.color).toMatch(/^#[0-9a-fA-F]{6}$/);
       expect(group.keywords.length).toBeGreaterThan(0);
-      expect(group.exerciseSearchTerms.length).toBeGreaterThan(0);
     }
   });
 
   it("expected groups are present", () => {
     const expected = [
-      "pectoraux", "epaules", "bras_anterieurs", "triceps",
-      "abdominaux", "dos", "fessiers", "cuisses_avant",
-      "cuisses_arriere", "adducteurs", "mollets", "flechisseurs",
+      "pectoraux", "dorsaux", "epaules", "bras",
+      "abdominaux", "cuisses", "fessiers", "mollets",
     ];
     expect(groupKeys.sort()).toEqual(expected.sort());
   });
@@ -197,7 +195,7 @@ describe("Anatomy data — utility functions", () => {
 
   it("getFrenchName returns correct French name", () => {
     expect(getFrenchName("latissimus dorsi")).toBe("Grand dorsal");
-    expect(getFrenchName("rectus abdominis")).toBe("Grand droit");
+    expect(getFrenchName("rectus abdominis")).toBe("Droit de l'abdomen");
     expect(getFrenchName("soleus")).toBe("Soléaire");
   });
 
@@ -208,69 +206,41 @@ describe("Anatomy data — utility functions", () => {
   });
 
   it("getGroupForNode finds correct group", () => {
-    expect(getGroupForNode("latissimus_dorsi")).toBe("dos");
+    expect(getGroupForNode("latissimus_dorsi")).toBe("dorsaux");
     expect(getGroupForNode("pectoralis_major")).toBe("pectoraux");
-    expect(getGroupForNode("biceps brachii")).toBe("bras_anterieurs");
+    expect(getGroupForNode("biceps brachii")).toBe("bras");
     expect(getGroupForNode("gluteus_maximus")).toBe("fessiers");
     expect(getGroupForNode("unknown_bone")).toBeNull();
   });
 
   it("matchesGroup matches exercise muscle tags", () => {
-    const dos = MUSCLE_GROUPS.dos;
-    expect(matchesGroup(dos, "Grand dorsal")).toBe(true);
-    expect(matchesGroup(dos, "Trapèze supérieur")).toBe(true);
-    expect(matchesGroup(dos, "Biceps brachial")).toBe(false);
+    const dorsaux = MUSCLE_GROUPS.dorsaux;
+    expect(matchesGroup(dorsaux, "Grand dorsal")).toBe(true);
+    expect(matchesGroup(dorsaux, "Trapèze supérieur")).toBe(true);
+    expect(matchesGroup(dorsaux, "Biceps brachial")).toBe(false);
 
-    const cuisses_avant = MUSCLE_GROUPS.cuisses_avant;
-    expect(matchesGroup(cuisses_avant, "Quadriceps")).toBe(true);
-    expect(matchesGroup(cuisses_avant, "Mollets")).toBe(false);
+    const cuisses = MUSCLE_GROUPS.cuisses;
+    expect(matchesGroup(cuisses, "Quadriceps")).toBe(true);
+    expect(matchesGroup(cuisses, "Mollets")).toBe(false);
   });
 });
 
 /* ── Anatomy — exercise matching per group ───────────────────────── */
 
 describe("Anatomy — exercise matching coverage", () => {
-  const GROUP_MUSCLES: Record<string, string[]> = {
-    pectoraux: ["Grand pectoral", "Dentelé antérieur"],
-    epaules: ["Deltoïde antérieur", "Deltoïde moyen", "Deltoïde postérieur", "Infra-épineux", "Grand rond"],
-    bras_anterieurs: ["Biceps brachial", "Brachial", "Brachio-radial"],
-    triceps: ["Triceps brachial"],
-    abdominaux: ["Grand droit", "Oblique externe", "Transverse"],
-    dos: ["Trapèzes", "Grand dorsal", "Rhomboïdes", "Spinaux", "Carré des lombes"],
-    fessiers: ["Grand fessier", "Moyen fessier"],
-    cuisses_avant: ["Droit fémoral", "Vaste latéral", "Vaste médial", "Couturier"],
-    cuisses_arriere: ["Biceps fémoral", "Semi-tendineux", "Semi-membraneux"],
-    adducteurs: ["Grand adducteur", "Long adducteur", "Gracile"],
-    mollets: ["Gastrocnémiens", "Soléaire"],
-    flechisseurs: ["Psoas-iliaque"],
-  };
-
-  it("GROUP_MUSCLES covers all 12 MUSCLE_GROUPS", () => {
-    for (const key of Object.keys(MUSCLE_GROUPS)) {
-      expect(GROUP_MUSCLES[key], `Missing GROUP_MUSCLES entry for ${key}`).toBeDefined();
-      expect(GROUP_MUSCLES[key].length).toBeGreaterThan(0);
-    }
-  });
-
-  it("each group has exerciseSearchTerms that match typical exercise tags", () => {
-    // exerciseSearchTerms are designed to match exercise catalog tags, not display names
+  it("matchesGroup correctly matches typical exercise tags to groups", () => {
     const typicalTags: Record<string, string> = {
       dorsaux: "Grand dorsal",
       pectoraux: "Pectoraux",
       abdominaux: "Abdominaux",
-      deltoides: "Deltoïde moyen",
-      biceps: "Biceps brachial",
-      triceps: "Triceps brachial",
-      flechisseurs: "Psoas-iliaque",
-      fessiers: "Fessiers",
-      quadriceps: "Quadriceps",
-      ischio_jambiers: "Ischio-jambiers",
-      adducteurs: "Adducteur",
+      epaules: "Deltoides",
+      bras: "Biceps brachial",
+      fessiers: "Grand fessier",
+      cuisses: "Quadriceps",
       mollets: "Mollets",
     };
-    for (const [key, group] of Object.entries(MUSCLE_GROUPS)) {
-      const tag = typicalTags[key];
-      if (!tag) continue;
+    for (const [key, tag] of Object.entries(typicalTags)) {
+      const group = MUSCLE_GROUPS[key];
       expect(matchesGroup(group, tag), `Group ${key} should match tag "${tag}"`).toBe(true);
     }
   });
@@ -284,36 +254,20 @@ describe("Anatomy — exercise matching coverage", () => {
     expect(matchesGroup(MUSCLE_GROUPS.mollets, "Deltoïde antérieur")).toBe(false);
   });
 
-  it("getFrenchName covers all GROUP_MUSCLES display names", () => {
-    const allDisplayNames = Object.values(GROUP_MUSCLES).flat();
-    // All display names should appear in MUSCLE_FR_NAMES values
+  it("getFrenchName covers key muscle display names", () => {
+    const keyDisplayNames = [
+      "Grand pectoral", "Grand dorsal", "Deltoïde moyen",
+      "Biceps brachial", "Triceps brachial",
+      "Droit de l'abdomen", "Oblique externe",
+      "Grand glutéal", "Moyen glutéal",
+      "Gastrocnémiens", "Soléaire",
+    ];
     const frNameValues = Object.values(MUSCLE_FR_NAMES);
-    for (const name of allDisplayNames) {
+    for (const name of keyDisplayNames) {
       expect(
         frNameValues.includes(name),
         `Display name "${name}" not found in MUSCLE_FR_NAMES values`,
       ).toBe(true);
-    }
-  });
-
-  it("GROUP_MUSCLES keys match MUSCLE_GROUPS keys exactly", () => {
-    const gmKeys = Object.keys(GROUP_MUSCLES).sort();
-    const mgKeys = Object.keys(MUSCLE_GROUPS).sort();
-    expect(gmKeys).toEqual(mgKeys);
-  });
-
-  it("each GROUP_MUSCLES entry has at least 1 muscle", () => {
-    for (const [key, muscles] of Object.entries(GROUP_MUSCLES)) {
-      expect(muscles.length, `GROUP_MUSCLES[${key}] is empty`).toBeGreaterThan(0);
-    }
-  });
-
-  it("matchesGroup self-matches at least 1 exerciseSearchTerm per group", () => {
-    for (const [key, group] of Object.entries(MUSCLE_GROUPS)) {
-      const hasMatch = group.exerciseSearchTerms.some((term) =>
-        matchesGroup(group, term),
-      );
-      expect(hasMatch, `No exerciseSearchTerm self-matches for group ${key}`).toBe(true);
     }
   });
 });
@@ -323,7 +277,7 @@ describe("Anatomy — exercise matching coverage", () => {
 describe("Anatomy — label and sheet data", () => {
   it("every MUSCLE_GROUPS key has a valid color for label display", () => {
     for (const [key, group] of Object.entries(MUSCLE_GROUPS)) {
-      expect(group.color, `Group ${key} missing color`).toMatch(/^#[0-9a-f]{6}$/);
+      expect(group.color, `Group ${key} missing color`).toMatch(/^#[0-9a-fA-F]{6}$/);
       expect(group.id, `Group ${key} id mismatch`).toBe(key);
     }
   });
