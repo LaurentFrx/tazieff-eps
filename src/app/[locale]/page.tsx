@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { HomepageClient } from "@/components/HomepageClient";
+import { HomeRouter } from "./HomeRouter";
 import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
 import { getAllMethodes, getAllLearnPages } from "@/lib/content/fs";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
+import type { LiveExerciseListItem } from "@/lib/live/types";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -22,7 +23,8 @@ export default async function HomePage({ params }: Props) {
   ]);
 
   return (
-    <HomepageClient
+    <HomeRouter
+      exercises={exercises}
       exerciseCount={exercises.length}
       methodeCount={methodes.length}
       learnCount={learnPages.length + 4}

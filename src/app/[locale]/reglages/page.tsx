@@ -6,6 +6,8 @@ import { useTheme } from "next-themes";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useBuildInfo } from "@/components/BuildStamp";
 import { getTheme, onThemeChange, setTheme as setFieldTheme, type ThemePreference, getAnatomyAnim, setAnatomyAnim, onAnatomyAnimChange } from "@/lib/storage";
+import { getNavMode, setNavMode, type NavMode } from "@/lib/modeStore";
+import { notifyModeChange } from "@/components/BottomTabBar";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlan } from "@/hooks/usePlan";
 import { isAcademicEmail, ACADEMIC_EMAIL_PATTERN } from "@/lib/auth/academic-domains";
@@ -105,6 +107,7 @@ export default function ReglagesPage() {
 
   const [fieldTheme, setLocalFieldTheme] = useState<ThemePreference>(getTheme());
   const [anatomyAnim, setLocalAnatomyAnim] = useState(getAnatomyAnim());
+  const [navMode, setLocalNavMode] = useState<NavMode | null>(null);
   const [mounted, setMounted] = useState(false);
 
 
@@ -131,7 +134,7 @@ export default function ReglagesPage() {
   useEffect(() => onThemeChange(setLocalFieldTheme), []);
   useEffect(() => onAnatomyAnimChange(setLocalAnatomyAnim), []);
   // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => setMounted(true), []);
+  useEffect(() => { setMounted(true); setLocalNavMode(getNavMode()); }, []);
 
   const stableLang = mounted ? lang : lang;
   const stableTheme = mounted ? currentTheme : ("system" as const);
@@ -350,6 +353,30 @@ export default function ReglagesPage() {
           </button>
 
           <div className="border-b border-[color:var(--border)] my-3" />
+
+          {/* Mode de navigation */}
+          {mounted && navMode && (
+            <>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-[color:var(--ink)]">Mode de navigation</span>
+                <Seg
+                  options={[
+                    { value: "guide" as const, key: "guide" as const },
+                    { value: "libre" as const, key: "libre" as const },
+                  ]}
+                  value={navMode}
+                  onChange={(v) => {
+                    setNavMode(v as NavMode);
+                    setLocalNavMode(v as NavMode);
+                    notifyModeChange();
+                    router.push("/");
+                  }}
+                  render={(opt) => opt.value === "guide" ? "🎯 Guidé" : "🧭 Libre"}
+                />
+              </div>
+              <div className="border-b border-[color:var(--border)] my-3" />
+            </>
+          )}
 
           {/* Relancer l'onboarding */}
           <button
