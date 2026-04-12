@@ -127,25 +127,34 @@ export function ExerciseListClient({
 
   // Filter state
   const [query, setQuery] = useState("");
+  const [selectedSession, setSelectedSession] = useState<string | null>(null);
   const [selectedLevels, setSelectedLevels] = useState<Difficulty[]>([]);
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
   const [selectedMuscleGroups, setSelectedMuscleGroups] = useState<MuscleGroupId[]>([]);
   const [selectedThemes, setSelectedThemes] = useState<ThemeOption[]>([]);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
 
-  // Pre-select muscle group from URL query param (?muscle=pectoraux)
-  // Retro-compatibility: map old 5-group slugs to new 8-group system
+  // Pre-select from URL query params (?muscle=X or ?session=s1)
   useEffect(() => {
     const muscle = searchParams.get("muscle");
-    if (!muscle) return;
-    const LEGACY_MAP: Record<string, MuscleGroupId> = {
-      dos: "dorsaux",
-      "membres-inferieurs": "cuisses",
-      "membres-superieurs": "bras",
-    };
-    const resolved = LEGACY_MAP[muscle] ?? muscle;
-    if (MUSCLE_GROUP_IDS.includes(resolved as MuscleGroupId)) {
-      setSelectedMuscleGroups([resolved as MuscleGroupId]);
+    if (muscle) {
+      const LEGACY_MAP: Record<string, MuscleGroupId> = {
+        dos: "dorsaux",
+        "membres-inferieurs": "cuisses",
+        "membres-superieurs": "bras",
+      };
+      const resolved = LEGACY_MAP[muscle] ?? muscle;
+      if (MUSCLE_GROUP_IDS.includes(resolved as MuscleGroupId)) {
+        setSelectedMuscleGroups([resolved as MuscleGroupId]);
+      }
+    }
+    const session = searchParams.get("session");
+    if (session) {
+      setSelectedSession(session);
+    }
+    const favs = searchParams.get("favs");
+    if (favs === "1") {
+      setOnlyFavorites(true);
     }
   }, [searchParams]);
 
@@ -198,9 +207,16 @@ export function ExerciseListClient({
     return hasNoEquipment ? [NO_EQUIPMENT_ID, ...sorted] : sorted;
   }, [visibleExercises]);
 
+  // Apply session filter first, then standard filters
+  const sessionFiltered = useMemo(() => {
+    if (!selectedSession) return visibleExercises;
+    const prefix = selectedSession + "-";
+    return visibleExercises.filter((ex) => ex.slug.startsWith(prefix));
+  }, [visibleExercises, selectedSession]);
+
   const filtered = useMemo(
     () =>
-      filterExercises(visibleExercises, {
+      filterExercises(sessionFiltered, {
         query,
         levels: selectedLevels,
         equipment: selectedEquipment,
@@ -211,7 +227,7 @@ export function ExerciseListClient({
       }),
     [
       favorites,
-      visibleExercises,
+      sessionFiltered,
       onlyFavorites,
       query,
       selectedEquipment,
@@ -258,6 +274,7 @@ export function ExerciseListClient({
 
   const handleReset = () => {
     setQuery("");
+    setSelectedSession(null);
     setSelectedLevels([]);
     setSelectedEquipment([]);
     setSelectedMuscleGroups([]);
@@ -269,9 +286,42 @@ export function ExerciseListClient({
   // Render
   // ---------------------------------------------------------------------------
 
+  const SESSION_TABS = [
+    { id: null, label: "Tous" },
+    { id: "s1", label: "S1", color: "#f97316" },
+    { id: "s2", label: "S2", color: "#ef4444" },
+    { id: "s3", label: "S3", color: "#3b82f6" },
+    { id: "s4", label: "S4", color: "#22c55e" },
+    { id: "s5", label: "S5", color: "#a855f7" },
+    { id: "s6", label: "S6", color: "#ec4899" },
+  ] as const;
+
   return (
     <div className="stack-lg">
       <BackToAnatomy />
+
+      {/* ── Session tabs (scrollable) ───────────────────────────── */}
+      <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
+        {SESSION_TABS.map((tab) => {
+          const isActive = selectedSession === tab.id;
+          const color = tab.id ? (tab as { color: string }).color : "#f97316";
+          return (
+            <button
+              key={tab.id ?? "all"}
+              type="button"
+              onClick={() => setSelectedSession(tab.id)}
+              className="shrink-0 rounded-full px-4 py-2 text-sm font-bold min-h-[44px] transition-all select-none"
+              style={isActive
+                ? { background: color, color: "white", boxShadow: `0 0 12px ${color}66` }
+                : { background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.1)" }
+              }
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
       <div className="filter-panel">
         <TeacherToolbar
           teacherUnlocked={teacherUnlocked}

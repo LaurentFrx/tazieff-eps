@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { HomepageClient } from "@/components/HomepageClient";
+import { HomepageHubClient } from "@/components/HomepageHubClient";
 import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
 import { getAllMethodes, getAllLearnPages } from "@/lib/content/fs";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
@@ -22,7 +22,7 @@ export default async function HomePage({ params }: Props) {
   ]);
 
   return (
-    <HomepageClient
+    <HomepageHubClient
       exerciseCount={exercises.length}
       methodeCount={methodes.length}
       learnCount={learnPages.length + 4}
