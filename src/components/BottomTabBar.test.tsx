@@ -17,19 +17,17 @@ import { BottomTabBar } from "./BottomTabBar";
 describe("BottomTabBar", () => {
   beforeEach(() => { mockPathname = "/"; });
 
-  it("renders 5 tab links", () => {
+  it("renders 3 tab links", () => {
     render(<BottomTabBar />);
     const links = screen.getAllByRole("link");
-    expect(links).toHaveLength(5);
+    expect(links).toHaveLength(3);
   });
 
-  it("renders all 5 tab labels", () => {
+  it("renders all 3 tab labels", () => {
     render(<BottomTabBar />);
-    expect(screen.getByText("nav.home.label")).toBeDefined();
-    expect(screen.getByText("nav.exos.label")).toBeDefined();
-    expect(screen.getByText("nav.methodes.label")).toBeDefined();
-    expect(screen.getByText("nav.apprendre.label")).toBeDefined();
-    expect(screen.getByText("nav.bac.label")).toBeDefined();
+    expect(screen.getByText("nav.maSeance.label")).toBeDefined();
+    expect(screen.getByText("nav.explorer.label")).toBeDefined();
+    expect(screen.getByText("nav.monParcours.label")).toBeDefined();
   });
 
   it("has accessible nav landmark", () => {
@@ -37,28 +35,25 @@ describe("BottomTabBar", () => {
     expect(screen.getByRole("navigation", { name: "nav.mainNavigation" })).toBeDefined();
   });
 
-  it("marks home tab as active on /", () => {
+  it("marks ma-seance tab as active on /", () => {
     mockPathname = "/";
     render(<BottomTabBar />);
-    const homeLink = screen.getByText("nav.home.label").closest("a")!;
+    const homeLink = screen.getByText("nav.maSeance.label").closest("a")!;
     expect(homeLink.getAttribute("aria-current")).toBe("page");
   });
 
-  it("marks exercices tab as active on /exercices", () => {
+  it("marks explorer tab as active on /exercices", () => {
     mockPathname = "/exercices";
     render(<BottomTabBar />);
-    const exoLink = screen.getByText("nav.exos.label").closest("a")!;
-    expect(exoLink.getAttribute("aria-current")).toBe("page");
-    // Home should NOT be active
-    const homeLink = screen.getByText("nav.home.label").closest("a")!;
-    expect(homeLink.getAttribute("aria-current")).toBeNull();
+    const explorerLink = screen.getByText("nav.explorer.label").closest("a")!;
+    expect(explorerLink.getAttribute("aria-current")).toBe("page");
   });
 
-  it("marks exercices tab as active on sub-route /exercices/s1-01", () => {
+  it("marks explorer tab as active on sub-route /exercices/s1-01", () => {
     mockPathname = "/exercices/s1-01";
     render(<BottomTabBar />);
-    const exoLink = screen.getByText("nav.exos.label").closest("a")!;
-    expect(exoLink.getAttribute("aria-current")).toBe("page");
+    const explorerLink = screen.getByText("nav.explorer.label").closest("a")!;
+    expect(explorerLink.getAttribute("aria-current")).toBe("page");
   });
 
   it("links point to correct hrefs", () => {
@@ -66,9 +61,7 @@ describe("BottomTabBar", () => {
     const links = screen.getAllByRole("link");
     const hrefs = links.map((l) => l.getAttribute("href"));
     expect(hrefs).toContain("/");
-    expect(hrefs).toContain("/exercices");
-    expect(hrefs).toContain("/methodes");
-    expect(hrefs).toContain("/apprendre");
-    expect(hrefs).toContain("/parcours-bac");
+    expect(hrefs).toContain("/explorer");
+    expect(hrefs).toContain("/mon-parcours");
   });
 });
