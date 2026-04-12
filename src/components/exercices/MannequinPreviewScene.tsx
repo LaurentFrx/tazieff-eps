@@ -7,7 +7,7 @@
  * Must be rendered inside a R3F <Canvas>.
  */
 
-import { useRef, useCallback, useMemo } from "react";
+import { useRef, useCallback, useMemo, useEffect } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import HologramMannequin from "@/app/[locale]/apprendre/anatomie/HologramMannequin";
@@ -35,16 +35,34 @@ export default function MannequinPreviewScene({ activeGroups, rotationY, onFrame
   const mannequinRef = useRef<THREE.Group>(null);
   const centeredRef = useRef(false);
   const waitFramesRef = useRef(0);
+  const pendingHeightRef = useRef<number | null>(null);
   const { camera } = useThree();
+  const activeGroupsRef = useRef(activeGroups);
+  activeGroupsRef.current = activeGroups;
 
   const noop = useCallback(() => {}, []);
   const groupColorMap = useMemo(() => buildGroupColorMap(activeGroups), [activeGroups]);
+
+  // Reset centering when activeGroups change (e.g. session navigation)
+  useEffect(() => {
+    centeredRef.current = false;
+    waitFramesRef.current = 0;
+  }, [activeGroups]);
+
+  // Flush pending height update outside the render loop to avoid layout thrashing
+  useEffect(() => {
+    if (pendingHeightRef.current !== null && onFrameComputed) {
+      onFrameComputed(pendingHeightRef.current);
+      pendingHeightRef.current = null;
+    }
+  });
 
   // Center mannequin + frame camera on active muscles once GLBs are loaded
   useFrame(() => {
     if (centeredRef.current) return;
     const m = mannequinRef.current;
     if (!m) return;
+    const groups = activeGroupsRef.current;
     const fullBox = new THREE.Box3().setFromObject(m);
     if (fullBox.isEmpty()) return;
 
@@ -54,7 +72,7 @@ export default function MannequinPreviewScene({ activeGroups, rotationY, onFrame
     m.traverse((child) => {
       if ((child as THREE.Mesh).isMesh && child.name) {
         const groupKey = getGroupForMeshNode(child.name);
-        if (groupKey && activeGroups.includes(groupKey)) {
+        if (groupKey && groups.includes(groupKey)) {
           activeBox.expandByObject(child);
           hasActiveMesh = true;
         }
@@ -62,7 +80,7 @@ export default function MannequinPreviewScene({ activeGroups, rotationY, onFrame
     });
 
     // Wait up to ~0.5s for muscle meshes to load if we expect them
-    if (!hasActiveMesh && activeGroups.length > 0) {
+    if (!hasActiveMesh && groups.length > 0) {
       waitFramesRef.current++;
       if (waitFramesRef.current < 30) return;
     }
@@ -76,7 +94,7 @@ export default function MannequinPreviewScene({ activeGroups, rotationY, onFrame
       m.traverse((child) => {
         if ((child as THREE.Mesh).isMesh && child.name) {
           const groupKey = getGroupForMeshNode(child.name);
-          if (groupKey && activeGroups.includes(groupKey)) {
+          if (groupKey && groups.includes(groupKey)) {
             activeBox.expandByObject(child);
           }
         }
@@ -97,11 +115,10 @@ export default function MannequinPreviewScene({ activeGroups, rotationY, onFrame
     camera.lookAt(0, center.y, 0);
     camera.updateProjectionMatrix();
 
-    // Report dynamic container height
+    // Store height for next React commit (avoid setState inside useFrame)
     if (onFrameComputed) {
       const ratio = size.y / Math.max(size.x, 0.01);
-      const h = Math.min(350, Math.max(250, ratio * 280));
-      setTimeout(() => onFrameComputed(h), 0);
+      pendingHeightRef.current = Math.min(350, Math.max(250, ratio * 280));
     }
 
     centeredRef.current = true;

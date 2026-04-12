@@ -338,6 +338,13 @@ function MusclesModel({
       if ((child as THREE.Mesh).isMesh) initMesh(child as THREE.Mesh);
     });
     meshesRef.current = meshes;
+    return () => {
+      for (const mesh of meshes) {
+        if (mesh.material && (mesh.material as THREE.Material).dispose) {
+          (mesh.material as THREE.Material).dispose();
+        }
+      }
+    };
   }, [scene, sceneExtra]);
 
   // Update materials when selection/highlight/wireframe changes

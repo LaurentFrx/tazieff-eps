@@ -12,7 +12,15 @@ import { getMuscleGroups, MUSCLE_GROUP_COLORS, type MuscleGroupId } from "@/lib/
 // Lightweight preview: Canvas + HologramMannequin only (no bg, no controls)
 const MannequinPreviewCanvas = dynamic(
   () => import("./MannequinPreviewCanvas"),
-  { ssr: false },
+  {
+    ssr: false,
+    loading: () => (
+      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#0a0a14" }}>
+        <div style={{ width: 40, height: 40, border: "2px solid rgba(255,140,0,0.2)", borderTopColor: "rgba(255,140,0,0.7)", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      </div>
+    ),
+  },
 );
 
 
@@ -25,6 +33,9 @@ class Mannequin3DErrorBoundary extends Component<
   state = { hasError: false };
   static getDerivedStateFromError() {
     return { hasError: true };
+  }
+  componentDidCatch(error: Error) {
+    console.error("[Mannequin3D] WebGL rendering failed:", error);
   }
   render() {
     return this.state.hasError ? this.props.fallback : this.props.children;
