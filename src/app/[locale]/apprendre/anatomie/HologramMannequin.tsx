@@ -265,7 +265,7 @@ function MusclesModel({
 }: Omit<Props, "hoveredMuscle"> & { groupColorMap?: Record<string, string> }) {
   const { scene } = useGLTF("/models/muscles.glb");
   const { scene: sceneExtra } = useGLTF("/models/muscles_manquants.glb");
-  const { gl } = useThree();
+  const { gl, invalidate } = useThree();
   const canvasElRef = useRef(gl.domElement);
   const meshesRef = useRef<THREE.Mesh[]>([]);
   const hoveredRef = useRef<THREE.Mesh | null>(null);
@@ -338,6 +338,7 @@ function MusclesModel({
       if ((child as THREE.Mesh).isMesh) initMesh(child as THREE.Mesh);
     });
     meshesRef.current = meshes;
+    invalidate();
     return () => {
       for (const mesh of meshes) {
         if (mesh.material && (mesh.material as THREE.Material).dispose) {
@@ -345,7 +346,7 @@ function MusclesModel({
         }
       }
     };
-  }, [scene, sceneExtra]);
+  }, [scene, sceneExtra, invalidate]);
 
   // Update materials when selection/highlight/wireframe changes
   /* eslint-disable react-hooks/immutability -- Three.js materials are mutable by design */
@@ -453,7 +454,8 @@ function MusclesModel({
       // Stencil: block wireframe ONLY where muscle is visible and opaque
       mat.stencilWrite = mesh.visible && mat.opacity > 0.5;
     }
-  }, [selectedGroup, highlightedMuscle, activeGroups, wireframe, groupColorMap]);
+    invalidate();
+  }, [selectedGroup, highlightedMuscle, activeGroups, wireframe, groupColorMap, invalidate]);
   /* eslint-enable react-hooks/immutability */
 
   // Update scan Y uniform each frame for progressive muscle reveal

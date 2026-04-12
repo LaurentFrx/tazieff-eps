@@ -18,6 +18,7 @@ type Props = {
 export default function MannequinPreviewCanvas({ activeGroups, rotationY, onFrameComputed }: Props) {
   return (
     <Canvas
+      frameloop="demand"
       camera={{ position: [0, 1.0, 1.8], fov: 45, near: 0.01, far: 100 }}
       gl={{ antialias: true, stencil: true, alpha: true }}
       style={{ width: "100%", height: "100%", background: "transparent", pointerEvents: "none" }}

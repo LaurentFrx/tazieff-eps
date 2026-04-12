@@ -36,7 +36,7 @@ export default function MannequinPreviewScene({ activeGroups, rotationY, onFrame
   const centeredRef = useRef(false);
   const waitFramesRef = useRef(0);
   const pendingHeightRef = useRef<number | null>(null);
-  const { camera } = useThree();
+  const { camera, invalidate } = useThree();
   const activeGroupsRef = useRef(activeGroups);
   activeGroupsRef.current = activeGroups;
 
@@ -47,7 +47,8 @@ export default function MannequinPreviewScene({ activeGroups, rotationY, onFrame
   useEffect(() => {
     centeredRef.current = false;
     waitFramesRef.current = 0;
-  }, [activeGroups]);
+    invalidate();
+  }, [activeGroups, invalidate]);
 
   // Flush pending height update outside the render loop to avoid layout thrashing
   useEffect(() => {
@@ -60,6 +61,8 @@ export default function MannequinPreviewScene({ activeGroups, rotationY, onFrame
   // Center mannequin + frame camera on active muscles once GLBs are loaded
   useFrame(() => {
     if (centeredRef.current) return;
+    // Keep requesting frames until centering is done
+    invalidate();
     const m = mannequinRef.current;
     if (!m) return;
     const groups = activeGroupsRef.current;
