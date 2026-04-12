@@ -2790,9 +2790,8 @@ export function ExerciseLiveDetail({
       {/* ─── 6. CHIPS MUSCLES ─── */}
       {merged.frontmatter.muscles.length > 0 && (
         <div ref={musclesRef as React.RefObject<HTMLDivElement>} className="flex flex-wrap gap-2">
-          {merged.frontmatter.muscles.map((muscle, i) => {
+          {merged.frontmatter.muscles.map((muscle) => {
             const group = getMuscleGroup(muscle);
-            const isPrimary = i === 0;
             if (!group) {
               // Fantôme (cardio, coordination…) — pas de chip
               return null;
@@ -2808,10 +2807,7 @@ export function ExerciseLiveDetail({
                 href={`/exercices?muscle=${group}`}
                 title={t("exerciseDetail.filterByMuscle")}
                 className="tap-feedback inline-flex items-center rounded-full px-3 py-2 text-xs font-medium capitalize transition-colors"
-                style={isPrimary
-                  ? { backgroundColor: color, color: "white" }
-                  : { backgroundColor: "transparent", border: `1px solid ${color}66`, color }
-                }
+                style={{ backgroundColor: "transparent", border: `1px solid ${color}66`, color }}
               >
                 {label}
               </Link>
