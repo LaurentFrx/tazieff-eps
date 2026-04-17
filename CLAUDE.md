@@ -26,7 +26,7 @@ L'app est l'incarnation numérique native du contenu de Fred — plus accessible
 - **Styling** : Tailwind CSS v4
 - **Contenu** : MDX (exercices, méthodes, apprendre)
 - **Base de données** : Supabase (exercices live enseignant)
-- **Tests** : Vitest 4.0.18 + jsdom — 373 tests
+- **Tests** : Vitest 4.0.18 + jsdom — 433 tests (30 fichiers)
 - **PWA** : Serwist (service worker)
 - **Déploiement** : Vercel (auto-deploy depuis `main`)
 - **i18n** : Tri-lingue (FR/EN/ES) avec dictionnaire fitness dédié
@@ -218,7 +218,7 @@ npx tsc --noEmit               # Type-check sans build
 - Phase 0 : Refonte navigation (BottomTabBar, SectionHero, design Sport Vibrant)
 - Refonte UX complète : 5 onglets, homepage colorée, SVG partagés
 - Dictionnaire fitness i18n validé (0 erreur DeepL)
-- 373 tests passants, 28 routes, 240 fichiers exercices MDX (80 slugs × 3 locales)
+- 433 tests passants (30 fichiers), 28 routes, 240 fichiers exercices MDX (80 slugs × 3 locales)
 - Phase 1 — Méthodes d'entraînement : 19 fiches MDX trilingues, page /methodes, liens croisés exercice ↔ méthode ↔ muscle
 - Phase 2 — Contenu théorique : RM/RIR/RPE (MDX + calculateur + glossaire), anatomie (MDX + contractions + carte 3D), sécurité (6 principes), programmes hebdo (3 programmes MDX)
 - Phase 4 — Parcours BAC : démarche spiralaire, évaluations 2nde/1ère/Term (4 compétences × 3 niveaux + checklists), épreuve du BAC (barème 20pts + stratégie)
