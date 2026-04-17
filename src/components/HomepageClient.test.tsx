@@ -18,7 +18,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("next/image", () => ({
-  default: (props: Record<string, unknown>) => <img {...props} />,
+  default: ({ fill, priority, placeholder, blurDataURL, loader, quality, unoptimized, ...props }: Record<string, unknown>) => <img {...props} />,
 }));
 
 vi.mock("@/lib/i18n/I18nProvider", () => ({

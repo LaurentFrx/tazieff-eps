@@ -114,22 +114,22 @@ function getLevelDefaults(t: (key: string) => string) {
   ];
 }
 
-// TODO: i18n — these are exercise classification terms (teacher-mode only).
-// Add keys to messages.ts when full translation is needed.
-const TYPE_DEFAULTS = [
-  "Fondamentaux",
-  "Technique",
-  "Renforcement",
-  "Gainage",
-  "Mobilité",
-  "Souplesse",
-  "Pliométrie",
-  "Endurance de force",
-  "Puissance",
-  "Hypertrophie",
-  "Échauffement",
-  "Retour au calme",
-];
+function getTypeDefaults(t: (key: string) => string) {
+  return [
+    t("exerciseEditor.types.fondamentaux"),
+    t("exerciseEditor.types.technique"),
+    t("exerciseEditor.types.renforcement"),
+    t("exerciseEditor.types.gainage"),
+    t("exerciseEditor.types.mobilite"),
+    t("exerciseEditor.types.souplesse"),
+    t("exerciseEditor.types.pliometrie"),
+    t("exerciseEditor.types.enduranceDeForce"),
+    t("exerciseEditor.types.puissance"),
+    t("exerciseEditor.types.hypertrophie"),
+    t("exerciseEditor.types.echauffement"),
+    t("exerciseEditor.types.retourAuCalme"),
+  ];
+}
 
 function getMuscleDefaults(t: (key: string) => string) {
   return [
@@ -319,13 +319,17 @@ function formatMediaInfo(info?: MediaInfo | null) {
   return parts.length > 0 ? parts.join(" · ") : null;
 }
 
-// TODO: i18n — these error strings are matched by value in the catch block
-// (see handleFileUpload). Refactor to use error codes instead of French strings.
-function formatResolveError(status?: number | null) {
+function formatResolveError(
+  status: number | null | undefined,
+  t: (key: string) => string,
+) {
   if (typeof status === "number" && Number.isFinite(status)) {
-    return `Erreur: ${status}`;
+    return t("exerciseEditor.fetchFailedWithStatus").replace(
+      "{status}",
+      String(status),
+    );
   }
-  return "Erreur: URL non résolue";
+  return t("exerciseEditor.urlError");
 }
 
 function filterOptions(options: string[], query: string) {
@@ -808,6 +812,7 @@ export function ExerciseLiveDetail({
     const levelDefaults = getLevelDefaults(t);
     const muscleDefaults = getMuscleDefaults(t);
     const themeDefaults = getThemeDefaults(t);
+    const typeDefaults = getTypeDefaults(t);
     const levelKeys = new Set(
       [
         ...levelDefaults,
@@ -882,7 +887,7 @@ export function ExerciseLiveDetail({
       ),
       type: sortLabels(
         uniqueLabels([
-          ...TYPE_DEFAULTS,
+          ...typeDefaults,
           ...(merged.frontmatter.tags ?? []),
           ...nextSelections.type,
           ...pillCustomOptions.type,
@@ -1316,9 +1321,7 @@ export function ExerciseLiveDetail({
           error && typeof error === "object" && "status" in error
             ? Number((error as { status?: number }).status)
             : undefined;
-        const reason = Number.isFinite(status)
-          ? formatResolveError(status)
-          : t("exerciseEditor.urlError");
+        const reason = formatResolveError(status, t);
         setMediaResolveState((prev) => ({ ...prev, [mediaId]: "error" }));
         setMediaResolveError((prev) =>
           prev[mediaId] === reason ? prev : { ...prev, [mediaId]: reason },
