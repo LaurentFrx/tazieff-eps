@@ -52,3 +52,6 @@ src/lib/search/search-index.ts
 # large local docs
 docs/pdfs/Muscu'Tazieff 2.pdf
 .aider*
+
+# claude code cli (worktrees, local state)
+.claude/
