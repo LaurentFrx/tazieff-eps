@@ -3,20 +3,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
-import NextImage from "next/image";
 import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useSearchParams, useRouter } from "next/navigation";
 import DifficultyPill from "@/components/DifficultyPill";
-import ExerciseAnatomyThumb from "@/components/exercices/ExerciseAnatomyThumb";
 import { ExerciseMannequin3D } from "@/components/exercices/ExerciseMannequin3D";
 import { HeroMedia } from "@/components/media/HeroMedia";
 import {
   getFavoritesSnapshot,
-  subscribeFavorites,
   toggleFavorite,
 } from "@/lib/favoritesStore";
 import { useSessionDraft } from "@/hooks/useSessionDraft";
-import logo from "../../../../public/media/branding/logo-eps.webp";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Lang } from "@/lib/i18n/messages";
@@ -24,7 +20,7 @@ import { ExerciseJsonLd } from "@/components/seo/ExerciseJsonLd";
 import { ExerciseQuickInfo } from "@/components/exercices/ExerciseQuickInfo";
 import { RestTimer } from "@/components/exercices/RestTimer";
 import { translateTerms } from "@/lib/i18n/terms/translate";
-import { getMuscleGroup, getMuscleGroups, getMuscleDisplayName, MUSCLE_GROUP_COLORS, type MuscleGroupId } from "@/lib/exercices/muscleGroups";
+import { getMuscleGroup, getMuscleGroups, getMuscleDisplayName, MUSCLE_GROUP_COLORS } from "@/lib/exercices/muscleGroups";
 const MarkdownRenderer = dynamic(
   () => import("@/components/MarkdownRenderer"),
   {
@@ -622,7 +618,6 @@ export function ExerciseLiveDetail({
 }: ExerciseLiveDetailProps) {
   const { t, lang } = useI18n();
   const router = useRouter();
-  const settingsLabel = t("settings.open");
   const searchParams = useSearchParams();
   const sessionDraft = useSessionDraft();
   const supabase = getSupabaseBrowserClient();
@@ -2512,7 +2507,6 @@ export function ExerciseLiveDetail({
 
   // --- Favori burst ---
   const [favBursting, setFavBursting] = useState(false);
-  const prevFavRef = useRef(getFavoritesSnapshot().includes(slug));
   const handleToggleFav = useCallback(() => {
     const wasFav = getFavoritesSnapshot().includes(merged.frontmatter.slug);
     toggleFavorite(merged.frontmatter.slug);
@@ -2585,7 +2579,6 @@ export function ExerciseLiveDetail({
 
   // Session badge label (ex: "S5 Fonctionnel")
   const sessionMatch = slug.match(/^s(\d+)/i);
-  const sessionLabel = sessionMatch ? `S${sessionMatch[1]}` : null;
 
   return (
     <>
