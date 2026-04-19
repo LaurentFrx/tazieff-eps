@@ -51,6 +51,7 @@ import {
   OverridePillsProvider,
   OverrideUIProvider,
 } from "./_teacher-editor/contexts";
+import { useOverrideSave } from "./_teacher-editor/hooks/useOverrideSave";
 
 function RevealStep({ delay, children }: { delay: number; children: React.ReactNode }) {
   const ref = useReveal(delay);
@@ -641,17 +642,10 @@ export function ExerciseLiveDetail({
   );
   const [teacherPin, setTeacherPin] = useState(() => getTeacherModeSnapshot().pin);
   const [teacherError, setTeacherError] = useState<string | null>(null);
-  const [overrideOpen, setOverrideOpen] = useState(false);
   const [overrideDoc, setOverrideDoc] = useState<ExerciseLiveDocV2 | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   const [sectionMenuOpenId, setSectionMenuOpenId] = useState<string | null>(null);
   const [blockMenuOpenKey, setBlockMenuOpenKey] = useState<string | null>(null);
-  const [dirtySnapshot, setDirtySnapshot] = useState("");
-  const [overrideToast, setOverrideToast] = useState<{
-    message: string;
-    tone: "success" | "error";
-  } | null>(null);
-  const [isSavingOverride, setIsSavingOverride] = useState(false);
   const [heroPreviewUrl, setHeroPreviewUrl] = useState<string | null>(null);
   const [mediaUrlMap, setMediaUrlMap] = useState<Record<string, string>>({});
   const [mediaInfoMap, setMediaInfoMap] = useState<Record<string, MediaInfo>>({});
@@ -696,7 +690,6 @@ export function ExerciseLiveDetail({
   const [liveDraft, setLiveDraft] = useState<LiveDraft | null>(null);
   const [deleteLiveOpen, setDeleteLiveOpen] = useState(false);
   const [isDeletingLive, setIsDeletingLive] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<string | null>(null);
   const [blockToast, setBlockToast] = useState<{ id: number; message: string } | null>(
     null,
   );
@@ -705,7 +698,6 @@ export function ExerciseLiveDetail({
   const pressStartRef = useRef<{ x: number; y: number } | null>(null);
   const touchPointerActiveRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const blockToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const blockToastHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -798,11 +790,6 @@ export function ExerciseLiveDetail({
                !normalized.includes("completer");
       })
       .map((label) => ({ label }));
-  const overrideSnapshot = useMemo(
-    () => (overrideDoc ? JSON.stringify(overrideDoc) : ""),
-    [overrideDoc],
-  );
-  const isDirty = overrideDoc ? overrideSnapshot !== dirtySnapshot : false;
   const activeSection =
     overrideDoc?.doc.sections.find((section) => section.id === activeSectionId) ??
     (overrideDoc
@@ -938,43 +925,6 @@ export function ExerciseLiveDetail({
     t,
   ]);
 
-  const saveMeta = useMemo(() => {
-    const tags = uniqueLabels(
-      pillState.selections.type.map((value) => normalizeLabel(value)),
-    ).filter(Boolean);
-    const muscles = uniqueLabels(
-      pillState.selections.muscles.map((value) => normalizeLabel(value)),
-    ).filter(Boolean);
-    const title = merged.frontmatter.title?.trim() ?? "";
-    const themes = merged.frontmatter.themeCompatibility ?? [];
-    const missing: string[] = [];
-
-    if (!title) {
-      missing.push("titre");
-    }
-    if (tags.length === 0) {
-      missing.push("tags");
-    }
-    if (muscles.length === 0) {
-      missing.push("muscles");
-    }
-    if (themes.length === 0) {
-      missing.push("thèmes");
-    }
-
-    return {
-      status: missing.length === 0 ? ("ready" as ExerciseStatus) : ("draft" as ExerciseStatus),
-      missing,
-      tags,
-      muscles,
-    };
-  }, [
-    merged.frontmatter.title,
-    merged.frontmatter.themeCompatibility,
-    pillState.selections.muscles,
-    pillState.selections.type,
-  ]);
-
   const triggerRevalidate = useCallback(
     (targetSlug: string) => {
       if (!onRevalidate) {
@@ -984,6 +934,68 @@ export function ExerciseLiveDetail({
     },
     [onRevalidate],
   );
+
+  const overrideDocValue = useOverrideSave({
+    overrideDoc,
+    setOverrideDoc,
+    base,
+    patch,
+    merged,
+    pillSelections: pillState.selections,
+    slug,
+    locale,
+    source,
+    teacherPin,
+    setPatch,
+    triggerRevalidate,
+    onAuthError: (message: string) => {
+      setTeacherUnlocked(false);
+      setTeacherPin("");
+      setTeacherError(message);
+      setPinModalOpen(true);
+    },
+    setConfirmCloseOpen,
+    onDiscardResetExternalState: (firstSectionId) => {
+      setActiveSectionId(firstSectionId);
+      setSectionMenuOpenId(null);
+      setBlockMenuOpenKey(null);
+      setMediaStatus(null);
+      setLevelAddOpen(false);
+      setLevelAddValue("");
+      setPillDropdownOpen(null);
+      setPillSearch({ type: "", muscles: "", themes: "" });
+      setPillDropdownStyle(null);
+      setAddBlockMenuOpen(false);
+      setConfirmCloseOpen(false);
+    },
+    buildOverrideDoc,
+    uniqueLabels,
+    normalizeLabel,
+  });
+  const {
+    dirtySnapshot,
+    isDirty,
+    overrideOpen,
+    isSavingOverride,
+    overrideToast,
+    submitStatus,
+    setDirtySnapshot,
+    setOverrideOpen,
+    setIsSavingOverride,
+    setOverrideToast,
+    setSubmitStatus,
+    toastTimerRef,
+    overrideSnapshot,
+    saveMeta,
+    handleSaveOverride,
+    handleCloseOverride,
+    handleCloseWithoutSave,
+    handleDiscardOverride,
+    handleAuthError,
+    updateOverrideDoc,
+    updateSection,
+    showOverrideToast,
+  } = overrideDocValue;
 
   useEffect(() => {
     if (!supabase) {
@@ -1409,9 +1421,6 @@ export function ExerciseLiveDetail({
 
   useEffect(() => {
     return () => {
-      if (toastTimerRef.current) {
-        clearTimeout(toastTimerRef.current);
-      }
       if (blockToastTimerRef.current) {
         clearTimeout(blockToastTimerRef.current);
       }
@@ -1548,16 +1557,6 @@ export function ExerciseLiveDetail({
     };
   }, [addBlockMenuOpen]);
 
-  const showOverrideToast = (message: string, tone: "success" | "error") => {
-    setOverrideToast({ message, tone });
-    if (toastTimerRef.current) {
-      clearTimeout(toastTimerRef.current);
-    }
-    toastTimerRef.current = setTimeout(() => {
-      setOverrideToast(null);
-    }, 2400);
-  };
-
   const updateDropdownPosition = (category: "type" | "muscles" | "themes") => {
     const trigger = dropdownTriggerRefs.current[category];
     if (!trigger) {
@@ -1682,157 +1681,6 @@ export function ExerciseLiveDetail({
     setPinModalOpen(false);
   };
 
-  const handleAuthError = (message: string) => {
-    setTeacherUnlocked(false);
-    setTeacherPin("");
-    setTeacherError(message);
-    setPinModalOpen(true);
-  };
-
-  const handleSaveOverride = async () => {
-    if (!teacherPin) {
-      showOverrideToast(t("teacherMode.pinRequired"), "error");
-      return;
-    }
-    if (!overrideDoc) {
-      setSubmitStatus(t("exerciseEditor.noChanges"));
-      return;
-    }
-    const saveStatus = saveMeta.status;
-    const statusLabel =
-      saveStatus === "draft" ? t("exerciseEditor.draftSaved") : t("exerciseEditor.exerciseSaved");
-    const heroImage = overrideDoc.doc.heroImage
-      ? {
-          url: overrideDoc.doc.heroImage.url.trim(),
-          alt: overrideDoc.doc.heroImage.alt?.trim() || undefined,
-        }
-      : undefined;
-    const pills = (overrideDoc.doc.pills ?? [])
-      .map((pill) => ({
-        label: pill.label.trim(),
-        kind: pill.kind?.trim() || undefined,
-      }))
-      .filter((pill) => pill.label.length > 0);
-    const sections = overrideDoc.doc.sections.map((section) => ({
-      ...section,
-      title: section.title.trim(),
-      blocks: section.blocks.map((block) => {
-        if (block.type === "bullets") {
-          return {
-            ...block,
-            items: block.items.map((item) => item.trim()).filter(Boolean),
-          };
-        }
-        if (block.type === "media") {
-          if (block.mediaType === "image") {
-            const trimmedUrl = block.url?.trim();
-            const nextBlock: ExerciseLiveMediaBlock = {
-              type: "media",
-              mediaType: "image",
-              mediaId: block.mediaId,
-              caption: block.caption?.trim() || undefined,
-            };
-            if (trimmedUrl) {
-              nextBlock.url = trimmedUrl;
-            }
-            return nextBlock;
-          }
-          return {
-            ...block,
-            url: block.url.trim(),
-            caption: block.caption?.trim() || undefined,
-          };
-        }
-        return {
-          ...block,
-          content: block.content ?? "",
-        };
-      }),
-    }));
-    const patchJson: ExerciseLiveDocV2 = {
-      version: 2,
-      doc: {
-        heroImage,
-        pills,
-        sections,
-      },
-    };
-    setSubmitStatus(t("exerciseEditor.submitting"));
-    setIsSavingOverride(true);
-    let response: Response;
-    try {
-      response = await fetch("/api/teacher/exercise-override", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pin: teacherPin,
-          slug,
-          locale,
-          patchJson,
-        }),
-      });
-    } catch {
-      setSubmitStatus(null);
-      setIsSavingOverride(false);
-      showOverrideToast(t("exerciseEditor.saveFailed"), "error");
-      return;
-    }
-    if (!response.ok) {
-      if (response.status === 401) {
-        handleAuthError(t("teacherMode.pinInvalid"));
-        setSubmitStatus(null);
-        setIsSavingOverride(false);
-        return;
-      }
-      setSubmitStatus(null);
-      setIsSavingOverride(false);
-      showOverrideToast(t("exerciseEditor.saveFailed"), "error");
-      return;
-    }
-
-    if (source === "live") {
-      const liveResponse = await fetch("/api/teacher/live-exercise", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pin: teacherPin,
-          slug,
-          locale,
-          dataJson: {
-            frontmatter: {
-              ...merged.frontmatter,
-              slug,
-              title: merged.frontmatter.title?.trim() ?? "",
-              tags: saveMeta.tags,
-              muscles: saveMeta.muscles,
-              themeCompatibility: merged.frontmatter.themeCompatibility ?? [],
-            },
-            content: base.content,
-            status: saveStatus,
-          },
-        }),
-      });
-      if (!liveResponse.ok) {
-        if (liveResponse.status === 401) {
-          handleAuthError(t("teacherMode.pinInvalid"));
-        }
-        setSubmitStatus(null);
-        setIsSavingOverride(false);
-        showOverrideToast(t("exerciseEditor.updateFailed"), "error");
-        return;
-      }
-    }
-    setPatch(patchJson);
-    setOverrideDoc(patchJson);
-    setDirtySnapshot(JSON.stringify(patchJson));
-    setSubmitStatus(null);
-    setIsSavingOverride(false);
-    showOverrideToast(statusLabel, "success");
-    setConfirmCloseOpen(false);
-    setOverrideOpen(false);
-    triggerRevalidate(slug);
-  };
-
   const handleSaveLive = async () => {
     if (!teacherPin) {
       handleAuthError(t("teacherMode.pinRequired"));
@@ -1944,27 +1792,6 @@ export function ExerciseLiveDetail({
     showOverrideToast(t("exerciseEditor.versionDeleted"), "success");
     setIsDeletingLive(false);
     triggerRevalidate(slug);
-  };
-
-  const updateOverrideDoc = (
-    updater: (doc: ExerciseLiveDocV2) => ExerciseLiveDocV2,
-  ) => {
-    setOverrideDoc((prev) => (prev ? updater(prev) : prev));
-  };
-
-  const updateSection = (
-    sectionId: string,
-    updater: (section: ExerciseLiveSection) => ExerciseLiveSection,
-  ) => {
-    updateOverrideDoc((doc) => ({
-      ...doc,
-      doc: {
-        ...doc.doc,
-        sections: doc.doc.sections.map((section) =>
-          section.id === sectionId ? updater(section) : section,
-        ),
-      },
-    }));
   };
 
   const handlePhotoUploadRequest = (sectionId: string, blockIndex?: number) => {
@@ -2257,38 +2084,6 @@ export function ExerciseLiveDetail({
           : block,
       ),
     }));
-  };
-
-  const handleCloseOverride = () => {
-    if (isDirty) {
-      setConfirmCloseOpen(true);
-      return;
-    }
-    setOverrideOpen(false);
-  };
-
-  const handleDiscardOverride = () => {
-    const doc = buildOverrideDoc(base, patch);
-    const snapshot = JSON.stringify(doc);
-    setOverrideDoc(doc);
-    setDirtySnapshot(snapshot);
-    setActiveSectionId(doc.doc.sections[0]?.id ?? null);
-    setSectionMenuOpenId(null);
-    setBlockMenuOpenKey(null);
-    setMediaStatus(null);
-    setOverrideToast(null);
-    setLevelAddOpen(false);
-    setLevelAddValue("");
-    setPillDropdownOpen(null);
-    setPillSearch({ type: "", muscles: "", themes: "" });
-    setPillDropdownStyle(null);
-    setAddBlockMenuOpen(false);
-    setConfirmCloseOpen(false);
-  };
-
-  const handleCloseWithoutSave = () => {
-    setConfirmCloseOpen(false);
-    setOverrideOpen(false);
   };
 
   const handleFocusSectionTitle = (sectionId: string) => {
@@ -3098,35 +2893,7 @@ export function ExerciseLiveDetail({
           resolveTargetSectionId,
         }}
       >
-        <OverrideDocProvider
-          value={{
-            overrideDoc,
-            dirtySnapshot,
-            isDirty,
-            overrideOpen,
-            isSavingOverride,
-            overrideToast,
-            submitStatus,
-            setOverrideDoc,
-            setDirtySnapshot,
-            setOverrideOpen,
-            setIsSavingOverride,
-            setOverrideToast,
-            setSubmitStatus,
-            toastTimerRef,
-            merged,
-            overrideSnapshot,
-            saveMeta,
-            handleSaveOverride,
-            handleCloseOverride,
-            handleCloseWithoutSave,
-            handleDiscardOverride,
-            handleAuthError,
-            updateOverrideDoc,
-            updateSection,
-            showOverrideToast,
-          }}
-        >
+        <OverrideDocProvider value={overrideDocValue}>
           <OverrideMediaProvider
             value={{
               heroPreviewUrl,
