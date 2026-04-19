@@ -45,6 +45,12 @@ import type {
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useReveal } from "@/hooks/useReveal";
 import "./exercise-detail.css";
+import {
+  OverrideDocProvider,
+  OverrideMediaProvider,
+  OverridePillsProvider,
+  OverrideUIProvider,
+} from "./_teacher-editor/contexts";
 
 function RevealStep({ delay, children }: { delay: number; children: React.ReactNode }) {
   const ref = useReveal(delay);
@@ -3050,6 +3056,131 @@ export function ExerciseLiveDetail({
         </div>
       ) : null}
 
+      <OverrideUIProvider
+        value={{
+          activeSectionId,
+          sectionMenuOpenId,
+          blockMenuOpenKey,
+          highlightBlockKey,
+          addBlockMenuOpen,
+          confirmCloseOpen,
+          deleteLiveOpen,
+          isDeletingLive,
+          liveExists,
+          teacherPin,
+          setActiveSectionId,
+          setSectionMenuOpenId,
+          setBlockMenuOpenKey,
+          setHighlightBlockKey,
+          setAddBlockMenuOpen,
+          setConfirmCloseOpen,
+          setDeleteLiveOpen,
+          setIsDeletingLive,
+          setLiveExists,
+          setTeacherPin,
+          sectionTitleRefs,
+          blockFieldRefs,
+          blockContainerRefs,
+          highlightTimerRef,
+          addBlockMenuRef,
+          addBlockButtonRef,
+          handleAddSection,
+          handleMoveSection,
+          handleRemoveSection,
+          handleAddBlock,
+          handleMoveBlock,
+          handleRemoveBlock,
+          handleAddFromMenu,
+          handleDeleteLive,
+          showBlockToast,
+          dismissBlockToast,
+          resolveSectionTitle,
+          resolveTargetSectionId,
+        }}
+      >
+        <OverrideDocProvider
+          value={{
+            overrideDoc,
+            dirtySnapshot,
+            isDirty,
+            overrideOpen,
+            isSavingOverride,
+            overrideToast,
+            submitStatus,
+            setOverrideDoc,
+            setDirtySnapshot,
+            setOverrideOpen,
+            setIsSavingOverride,
+            setOverrideToast,
+            setSubmitStatus,
+            toastTimerRef,
+            merged,
+            overrideSnapshot,
+            saveMeta,
+            handleSaveOverride,
+            handleCloseOverride,
+            handleCloseWithoutSave,
+            handleDiscardOverride,
+            handleAuthError,
+            updateOverrideDoc,
+            updateSection,
+            showOverrideToast,
+          }}
+        >
+          <OverrideMediaProvider
+            value={{
+              heroPreviewUrl,
+              mediaStatus,
+              uploadTarget,
+              mediaUrlMap,
+              mediaInfoMap,
+              mediaResolveState,
+              mediaResolveError,
+              setHeroPreviewUrl,
+              setMediaStatus,
+              setUploadTarget,
+              setMediaUrlMap,
+              setMediaInfoMap,
+              setMediaResolveState,
+              setMediaResolveError,
+              fileInputRef,
+              handlePhotoUploadRequest,
+              handlePhotoFileChange,
+              handleClearPhoto,
+              handleHeroUrlChange,
+              handleHeroAltChange,
+              handleHeroPreview,
+              handleHeroRemove,
+              resolveMediaInfo,
+              resolveMediaAsset,
+            }}
+          >
+            <OverridePillsProvider
+              value={{
+                pillDropdownOpen,
+                pillSearch,
+                pillCustomOptions,
+                pillDropdownStyle,
+                levelAddOpen,
+                levelAddValue,
+                setPillDropdownOpen,
+                setPillSearch,
+                setPillCustomOptions,
+                setPillDropdownStyle,
+                setLevelAddOpen,
+                setLevelAddValue,
+                dropdownMenuRef,
+                dropdownTriggerRefs,
+                pillState,
+                updatePillSelections,
+                setLevelSelection,
+                addCustomLevel,
+                toggleMultiSelection,
+                addCustomOption,
+                toggleDropdown,
+                updateDropdownPosition,
+              }}
+            >
       {overrideOpen ? (
         <>
           <div className="modal-overlay" role="dialog" aria-modal="true">
@@ -4339,6 +4470,10 @@ export function ExerciseLiveDetail({
           ) : null}
         </>
       ) : null}
+            </OverridePillsProvider>
+          </OverrideMediaProvider>
+        </OverrideDocProvider>
+      </OverrideUIProvider>
 
       {liveOpen && liveDraft ? (
         <div className="modal-overlay" role="dialog" aria-modal="true">
