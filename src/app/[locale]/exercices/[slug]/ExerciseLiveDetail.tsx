@@ -52,6 +52,8 @@ import {
   OverrideUIProvider,
 } from "./_teacher-editor/contexts";
 import { useOverrideSave } from "./_teacher-editor/hooks/useOverrideSave";
+import { useOverrideMediaUpload } from "./_teacher-editor/hooks/useOverrideMediaUpload";
+import { mediaUrlCache } from "./_teacher-editor/lib/media-utils";
 
 function RevealStep({ delay, children }: { delay: number; children: React.ReactNode }) {
   const ref = useReveal(delay);
@@ -99,12 +101,7 @@ declare global {
 const POLL_INTERVAL_MS = 20000;
 const LONG_PRESS_MS = 1800;
 const MOVE_THRESHOLD_PX = 10;
-const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-const IMAGE_MAX_EDGE = 1600;
-const IMAGE_QUALITY = 0.82;
 const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
-const mediaUrlCache = new Map<string, string>();
 const DROPDOWN_MAX_HEIGHT = 288;
 const DROPDOWN_MENU_LAYER_CLASS = "z-[80]";
 const DROPDOWN_MENU_PANEL_CLASS =
@@ -322,19 +319,6 @@ function formatMediaInfo(info?: MediaInfo | null) {
   return parts.length > 0 ? parts.join(" · ") : null;
 }
 
-function formatResolveError(
-  status: number | null | undefined,
-  t: (key: string) => string,
-) {
-  if (typeof status === "number" && Number.isFinite(status)) {
-    return t("exerciseEditor.fetchFailedWithStatus").replace(
-      "{status}",
-      String(status),
-    );
-  }
-  return t("exerciseEditor.urlError");
-}
-
 function filterOptions(options: string[], query: string) {
   const key = normalizeKey(query);
   if (!key) {
@@ -349,78 +333,6 @@ function optionExists(options: string[], value: string) {
     return false;
   }
   return options.some((option) => normalizeKey(option) === key);
-}
-
-type ImageSourceInfo = {
-  source: CanvasImageSource;
-  width: number;
-  height: number;
-  revoke?: () => void;
-};
-
-async function loadImageSource(file: File): Promise<ImageSourceInfo> {
-  if (typeof createImageBitmap === "function") {
-    const bitmap = await createImageBitmap(file);
-    return {
-      source: bitmap as CanvasImageSource,
-      width: bitmap.width,
-      height: bitmap.height,
-      revoke: () => {
-        if ("close" in bitmap) {
-          bitmap.close();
-        }
-      },
-    };
-  }
-
-  const url = URL.createObjectURL(file);
-  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error("Impossible de charger l'image."));
-    image.src = url;
-  });
-
-  return {
-    source: img as CanvasImageSource,
-    width: img.naturalWidth || img.width,
-    height: img.naturalHeight || img.height,
-    revoke: () => URL.revokeObjectURL(url),
-  };
-}
-
-async function compressImageToWebp(sourceInfo: ImageSourceInfo) {
-  const { source, width, height, revoke } = sourceInfo;
-  const maxEdge = Math.max(width, height);
-  const scale = maxEdge > IMAGE_MAX_EDGE ? IMAGE_MAX_EDGE / maxEdge : 1;
-  const targetWidth = Math.max(1, Math.round(width * scale));
-  const targetHeight = Math.max(1, Math.round(height * scale));
-  const canvas = document.createElement("canvas");
-  canvas.width = targetWidth;
-  canvas.height = targetHeight;
-  const context = canvas.getContext("2d");
-  if (!context) {
-    revoke?.();
-    throw new Error("Canvas indisponible.");
-  }
-  context.drawImage(source, 0, 0, targetWidth, targetHeight);
-  revoke?.();
-
-  const blob = await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (result) => {
-        if (result) {
-          resolve(result);
-        } else {
-          reject(new Error("Compression échouée."));
-        }
-      },
-      "image/webp",
-      IMAGE_QUALITY,
-    );
-  });
-
-  return { blob, width: targetWidth, height: targetHeight };
 }
 
 type PhotoPreviewProps = {
@@ -646,20 +558,6 @@ export function ExerciseLiveDetail({
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   const [sectionMenuOpenId, setSectionMenuOpenId] = useState<string | null>(null);
   const [blockMenuOpenKey, setBlockMenuOpenKey] = useState<string | null>(null);
-  const [heroPreviewUrl, setHeroPreviewUrl] = useState<string | null>(null);
-  const [mediaUrlMap, setMediaUrlMap] = useState<Record<string, string>>({});
-  const [mediaInfoMap, setMediaInfoMap] = useState<Record<string, MediaInfo>>({});
-  const [mediaResolveState, setMediaResolveState] = useState<
-    Record<string, "loading" | "ready" | "error">
-  >({});
-  const [mediaResolveError, setMediaResolveError] = useState<
-    Record<string, string | null>
-  >({});
-  const [mediaStatus, setMediaStatus] = useState<string | null>(null);
-  const [uploadTarget, setUploadTarget] = useState<{
-    sectionId: string;
-    blockIndex?: number;
-  } | null>(null);
   const [pillDropdownOpen, setPillDropdownOpen] = useState<
     null | "type" | "muscles" | "themes"
   >(null);
@@ -697,7 +595,6 @@ export function ExerciseLiveDetail({
   const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pressStartRef = useRef<{ x: number; y: number } | null>(null);
   const touchPointerActiveRef = useRef(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const blockToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const blockToastHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1232,193 +1129,6 @@ export function ExerciseLiveDetail({
     };
   }, [locale, liveReady, overrideReady, slug, source, supabase]);
 
-  const resolveMediaInfo = useCallback(
-    async (mediaId: string, options?: { isActive?: () => boolean }) => {
-      if (!supabase) {
-        return;
-      }
-      const isActive = options?.isActive ?? (() => true);
-      const { data, error } = await supabase
-        .from("media_assets")
-        .select("id, mime, size, width, height")
-        .eq("id", mediaId)
-        .maybeSingle();
-      if (!isActive() || error || !data) {
-        return;
-      }
-      setMediaInfoMap((prev) => {
-        const nextInfo: MediaInfo = {
-          mime: data.mime ?? null,
-          size: data.size ?? null,
-          width: data.width ?? null,
-          height: data.height ?? null,
-        };
-        const prevInfo = prev[mediaId];
-        if (
-          prevInfo &&
-          prevInfo.mime === nextInfo.mime &&
-          prevInfo.size === nextInfo.size &&
-          prevInfo.width === nextInfo.width &&
-          prevInfo.height === nextInfo.height
-        ) {
-          return prev;
-        }
-        return { ...prev, [mediaId]: nextInfo };
-      });
-    },
-    [supabase],
-  );
-
-  const resolveMediaAsset = useCallback(
-    async (
-      mediaId: string,
-      options?: { force?: boolean; isActive?: () => boolean },
-    ) => {
-      if (!supabase) {
-        return;
-      }
-
-      const isActive = options?.isActive ?? (() => true);
-      const cachedUrl = mediaUrlCache.get(mediaId) ?? "";
-      const shouldFetchInfo =
-        options?.force || !mediaInfoRequestedRef.current.has(mediaId);
-      if (shouldFetchInfo) {
-        mediaInfoRequestedRef.current.add(mediaId);
-        void resolveMediaInfo(mediaId, { isActive });
-      }
-
-      if (cachedUrl && !options?.force) {
-        if (!isActive()) {
-          return;
-        }
-        setMediaUrlMap((prev) =>
-          prev[mediaId] === cachedUrl ? prev : { ...prev, [mediaId]: cachedUrl },
-        );
-        setMediaResolveState((prev) =>
-          prev[mediaId] === "ready" ? prev : { ...prev, [mediaId]: "ready" },
-        );
-        setMediaResolveError((prev) =>
-          prev[mediaId] ? { ...prev, [mediaId]: null } : prev,
-        );
-        return;
-      }
-
-      if (!isActive()) {
-        return;
-      }
-      setMediaResolveState((prev) => ({ ...prev, [mediaId]: "loading" }));
-      setMediaResolveError((prev) =>
-        prev[mediaId] ? { ...prev, [mediaId]: null } : prev,
-      );
-
-      const { data, error } = await supabase
-        .from("media_assets")
-        .select("id, bucket, path, canonical_url")
-        .eq("id", mediaId)
-        .maybeSingle();
-      if (!isActive()) {
-        return;
-      }
-
-      if (error || !data) {
-        if (cachedUrl) {
-          setMediaResolveState((prev) =>
-            prev[mediaId] === "ready" ? prev : { ...prev, [mediaId]: "ready" },
-          );
-          setMediaResolveError((prev) =>
-            prev[mediaId] ? { ...prev, [mediaId]: null } : prev,
-          );
-          return;
-        }
-        const status =
-          error && typeof error === "object" && "status" in error
-            ? Number((error as { status?: number }).status)
-            : undefined;
-        const reason = formatResolveError(status, t);
-        setMediaResolveState((prev) => ({ ...prev, [mediaId]: "error" }));
-        setMediaResolveError((prev) =>
-          prev[mediaId] === reason ? prev : { ...prev, [mediaId]: reason },
-        );
-        return;
-      }
-
-      let url = data.canonical_url ?? "";
-      if (!url && data.bucket && data.path) {
-        const { data: publicData } = supabase
-          .storage
-          .from(data.bucket)
-          .getPublicUrl(data.path);
-        url = publicData.publicUrl ?? "";
-      }
-      if (url) {
-        mediaUrlCache.set(mediaId, url);
-        setMediaUrlMap((prev) =>
-          prev[mediaId] === url ? prev : { ...prev, [mediaId]: url },
-        );
-        setMediaResolveState((prev) => ({ ...prev, [mediaId]: "ready" }));
-        setMediaResolveError((prev) =>
-          prev[mediaId] ? { ...prev, [mediaId]: null } : prev,
-        );
-        return;
-      }
-
-      if (cachedUrl) {
-        setMediaResolveState((prev) =>
-          prev[mediaId] === "ready" ? prev : { ...prev, [mediaId]: "ready" },
-        );
-        setMediaResolveError((prev) =>
-          prev[mediaId] ? { ...prev, [mediaId]: null } : prev,
-        );
-        return;
-      }
-
-      const reason = t("exerciseEditor.urlError");
-      setMediaResolveState((prev) => ({ ...prev, [mediaId]: "error" }));
-      setMediaResolveError((prev) =>
-        prev[mediaId] === reason ? prev : { ...prev, [mediaId]: reason },
-      );
-    },
-    [resolveMediaInfo, supabase],
-  );
-
-  useEffect(() => {
-    if (!overrideDocView || !supabase) {
-      return;
-    }
-
-    let active = true;
-    const mediaIds = new Set<string>();
-    const resolveIds = new Set<string>();
-    for (const section of overrideDocView.sections) {
-      for (const block of section.blocks) {
-        if (
-          block.type === "media" &&
-          block.mediaType === "image" &&
-          block.mediaId &&
-          !block.url?.trim()
-        ) {
-          resolveIds.add(block.mediaId);
-        }
-        if (block.type === "media" && block.mediaType === "image" && block.mediaId) {
-          mediaIds.add(block.mediaId);
-        }
-      }
-    }
-    for (const mediaId of mediaIds) {
-      if (!mediaInfoRequestedRef.current.has(mediaId)) {
-        mediaInfoRequestedRef.current.add(mediaId);
-        void resolveMediaInfo(mediaId, { isActive: () => active });
-      }
-    }
-    for (const mediaId of resolveIds) {
-      void resolveMediaAsset(mediaId, { isActive: () => active });
-    }
-
-    return () => {
-      active = false;
-    };
-  }, [overrideDocView, resolveMediaAsset, resolveMediaInfo, supabase]);
-
   useEffect(() => {
     return () => {
       if (blockToastTimerRef.current) {
@@ -1595,6 +1305,83 @@ export function ExerciseLiveDetail({
       });
     }, 80);
   };
+
+  const overrideMediaValue = useOverrideMediaUpload({
+    overrideDoc,
+    slug,
+    teacherPin,
+    updateSection,
+    updateOverrideDoc,
+    handleAuthError,
+    setActiveSectionId,
+    highlightBlock,
+    showBlockToast,
+    mediaInfoRequestedRef,
+  });
+  const {
+    heroPreviewUrl,
+    mediaStatus,
+    uploadTarget,
+    mediaUrlMap,
+    mediaInfoMap,
+    mediaResolveState,
+    mediaResolveError,
+    setHeroPreviewUrl,
+    setMediaStatus,
+    setUploadTarget,
+    setMediaUrlMap,
+    setMediaInfoMap,
+    setMediaResolveState,
+    setMediaResolveError,
+    fileInputRef,
+    handlePhotoUploadRequest,
+    handlePhotoFileChange,
+    handleClearPhoto,
+    handleHeroUrlChange,
+    handleHeroAltChange,
+    handleHeroPreview,
+    handleHeroRemove,
+    resolveMediaInfo,
+    resolveMediaAsset,
+  } = overrideMediaValue;
+
+  useEffect(() => {
+    if (!overrideDocView || !supabase) {
+      return;
+    }
+
+    let active = true;
+    const mediaIds = new Set<string>();
+    const resolveIds = new Set<string>();
+    for (const section of overrideDocView.sections) {
+      for (const block of section.blocks) {
+        if (
+          block.type === "media" &&
+          block.mediaType === "image" &&
+          block.mediaId &&
+          !block.url?.trim()
+        ) {
+          resolveIds.add(block.mediaId);
+        }
+        if (block.type === "media" && block.mediaType === "image" && block.mediaId) {
+          mediaIds.add(block.mediaId);
+        }
+      }
+    }
+    for (const mediaId of mediaIds) {
+      if (!mediaInfoRequestedRef.current.has(mediaId)) {
+        mediaInfoRequestedRef.current.add(mediaId);
+        void resolveMediaInfo(mediaId, { isActive: () => active });
+      }
+    }
+    for (const mediaId of resolveIds) {
+      void resolveMediaAsset(mediaId, { isActive: () => active });
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [overrideDocView, resolveMediaAsset, resolveMediaInfo, supabase]);
 
   const openPinModal = () => {
     if (teacherUnlocked) {
@@ -1794,183 +1581,6 @@ export function ExerciseLiveDetail({
     triggerRevalidate(slug);
   };
 
-  const handlePhotoUploadRequest = (sectionId: string, blockIndex?: number) => {
-    if (!teacherPin) {
-      handleAuthError(t("teacherMode.pinRequired"));
-      return;
-    }
-    setActiveSectionId(sectionId);
-    setUploadTarget({ sectionId, blockIndex });
-    fileInputRef.current?.click();
-  };
-
-  const handlePhotoFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = event.target.files?.[0] ?? null;
-    event.target.value = "";
-    if (!file || !uploadTarget) {
-      return;
-    }
-    if (!teacherPin) {
-      handleAuthError(t("teacherMode.pinRequired"));
-      return;
-    }
-    setMediaStatus(t("exerciseEditor.uploading"));
-    try {
-      if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
-        setMediaStatus(t("exerciseEditor.invalidFormat"));
-        return;
-      }
-
-      const sourceInfo = await loadImageSource(file);
-      const maxEdge = Math.max(sourceInfo.width, sourceInfo.height);
-      const needsProcessing =
-        file.size > MAX_UPLOAD_BYTES ||
-        maxEdge > IMAGE_MAX_EDGE ||
-        file.type !== "image/webp";
-
-      let uploadFile = file;
-      let targetWidth = sourceInfo.width;
-      let targetHeight = sourceInfo.height;
-
-      if (needsProcessing) {
-        const { blob, width, height } = await compressImageToWebp(sourceInfo);
-        const baseName = file.name ? file.name.replace(/\.[^/.]+$/, "") : "photo";
-        const uniqueName =
-          typeof crypto !== "undefined" && "randomUUID" in crypto
-            ? crypto.randomUUID()
-            : `photo-${Date.now()}`;
-        const fileName = `${baseName || "photo"}-${uniqueName}.webp`;
-        uploadFile = new File([blob], fileName, { type: "image/webp" });
-        targetWidth = width;
-        targetHeight = height;
-      } else {
-        sourceInfo.revoke?.();
-      }
-
-      if (uploadFile.size > MAX_UPLOAD_BYTES) {
-        setMediaStatus(t("exerciseEditor.imageTooLarge"));
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("file", uploadFile);
-      formData.append("slug", slug);
-      formData.append("pin", teacherPin);
-      formData.append("width", String(targetWidth));
-      formData.append("height", String(targetHeight));
-
-      const response = await fetch("/api/teacher/upload-media", {
-        method: "POST",
-        body: formData,
-      });
-      if (!response.ok) {
-        let serverMessage: string | undefined;
-        try {
-          const payload = (await response.json()) as { message?: string };
-          serverMessage = payload?.message;
-        } catch {
-          serverMessage = undefined;
-        }
-        const message = serverMessage?.trim()
-          ? serverMessage.trim()
-          : t("exerciseEditor.uploadFailed");
-        if (response.status === 401) {
-          handleAuthError(message);
-        }
-        setMediaStatus(`${message} (HTTP ${response.status})`);
-        return;
-      }
-      const data = (await response.json()) as {
-        ok?: boolean;
-        mediaId?: string;
-        url?: string;
-        bucket?: string;
-        path?: string;
-      };
-      if (!data.mediaId) {
-        setMediaStatus(t("exerciseEditor.invalidResponse"));
-        return;
-      }
-      if (data.url) {
-        mediaUrlCache.set(data.mediaId, data.url);
-        setMediaUrlMap((prev) => ({ ...prev, [data.mediaId!]: data.url! }));
-      }
-      let highlightKey: string | null = null;
-      updateSection(uploadTarget.sectionId, (section) => {
-        const blocks = [...section.blocks];
-        const nextBlock: ExerciseLiveMediaBlock = {
-          type: "media",
-          mediaType: "image",
-          mediaId: data.mediaId,
-          url: data.url,
-          caption: "",
-        };
-        if (uploadTarget.blockIndex !== undefined) {
-          blocks[uploadTarget.blockIndex] = nextBlock;
-          highlightKey = `${section.id}-${uploadTarget.blockIndex}`;
-        } else {
-          const nextIndex = blocks.length;
-          blocks.push(nextBlock);
-          highlightKey = `${section.id}-${nextIndex}`;
-        }
-        return { ...section, blocks };
-      });
-      if (highlightKey) {
-        highlightBlock(highlightKey);
-      }
-      showBlockToast(uploadTarget.sectionId);
-      setMediaStatus(t("exerciseEditor.photoAdded"));
-    } catch (error) {
-      const raw = error instanceof Error ? error.message : "";
-      const message =
-        raw === "Compression échouée." ? t("exerciseEditor.compressionFailed") :
-        raw === "Canvas indisponible." ? t("exerciseEditor.canvasUnavailable") :
-        raw === "Impossible de charger l'image." ? t("exerciseEditor.imageLoadFailed") :
-        raw || t("exerciseEditor.uploadFailed");
-      setMediaStatus(message);
-    } finally {
-      setUploadTarget(null);
-    }
-  };
-
-  const handleHeroUrlChange = (value: string) => {
-    updateOverrideDoc((doc) => ({
-      ...doc,
-      doc: {
-        ...doc.doc,
-        heroImage: { ...(doc.doc.heroImage ?? { url: "" }), url: value },
-      },
-    }));
-  };
-
-  const handleHeroAltChange = (value: string) => {
-    updateOverrideDoc((doc) => ({
-      ...doc,
-      doc: {
-        ...doc.doc,
-        heroImage: { ...(doc.doc.heroImage ?? { url: "" }), alt: value },
-      },
-    }));
-  };
-
-  const handleHeroPreview = () => {
-    const url = overrideDoc?.doc.heroImage?.url?.trim();
-    setHeroPreviewUrl(url && url.length > 0 ? url : null);
-  };
-
-  const handleHeroRemove = () => {
-    updateOverrideDoc((doc) => ({
-      ...doc,
-      doc: {
-        ...doc.doc,
-        heroImage: { url: "" },
-      },
-    }));
-    setHeroPreviewUrl(null);
-  };
-
   const handleAddSection = () => {
     const newSectionId = createSectionId();
     updateOverrideDoc((doc) => ({
@@ -2073,17 +1683,6 @@ export function ExerciseLiveDetail({
       return;
     }
     handleAddBlock(targetSectionId, kind);
-  };
-
-  const handleClearPhoto = (sectionId: string, blockIndex: number) => {
-    updateSection(sectionId, (section) => ({
-      ...section,
-      blocks: section.blocks.map((block, idx) =>
-        idx === blockIndex && block.type === "media" && block.mediaType === "image"
-          ? { ...block, mediaId: undefined, url: undefined, caption: "" }
-          : block,
-      ),
-    }));
   };
 
   const handleFocusSectionTitle = (sectionId: string) => {
@@ -2894,34 +2493,7 @@ export function ExerciseLiveDetail({
         }}
       >
         <OverrideDocProvider value={overrideDocValue}>
-          <OverrideMediaProvider
-            value={{
-              heroPreviewUrl,
-              mediaStatus,
-              uploadTarget,
-              mediaUrlMap,
-              mediaInfoMap,
-              mediaResolveState,
-              mediaResolveError,
-              setHeroPreviewUrl,
-              setMediaStatus,
-              setUploadTarget,
-              setMediaUrlMap,
-              setMediaInfoMap,
-              setMediaResolveState,
-              setMediaResolveError,
-              fileInputRef,
-              handlePhotoUploadRequest,
-              handlePhotoFileChange,
-              handleClearPhoto,
-              handleHeroUrlChange,
-              handleHeroAltChange,
-              handleHeroPreview,
-              handleHeroRemove,
-              resolveMediaInfo,
-              resolveMediaAsset,
-            }}
-          >
+          <OverrideMediaProvider value={overrideMediaValue}>
             <OverridePillsProvider
               value={{
                 pillDropdownOpen,
