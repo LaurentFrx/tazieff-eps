@@ -53,7 +53,21 @@ import {
 } from "./_teacher-editor/contexts";
 import { useOverrideSave } from "./_teacher-editor/hooks/useOverrideSave";
 import { useOverrideMediaUpload } from "./_teacher-editor/hooks/useOverrideMediaUpload";
+import { usePillDropdown } from "./_teacher-editor/hooks/usePillDropdown";
 import { mediaUrlCache } from "./_teacher-editor/lib/media-utils";
+import {
+  DROPDOWN_MAX_HEIGHT,
+  filterOptions,
+  getLevelDefaults,
+  getMuscleDefaults,
+  getThemeDefaults,
+  getTypeDefaults,
+  normalizeKey,
+  normalizeLabel,
+  optionExists,
+  sortLabels,
+  uniqueLabels,
+} from "./_teacher-editor/lib/pill-utils";
 
 function RevealStep({ delay, children }: { delay: number; children: React.ReactNode }) {
   const ref = useReveal(delay);
@@ -102,63 +116,9 @@ const POLL_INTERVAL_MS = 20000;
 const LONG_PRESS_MS = 1800;
 const MOVE_THRESHOLD_PX = 10;
 const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
-const DROPDOWN_MAX_HEIGHT = 288;
 const DROPDOWN_MENU_LAYER_CLASS = "z-[80]";
 const DROPDOWN_MENU_PANEL_CLASS =
   "rounded-2xl border border-white/10 bg-[color:var(--bg-2)] p-2 shadow-xl";
-function getLevelDefaults(t: (key: string) => string) {
-  return [
-    t("difficulty.debutant"),
-    t("difficulty.intermediaire"),
-    t("difficulty.avance"),
-  ];
-}
-
-function getTypeDefaults(t: (key: string) => string) {
-  return [
-    t("exerciseEditor.types.fondamentaux"),
-    t("exerciseEditor.types.technique"),
-    t("exerciseEditor.types.renforcement"),
-    t("exerciseEditor.types.gainage"),
-    t("exerciseEditor.types.mobilite"),
-    t("exerciseEditor.types.souplesse"),
-    t("exerciseEditor.types.pliometrie"),
-    t("exerciseEditor.types.enduranceDeForce"),
-    t("exerciseEditor.types.puissance"),
-    t("exerciseEditor.types.hypertrophie"),
-    t("exerciseEditor.types.echauffement"),
-    t("exerciseEditor.types.retourAuCalme"),
-  ];
-}
-
-function getMuscleDefaults(t: (key: string) => string) {
-  return [
-    t("exerciseEditor.muscleNames.abdominaux"),
-    t("exerciseEditor.muscleNames.transverse"),
-    t("exerciseEditor.muscleNames.obliques"),
-    t("exerciseEditor.muscleNames.dos"),
-    t("exerciseEditor.muscleNames.pectoraux"),
-    t("exerciseEditor.muscleNames.epaules"),
-    t("exerciseEditor.muscleNames.biceps"),
-    t("exerciseEditor.muscleNames.triceps"),
-    t("exerciseEditor.muscleNames.fessiers"),
-    t("exerciseEditor.muscleNames.quadriceps"),
-    t("exerciseEditor.muscleNames.ischiojambiers"),
-    t("exerciseEditor.muscleNames.mollets"),
-    t("exerciseEditor.muscleNames.lombaires"),
-  ];
-}
-
-function getThemeDefaults(t: (key: string) => string) {
-  return [
-    "AFL1",
-    "AFL2",
-    "AFL3",
-    t("exerciseEditor.themeTags.securite"),
-    t("exerciseEditor.themeTags.methode"),
-    t("exerciseEditor.themeTags.technique"),
-  ];
-}
 const DEFAULT_TEACHER_MODE: TeacherModeSnapshot = { unlocked: false, pin: "" };
 
 function getTeacherModeSnapshot(): TeacherModeSnapshot {
@@ -236,36 +196,6 @@ function createBlock(type: "markdown" | "bullets" | "media") {
   return createMarkdownBlock();
 }
 
-function normalizeLabel(value: string) {
-  return value.trim();
-}
-
-function normalizeKey(value: string) {
-  return value.trim().toLowerCase();
-}
-
-function uniqueLabels(values: string[]) {
-  const seen = new Set<string>();
-  const result: string[] = [];
-  for (const value of values) {
-    const normalized = normalizeLabel(value);
-    if (!normalized) {
-      continue;
-    }
-    const key = normalizeKey(normalized);
-    if (seen.has(key)) {
-      continue;
-    }
-    seen.add(key);
-    result.push(normalized);
-  }
-  return result;
-}
-
-function sortLabels(values: string[]) {
-  return [...values].sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
-}
-
 type MediaInfo = {
   mime?: string | null;
   size?: number | null;
@@ -319,21 +249,6 @@ function formatMediaInfo(info?: MediaInfo | null) {
   return parts.length > 0 ? parts.join(" · ") : null;
 }
 
-function filterOptions(options: string[], query: string) {
-  const key = normalizeKey(query);
-  if (!key) {
-    return options;
-  }
-  return options.filter((option) => normalizeKey(option).includes(key));
-}
-
-function optionExists(options: string[], value: string) {
-  const key = normalizeKey(value);
-  if (!key) {
-    return false;
-  }
-  return options.some((option) => normalizeKey(option) === key);
-}
 
 type PhotoPreviewProps = {
   previewUrl: string | null;
@@ -558,28 +473,12 @@ export function ExerciseLiveDetail({
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   const [sectionMenuOpenId, setSectionMenuOpenId] = useState<string | null>(null);
   const [blockMenuOpenKey, setBlockMenuOpenKey] = useState<string | null>(null);
-  const [pillDropdownOpen, setPillDropdownOpen] = useState<
-    null | "type" | "muscles" | "themes"
-  >(null);
-  const [pillSearch, setPillSearch] = useState({
-    type: "",
-    muscles: "",
-    themes: "",
-  });
   const [pillCustomOptions, setPillCustomOptions] = useState({
     level: [] as string[],
     type: [] as string[],
     muscles: [] as string[],
     themes: [] as string[],
   });
-  const [levelAddOpen, setLevelAddOpen] = useState(false);
-  const [levelAddValue, setLevelAddValue] = useState("");
-  const [pillDropdownStyle, setPillDropdownStyle] = useState<{
-    top: number;
-    left: number;
-    width: number;
-    placement: "top" | "bottom";
-  } | null>(null);
   const [addBlockMenuOpen, setAddBlockMenuOpen] = useState(false);
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
   const [highlightBlockKey, setHighlightBlockKey] = useState<string | null>(null);
@@ -603,15 +502,7 @@ export function ExerciseLiveDetail({
   const blockContainerRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const addBlockMenuRef = useRef<HTMLDivElement | null>(null);
   const addBlockButtonRef = useRef<HTMLButtonElement | null>(null);
-  const dropdownMenuRef = useRef<HTMLDivElement | null>(null);
   const autoEditHandledRef = useRef(false);
-  const dropdownTriggerRefs = useRef<
-    Record<"type" | "muscles" | "themes", HTMLButtonElement | null>
-  >({
-    type: null,
-    muscles: null,
-    themes: null,
-  });
   const mediaInfoRequestedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -1192,51 +1083,6 @@ export function ExerciseLiveDetail({
   }, []);
 
   useEffect(() => {
-    if (!pillDropdownOpen) {
-      return;
-    }
-
-    updateDropdownPosition(pillDropdownOpen);
-
-    const handleClick = (event: MouseEvent) => {
-      const target = event.target as Node | null;
-      const menu = dropdownMenuRef.current;
-      const trigger = dropdownTriggerRefs.current[pillDropdownOpen];
-      if (menu && target && menu.contains(target)) {
-        return;
-      }
-      if (trigger && target && trigger.contains(target)) {
-        return;
-      }
-      setPillDropdownOpen(null);
-      setPillDropdownStyle(null);
-    };
-
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setPillDropdownOpen(null);
-        setPillDropdownStyle(null);
-      }
-    };
-
-    const handleReposition = () => {
-      updateDropdownPosition(pillDropdownOpen);
-    };
-
-    document.addEventListener("mousedown", handleClick);
-    document.addEventListener("keydown", handleKey);
-    window.addEventListener("resize", handleReposition);
-    window.addEventListener("scroll", handleReposition, true);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClick);
-      document.removeEventListener("keydown", handleKey);
-      window.removeEventListener("resize", handleReposition);
-      window.removeEventListener("scroll", handleReposition, true);
-    };
-  }, [pillDropdownOpen]);
-
-  useEffect(() => {
     if (!addBlockMenuOpen) {
       return;
     }
@@ -1266,29 +1112,6 @@ export function ExerciseLiveDetail({
       document.removeEventListener("keydown", handleKey);
     };
   }, [addBlockMenuOpen]);
-
-  const updateDropdownPosition = (category: "type" | "muscles" | "themes") => {
-    const trigger = dropdownTriggerRefs.current[category];
-    if (!trigger) {
-      return;
-    }
-    const rect = trigger.getBoundingClientRect();
-    const padding = 8;
-    const spaceBelow = window.innerHeight - rect.bottom;
-    const spaceAbove = rect.top;
-    let placement: "top" | "bottom" = "bottom";
-    let top = rect.bottom + window.scrollY + 6;
-    if (spaceBelow < DROPDOWN_MAX_HEIGHT && spaceAbove > DROPDOWN_MAX_HEIGHT) {
-      placement = "top";
-      top = rect.top + window.scrollY - DROPDOWN_MAX_HEIGHT - 6;
-    }
-    setPillDropdownStyle({
-      top: Math.max(padding + window.scrollY, top),
-      left: rect.left + window.scrollX,
-      width: rect.width,
-      placement,
-    });
-  };
 
   const highlightBlock = (blockKey: string) => {
     setHighlightBlockKey(blockKey);
@@ -1382,6 +1205,34 @@ export function ExerciseLiveDetail({
       active = false;
     };
   }, [overrideDocView, resolveMediaAsset, resolveMediaInfo, supabase]);
+
+  const overridePillsValue = usePillDropdown({
+    pillState,
+    pillCustomOptions,
+    setPillCustomOptions,
+    updateOverrideDoc,
+  });
+  const {
+    pillDropdownOpen,
+    pillSearch,
+    pillDropdownStyle,
+    levelAddOpen,
+    levelAddValue,
+    setPillDropdownOpen,
+    setPillSearch,
+    setPillDropdownStyle,
+    setLevelAddOpen,
+    setLevelAddValue,
+    dropdownMenuRef,
+    dropdownTriggerRefs,
+    updatePillSelections,
+    setLevelSelection,
+    addCustomLevel,
+    toggleMultiSelection,
+    addCustomOption,
+    toggleDropdown,
+    updateDropdownPosition,
+  } = overridePillsValue;
 
   const openPinModal = () => {
     if (teacherUnlocked) {
@@ -1701,116 +1552,6 @@ export function ExerciseLiveDetail({
         field.select();
       }
     }
-  };
-
-  const updatePillSelections = (next: {
-    level: string;
-    type: string[];
-    muscles: string[];
-    themes: string[];
-  }) => {
-    updateOverrideDoc((doc) => {
-      const existing = doc.doc.pills ?? [];
-      const kindMap = new Map<string, string | undefined>(
-        existing.map((pill) => [normalizeKey(pill.label), pill.kind]),
-      );
-      const buildPills = (labels: string[], fallbackKind: string) =>
-        labels.map((label) => {
-          const cleanLabel = normalizeLabel(label);
-          const key = normalizeKey(cleanLabel);
-          const kind = kindMap.get(key) ?? fallbackKind;
-          return kind ? { label: cleanLabel, kind } : { label: cleanLabel };
-        });
-
-      const nextPills = [
-        ...(next.level ? buildPills([next.level], "level") : []),
-        ...buildPills(uniqueLabels(next.type), "type"),
-        ...buildPills(uniqueLabels(next.muscles), "muscle"),
-        ...buildPills(uniqueLabels(next.themes), "theme"),
-      ];
-
-      return {
-        ...doc,
-        doc: {
-          ...doc.doc,
-          pills: nextPills,
-        },
-      };
-    });
-  };
-
-  const setLevelSelection = (value: string) => {
-    const clean = normalizeLabel(value);
-    updatePillSelections({
-      ...pillState.selections,
-      level: clean,
-    });
-  };
-
-  const addCustomLevel = () => {
-    const term = normalizeLabel(levelAddValue);
-    if (!term) {
-      return;
-    }
-    setPillCustomOptions((prev) => ({
-      ...prev,
-      level: uniqueLabels([...prev.level, term]),
-    }));
-    setLevelSelection(term);
-    setLevelAddValue("");
-    setLevelAddOpen(false);
-  };
-
-  const toggleMultiSelection = (
-    category: "type" | "muscles" | "themes",
-    value: string,
-  ) => {
-    const clean = normalizeLabel(value);
-    if (!clean) {
-      return;
-    }
-    const current = pillState.selections[category];
-    const exists = current.some(
-      (item) => normalizeKey(item) === normalizeKey(clean),
-    );
-    const nextValues = exists
-      ? current.filter((item) => normalizeKey(item) !== normalizeKey(clean))
-      : [...current, clean];
-    updatePillSelections({
-      ...pillState.selections,
-      [category]: nextValues,
-    });
-  };
-
-  const addCustomOption = (category: "type" | "muscles" | "themes") => {
-    const term = normalizeLabel(pillSearch[category]);
-    if (!term) {
-      return;
-    }
-    setPillCustomOptions((prev) => ({
-      ...prev,
-      [category]: uniqueLabels([...prev[category], term]),
-    }));
-    setPillSearch((prev) => ({ ...prev, [category]: "" }));
-    const current = pillState.selections[category];
-    if (!current.some((item) => normalizeKey(item) === normalizeKey(term))) {
-      updatePillSelections({
-        ...pillState.selections,
-        [category]: [...current, term],
-      });
-    }
-  };
-
-  const toggleDropdown = (category: "type" | "muscles" | "themes") => {
-    setPillDropdownOpen((open) => {
-      const next = open === category ? null : category;
-      if (next) {
-        requestAnimationFrame(() => updateDropdownPosition(next));
-      } else {
-        setPillDropdownStyle(null);
-      }
-      return next;
-    });
   };
 
   const filteredTypeOptions = filterOptions(pillState.options.type, pillSearch.type);
@@ -2494,32 +2235,7 @@ export function ExerciseLiveDetail({
       >
         <OverrideDocProvider value={overrideDocValue}>
           <OverrideMediaProvider value={overrideMediaValue}>
-            <OverridePillsProvider
-              value={{
-                pillDropdownOpen,
-                pillSearch,
-                pillCustomOptions,
-                pillDropdownStyle,
-                levelAddOpen,
-                levelAddValue,
-                setPillDropdownOpen,
-                setPillSearch,
-                setPillCustomOptions,
-                setPillDropdownStyle,
-                setLevelAddOpen,
-                setLevelAddValue,
-                dropdownMenuRef,
-                dropdownTriggerRefs,
-                pillState,
-                updatePillSelections,
-                setLevelSelection,
-                addCustomLevel,
-                toggleMultiSelection,
-                addCustomOption,
-                toggleDropdown,
-                updateDropdownPosition,
-              }}
-            >
+            <OverridePillsProvider value={overridePillsValue}>
       {overrideOpen ? (
         <>
           <div className="modal-overlay" role="dialog" aria-modal="true">
