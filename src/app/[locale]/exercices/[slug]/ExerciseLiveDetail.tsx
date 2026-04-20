@@ -634,15 +634,6 @@ export function ExerciseLiveDetail({
     setBlockToastVisible,
   } = overrideUIHookValue;
 
-  // activeSection depends on activeSectionId (destructured from useOverrideUI above).
-  // Keeping this declaration after the destructuring avoids a TDZ ReferenceError
-  // ("Cannot access 'activeSectionId' before initialization") in minified prod builds.
-  const activeSection =
-    overrideDoc?.doc.sections.find((section) => section.id === activeSectionId) ??
-    (overrideDoc
-      ? overrideDoc.doc.sections[overrideDoc.doc.sections.length - 1] ?? null
-      : null);
-
   useEffect(() => {
     if (!supabase) {
       return;
