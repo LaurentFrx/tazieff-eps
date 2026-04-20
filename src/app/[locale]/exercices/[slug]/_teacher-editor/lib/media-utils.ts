@@ -10,8 +10,62 @@ export const ALLOWED_IMAGE_TYPES = new Set([
 ]);
 export const IMAGE_MAX_EDGE = 1600;
 export const IMAGE_QUALITY = 0.82;
+// Phase B.2 additions: moved from parent to allow <TeacherOverrideEditor/> import.
+export const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
+export const HERO_OVERRIDE_DIMENSIONS = { width: 1600, height: 900 };
 
 export const mediaUrlCache = new Map<string, string>();
+
+type MediaInfoLite = {
+  mime?: string | null;
+  size?: number | null;
+  width?: number | null;
+  height?: number | null;
+};
+
+export function appendCacheBust(url: string, token: number) {
+  if (!token) {
+    return url;
+  }
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}retry=${token}`;
+}
+
+export function formatBytes(bytes?: number | null) {
+  if (typeof bytes !== "number" || !Number.isFinite(bytes) || bytes <= 0) {
+    return null;
+  }
+  const kb = bytes / 1024;
+  if (kb < 1024) {
+    return `${Math.round(kb)} Ko`;
+  }
+  const mb = kb / 1024;
+  const formatted = mb.toFixed(mb >= 10 ? 0 : 1).replace(".", ",");
+  return `${formatted} Mo`;
+}
+
+export function formatMediaInfo(info?: MediaInfoLite | null) {
+  if (!info) {
+    return null;
+  }
+  const parts: string[] = [];
+  if (info.mime) {
+    const format = info.mime.split("/").pop()?.trim();
+    if (format) {
+      parts.push(format.toUpperCase());
+    }
+  }
+  const width = typeof info.width === "number" ? info.width : null;
+  const height = typeof info.height === "number" ? info.height : null;
+  if (width && height) {
+    parts.push(`${width}×${height}`);
+  }
+  const size = formatBytes(info.size ?? null);
+  if (size) {
+    parts.push(size);
+  }
+  return parts.length > 0 ? parts.join(" · ") : null;
+}
 
 export type ImageSourceInfo = {
   source: CanvasImageSource;
