@@ -59,6 +59,11 @@ export type OverrideUIContextValue = {
   dismissBlockToast: () => void;
   resolveSectionTitle: (sectionId: string) => string;
   resolveTargetSectionId: () => string | null;
+
+  // Block toast state — added in Phase B.2 so <TeacherOverrideEditor/> can
+  // render the toast UI from inside the lazy-loaded child.
+  blockToast: { id: number; message: string } | null;
+  blockToastVisible: boolean;
 };
 
 const OverrideUIContext = createContext<OverrideUIContextValue | null>(null);
