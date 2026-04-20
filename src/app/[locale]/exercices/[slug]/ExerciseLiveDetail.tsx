@@ -53,6 +53,7 @@ import {
 } from "./_teacher-editor/contexts";
 import { useOverrideSave } from "./_teacher-editor/hooks/useOverrideSave";
 import { useOverrideMediaUpload } from "./_teacher-editor/hooks/useOverrideMediaUpload";
+import { useOverrideUI } from "./_teacher-editor/hooks/useOverrideUI";
 import { usePillDropdown } from "./_teacher-editor/hooks/usePillDropdown";
 import { mediaUrlCache } from "./_teacher-editor/lib/media-utils";
 import {
@@ -68,6 +69,12 @@ import {
   sortLabels,
   uniqueLabels,
 } from "./_teacher-editor/lib/pill-utils";
+import {
+  createBlock,
+  createMarkdownBlock,
+  createSectionId,
+  moveItem,
+} from "./_teacher-editor/lib/ui-utils";
 
 function RevealStep({ delay, children }: { delay: number; children: React.ReactNode }) {
   const ref = useReveal(delay);
@@ -156,45 +163,6 @@ function parseThemeCompatibility(value: string) {
 }
 
 const HERO_OVERRIDE_DIMENSIONS = { width: 1600, height: 900 };
-
-function createSectionId() {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-  return `section-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
-function moveItem<T>(items: T[], from: number, to: number) {
-  if (from < 0 || from >= items.length || to < 0 || to >= items.length) {
-    return items;
-  }
-  const next = [...items];
-  const [item] = next.splice(from, 1);
-  next.splice(to, 0, item);
-  return next;
-}
-
-function createMarkdownBlock(content = ""): ExerciseLiveMarkdownBlock {
-  return { type: "markdown", content };
-}
-
-function createBulletsBlock(items: string[] = [""]): ExerciseLiveBulletsBlock {
-  return { type: "bullets", items };
-}
-
-function createMediaBlock(): ExerciseLiveMediaBlock {
-  return { type: "media", mediaType: "link", url: "", caption: "" };
-}
-
-function createBlock(type: "markdown" | "bullets" | "media") {
-  if (type === "bullets") {
-    return createBulletsBlock();
-  }
-  if (type === "media") {
-    return createMediaBlock();
-  }
-  return createMarkdownBlock();
-}
 
 type MediaInfo = {
   mime?: string | null;
@@ -470,38 +438,19 @@ export function ExerciseLiveDetail({
   const [teacherPin, setTeacherPin] = useState(() => getTeacherModeSnapshot().pin);
   const [teacherError, setTeacherError] = useState<string | null>(null);
   const [overrideDoc, setOverrideDoc] = useState<ExerciseLiveDocV2 | null>(null);
-  const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
-  const [sectionMenuOpenId, setSectionMenuOpenId] = useState<string | null>(null);
-  const [blockMenuOpenKey, setBlockMenuOpenKey] = useState<string | null>(null);
   const [pillCustomOptions, setPillCustomOptions] = useState({
     level: [] as string[],
     type: [] as string[],
     muscles: [] as string[],
     themes: [] as string[],
   });
-  const [addBlockMenuOpen, setAddBlockMenuOpen] = useState(false);
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
-  const [highlightBlockKey, setHighlightBlockKey] = useState<string | null>(null);
   const [liveOpen, setLiveOpen] = useState(false);
   const [liveExists, setLiveExists] = useState(false);
   const [liveDraft, setLiveDraft] = useState<LiveDraft | null>(null);
-  const [deleteLiveOpen, setDeleteLiveOpen] = useState(false);
-  const [isDeletingLive, setIsDeletingLive] = useState(false);
-  const [blockToast, setBlockToast] = useState<{ id: number; message: string } | null>(
-    null,
-  );
-  const [blockToastVisible, setBlockToastVisible] = useState(false);
   const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pressStartRef = useRef<{ x: number; y: number } | null>(null);
   const touchPointerActiveRef = useRef(false);
-  const blockToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const blockToastHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const sectionTitleRefs = useRef<Record<string, HTMLInputElement | null>>({});
-  const blockFieldRefs = useRef<Record<string, HTMLInputElement | HTMLTextAreaElement | null>>({});
-  const blockContainerRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const addBlockMenuRef = useRef<HTMLDivElement | null>(null);
-  const addBlockButtonRef = useRef<HTMLButtonElement | null>(null);
   const autoEditHandledRef = useRef(false);
   const mediaInfoRequestedRef = useRef<Set<string>>(new Set());
 
@@ -785,6 +734,61 @@ export function ExerciseLiveDetail({
     showOverrideToast,
   } = overrideDocValue;
 
+  const overrideUIHookValue = useOverrideUI({
+    overrideDoc,
+    updateOverrideDoc,
+    updateSection,
+    showOverrideToast,
+    handleAuthError,
+    liveExists,
+    setLiveExists,
+    confirmCloseOpen,
+    setConfirmCloseOpen,
+    slug,
+    locale,
+    triggerRevalidate,
+    teacherPin,
+    setTeacherPin,
+  });
+  const {
+    activeSectionId,
+    sectionMenuOpenId,
+    blockMenuOpenKey,
+    highlightBlockKey,
+    addBlockMenuOpen,
+    deleteLiveOpen,
+    isDeletingLive,
+    setActiveSectionId,
+    setSectionMenuOpenId,
+    setBlockMenuOpenKey,
+    setHighlightBlockKey,
+    setAddBlockMenuOpen,
+    setDeleteLiveOpen,
+    setIsDeletingLive,
+    sectionTitleRefs,
+    blockFieldRefs,
+    blockContainerRefs,
+    highlightTimerRef,
+    addBlockMenuRef,
+    addBlockButtonRef,
+    handleAddSection,
+    handleMoveSection,
+    handleRemoveSection,
+    handleAddBlock,
+    handleMoveBlock,
+    handleRemoveBlock,
+    handleDeleteLive,
+    showBlockToast,
+    dismissBlockToast,
+    resolveSectionTitle,
+    resolveTargetSectionId,
+    highlightBlock,
+    blockToast,
+    blockToastVisible,
+    setBlockToast,
+    setBlockToastVisible,
+  } = overrideUIHookValue;
+
   useEffect(() => {
     if (!supabase) {
       return;
@@ -1019,115 +1023,6 @@ export function ExerciseLiveDetail({
       document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [locale, liveReady, overrideReady, slug, source, supabase]);
-
-  useEffect(() => {
-    return () => {
-      if (blockToastTimerRef.current) {
-        clearTimeout(blockToastTimerRef.current);
-      }
-      if (blockToastHideTimerRef.current) {
-        clearTimeout(blockToastHideTimerRef.current);
-      }
-      if (highlightTimerRef.current) {
-        clearTimeout(highlightTimerRef.current);
-      }
-    };
-  }, []);
-
-  const resolveSectionTitle = useCallback(
-    (sectionId: string) => {
-      const section = overrideDoc?.doc.sections.find(
-        (item) => item.id === sectionId,
-      );
-      const label = section?.title?.trim();
-      return label && label.length > 0 ? label : t("exerciseEditor.untitledSection");
-    },
-    [overrideDoc],
-  );
-
-  const showBlockToast = useCallback(
-    (sectionId: string) => {
-      if (blockToastTimerRef.current) {
-        clearTimeout(blockToastTimerRef.current);
-      }
-      if (blockToastHideTimerRef.current) {
-        clearTimeout(blockToastHideTimerRef.current);
-      }
-      const message = `${t("exerciseEditor.blockAddedIn")} « ${resolveSectionTitle(sectionId)} »`;
-      setBlockToast({ id: Date.now(), message });
-      setBlockToastVisible(false);
-      requestAnimationFrame(() => {
-        setBlockToastVisible(true);
-      });
-      blockToastTimerRef.current = setTimeout(() => {
-        setBlockToastVisible(false);
-        blockToastHideTimerRef.current = setTimeout(() => {
-          setBlockToast(null);
-        }, 200);
-      }, 2200);
-    },
-    [resolveSectionTitle],
-  );
-
-  const dismissBlockToast = useCallback(() => {
-    if (blockToastTimerRef.current) {
-      clearTimeout(blockToastTimerRef.current);
-    }
-    if (blockToastHideTimerRef.current) {
-      clearTimeout(blockToastHideTimerRef.current);
-    }
-    setBlockToastVisible(false);
-    blockToastHideTimerRef.current = setTimeout(() => {
-      setBlockToast(null);
-    }, 200);
-  }, []);
-
-  useEffect(() => {
-    if (!addBlockMenuOpen) {
-      return;
-    }
-
-    const handleClick = (event: MouseEvent) => {
-      const target = event.target as Node | null;
-      if (addBlockMenuRef.current && target && addBlockMenuRef.current.contains(target)) {
-        return;
-      }
-      if (addBlockButtonRef.current && target && addBlockButtonRef.current.contains(target)) {
-        return;
-      }
-      setAddBlockMenuOpen(false);
-    };
-
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setAddBlockMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClick);
-    document.addEventListener("keydown", handleKey);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClick);
-      document.removeEventListener("keydown", handleKey);
-    };
-  }, [addBlockMenuOpen]);
-
-  const highlightBlock = (blockKey: string) => {
-    setHighlightBlockKey(blockKey);
-    if (highlightTimerRef.current) {
-      clearTimeout(highlightTimerRef.current);
-    }
-    highlightTimerRef.current = setTimeout(() => {
-      setHighlightBlockKey(null);
-    }, 2000);
-    setTimeout(() => {
-      blockContainerRefs.current[blockKey]?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    }, 80);
-  };
 
   const overrideMediaValue = useOverrideMediaUpload({
     overrideDoc,
@@ -1381,144 +1276,6 @@ export function ExerciseLiveDetail({
     setLiveExists(true);
     setLiveOpen(false);
     triggerRevalidate(slugValue);
-  };
-
-  const handleDeleteLive = async () => {
-    if (!teacherPin) {
-      handleAuthError(t("teacherMode.pinRequired"));
-      return;
-    }
-    setIsDeletingLive(true);
-    let response: Response;
-    try {
-      response = await fetch(
-        `/api/teacher/live-exercise?slug=${encodeURIComponent(slug)}&locale=${encodeURIComponent(locale)}`,
-        {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pin: teacherPin }),
-        },
-      );
-    } catch {
-      setIsDeletingLive(false);
-      showOverrideToast(t("exerciseEditor.deleteFailed"), "error");
-      return;
-    }
-
-    let payload: { ok?: boolean; code?: string; message?: string } | null = null;
-    try {
-      payload = (await response.json()) as {
-        ok?: boolean;
-        code?: string;
-        message?: string;
-      };
-    } catch {
-      payload = null;
-    }
-
-    if (!response.ok || !payload?.ok) {
-      if (response.status === 401) {
-        handleAuthError(t("teacherMode.pinInvalid"));
-      }
-      showOverrideToast(payload?.message ?? t("exerciseEditor.deleteFailed"), "error");
-      setIsDeletingLive(false);
-      return;
-    }
-
-    setLiveExists(false);
-    setDeleteLiveOpen(false);
-    showOverrideToast(t("exerciseEditor.versionDeleted"), "success");
-    setIsDeletingLive(false);
-    triggerRevalidate(slug);
-  };
-
-  const handleAddSection = () => {
-    const newSectionId = createSectionId();
-    updateOverrideDoc((doc) => ({
-      ...doc,
-      doc: {
-        ...doc.doc,
-        sections: [
-          ...doc.doc.sections,
-          {
-            id: newSectionId,
-            title: t("exerciseEditor.newSection"),
-            blocks: [createMarkdownBlock("")],
-          },
-        ],
-      },
-    }));
-    setActiveSectionId(newSectionId);
-  };
-
-  const handleMoveSection = (sectionId: string, direction: number) => {
-    updateOverrideDoc((doc) => {
-      const index = doc.doc.sections.findIndex((section) => section.id === sectionId);
-      if (index === -1) {
-        return doc;
-      }
-      return {
-        ...doc,
-        doc: {
-          ...doc.doc,
-          sections: moveItem(doc.doc.sections, index, index + direction),
-        },
-      };
-    });
-  };
-
-  const handleRemoveSection = (sectionId: string) => {
-    updateOverrideDoc((doc) => ({
-      ...doc,
-      doc: {
-        ...doc.doc,
-        sections: doc.doc.sections.filter((section) => section.id !== sectionId),
-      },
-    }));
-  };
-
-  const handleAddBlock = (sectionId: string, type: "markdown" | "bullets" | "media") => {
-    let nextIndex = -1;
-    updateSection(sectionId, (section) => {
-      nextIndex = section.blocks.length;
-      return {
-        ...section,
-        blocks: [...section.blocks, createBlock(type)],
-      };
-    });
-    if (nextIndex >= 0) {
-      highlightBlock(`${sectionId}-${nextIndex}`);
-      showBlockToast(sectionId);
-    }
-  };
-
-  const handleMoveBlock = (sectionId: string, blockIndex: number, direction: number) => {
-    updateSection(sectionId, (section) => ({
-      ...section,
-      blocks: moveItem(section.blocks, blockIndex, blockIndex + direction),
-    }));
-  };
-
-  const handleRemoveBlock = (sectionId: string, blockIndex: number) => {
-    updateSection(sectionId, (section) => ({
-      ...section,
-      blocks: section.blocks.filter((_, idx) => idx !== blockIndex),
-    }));
-  };
-
-  const resolveTargetSectionId = () => {
-    if (!overrideDoc) {
-      return null;
-    }
-    if (activeSectionId) {
-      const exists = overrideDoc.doc.sections.some(
-        (section) => section.id === activeSectionId,
-      );
-      if (exists) {
-        return activeSectionId;
-      }
-    }
-    return overrideDoc.doc.sections[overrideDoc.doc.sections.length - 1]?.id ?? null;
   };
 
   const handleAddFromMenu = (kind: "markdown" | "bullets" | "media" | "photo") => {
@@ -2192,46 +1949,7 @@ export function ExerciseLiveDetail({
       ) : null}
 
       <OverrideUIProvider
-        value={{
-          activeSectionId,
-          sectionMenuOpenId,
-          blockMenuOpenKey,
-          highlightBlockKey,
-          addBlockMenuOpen,
-          confirmCloseOpen,
-          deleteLiveOpen,
-          isDeletingLive,
-          liveExists,
-          teacherPin,
-          setActiveSectionId,
-          setSectionMenuOpenId,
-          setBlockMenuOpenKey,
-          setHighlightBlockKey,
-          setAddBlockMenuOpen,
-          setConfirmCloseOpen,
-          setDeleteLiveOpen,
-          setIsDeletingLive,
-          setLiveExists,
-          setTeacherPin,
-          sectionTitleRefs,
-          blockFieldRefs,
-          blockContainerRefs,
-          highlightTimerRef,
-          addBlockMenuRef,
-          addBlockButtonRef,
-          handleAddSection,
-          handleMoveSection,
-          handleRemoveSection,
-          handleAddBlock,
-          handleMoveBlock,
-          handleRemoveBlock,
-          handleAddFromMenu,
-          handleDeleteLive,
-          showBlockToast,
-          dismissBlockToast,
-          resolveSectionTitle,
-          resolveTargetSectionId,
-        }}
+        value={{ ...overrideUIHookValue, handleAddFromMenu }}
       >
         <OverrideDocProvider value={overrideDocValue}>
           <OverrideMediaProvider value={overrideMediaValue}>
