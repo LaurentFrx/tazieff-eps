@@ -53,5 +53,8 @@ src/lib/search/search-index.ts
 docs/pdfs/Muscu'Tazieff 2.pdf
 .aider*
 
+# local screenshots (hors repo)
+screenshots/
+
 # claude code cli (worktrees, local state)
 .claude/
