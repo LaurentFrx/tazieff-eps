@@ -59,6 +59,9 @@ screenshots/
 # dev-only credentials (seed script E.2.1 — jamais commit)
 supabase/seeds/dev-credentials.json
 
+# supabase CLI working dir (cache local, non versionné)
+supabase/.temp/
+
 # claude code cli (worktrees, local state — skills partagées trackées)
 .claude/*
 !.claude/skills/
