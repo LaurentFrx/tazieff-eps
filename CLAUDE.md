@@ -6,6 +6,20 @@
 
 ---
 
+## 0. RÈGLES DE SESSION
+
+Ces règles sont PRIORITAIRES et s'appliquent avant tout le reste.
+
+- **Répertoire de travail** : exclusivement `/home/laurent/tazieff-eps`. Ne jamais opérer ailleurs.
+- **Aucune commande d'initialisation au démarrage** : pas de `git pull`, pas de `git status`, pas de `npm test` au lancement de session. Les directives de la section 12 ne s'appliquent PAS tant que l'utilisateur ne le demande pas.
+- **Attendre les instructions explicites** : ne rien entreprendre de façon proactive. Attendre que Laurent demande une action précise avant d'agir.
+- **Tests cassés pour raison externe** : si un test échoue à cause d'un fichier gitignored manquant (ou autre cause externe au code), le signaler à Laurent, mais NE PAS corriger sans demande explicite.
+- **Branche dev** : `redesign` → déployée sur `design.muscu-eps.fr`
+- **Branche prod** : `main` → déployée sur `tazieff-eps.vercel.app`
+- **Alignement obligatoire** : `main` et `redesign` doivent rester alignées. Toute divergence doit être résolue rapidement.
+
+---
+
 ## 1. Identité du projet
 
 **Tazieff EPS** est la seule PWA pédagogique moderne dédiée à la musculation en EPS au lycée en France.
