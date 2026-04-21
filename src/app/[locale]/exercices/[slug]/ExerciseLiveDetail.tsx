@@ -57,6 +57,7 @@ import {
   OverrideUIProvider,
 } from "./_teacher-editor/contexts";
 import { useOverrideSave } from "./_teacher-editor/hooks/useOverrideSave";
+import InlineTitleEditor from "./_teacher-editor/InlineTitleEditor";
 import { useOverrideMediaUpload } from "./_teacher-editor/hooks/useOverrideMediaUpload";
 import { useOverrideUI } from "./_teacher-editor/hooks/useOverrideUI";
 import { usePillDropdown } from "./_teacher-editor/hooks/usePillDropdown";
@@ -288,6 +289,10 @@ export function ExerciseLiveDetail({
   const [teacherPin, setTeacherPin] = useState(() => getTeacherModeSnapshot().pin);
   const [teacherError, setTeacherError] = useState<string | null>(null);
   const [overrideDoc, setOverrideDoc] = useState<ExerciseLiveDocV2 | null>(null);
+  // Phase E.1 — override local du titre (édition inline). Prend le pas sur
+  // merged.frontmatter.title tant qu'il est non null, pour refléter immédiatement
+  // la valeur saisie par l'enseignant (la persistance se fait via handleSaveOverride).
+  const [titleOverride, setTitleOverride] = useState<string | null>(null);
   const [pillCustomOptions, setPillCustomOptions] = useState({
     level: [] as string[],
     type: [] as string[],
@@ -333,7 +338,9 @@ export function ExerciseLiveDetail({
 
   const difficulty = merged.frontmatter.level ?? "intermediaire";
   const displayTitle =
-    merged.frontmatter.title?.trim() || t("exerciseGrid.untitledDraft");
+    titleOverride?.trim() ||
+    merged.frontmatter.title?.trim() ||
+    t("exerciseGrid.untitledDraft");
 
   // Hero media resolution: video (.webm/.mp4) > override image > default image
   const exerciseSlug = merged.frontmatter.slug;
@@ -578,6 +585,25 @@ export function ExerciseLiveDetail({
     updateSection,
     showOverrideToast,
   } = overrideDocValue;
+
+  // Phase E.1 — sauvegarde déclenchée par l'éditeur inline du titre.
+  // Ne duplique pas la logique : met à jour l'override local (UI immédiate)
+  // puis délègue à handleSaveOverride, qui est la fonction de sauvegarde
+  // exposée par useOverrideSave. En cas d'échec, l'override est rollback
+  // pour remettre l'ancien titre en place.
+  const handleInlineTitleSave = useCallback(
+    async (newTitle: string) => {
+      const previous = titleOverride;
+      setTitleOverride(newTitle);
+      try {
+        await handleSaveOverride();
+      } catch (err) {
+        setTitleOverride(previous);
+        throw err;
+      }
+    },
+    [titleOverride, handleSaveOverride],
+  );
 
   const overrideUIHookValue = useOverrideUI({
     overrideDoc,
@@ -1436,7 +1462,17 @@ export function ExerciseLiveDetail({
           {/* Gradient vers fond #04040A + titre overlay + nav session */}
           <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-3 pt-20" style={{ background: 'linear-gradient(to top, #04040A 0%, rgba(4,4,10,0.7) 50%, transparent 100%)' }}>
             <h1 className="text-white text-3xl md:text-4xl leading-none tracking-wide" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
-              {displayTitle}
+              {teacherUnlocked ? (
+                <InlineTitleEditor
+                  title={displayTitle}
+                  slug={slug}
+                  locale={lang}
+                  onSave={handleInlineTitleSave}
+                  onError={(message) => showOverrideToast(message, "error")}
+                />
+              ) : (
+                displayTitle
+              )}
             </h1>
             {/* Navigation session inline dans le hero */}
             {(prevExercise || nextExercise) && (
