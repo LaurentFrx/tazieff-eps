@@ -56,6 +56,9 @@ docs/pdfs/Muscu'Tazieff 2.pdf
 # local screenshots (hors repo)
 screenshots/
 
+# dev-only credentials (seed script E.2.1 — jamais commit)
+supabase/seeds/dev-credentials.json
+
 # claude code cli (worktrees, local state — skills partagées trackées)
 .claude/*
 !.claude/skills/
