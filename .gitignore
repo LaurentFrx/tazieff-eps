@@ -56,5 +56,7 @@ docs/pdfs/Muscu'Tazieff 2.pdf
 # local screenshots (hors repo)
 screenshots/
 
-# claude code cli (worktrees, local state)
-.claude/
+# claude code cli (worktrees, local state — skills partagées trackées)
+.claude/*
+!.claude/skills/
+!.claude/skills/**
