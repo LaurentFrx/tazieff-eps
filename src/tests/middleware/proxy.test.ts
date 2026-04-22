@@ -1,0 +1,163 @@
+// Phase E.2.2.5 — Tests du proxy (ex-middleware) Next.js 16.
+// Vérifie les 3 grandes responsabilités du proxy :
+//   1. Admin basic auth (non testé ici — état initial préservé)
+//   2. Host-based routing (rewrite /prof/*, protection croisée) — CE TEST
+//   3. i18n locale rewrite (fallback /fr/) — partiel
+
+import { describe, it, expect, vi } from "vitest";
+
+// Mocks pour NextResponse sans importer Next.js runtime
+vi.mock("next/server", async () => {
+  return {
+    NextResponse: {
+      next: () => ({ type: "next", rewriteUrl: null }) as unknown,
+      rewrite: (url: URL) =>
+        ({ type: "rewrite", rewriteUrl: url.toString() }) as unknown,
+    },
+  };
+});
+
+import { proxy } from "@/proxy";
+
+type MockReq = {
+  headers: { get: (k: string) => string | null };
+  nextUrl: URL & { clone(): URL };
+};
+
+function makeRequest(host: string, pathname: string): MockReq {
+  const url = new URL(`https://${host}${pathname}`);
+  const nextUrl = Object.assign(url, {
+    clone(): URL {
+      return new URL(url.toString());
+    },
+  });
+  return {
+    headers: {
+      get: (k: string) => (k.toLowerCase() === "host" ? host : null),
+    },
+    nextUrl,
+  };
+}
+
+describe("proxy — host prof → rewrite vers /prof/*", () => {
+  it("rewrite / vers /prof sur prof.muscu-eps.fr", () => {
+    const req = makeRequest("prof.muscu-eps.fr", "/");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/prof$/);
+  });
+
+  it("rewrite /connexion vers /prof/connexion sur prof.muscu-eps.fr", () => {
+    const req = makeRequest("prof.muscu-eps.fr", "/connexion");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/prof\/connexion$/);
+  });
+
+  it("rewrite sur design-prof.muscu-eps.fr (preview)", () => {
+    const req = makeRequest("design-prof.muscu-eps.fr", "/connexion");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/prof\/connexion$/);
+  });
+
+  it("pass-through si path déjà /prof/* sur host prof (pas de double rewrite)", () => {
+    const req = makeRequest("prof.muscu-eps.fr", "/prof/connexion");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+});
+
+describe("proxy — protection croisée : host élève + /prof/* = 404", () => {
+  it("rewrite /prof/connexion vers /_not-found sur muscu-eps.fr", () => {
+    const req = makeRequest("muscu-eps.fr", "/prof/connexion");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/_not-found$/);
+  });
+
+  it("rewrite /prof/dev/login vers /_not-found sur design.muscu-eps.fr", () => {
+    const req = makeRequest("design.muscu-eps.fr", "/prof/dev/login");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/_not-found$/);
+  });
+});
+
+describe("proxy — pass-through assets / API / auth", () => {
+  it("pass-through sur /api/* (host prof)", () => {
+    const req = makeRequest("prof.muscu-eps.fr", "/api/teacher/annotations");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("pass-through sur /auth/callback (host prof)", () => {
+    const req = makeRequest("prof.muscu-eps.fr", "/auth/callback");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("pass-through sur /_next/static/* (host élève)", () => {
+    const req = makeRequest("muscu-eps.fr", "/_next/static/chunks/abc.js");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("pass-through sur fichiers avec extension (favicon.ico)", () => {
+    const req = makeRequest("prof.muscu-eps.fr", "/favicon.ico");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+});
+
+describe("proxy — i18n locale rewrite (espace élève)", () => {
+  it("rewrite / vers /fr/ sur muscu-eps.fr (pas de locale, pas de host prof)", () => {
+    const req = makeRequest("muscu-eps.fr", "/");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    // Le proxy hérité préfixe / → /fr/ (trailing slash). Next.js normalise.
+    expect(result.rewriteUrl).toMatch(/\/fr\/?$/);
+  });
+
+  it("pass-through sur /fr/exercices (déjà préfixé locale)", () => {
+    const req = makeRequest("muscu-eps.fr", "/fr/exercices");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("pass-through sur /en (locale seule)", () => {
+    const req = makeRequest("muscu-eps.fr", "/en");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+});
+
+describe("proxy — dev local prof.localhost", () => {
+  it("rewrite / vers /prof sur prof.localhost:3000", () => {
+    const req = makeRequest("prof.localhost:3000", "/");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/prof$/);
+  });
+});

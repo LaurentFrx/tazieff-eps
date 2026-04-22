@@ -1,14 +1,18 @@
 "use client";
 
-// Phase E.2.2 — Banc d'essai dev pour valider le flow magic link prof
-// + API annotations bout-en-bout. Pas de design : c'est jetable.
+// Phase E.2.2.5 — Banc d'essai dev pour valider le flow magic link + API
+// annotations bout-en-bout sur le sous-domaine prof. Pas de design, c'est
+// jetable — la vraie UI de connexion est sur /connexion.
+//
+// Utilise `useTeacherSession` (TeacherAuthContext) et non `useTeacherAuth`
+// (AuthContext élève), car le sous-domaine prof n'a pas d'AuthProvider.
 
 import { useState } from "react";
-import { useTeacherAuth } from "@/hooks/useTeacherAuth";
+import { useTeacherSession } from "@/hooks/useTeacherSession";
 
 export default function TeacherLoginDevClient() {
   const { user, isTeacher, isLoading, signInWithEmail, signOut } =
-    useTeacherAuth();
+    useTeacherSession();
 
   const [email, setEmail] = useState("");
   const [signinFeedback, setSigninFeedback] = useState<string | null>(null);
@@ -32,9 +36,6 @@ export default function TeacherLoginDevClient() {
   const handleTestAnnotation = async () => {
     setTestAnnotationResult("Création en cours…");
     try {
-      // Test naïf : on essaie de POSTer une annotation minimaliste. La route
-      // rejettera en 403 RLS si le user n'a pas de membership valide — c'est
-      // exactement ce qu'on veut valider.
       const response = await fetch("/api/teacher/annotations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -58,23 +59,23 @@ export default function TeacherLoginDevClient() {
   };
 
   return (
-    <main className="mx-auto max-w-2xl p-6 space-y-6">
-      <header className="rounded-lg border border-red-400 bg-red-50 p-4 text-red-900 dark:bg-red-950 dark:text-red-100">
+    <main className="mx-auto max-w-2xl p-6 space-y-6 bg-[#04040A] text-white min-h-screen">
+      <header className="rounded-lg border border-red-400 bg-red-950 p-4 text-red-100">
         <h1 className="text-xl font-bold">
-          ⚠️ PAGE DE TEST DEV — À SUPPRIMER EN PROD
+          ⚠️ PAGE DE TEST DEV — sous-domaine prof
         </h1>
         <p className="text-sm mt-1">
           Accessible uniquement en NODE_ENV=development ou VERCEL_ENV=preview.
-          Ne doit pas exister sur muscu-eps.fr.
+          404 sur prof.muscu-eps.fr (prod).
         </p>
       </header>
 
-      <section className="rounded-lg border border-gray-300 p-4 space-y-2">
-        <h2 className="font-semibold">État user</h2>
+      <section className="rounded-lg border border-gray-600 p-4 space-y-2">
+        <h2 className="font-semibold">État user (TeacherAuthContext)</h2>
         {isLoading ? (
-          <p className="text-sm text-gray-500">Chargement de la session…</p>
+          <p className="text-sm text-gray-400">Chargement de la session…</p>
         ) : (
-          <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto">
+          <pre className="text-xs bg-gray-900 text-gray-100 p-2 rounded overflow-auto">
             {JSON.stringify(
               {
                 user: user
@@ -93,7 +94,7 @@ export default function TeacherLoginDevClient() {
         )}
       </section>
 
-      <section className="rounded-lg border border-gray-300 p-4 space-y-3">
+      <section className="rounded-lg border border-gray-600 p-4 space-y-3">
         <h2 className="font-semibold">Connexion prof (magic link)</h2>
         {isTeacher ? (
           <div className="space-y-2">
@@ -112,14 +113,14 @@ export default function TeacherLoginDevClient() {
         ) : (
           <form onSubmit={handleSignIn} className="space-y-2">
             <label className="block text-sm">
-              Email académique (ex: prof.demo@ac-test.local)
+              Email académique (ex: prof.demo@ac-bordeaux.fr)
             </label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded border border-gray-400 px-3 py-2 text-sm"
+              className="w-full rounded border border-gray-500 bg-gray-900 px-3 py-2 text-sm text-white"
               placeholder="prof.demo@ac-bordeaux.fr"
             />
             <button
@@ -129,7 +130,7 @@ export default function TeacherLoginDevClient() {
               Recevoir mon lien
             </button>
             {signinFeedback && (
-              <p className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">
+              <p className="text-sm text-gray-200 whitespace-pre-wrap">
                 {signinFeedback}
               </p>
             )}
@@ -137,14 +138,11 @@ export default function TeacherLoginDevClient() {
         )}
       </section>
 
-      <section className="rounded-lg border border-gray-300 p-4 space-y-3">
+      <section className="rounded-lg border border-gray-600 p-4 space-y-3">
         <h2 className="font-semibold">Test API annotations</h2>
-        <p className="text-xs text-gray-600 dark:text-gray-300">
-          Cliquer sur le bouton ci-dessous POST une annotation test sur
-          l&apos;organisation seed E.2.1 (Tazieff). Si le user n&apos;est pas
-          membership actif de cette org, RLS renverra 403 — c&apos;est le
-          comportement attendu tant que le seed utilisateurs n&apos;a pas été
-          rattaché au flow magic link.
+        <p className="text-xs text-gray-300">
+          POST une annotation test sur l&apos;organisation seed E.2.1
+          (Tazieff). Si pas de membership actif → RLS renvoie 403.
         </p>
         <button
           type="button"
@@ -155,15 +153,15 @@ export default function TeacherLoginDevClient() {
           POST /api/teacher/annotations (test)
         </button>
         {testAnnotationResult && (
-          <pre className="text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded overflow-auto whitespace-pre-wrap">
+          <pre className="text-xs bg-gray-900 p-2 rounded overflow-auto whitespace-pre-wrap">
             {testAnnotationResult}
           </pre>
         )}
       </section>
 
-      <section className="rounded-lg border border-gray-300 p-4">
+      <section className="rounded-lg border border-gray-600 p-4">
         <h2 className="font-semibold mb-2">Mes memberships / classes</h2>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-400">
           À implémenter en E.2.3 (routes <code>/api/teacher/me/*</code>).
         </p>
       </section>

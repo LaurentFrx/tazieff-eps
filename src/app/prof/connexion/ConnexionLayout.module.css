@@ -1,0 +1,66 @@
+/* Phase E.2.2.5 — Layout responsive de la page /connexion prof.
+   Priorité : iPad landscape → desktop → iPad portrait → mobile.
+   Pas de Tailwind `landscape:` variant (non natif v4 dans ce projet),
+   on utilise @media natif. */
+
+.root {
+  height: 100svh;
+  min-height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: #04040A;
+  color: #f0f0f5;
+  display: flex;
+  flex-direction: column;
+}
+
+.visual {
+  position: relative;
+  width: 100%;
+  height: 40svh;
+  min-height: 280px;
+  flex-shrink: 0;
+}
+
+.form {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  background-color: #05050c;
+}
+
+/* iPad landscape + desktop large : split 50/50 horizontal */
+@media (orientation: landscape) and (min-width: 900px) {
+  .root {
+    flex-direction: row;
+  }
+  .visual {
+    width: 50%;
+    height: 100%;
+    min-height: 100vh;
+  }
+  .form {
+    width: 50%;
+    height: 100%;
+  }
+}
+
+/* Desktop large : max-width sur le container form pour éviter
+   que le formulaire s'étire trop sur écrans XL */
+@media (min-width: 1440px) {
+  .formInner {
+    max-width: 520px;
+    width: 100%;
+  }
+}
+
+/* Mobile portrait : réduire la part visuel pour laisser place au form */
+@media (orientation: portrait) and (max-width: 480px) {
+  .visual {
+    height: 30svh;
+    min-height: 220px;
+  }
+}

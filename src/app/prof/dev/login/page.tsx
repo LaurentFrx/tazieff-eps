@@ -1,8 +1,7 @@
-// Phase E.2.2 — Page de test dev du flow magic link + API annotations.
-// GATE stricte : uniquement accessible en NODE_ENV=development ou VERCEL_ENV=preview.
-// En production (muscu-eps.fr), notFound() → 404.
-//
-// À retirer une fois l'UI E.2.3 en place (ou à garder gated pour debug long terme).
+// Phase E.2.2.5 — Banc d'essai dev migré depuis /dev/teacher-login.
+// URL publique : https://design-prof.muscu-eps.fr/dev/login (preview)
+//                https://localhost:3000/dev/login (dev local, via host prof.localhost)
+// Sur prof.muscu-eps.fr (prod) → 404 (gate).
 
 import { notFound } from "next/navigation";
 import TeacherLoginDevClient from "./TeacherLoginDevClient";
