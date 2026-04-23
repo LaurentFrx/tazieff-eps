@@ -1,8 +1,7 @@
-// Phase E.2.2.5 — Racine de l'espace prof (prof.muscu-eps.fr/).
+// Phase E.2.3.3 — Racine de l'espace prof (prof.muscu-eps.fr/).
 //
 // Comportement :
-//   - Si session active → redirect vers /connexion?session_active=true
-//     (temporaire le temps que /tableau-de-bord existe en E.2.3, cf. spec)
+//   - Session active → redirect vers /tableau-de-bord
 //   - Sinon → redirect vers /connexion
 //
 // Le middleware garantit que cette page n'est atteinte que via le sous-domaine
@@ -22,10 +21,7 @@ export default async function ProfRootPage() {
   } = await supabase.auth.getUser();
 
   if (user && user.email) {
-    // Session active avec email (prof authentifié)
-    // TODO E.2.3 : remplacer par redirect("/tableau-de-bord") quand
-    // cette page existera.
-    redirect("/connexion?session_active=true");
+    redirect("/tableau-de-bord");
   }
 
   redirect("/connexion");

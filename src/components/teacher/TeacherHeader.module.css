@@ -1,0 +1,196 @@
+/* Phase E.2.3.3 — Styles du header prof.
+   Palette Sport Vibrant : fond #04040A, accents cyan #00E5FF, fonts
+   Bebas Neue / DM Sans / JetBrains Mono. */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: rgba(4, 4, 10, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 3rem);
+  padding: 1rem clamp(1rem, 3vw, 2rem);
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* Brand (logo textuel) */
+.brand {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.brandTitle {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.2em;
+  color: #f0f0f5;
+  line-height: 1;
+}
+
+.brandSubtitle {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.4em;
+  color: rgba(255, 255, 255, 0.3);
+  margin-top: 3px;
+}
+
+/* Nav horizontale */
+.nav {
+  display: flex;
+  gap: clamp(0.8rem, 2vw, 2rem);
+  flex: 1;
+  justify-content: center;
+}
+
+.link {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: rgba(240, 240, 245, 0.6);
+  text-decoration: none;
+  padding: 0.4rem 0;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.link:hover {
+  color: rgba(240, 240, 245, 0.95);
+}
+
+.linkActive {
+  color: #00e5ff;
+  border-bottom-color: #00e5ff;
+}
+
+/* Account / avatar */
+.account {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.accountBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.8rem 0.4rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f0f0f5;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.accountBtn:hover {
+  background: rgba(0, 229, 255, 0.08);
+  border-color: rgba(0, 229, 255, 0.3);
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00e5ff 0%, #7b2fff 100%);
+  color: #04040a;
+  font-family: var(--font-bebas), sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0;
+}
+
+.accountEmail {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.78rem;
+}
+
+.chev {
+  color: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 260px;
+  background: #0a0a16;
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: 12px;
+  padding: 0.75rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.menuEmail {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  word-break: break-all;
+}
+
+.signOut {
+  width: 100%;
+  padding: 0.55rem 0.8rem;
+  border-radius: 8px;
+  background: rgba(255, 0, 110, 0.12);
+  border: 1px solid rgba(255, 0, 110, 0.3);
+  color: #ff4f90;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.signOut:hover:not(:disabled) {
+  background: rgba(255, 0, 110, 0.2);
+}
+
+.signOut:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive : hide email + nav texte sur mobile */
+@media (max-width: 768px) {
+  .inner {
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+  }
+  .nav {
+    gap: 0.5rem;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+  .link {
+    font-size: 0.72rem;
+  }
+  .accountEmail {
+    display: none;
+  }
+}
