@@ -32,19 +32,36 @@
   background-color: #05050c;
 }
 
-/* iPad landscape + desktop large : split 50/50 horizontal */
-@media (orientation: landscape) and (min-width: 900px) {
+/* Desktop + tablettes larges : split 50/50 horizontal (breakpoint robuste,
+   indépendant de l'orientation — couvre desktop 16:9 maximisé et iPad landscape) */
+@media (min-width: 1024px) {
   .root {
     flex-direction: row;
   }
   .visual {
     width: 50%;
-    height: 100%;
+    height: 100svh;
     min-height: 100vh;
   }
   .form {
     width: 50%;
-    height: 100%;
+    height: 100svh;
+  }
+}
+
+/* iPad landscape étroit (900-1023px en mode paysage) : split 50/50 également */
+@media (orientation: landscape) and (min-width: 900px) and (max-width: 1023px) {
+  .root {
+    flex-direction: row;
+  }
+  .visual {
+    width: 50%;
+    height: 100svh;
+    min-height: 100vh;
+  }
+  .form {
+    width: 50%;
+    height: 100svh;
   }
 }
 
