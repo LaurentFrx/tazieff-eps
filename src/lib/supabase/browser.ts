@@ -12,6 +12,23 @@ import type { Database } from "@/types/database";
  *
  * Singleton : le client est mis en cache à l'échelle du module pour éviter
  * de recréer une connexion à chaque render. Respecte les policies RLS.
+ *
+ * ## Isolation des cookies entre sous-domaines (E.2.3.8)
+ *
+ * On NE configure PAS `cookieOptions.domain` volontairement. Sans `Domain`
+ * explicite, le navigateur pose des cookies "host-only" attachés au host
+ * exact qui les a émis :
+ *   - Cookie posé depuis `prof.muscu-eps.fr` → n'est envoyé qu'à ce host
+ *   - Cookie posé depuis `muscu-eps.fr` → n'est envoyé qu'à ce host
+ *
+ * Cela assure l'isolation totale entre l'espace prof et l'espace élève,
+ * sans leak de session magic-link vers le site élève (et inversement
+ * l'anonymous élève ne pollue pas l'espace prof). Le comportement est
+ * identique pour les previews `design-prof.muscu-eps.fr` /
+ * `design.muscu-eps.fr`.
+ *
+ * ATTENTION : ne JAMAIS passer `cookieOptions: { domain: '.muscu-eps.fr' }`
+ * à `createBrowserClient` sans revue sécurité — cela casserait l'isolation.
  */
 
 let cached: SupabaseClient<Database> | null = null;

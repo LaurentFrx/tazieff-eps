@@ -4,8 +4,19 @@ Fichier de suivi des dettes techniques identifiées au fil des phases. Format :
 `[PHASE-CIBLE tag] Description concise, fichiers concernés`.
 
 - [E.2.5 dette tech] Migrer `/api/teacher/{exercise-override,live-exercise,upload-media}` de PIN+service_role vers auth Supabase + RLS. Routes actuellement en mode legacy PIN, cohabitent avec le nouveau système magic link (E.2.2).
-- [E.2.3 cleanup] Nettoyer `src/app/[locale]/reglages/page.tsx:102` — `isAnonymous` destructuré mais jamais utilisé (dead destructuring).
-- [E.2.3 unification] Évaluer migration de `src/components/TeacherAuth.tsx` (ancien flow `updateUser({email})` côté client) vers le nouveau `useTeacherAuth`/`signInWithOtp` pour unifier les deux chemins de signin.
+- [E.2.4 cleanup] Clés i18n `settings.account.*` (connectionUnavailable, tooManyAttempts, alreadyLinked, etc.) plus référencées depuis que /reglages redirige vers /prof (E.2.3.2). À nettoyer des dictionnaires FR/EN/ES.
+- [E.2.4 feature] Créer page élève `/rejoindre?code=XXX` consommant `join_class_with_code` RPC. Les QR codes des classes prof pointent déjà vers cette URL (E.2.3.4), page pas encore créée.
+
+## Isolation cookies sous-domaines (E.2.3.8) — validé par défaut
+
+Le client browser `src/lib/supabase/browser.ts` ne configure PAS `cookieOptions.domain`. Les cookies Supabase sont donc "host-only" (scopés au host exact qui les a émis). Résultat :
+- `prof.muscu-eps.fr` ↔ `muscu-eps.fr` : cookies non partagés
+- `design-prof.muscu-eps.fr` ↔ `design.muscu-eps.fr` : cookies non partagés
+- Aucun risque de leak de session magic-link prof vers espace élève
+
+Ne jamais passer `cookieOptions: { domain: '.muscu-eps.fr' }` sans revue sécurité.
+
+À valider manuellement après déploiement design-prof.muscu-eps.fr : devtools > Application > Cookies → vérifier absence de `Domain=.muscu-eps.fr` sur les cookies `sb-*-auth-token`.
 
 ## Warnings Supabase Advisor — décisions documentées
 
