@@ -1,0 +1,321 @@
+/* Phase E.2.3.6 — Éditeur d'annotation */
+
+.page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.topNav {
+  display: flex;
+}
+
+.back {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  padding: 0.25rem 0;
+}
+.back:hover {
+  color: #00e5ff;
+}
+
+/* Layout sidebar + editor */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) 2fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sidebar */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  position: sticky;
+  top: 88px;
+  max-height: calc(100svh - 120px);
+  overflow-y: auto;
+}
+
+.newBtn {
+  padding: 0.7rem 1rem;
+  background: linear-gradient(135deg, #00e5ff 0%, #7b2fff 100%);
+  color: #04040a;
+  border: none;
+  border-radius: 10px;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+.newBtn:hover {
+  box-shadow: 0 4px 16px rgba(0, 229, 255, 0.3);
+}
+
+.emptySidebar {
+  padding: 1rem;
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.45);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+}
+
+.annotationList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.annItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: #f0f0f5;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.annItem:hover {
+  border-color: rgba(0, 229, 255, 0.3);
+}
+
+.annItemActive {
+  border-color: #00e5ff;
+  background: rgba(0, 229, 255, 0.07);
+}
+
+.annBadges {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+}
+
+.scopeBadge {
+  padding: 0.1rem 0.4rem;
+  border: 1px solid;
+  border-radius: 999px;
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.annDate {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.annTitle {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.85rem;
+  color: #f0f0f5;
+  margin: 0;
+}
+
+.annExcerpt {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.4;
+}
+
+/* Editor */
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.exoPreview {
+  padding: 1.5rem 1.75rem;
+  background: rgba(0, 229, 255, 0.04);
+  border: 1px solid rgba(0, 229, 255, 0.15);
+  border-radius: 16px;
+}
+
+.exoTitle {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  letter-spacing: 0.04em;
+  color: #f0f0f5;
+  margin: 0 0 0.3rem;
+  line-height: 1.1;
+}
+
+.exoMeta {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.75rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}
+
+.formTitle {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.label {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.65);
+  text-transform: uppercase;
+}
+
+.input,
+.select,
+.textarea {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f0f0f5;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.9rem;
+  transition: border-color 0.15s;
+}
+
+.textarea {
+  resize: vertical;
+  font-family: var(--font-dm-sans), sans-serif;
+  line-height: 1.5;
+  min-height: 160px;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: #00e5ff;
+}
+
+.charCount {
+  text-align: right;
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.deleteBtn {
+  margin-right: auto;
+  padding: 0.6rem 1rem;
+  background: transparent;
+  border: 1px solid rgba(255, 0, 110, 0.35);
+  color: #ff4f90;
+  border-radius: 10px;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.deleteBtn:hover:not(:disabled) {
+  background: rgba(255, 0, 110, 0.08);
+}
+
+.cancelBtn {
+  padding: 0.6rem 1rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+  border-radius: 10px;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.cancelBtn:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #f0f0f5;
+}
+
+.saveBtn {
+  padding: 0.65rem 1.4rem;
+  background: linear-gradient(135deg, #00e5ff 0%, #7b2fff 100%);
+  color: #04040a;
+  border: none;
+  border-radius: 10px;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+.saveBtn:hover:not(:disabled) {
+  box-shadow: 0 4px 16px rgba(0, 229, 255, 0.3);
+}
+
+.saveBtn:disabled,
+.cancelBtn:disabled,
+.deleteBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.errorBox {
+  padding: 0.7rem 1rem;
+  border: 1px solid rgba(255, 0, 110, 0.4);
+  background: rgba(255, 0, 110, 0.08);
+  border-radius: 10px;
+  color: #ff4f90;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.82rem;
+  margin: 0;
+}
