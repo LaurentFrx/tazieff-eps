@@ -10,6 +10,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // Le marker Next.js "server-only" n'est pas un vrai module npm,
+      // il est résolu par le bundler Next. En test, on pointe vers un stub.
+      'server-only': path.resolve(__dirname, './src/tests/__mocks__/server-only.ts'),
     },
   },
 });
