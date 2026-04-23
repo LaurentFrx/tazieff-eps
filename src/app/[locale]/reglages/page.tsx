@@ -8,9 +8,19 @@ import { useBuildInfo } from "@/components/BuildStamp";
 import { getTheme, onThemeChange, setTheme as setFieldTheme, type ThemePreference, getAnatomyAnim, setAnatomyAnim, onAnatomyAnimChange } from "@/lib/storage";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlan } from "@/hooks/usePlan";
-import { isAcademicEmail, ACADEMIC_EMAIL_PATTERN } from "@/lib/auth/academic-domains";
+import { isAcademicEmail } from "@/lib/auth/academic-domains";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { LocaleLink } from "@/components/LocaleLink";
+
+// Phase E.2.3.2 — l'espace enseignant a déménagé sur le sous-domaine prof.
+// Depuis cette page, on affiche seulement un lien pour rediriger les profs
+// vers le bon espace. L'auth magic-link inline a été retirée.
+function getTeacherLoginUrl(): string {
+  if (typeof window === "undefined") return "https://prof.muscu-eps.fr/connexion";
+  const host = window.location.host;
+  if (host === "design.muscu-eps.fr") return "https://design-prof.muscu-eps.fr/connexion";
+  return "https://prof.muscu-eps.fr/connexion";
+}
 
 
 /* ── Types & constants ─────────────────────────────────────────────── */
@@ -114,11 +124,6 @@ export default function ReglagesPage() {
   const [pinValue, setPinValue] = useState(teacherMode.pin);
   const [pinError, setPinError] = useState<string | null>(null);
 
-  // Teacher auth (inline)
-  const [teacherEmail, setTeacherEmail] = useState("");
-  const [teacherStep, setTeacherStep] = useState<"input" | "sending" | "confirmation">("input");
-  const [teacherError, setTeacherError] = useState("");
-
   // Org code (inline)
   const [orgCode, setOrgCode] = useState(
     () => (typeof window !== "undefined" ? localStorage.getItem(ORG_CODE_KEY) : null) ?? "",
@@ -137,9 +142,6 @@ export default function ReglagesPage() {
   const stableTheme = mounted ? currentTheme : ("system" as const);
   const stableFieldTheme = mounted ? fieldTheme : (1 as ThemePreference);
 
-  const trimmedEmail = teacherEmail.trim();
-  const emailValid = isAcademicEmail(trimmedEmail);
-  const showEmailError = trimmedEmail.length > 0 && trimmedEmail.includes("@") && !emailValid;
   const hasAcademicEmail = !!(user?.email && isAcademicEmail(user.email));
 
   /* ── Handlers ────────────────────────────────────────────────────── */
@@ -180,42 +182,6 @@ export default function ReglagesPage() {
 
   const handleCopy = async () => {
     try { await navigator?.clipboard?.writeText(buildInfo.label); } catch { /* ignore */ }
-  };
-
-  const handleTeacherSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!emailValid) return;
-    setTeacherStep("sending");
-    setTeacherError("");
-
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) {
-      setTeacherError(t("settings.account.connectionUnavailable"));
-      setTeacherStep("input");
-      return;
-    }
-
-    try {
-      const { error } = await supabase.auth.updateUser(
-        { email: trimmedEmail },
-        { emailRedirectTo: `${window.location.origin}/reglages` },
-      );
-      if (error) {
-        if (error.message?.includes("rate") || error.status === 429) {
-          setTeacherError(t("settings.account.tooManyAttempts"));
-        } else if (error.message?.includes("already")) {
-          setTeacherError(t("settings.account.alreadyLinked"));
-        } else {
-          setTeacherError(error.message || t("settings.account.genericError"));
-        }
-        setTeacherStep("input");
-        return;
-      }
-      setTeacherStep("confirmation");
-    } catch {
-      setTeacherError(t("settings.account.networkError"));
-      setTeacherStep("input");
-    }
   };
 
   const handleOrgSubmit = async (e: React.FormEvent) => {
@@ -395,61 +361,26 @@ export default function ReglagesPage() {
             </div>
           </div>
 
-          {/* Accès enseignant */}
+          {/* Accès enseignant — déménagé sur le sous-domaine prof (E.2.3.2) */}
           {!hasAcademicEmail && (
             <>
               <div className="border-b border-[color:var(--border)] my-3" />
               <div>
-                <p className="text-xs text-[color:var(--muted)] mb-2">{t("settings.account.academicEmail")}</p>
-                {teacherStep === "confirmation" ? (
-                  <div className="flex items-center gap-2">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 shrink-0 text-emerald-500">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    <span className="text-sm text-emerald-400">
-                      {t("settings.account.linkSent")}
-                    </span>
-                    <button
-                      type="button"
-                      className="ml-auto shrink-0 text-xs text-[color:var(--muted)] underline"
-                      onClick={() => { setTeacherStep("input"); setTeacherError(""); }}
-                    >
-                      {t("settings.account.resend")}
-                    </button>
-                  </div>
-                ) : (
-                  <form onSubmit={handleTeacherSubmit} className="flex gap-2">
-                    <div className="relative flex-1">
-                      <input
-                        type="email"
-                        className="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] py-2 pl-3 pr-8 text-sm text-[color:var(--ink)] placeholder:text-[color:var(--muted)] focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        placeholder={ACADEMIC_EMAIL_PATTERN}
-                        value={teacherEmail}
-                        onChange={(e) => setTeacherEmail(e.target.value)}
-                        disabled={teacherStep === "sending"}
-                        autoComplete="email"
-                      />
-                      {emailValid && (
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-emerald-500">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      )}
-                    </div>
-                    <button
-                      type="submit"
-                      className="shrink-0 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
-                      disabled={!emailValid || teacherStep === "sending"}
-                    >
-                      {teacherStep === "sending" ? "..." : t("settings.account.validate")}
-                    </button>
-                  </form>
-                )}
-                {showEmailError && (
-                  <p className="mt-1 text-xs text-red-400">
-                    {t("settings.account.academicOnly")}
-                  </p>
-                )}
-                {teacherError && <p className="mt-1 text-xs text-red-400">{teacherError}</p>}
+                <p className="text-xs text-[color:var(--muted)] mb-2">
+                  L&apos;espace enseignant a déménagé. Accédez-y depuis un
+                  sous-domaine dédié, plus adapté à la tablette et au desktop.
+                </p>
+                <a
+                  href={getTeacherLoginUrl()}
+                  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-2 text-sm font-semibold text-white"
+                  rel="noopener"
+                >
+                  Aller sur l&apos;espace enseignant
+                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                    <line x1="5" y1="10" x2="15" y2="10" />
+                    <polyline points="11 5 16 10 11 15" />
+                  </svg>
+                </a>
               </div>
             </>
           )}
