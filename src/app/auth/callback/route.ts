@@ -18,8 +18,8 @@ export async function GET(request: NextRequest) {
   // `next` peut être fourni par le frontend au moment du magic link request,
   // ou défini par défaut sur la page de dev. Sécurisé : on ne garde que des
   // chemins relatifs pour éviter les open-redirects.
-  const rawNext = request.nextUrl.searchParams.get("next") ?? "/dev/teacher-login";
-  const next = rawNext.startsWith("/") ? rawNext : "/dev/teacher-login";
+  const rawNext = request.nextUrl.searchParams.get("next") ?? "/tableau-de-bord";
+  const next = rawNext.startsWith("/") ? rawNext : "/tableau-de-bord";
 
   if (!code) {
     return NextResponse.redirect(
