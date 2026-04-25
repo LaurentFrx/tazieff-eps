@@ -538,6 +538,11 @@ export const messages = {
       liveExistsWarning: "Une version enregistrée existe pour cette fiche. Tu peux la supprimer (la fiche MDX reste intacte).",
       deleteWarning: "Cette action est irréversible. La fiche catalogue (MDX) n'est pas affectée.",
       slugLabel: "Slug",
+      editResumeAriaLabel: "Modifier le résumé",
+      editRespirationAriaLabel: "Modifier les indications de respiration",
+      editSecuriteAriaLabel: "Modifier les consignes de sécurité",
+      editParagraphPlaceholder: "Saisir le contenu…",
+      editParagraphSaveLabel: "Enregistrer",
     },
     pages: {
       home: {
@@ -1694,6 +1699,11 @@ export const messages = {
       liveExistsWarning: "A saved version exists for this sheet. You can delete it (the MDX sheet remains intact).",
       deleteWarning: "This action is irreversible. The catalog sheet (MDX) is not affected.",
       slugLabel: "Slug",
+      editResumeAriaLabel: "Edit summary",
+      editRespirationAriaLabel: "Edit breathing instructions",
+      editSecuriteAriaLabel: "Edit safety guidelines",
+      editParagraphPlaceholder: "Enter content…",
+      editParagraphSaveLabel: "Save",
     },
     pages: {
       home: {
@@ -2850,6 +2860,11 @@ export const messages = {
       liveExistsWarning: "Existe una versión guardada para esta ficha. Puedes eliminarla (la ficha MDX se mantiene intacta).",
       deleteWarning: "Esta acción es irreversible. La ficha del catálogo (MDX) no se ve afectada.",
       slugLabel: "Slug",
+      editResumeAriaLabel: "Editar resumen",
+      editRespirationAriaLabel: "Editar instrucciones de respiración",
+      editSecuriteAriaLabel: "Editar consignas de seguridad",
+      editParagraphPlaceholder: "Introducir contenido…",
+      editParagraphSaveLabel: "Guardar",
     },
     pages: {
       home: {
