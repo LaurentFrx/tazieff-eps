@@ -1,0 +1,201 @@
+/* Phase E.2.3.3 — Styles tableau de bord prof. Sport Vibrant. */
+
+.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2rem, 4vh, 3.5rem);
+}
+
+/* Hero */
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.title {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: #f0f0f5;
+  margin: 0;
+  line-height: 1;
+}
+
+.subtitle {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+  color: rgba(255, 255, 255, 0.55);
+  max-width: 640px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Stats row */
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.statCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1.5rem 1.75rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid;
+  overflow: hidden;
+}
+
+.statCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 20% 0%,
+    var(--glow),
+    transparent 70%
+  );
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.statValue {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: clamp(2.5rem, 4vw, 3.25rem);
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: #f0f0f5;
+  position: relative;
+  z-index: 1;
+}
+
+.statLabel {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.6);
+  position: relative;
+  z-index: 1;
+}
+
+.stat_cyan {
+  --glow: rgba(0, 229, 255, 0.25);
+  border-color: rgba(0, 229, 255, 0.3);
+}
+.stat_violet {
+  --glow: rgba(123, 47, 255, 0.28);
+  border-color: rgba(123, 47, 255, 0.3);
+}
+.stat_orange {
+  --glow: rgba(255, 140, 0, 0.22);
+  border-color: rgba(255, 140, 0, 0.3);
+}
+
+/* Quick access */
+.sectionTitle {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: 1.25rem;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 1rem;
+  text-transform: uppercase;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.quickCard {
+  display: block;
+  text-decoration: none;
+  padding: 0;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  transition: transform 0.2s, border-color 0.2s, background 0.2s;
+  overflow: hidden;
+  position: relative;
+}
+
+.quickCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 100% 100%,
+    var(--glow),
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+.quickCard:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-hover);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.quickCard:hover::after {
+  opacity: 0.4;
+}
+
+.quickCardInner {
+  padding: 1.5rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.quickTitle {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: 0.08em;
+  color: #f0f0f5;
+  margin: 0;
+}
+
+.quickDesc {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.quickArrow {
+  margin-top: 0.5rem;
+  font-size: 1.5rem;
+  color: var(--arrow-color);
+  line-height: 1;
+  font-family: var(--font-bebas), sans-serif;
+}
+
+.quick_cyan {
+  --glow: rgba(0, 229, 255, 0.3);
+  --border-hover: rgba(0, 229, 255, 0.5);
+  --arrow-color: #00e5ff;
+}
+.quick_violet {
+  --glow: rgba(123, 47, 255, 0.3);
+  --border-hover: rgba(123, 47, 255, 0.5);
+  --arrow-color: #7b2fff;
+}
+.quick_orange {
+  --glow: rgba(255, 140, 0, 0.3);
+  --border-hover: rgba(255, 140, 0, 0.5);
+  --arrow-color: #ff8c00;
+}

@@ -57,6 +57,8 @@ import {
   OverrideUIProvider,
 } from "./_teacher-editor/contexts";
 import { useOverrideSave } from "./_teacher-editor/hooks/useOverrideSave";
+import InlineTitleEditor from "./_teacher-editor/InlineTitleEditor";
+import InlineParagraphEditor from "./_teacher-editor/InlineParagraphEditor";
 import { useOverrideMediaUpload } from "./_teacher-editor/hooks/useOverrideMediaUpload";
 import { useOverrideUI } from "./_teacher-editor/hooks/useOverrideUI";
 import { usePillDropdown } from "./_teacher-editor/hooks/usePillDropdown";
@@ -224,6 +226,17 @@ function buildSectionsFromContent(
   return result;
 }
 
+// Phase E.2 — clés logiques pour l'édition inline des paragraphes simples.
+type InlineParagraphKey = "resume" | "respiration" | "securite";
+
+// Matchers de titres de section (FR primaire, accents insensibles) — utilisés
+// pour localiser la section cible dans l'override doc lors de l'édition inline.
+const SECTION_TITLE_MATCHERS: Record<InlineParagraphKey, RegExp> = {
+  resume: /^r[eé]sum[eé]$/i,
+  respiration: /^respiration$/i,
+  securite: /^s[eé]curit[eé]$/i,
+};
+
 function buildOverrideDoc(
   base: { frontmatter: ExerciseFrontmatter; content: string },
   patch: ExerciseOverridePatch | null,
@@ -288,6 +301,10 @@ export function ExerciseLiveDetail({
   const [teacherPin, setTeacherPin] = useState(() => getTeacherModeSnapshot().pin);
   const [teacherError, setTeacherError] = useState<string | null>(null);
   const [overrideDoc, setOverrideDoc] = useState<ExerciseLiveDocV2 | null>(null);
+  // Phase E.1 — override local du titre (édition inline). Prend le pas sur
+  // merged.frontmatter.title tant qu'il est non null, pour refléter immédiatement
+  // la valeur saisie par l'enseignant (la persistance se fait via handleSaveOverride).
+  const [titleOverride, setTitleOverride] = useState<string | null>(null);
   const [pillCustomOptions, setPillCustomOptions] = useState({
     level: [] as string[],
     type: [] as string[],
@@ -333,7 +350,9 @@ export function ExerciseLiveDetail({
 
   const difficulty = merged.frontmatter.level ?? "intermediaire";
   const displayTitle =
-    merged.frontmatter.title?.trim() || t("exerciseGrid.untitledDraft");
+    titleOverride?.trim() ||
+    merged.frontmatter.title?.trim() ||
+    t("exerciseGrid.untitledDraft");
 
   // Hero media resolution: video (.webm/.mp4) > override image > default image
   const exerciseSlug = merged.frontmatter.slug;
@@ -578,6 +597,104 @@ export function ExerciseLiveDetail({
     updateSection,
     showOverrideToast,
   } = overrideDocValue;
+
+  // Phase E.1 — sauvegarde déclenchée par l'éditeur inline du titre.
+  // Ne duplique pas la logique : met à jour l'override local (UI immédiate)
+  // puis délègue à handleSaveOverride, qui est la fonction de sauvegarde
+  // exposée par useOverrideSave. En cas d'échec, l'override est rollback
+  // pour remettre l'ancien titre en place.
+  const handleInlineTitleSave = useCallback(
+    async (newTitle: string) => {
+      const previous = titleOverride;
+      setTitleOverride(newTitle);
+      try {
+        await handleSaveOverride();
+      } catch (err) {
+        setTitleOverride(previous);
+        throw err;
+      }
+    },
+    [titleOverride, handleSaveOverride],
+  );
+
+  // Phase E.2 — sauvegarde déclenchée par l'éditeur inline d'un paragraphe
+  // (Résumé / Respiration / Sécurité). Pas de duplication de logique : on
+  // s'appuie sur useOverrideSave (updateSection / setOverrideDoc /
+  // handleSaveOverride). Deux cas :
+  //  - Branche A (overrideDoc présent) : on localise la section ciblée par
+  //    son titre, on met à jour le premier block markdown via updateSection,
+  //    puis on déclenche la sauvegarde.
+  //  - Branche B (overrideDoc absent) : on construit un overrideDoc complet
+  //    via buildOverrideDoc, on injecte la modification, puis setOverrideDoc
+  //    bascule l'UI en branche A. On appelle ensuite handleSaveOverride
+  //    (cohérence avec le pattern E.1 ; en branche B la sauvegarde réelle
+  //    aura lieu au prochain édit puisque la closure de handleSaveOverride
+  //    référence l'overrideDoc précédent).
+  const handleInlineParagraphSave = useCallback(
+    async (sectionKey: InlineParagraphKey, newBody: string) => {
+      const matcher = SECTION_TITLE_MATCHERS[sectionKey];
+      const baseDoc: ExerciseLiveDocV2 =
+        overrideDoc ?? buildOverrideDoc(base, patch);
+      const targetSection = baseDoc.doc.sections.find((section) =>
+        matcher.test(section.title.trim()),
+      );
+      if (!targetSection) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[E.2] Section "${sectionKey}" introuvable dans l'override doc — édition inline ignorée.`,
+        );
+        return;
+      }
+      const markdownIdx = targetSection.blocks.findIndex(
+        (block) => block.type === "markdown",
+      );
+      if (markdownIdx === -1) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[E.2] Aucun block markdown dans la section "${sectionKey}" — édition inline ignorée.`,
+        );
+        return;
+      }
+
+      const updateBlocks = (section: ExerciseLiveSection) => ({
+        ...section,
+        blocks: section.blocks.map((block, idx) => {
+          if (idx !== markdownIdx) return block;
+          if (block.type !== "markdown") return block;
+          const next: ExerciseLiveMarkdownBlock = {
+            ...block,
+            content: newBody,
+          };
+          return next;
+        }),
+      });
+
+      if (overrideDoc) {
+        updateSection(targetSection.id, updateBlocks);
+      } else {
+        const builtDoc: ExerciseLiveDocV2 = {
+          ...baseDoc,
+          doc: {
+            ...baseDoc.doc,
+            sections: baseDoc.doc.sections.map((section) =>
+              section.id === targetSection.id ? updateBlocks(section) : section,
+            ),
+          },
+        };
+        setOverrideDoc(builtDoc);
+      }
+
+      await handleSaveOverride();
+    },
+    [
+      overrideDoc,
+      base,
+      patch,
+      updateSection,
+      setOverrideDoc,
+      handleSaveOverride,
+    ],
+  );
 
   const overrideUIHookValue = useOverrideUI({
     overrideDoc,
@@ -1436,7 +1553,17 @@ export function ExerciseLiveDetail({
           {/* Gradient vers fond #04040A + titre overlay + nav session */}
           <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-3 pt-20" style={{ background: 'linear-gradient(to top, #04040A 0%, rgba(4,4,10,0.7) 50%, transparent 100%)' }}>
             <h1 className="text-white text-3xl md:text-4xl leading-none tracking-wide" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
-              {displayTitle}
+              {teacherUnlocked ? (
+                <InlineTitleEditor
+                  title={displayTitle}
+                  slug={slug}
+                  locale={lang}
+                  onSave={handleInlineTitleSave}
+                  onError={(message) => showOverrideToast(message, "error")}
+                />
+              ) : (
+                displayTitle
+              )}
             </h1>
             {/* Navigation session inline dans le hero */}
             {(prevExercise || nextExercise) && (
@@ -1596,9 +1723,23 @@ export function ExerciseLiveDetail({
           {/* 6. RESUME */}
           {parsedSections.resume && parsedSections.resume.body && (
             <div ref={resumeRef as React.RefObject<HTMLDivElement>} className="border-l-2 border-[#FF8C00] pl-4 py-1 mb-4">
-              <p className="text-[15px] text-white/90 leading-relaxed" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>
-                {parsedSections.resume.body}
-              </p>
+              {teacherUnlocked ? (
+                <InlineParagraphEditor
+                  initialValue={parsedSections.resume.body}
+                  onSave={(newBody) => handleInlineParagraphSave('resume', newBody)}
+                  onError={(message) => showOverrideToast(message, "error")}
+                  ariaLabel={t("exerciseEditor.editResumeAriaLabel")}
+                  placeholder={t("exerciseEditor.editParagraphPlaceholder")}
+                  saveLabel={t("exerciseEditor.editParagraphSaveLabel")}
+                  sectionKey="resume"
+                  className="text-[15px] text-white/90 leading-relaxed"
+                  style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}
+                />
+              ) : (
+                <p className="text-[15px] text-white/90 leading-relaxed" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>
+                  {parsedSections.resume.body}
+                </p>
+              )}
             </div>
           )}
 
@@ -1638,9 +1779,23 @@ export function ExerciseLiveDetail({
               <h2 className="text-xl uppercase tracking-wider mb-2 mt-2" style={{ fontFamily: 'var(--font-bebas), sans-serif', color: '#00E5FF' }}>
                 {parsedSections.respiration.heading}
               </h2>
-              <p className="text-sm text-white/70 leading-relaxed" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>
-                {parsedSections.respiration.body}
-              </p>
+              {teacherUnlocked ? (
+                <InlineParagraphEditor
+                  initialValue={parsedSections.respiration.body}
+                  onSave={(newBody) => handleInlineParagraphSave('respiration', newBody)}
+                  onError={(message) => showOverrideToast(message, "error")}
+                  ariaLabel={t("exerciseEditor.editRespirationAriaLabel")}
+                  placeholder={t("exerciseEditor.editParagraphPlaceholder")}
+                  saveLabel={t("exerciseEditor.editParagraphSaveLabel")}
+                  sectionKey="respiration"
+                  className="text-sm text-white/70 leading-relaxed"
+                  style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}
+                />
+              ) : (
+                <p className="text-sm text-white/70 leading-relaxed" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>
+                  {parsedSections.respiration.body}
+                </p>
+              )}
             </div>
           )}
 
@@ -1691,9 +1846,23 @@ export function ExerciseLiveDetail({
               </button>
               {securiteOpen && (
                 <div className="rounded-xl px-4 py-3 mb-1" style={{ background: 'rgba(255,0,110,0.05)', border: '1px solid rgba(255,0,110,0.15)' }}>
-                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,0,110,0.8)' }}>
-                    {parsedSections.securite.body}
-                  </p>
+                  {teacherUnlocked ? (
+                    <InlineParagraphEditor
+                      initialValue={parsedSections.securite.body}
+                      onSave={(newBody) => handleInlineParagraphSave('securite', newBody)}
+                      onError={(message) => showOverrideToast(message, "error")}
+                      ariaLabel={t("exerciseEditor.editSecuriteAriaLabel")}
+                      placeholder={t("exerciseEditor.editParagraphPlaceholder")}
+                      saveLabel={t("exerciseEditor.editParagraphSaveLabel")}
+                      sectionKey="securite"
+                      className="text-sm leading-relaxed"
+                      style={{ color: 'rgba(255,0,110,0.8)' }}
+                    />
+                  ) : (
+                    <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,0,110,0.8)' }}>
+                      {parsedSections.securite.body}
+                    </p>
+                  )}
                 </div>
               )}
             </div>

@@ -1,0 +1,305 @@
+/* Phase E.2.2.5 — Styles visuels de la page login prof.
+   Recomposition en React des éléments du splash (sans modifier public/splash.js).
+   Toutes les animations respectent prefers-reduced-motion.
+
+   Hotfix 2 : dimensions proportionnelles au container (%) au lieu de vmin/px,
+   pour que le visuel remplisse correctement la colonne gauche sur desktop. */
+
+.root {
+  position: relative;
+  overflow: hidden;
+  background-color: #04040A;
+  color: #f0f0f5;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+}
+
+/* Fond radial — double glow cyan/magenta subtil */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 50% 40% at 35% 25%, #00E5FF0d, transparent),
+    radial-gradient(ellipse 40% 50% at 65% 75%, #FF006E0a, transparent);
+  pointer-events: none;
+}
+
+/* Film grain overlay */
+.grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.025;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  background-size: 200px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* SVG central — cercles concentriques qui encadrent le mannequin.
+   Les attributs width/height du JSX sont écrasés par ces règles CSS. */
+.svgCore {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  width: auto;
+  height: 68%;
+  aspect-ratio: 1 / 1;
+  max-height: 680px;
+  max-width: 680px;
+  animation: rotate 60s linear infinite;
+  transform-origin: center;
+}
+
+/* Mannequin — dominant visuel, carré, encadré par les cercles */
+.mannequinWrap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  width: auto;
+  height: 52%;
+  aspect-ratio: 1 / 1;
+  max-height: 520px;
+  max-width: 520px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mannequin {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(0.9) contrast(1.2)
+    drop-shadow(0 0 12px rgba(0, 229, 255, 0.25))
+    drop-shadow(0 0 25px rgba(123, 47, 255, 0.12));
+  mix-blend-mode: screen;
+  opacity: 0.95;
+}
+
+.mannequinMask {
+  position: absolute;
+  inset: -30px;
+  background: radial-gradient(
+    ellipse 65% 75% at 50% 50%,
+    transparent 35%,
+    #04040A 100%
+  );
+  pointer-events: none;
+}
+
+/* Ligne de scan — boucle infinie subtile 22s */
+.scanLine {
+  position: absolute;
+  top: 5%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 5%,
+    rgba(0, 229, 255, 0.5) 30%,
+    rgba(0, 229, 255, 0.8) 50%,
+    rgba(0, 229, 255, 0.5) 70%,
+    transparent 95%
+  );
+  box-shadow:
+    0 0 8px rgba(0, 229, 255, 0.4),
+    0 0 20px rgba(0, 229, 255, 0.2);
+  z-index: 5;
+  animation: scan 22s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Typographie centrale — sous le mannequin, zone centre-bas.
+   top = position du coin haut (pas de translate Y). */
+.typo {
+  position: absolute;
+  top: 78%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(6px, 0.8vh, 14px);
+}
+
+.title {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: clamp(1.4rem, 3.5vw, 3rem);
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  color: #f0f0f5;
+  line-height: 1;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.gradLine {
+  width: clamp(44px, 4vw, 88px);
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 229, 255, 0.8),
+    rgba(255, 0, 110, 0.8),
+    transparent
+  );
+}
+
+.subtitle {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: clamp(0.55rem, 0.85vw, 0.95rem);
+  font-weight: 500;
+  letter-spacing: 0.5em;
+  color: rgba(255, 255, 255, 0.22);
+}
+
+/* Corners TL / TR — "ESPACE" / "ENSEIGNANT" */
+.cornerTL,
+.cornerTR {
+  position: absolute;
+  top: 6%;
+  z-index: 4;
+}
+.cornerTL {
+  left: 8%;
+}
+.cornerTR {
+  right: 8%;
+  text-align: right;
+}
+
+.cornerDecoTL,
+.cornerDecoTR {
+  width: clamp(14px, 1.1vw, 22px);
+  height: clamp(14px, 1.1vw, 22px);
+  margin-bottom: 6px;
+}
+.cornerDecoTL {
+  border-top: 1px solid rgba(0, 229, 255, 0.4);
+  border-left: 1px solid rgba(0, 229, 255, 0.4);
+}
+.cornerDecoTR {
+  border-top: 1px solid rgba(0, 229, 255, 0.4);
+  border-right: 1px solid rgba(0, 229, 255, 0.4);
+  margin-left: auto;
+}
+
+.cornerText {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: clamp(0.55rem, 0.75vw, 0.85rem);
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  color: rgba(0, 229, 255, 0.45);
+}
+
+/* Bandeau bas 2 lignes — près du bord bas */
+.footer {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(6px, 0.8vh, 12px);
+  white-space: nowrap;
+}
+
+.footerLine1 {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: clamp(0.52rem, 0.72vw, 0.82rem);
+  letter-spacing: 0.25em;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.footerLine2 {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: clamp(0.5rem, 0.68vw, 0.78rem);
+  letter-spacing: 0.25em;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* Effet lumière bas */
+.bottomGlow {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: clamp(40px, 8vh, 120px);
+  background: linear-gradient(
+    to top,
+    rgba(0, 229, 255, 0.08),
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* Mobile portrait : container plus bas (40svh), proportions ajustées
+   pour éviter que typo et mannequin ne se chevauchent. */
+@media (orientation: portrait) and (max-width: 768px) {
+  .mannequinWrap {
+    height: 45%;
+  }
+  .svgCore {
+    height: 58%;
+  }
+  .typo {
+    top: 74%;
+  }
+  .cornerTL,
+  .cornerTR {
+    top: 8%;
+  }
+}
+
+/* === Keyframes === */
+@keyframes rotate {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes scan {
+  0% {
+    top: 5%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  50% {
+    top: 90%;
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    top: 5%;
+    opacity: 0;
+  }
+}
+
+/* Respect prefers-reduced-motion : on fige tout */
+@media (prefers-reduced-motion: reduce) {
+  .svgCore {
+    animation: none;
+  }
+  .scanLine {
+    animation: none;
+    opacity: 0;
+  }
+}

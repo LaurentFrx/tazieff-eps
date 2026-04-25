@@ -1,0 +1,208 @@
+/* Phase E.2.3.5 — Styles catalogue exercices prof */
+
+.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.title {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: 0.04em;
+  color: #f0f0f5;
+  margin: 0;
+  line-height: 1;
+}
+
+.subtitle {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Toolbar (search + count) */
+.catalogue {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.search {
+  flex: 1;
+  min-width: 240px;
+  padding: 0.7rem 1rem;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f0f0f5;
+  border-radius: 10px;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.9rem;
+  transition: border-color 0.15s;
+}
+
+.search:focus {
+  outline: none;
+  border-color: #00e5ff;
+}
+
+.count {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.1em;
+}
+
+.reset {
+  padding: 0.55rem 0.9rem;
+  background: transparent;
+  border: 1px solid rgba(255, 0, 110, 0.3);
+  color: #ff4f90;
+  border-radius: 8px;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.reset:hover {
+  background: rgba(255, 0, 110, 0.08);
+}
+
+/* Chips */
+.chipRow {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.75);
+  border-radius: 999px;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.chip:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.chipActive {
+  background: rgba(0, 229, 255, 0.12);
+  border-color: rgba(0, 229, 255, 0.5);
+  color: #f0f0f5;
+}
+
+.colorDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* Grid + cards */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  transition: border-color 0.15s;
+}
+
+.card:hover {
+  border-color: rgba(0, 229, 255, 0.3);
+}
+
+.cardTitle {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: 0.04em;
+  color: #f0f0f5;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.cardLevel {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: rgba(0, 229, 255, 0.8);
+  padding: 0.1rem 0.5rem;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 999px;
+  text-transform: uppercase;
+  width: fit-content;
+}
+
+.cardMuscles {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+}
+
+.annotateBtn {
+  margin-top: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.55rem 1rem;
+  background: linear-gradient(135deg, #ff8c00 0%, #ff006e 100%);
+  color: #fff;
+  border-radius: 10px;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.annotateBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(255, 140, 0, 0.35);
+}
+
+.emptyState {
+  padding: 2rem;
+  text-align: center;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.5);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+}

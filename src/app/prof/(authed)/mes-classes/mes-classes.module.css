@@ -1,0 +1,205 @@
+/* Phase E.2.3.4 — Styles /prof/mes-classes */
+
+.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: #f0f0f5;
+  margin: 0 0 0.5rem;
+  line-height: 1;
+}
+
+.subtitle {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+  max-width: 560px;
+  line-height: 1.5;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.7rem 1.2rem;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #00e5ff 0%, #7b2fff 100%);
+  color: #04040a;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.15s;
+  white-space: nowrap;
+}
+
+.cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0, 229, 255, 0.35);
+}
+
+/* Empty state */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 1.5rem;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.emptyTitle {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+.emptyDesc {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+  max-width: 440px;
+}
+
+.errorBox {
+  padding: 1rem;
+  border: 1px solid rgba(255, 0, 110, 0.4);
+  background: rgba(255, 0, 110, 0.08);
+  border-radius: 12px;
+  color: #ff4f90;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.9rem;
+}
+
+/* Grid des cards */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 229, 255, 0.35);
+  background: rgba(0, 229, 255, 0.04);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cardName {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: 1.6rem;
+  letter-spacing: 0.06em;
+  color: #f0f0f5;
+  margin: 0;
+}
+
+.level {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  color: rgba(0, 229, 255, 0.8);
+  padding: 0.15rem 0.5rem;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.orgName {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+}
+
+.codeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.codeBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.codeLabel {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.25em;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+}
+
+.codeValue {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: 1.8rem;
+  letter-spacing: 0.2em;
+  color: #00e5ff;
+  line-height: 1;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.students {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.arrow {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: 1.2rem;
+  color: rgba(0, 229, 255, 0.7);
+}

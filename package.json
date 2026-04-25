@@ -13,12 +13,21 @@
         "test": "vitest",
         "test:ui": "vitest --ui",
         "test:run": "vitest run",
-        "type-check": "tsc --noEmit"
+        "type-check": "tsc --noEmit",
+        "db:diff": "supabase db diff --schema public",
+        "db:push": "supabase db push",
+        "db:pull": "supabase db pull",
+        "db:types": "supabase gen types typescript --project-id zefkltkiigxkjcrdesrk --schema public > src/types/database.ts",
+        "db:reset": "supabase db reset",
+        "db:new-migration": "supabase migration new",
+        "db:migration-list": "supabase migration list",
+        "db:seed": "tsx supabase/seeds/e2_1_seed_users.ts"
     },
     "dependencies": {
         "@react-three/drei": "^10.7.7",
         "@react-three/fiber": "^9.5.0",
         "@serwist/next": "^9.5.0",
+        "@supabase/ssr": "^0.10.2",
         "@supabase/supabase-js": "^2.93.1",
         "@use-gesture/react": "^10.3.1",
         "lucide-react": "^0.475.0",
@@ -52,6 +61,7 @@
         "gray-matter": "^4.0.3",
         "jsdom": "^26.0.0",
         "sharp": "^0.33.5",
+        "supabase": "^2.93.0",
         "tailwindcss": "^4",
         "typescript": "^5",
         "vitest": "^4.0.18"

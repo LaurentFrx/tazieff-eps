@@ -1,0 +1,300 @@
+/* Phase E.2.3.4 — Détail d'une classe */
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.back {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  width: fit-content;
+  padding: 0.25rem 0;
+}
+.back:hover {
+  color: #00e5ff;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: 0.04em;
+  color: #f0f0f5;
+  margin: 0 0 0.5rem;
+  line-height: 1;
+}
+
+.meta {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+}
+
+.countBadge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  color: #00e5ff;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.82rem;
+}
+
+.error {
+  padding: 1rem;
+  border: 1px solid rgba(255, 0, 110, 0.4);
+  background: rgba(255, 0, 110, 0.08);
+  border-radius: 12px;
+  color: #ff4f90;
+}
+
+/* Code + QR */
+.codeSection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .codeSection {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.codeBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.codeLabel {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.25em;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.codeDisplay {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: clamp(3rem, 7vw, 5rem);
+  letter-spacing: 0.3em;
+  color: #00e5ff;
+  line-height: 1;
+  margin: 0;
+  text-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+}
+
+.codeActions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.secondaryBtn {
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f0f0f5;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.secondaryBtn:hover:not(:disabled) {
+  border-color: rgba(0, 229, 255, 0.4);
+  background: rgba(0, 229, 255, 0.08);
+}
+
+.dangerBtn {
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid rgba(255, 0, 110, 0.3);
+  color: #ff4f90;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.dangerBtn:hover:not(:disabled) {
+  background: rgba(255, 0, 110, 0.1);
+}
+
+.dangerBtnSolid {
+  padding: 0.65rem 1.2rem;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ff006e 0%, #7b2fff 100%);
+  color: #fff;
+  border: none;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dangerBtnSolid:disabled,
+.dangerBtn:disabled,
+.secondaryBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.errorText {
+  color: #ff4f90;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+/* QR */
+.qrBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.qrWrapper {
+  padding: 1rem;
+  background: #f0f0f5;
+  border-radius: 16px;
+}
+
+.qrHint {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+}
+
+/* Enrollments */
+.enrollments {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sectionTitle {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: 1.25rem;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.emptyEnrolls {
+  padding: 1.5rem;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+.enrollList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.enrollItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+}
+
+.enrollId {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.enrollDate {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 100;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.modal {
+  max-width: 440px;
+  width: 100%;
+  background: #0a0a16;
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  border-radius: 16px;
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modalTitle {
+  font-family: var(--font-bebas), sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.08em;
+  color: #f0f0f5;
+  margin: 0;
+}
+
+.modalBody {
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  line-height: 1.55;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
