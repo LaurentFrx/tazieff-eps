@@ -335,6 +335,30 @@ export type Database = {
         }
         Relationships: []
       }
+      student_profiles: {
+        Row: {
+          created_at: string
+          first_name: string
+          last_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          first_name: string
+          last_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          first_name?: string
+          last_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       teacher_annotations: {
         Row: {
           author_user_id: string
@@ -446,6 +470,7 @@ export type Database = {
       generate_class_join_code: { Args: never; Returns: string }
       is_admin: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      is_teacher_of_student: { Args: { p_student_user_id: string }; Returns: boolean }
       join_class_with_code: { Args: { p_code: string }; Returns: string }
       user_class_ids: { Args: never; Returns: string[] }
       user_org_ids: { Args: never; Returns: string[] }

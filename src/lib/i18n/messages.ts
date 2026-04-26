@@ -1162,6 +1162,35 @@ export const messages = {
       methodsSeeMethod: "Voir la fiche compl\u00e8te",
       backHome: "Retour \u00e0 l\u2019accueil",
     },
+    maClasse: {
+      title: "Ma classe",
+      joinForm: {
+        firstName: "Pr\u00e9nom",
+        lastName: "Nom",
+        code: "Code de classe",
+        submit: "Rejoindre ma classe",
+        submitting: "Inscription...",
+        errors: {
+          codeNotFound: "Code de classe inconnu. V\u00e9rifie aupr\u00e8s de ton enseignant.",
+          alreadyEnrolled: "Tu es d\u00e9j\u00e0 dans cette classe.",
+          joinFailed: "Une erreur est survenue, r\u00e9essaie dans un instant.",
+          networkError: "Connexion indisponible. R\u00e9essaie dans un instant.",
+          firstNameRequired: "Indique ton pr\u00e9nom.",
+          lastNameRequired: "Indique ton nom.",
+          codeRequired: "Indique le code de classe (4 caract\u00e8res minimum).",
+        },
+      },
+      detail: {
+        schoolYear: "Ann\u00e9e scolaire",
+        teacher: "Enseignant",
+        organization: "\u00c9tablissement",
+        teacherUnknown: "Enseignant",
+        loading: "Chargement\u2026",
+      },
+    },
+    topBar: {
+      maClasse: "Ma classe",
+    },
   },
   en: {
     header: {
@@ -2324,6 +2353,35 @@ export const messages = {
       methodsSeeMethod: "See full method",
       backHome: "Back to home",
     },
+    maClasse: {
+      title: "My class",
+      joinForm: {
+        firstName: "First name",
+        lastName: "Last name",
+        code: "Class code",
+        submit: "Join my class",
+        submitting: "Joining...",
+        errors: {
+          codeNotFound: "Unknown class code. Check with your teacher.",
+          alreadyEnrolled: "You are already in this class.",
+          joinFailed: "Something went wrong, try again in a moment.",
+          networkError: "Network unavailable. Try again in a moment.",
+          firstNameRequired: "Please enter your first name.",
+          lastNameRequired: "Please enter your last name.",
+          codeRequired: "Please enter the class code (4 characters minimum).",
+        },
+      },
+      detail: {
+        schoolYear: "School year",
+        teacher: "Teacher",
+        organization: "School",
+        teacherUnknown: "Teacher",
+        loading: "Loading…",
+      },
+    },
+    topBar: {
+      maClasse: "My class",
+    },
   },
   es: {
     header: {
@@ -3485,6 +3543,35 @@ export const messages = {
       methodsCollapse: "Reducir",
       methodsSeeMethod: "Ver la ficha completa",
       backHome: "Volver al inicio",
+    },
+    maClasse: {
+      title: "Mi clase",
+      joinForm: {
+        firstName: "Nombre",
+        lastName: "Apellido",
+        code: "Código de clase",
+        submit: "Unirme a mi clase",
+        submitting: "Uniéndome...",
+        errors: {
+          codeNotFound: "Código de clase desconocido. Verifica con tu profesor.",
+          alreadyEnrolled: "Ya estás en esta clase.",
+          joinFailed: "Algo salió mal, inténtalo de nuevo en un momento.",
+          networkError: "Conexión no disponible. Inténtalo de nuevo en un momento.",
+          firstNameRequired: "Indica tu nombre.",
+          lastNameRequired: "Indica tu apellido.",
+          codeRequired: "Indica el código de clase (mínimo 4 caracteres).",
+        },
+      },
+      detail: {
+        schoolYear: "Año escolar",
+        teacher: "Profesor",
+        organization: "Centro",
+        teacherUnknown: "Profesor",
+        loading: "Cargando…",
+      },
+    },
+    topBar: {
+      maClasse: "Mi clase",
     },
   },
 } as const;
