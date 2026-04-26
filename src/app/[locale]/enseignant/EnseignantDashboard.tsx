@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Copy, Edit2, Link2, Plus, Share2, Trash2, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { useTeacherMode } from "@/hooks/useTeacherMode";
 import { getEnseignantLabels } from "./labels";
 
 /* ── Types ──────────────────────────────────────────────────────────── */
@@ -57,12 +56,12 @@ function encodeSession(session: TeacherSession): string {
 
 export function EnseignantDashboard({ methodeNames, exerciceNames }: Props) {
   const { t } = useI18n();
-  const { unlocked, pin, unlock } = useTeacherMode();
+  // P0.1 — la page /enseignant est ouverte à tous (outil localStorage,
+  // sans écriture base de données). Le PIN gate a été supprimé.
   const [sessions, setSessions] = useState<TeacherSession[]>([]);
   const [editing, setEditing] = useState<TeacherSession | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
-  const [pinInput, setPinInput] = useState("");
 
   // Form state
   const [titre, setTitre] = useState("");
@@ -73,8 +72,8 @@ export function EnseignantDashboard({ methodeNames, exerciceNames }: Props) {
   const [selectedExercices, setSelectedExercices] = useState<string[]>([]);
 
   useEffect(() => {
-    if (unlocked) setSessions(loadSessions());
-  }, [unlocked]);
+    setSessions(loadSessions());
+  }, []);
 
   const { niveauLabels, objectifLabels } = getEnseignantLabels(t);
 
@@ -149,40 +148,9 @@ export function EnseignantDashboard({ methodeNames, exerciceNames }: Props) {
     });
   }, []);
 
-  /* ── PIN gate ─────────────────────────────────────────────────────── */
-
-  if (!unlocked) {
-    return (
-      <section className="page">
-        <header className="page-header">
-          <h1>{t("enseignant.title")}</h1>
-          <p className="lede">{t("enseignant.locked")}</p>
-        </header>
-        <div className="card" style={{ maxWidth: 360, margin: "0 auto" }}>
-          <label className="carnet-field">
-            <span className="carnet-label">PIN</span>
-            <input
-              type="password"
-              className="carnet-input"
-              value={pinInput}
-              onChange={(e) => setPinInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && pinInput) unlock(pinInput); }}
-              placeholder="••••"
-            />
-          </label>
-          <button
-            type="button"
-            className="primary-button mt-4"
-            onClick={() => { if (pinInput) unlock(pinInput); }}
-          >
-            {t("enseignant.unlock")}
-          </button>
-        </div>
-      </section>
-    );
-  }
-
   /* ── Dashboard ────────────────────────────────────────────────────── */
+  // P0.1 — Plus de PIN gate. La page est accessible à tous, c'est un outil
+  // local (localStorage uniquement, aucune écriture base de données).
 
   return (
     <section className="page">

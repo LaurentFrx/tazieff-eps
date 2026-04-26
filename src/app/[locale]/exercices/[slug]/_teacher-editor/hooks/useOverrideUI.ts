@@ -59,8 +59,6 @@ export type UseOverrideUIInput = {
   slug: string;
   locale: Lang;
   triggerRevalidate: (targetSlug: string) => void;
-  teacherPin: string;
-  setTeacherPin: Dispatch<SetStateAction<string>>;
 };
 
 export type UseOverrideUIReturn = Omit<
@@ -96,8 +94,6 @@ export function useOverrideUI(
     slug,
     locale,
     triggerRevalidate,
-    teacherPin,
-    setTeacherPin,
   } = input;
 
   const { t } = useI18n();
@@ -252,10 +248,8 @@ export function useOverrideUI(
   };
 
   const handleDeleteLive = async () => {
-    if (!teacherPin) {
-      handleAuthError(t("teacherMode.pinRequired"));
-      return;
-    }
+    // P0.1 — la garde "PIN saisi" est supprimée. requireAdmin() côté serveur
+    // contrôle l'authentification.
     setIsDeletingLive(true);
     let response: Response;
     try {
@@ -263,8 +257,6 @@ export function useOverrideUI(
         `/api/teacher/live-exercise?slug=${encodeURIComponent(slug)}&locale=${encodeURIComponent(locale)}`,
         {
           method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pin: teacherPin }),
         },
       );
     } catch {
@@ -415,7 +407,6 @@ export function useOverrideUI(
     deleteLiveOpen,
     isDeletingLive,
     liveExists,
-    teacherPin,
 
     setActiveSectionId,
     setSectionMenuOpenId,
@@ -426,7 +417,6 @@ export function useOverrideUI(
     setDeleteLiveOpen,
     setIsDeletingLive,
     setLiveExists,
-    setTeacherPin,
 
     sectionTitleRefs,
     blockFieldRefs,

@@ -24,14 +24,8 @@ function getTeacherLoginUrl(): string {
 
 
 /* ── Types & constants ─────────────────────────────────────────────── */
-
-type TeacherModeSnapshot = { unlocked: boolean; pin: string };
-
-declare global {
-  interface Window {
-    __teacherMode?: TeacherModeSnapshot;
-  }
-}
+// P0.1 — Le mécanisme PIN (window.__teacherMode + section "Mode professeur"
+// de cette page) a été supprimé. Voir GOUVERNANCE_EDITORIALE.md §3.1, §7.
 
 const LANG_OPTIONS = [
   { value: "fr" as const, flag: "\u{1F1EB}\u{1F1F7}", short: "FR" },
@@ -51,20 +45,8 @@ const FIELD_THEME_OPTIONS = [
   { value: 3 as const, key: "methodes.objectifs.puissance" as const, color: "#fb923c" },
 ];
 
-const DEFAULT_TEACHER_MODE: TeacherModeSnapshot = { unlocked: false, pin: "" };
-
 const ORG_CODE_KEY = "tazieff-org-code";
 const PLAN_CACHE_KEY = "tazieff-plan-cache";
-
-function getTeacherModeSnapshot(): TeacherModeSnapshot {
-  if (typeof window === "undefined") return { ...DEFAULT_TEACHER_MODE };
-  const s = window.__teacherMode;
-  return s ? { unlocked: Boolean(s.unlocked), pin: s.pin ?? "" } : { ...DEFAULT_TEACHER_MODE };
-}
-
-function setTeacherModeSnapshot(next: TeacherModeSnapshot) {
-  if (typeof window !== "undefined") window.__teacherMode = next;
-}
 
 /* ── Segment control ───────────────────────────────────────────────── */
 
@@ -118,11 +100,7 @@ export default function ReglagesPage() {
   const [mounted, setMounted] = useState(false);
 
 
-  // Teacher mode
-  const [teacherMode, setTeacherMode] = useState<TeacherModeSnapshot>(getTeacherModeSnapshot);
-  const [pinModalOpen, setPinModalOpen] = useState(false);
-  const [pinValue, setPinValue] = useState(teacherMode.pin);
-  const [pinError, setPinError] = useState<string | null>(null);
+  // P0.1 — Section "Mode professeur" (PIN) retirée. Voir GOUVERNANCE_EDITORIALE.md.
 
   // Org code (inline)
   const [orgCode, setOrgCode] = useState(
@@ -145,30 +123,6 @@ export default function ReglagesPage() {
   const hasAcademicEmail = !!(user?.email && isAcademicEmail(user.email));
 
   /* ── Handlers ────────────────────────────────────────────────────── */
-
-  const openPinModal = () => {
-    setPinError(null);
-    setPinValue(teacherMode.pin);
-    setPinModalOpen(true);
-  };
-
-  const handleUnlock = (event?: React.FormEvent) => {
-    event?.preventDefault();
-    if (!pinValue.trim()) { setPinError(t("teacherMode.pinRequired")); return; }
-    const next = { unlocked: true, pin: pinValue.trim() };
-    setTeacherModeSnapshot(next);
-    setTeacherMode(next);
-    setPinError(null);
-    setPinModalOpen(false);
-  };
-
-  const handleDisable = () => {
-    const next = { unlocked: false, pin: "" };
-    setTeacherModeSnapshot(next);
-    setTeacherMode(next);
-    setPinValue("");
-    setPinError(null);
-  };
 
   const handleResetOnboarding = useCallback(() => {
     try {
@@ -444,29 +398,9 @@ export default function ReglagesPage() {
             </>
           )}
 
-          {/* Mode professeur */}
-          <div className="border-b border-[color:var(--border)] my-3" />
-          <button
-            type="button"
-            className="flex w-full items-center justify-between py-0.5"
-            onClick={teacherMode.unlocked ? handleDisable : openPinModal}
-          >
-            <span className="inline-flex items-center gap-2 text-sm font-medium text-[color:var(--ink)]">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-[color:var(--muted)]">
-                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
-              </svg>
-              {t("settings.teacherModeLabel")}
-            </span>
-            <span
-              className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                teacherMode.unlocked
-                  ? "bg-emerald-500/20 text-emerald-400"
-                  : "bg-[color:var(--border)] text-[color:var(--muted)]"
-              }`}
-            >
-              {teacherMode.unlocked ? t("settings.active") : t("teacherMode.locked")}
-            </span>
-          </button>
+          {/* P0.1 — Section "Mode professeur" (PIN) retirée. L'édition du
+              catalogue passe désormais par compte super_admin / admin
+              authentifié (cf. GOUVERNANCE_EDITORIALE.md §3.1, §7). */}
         </div>
 
         {/* ── SECTION 3 : À propos ────────────────────────────── */}
@@ -491,32 +425,7 @@ export default function ReglagesPage() {
         </div>
       </div>
 
-      {/* ── PIN Modal ─────────────────────────────────────────── */}
-      {pinModalOpen && (
-        <div className="modal-overlay" role="dialog" aria-modal="true">
-          <div className="modal-card">
-            <h2>{t("teacherMode.pinHeading")}</h2>
-            <form className="stack-md" onSubmit={handleUnlock}>
-              <input
-                className="field-input"
-                type="password"
-                value={pinValue}
-                onChange={(event) => setPinValue(event.target.value)}
-                placeholder={t("teacherMode.pinRequired")}
-              />
-              {pinError && <p className="text-xs text-[color:var(--muted)]">{pinError}</p>}
-              <div className="modal-actions">
-                <button type="submit" className="primary-button primary-button--wide">
-                  {t("teacherMode.unlock")}
-                </button>
-                <button type="button" className="chip" onClick={() => setPinModalOpen(false)}>
-                  {t("teacherMode.cancel")}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* P0.1 — PIN Modal retiré. */}
     </section>
   );
 }

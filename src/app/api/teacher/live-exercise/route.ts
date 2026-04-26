@@ -1,10 +1,24 @@
+// Phase P0.1 — POST + DELETE /api/teacher/live-exercise
+//
+// Verrouillage admin : routes gatées par requireAdmin(). Le PIN est supprimé.
+//
+// NOTE schéma : la table `live_exercises` n'a actuellement pas de colonne
+// `author_user_id` (4 colonnes : slug, locale, data_json, updated_at). La
+// traçabilité auteur ne peut pas être ajoutée ici. Migration prévue hors
+// scope P0.1. Le client utilisateur est tout de même utilisé (RLS active)
+// pour cohérence avec le reste de l'API admin.
+//
+// Référence : GOUVERNANCE_EDITORIALE.md §3.1, §7.
+
 import { NextResponse } from "next/server";
 import { ExerciseFrontmatterSchema } from "@/lib/content/schema";
 import { splitMarkdownSections } from "@/lib/live/patch";
-import { getSupabaseServiceClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdmin, AuthError } from "@/lib/auth/requireAdmin";
+
+export const runtime = "nodejs";
 
 type LiveExercisePayload = {
-  pin?: string;
   slug?: string;
   locale?: string;
   dataJson?: {
@@ -17,10 +31,6 @@ type LiveExercisePayload = {
 type LiveStats = {
   sections: number | null;
   blocks: number | null;
-};
-
-type LiveDeletePayload = {
-  pin?: string;
 };
 
 type ErrorPayload = {
@@ -87,6 +97,21 @@ function jsonError(code: string, message: string, status: number) {
   });
 }
 
+function authErrorResponse(err: AuthError, slug?: string, locale?: string) {
+  logLiveError({
+    slug,
+    locale,
+    status: err.status,
+    code: err.code,
+    msg: err.code === "unauthenticated" ? "Authentification requise." : "Accès refusé.",
+  });
+  return jsonError(
+    err.code,
+    err.code === "unauthenticated" ? "Authentification requise." : "Accès refusé.",
+    err.status,
+  );
+}
+
 export async function POST(request: Request) {
   let payload: LiveExercisePayload | null = null;
   try {
@@ -104,8 +129,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Payload invalide." }, { status: 400 });
   }
 
-  const { pin, slug, locale, dataJson } = payload;
-  if (!pin || !slug || !locale || !dataJson) {
+  const { slug, locale, dataJson } = payload;
+  if (!slug || !locale || !dataJson) {
     logLiveError({
       slug,
       locale,
@@ -116,15 +141,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Champs requis manquants." }, { status: 400 });
   }
 
-  if (pin !== process.env.TEACHER_PIN) {
+  const supabase = await createSupabaseServerClient();
+
+  // P0.1 : garde admin authentifié (remplace le check PIN).
+  try {
+    await requireAdmin(supabase);
+  } catch (err) {
+    if (err instanceof AuthError) {
+      return authErrorResponse(err, slug, locale);
+    }
     logLiveError({
       slug,
       locale,
-      status: 401,
-      code: "invalid_pin",
-      msg: "PIN invalide.",
+      status: 500,
+      code: "auth_check_failed",
+      msg: err instanceof Error ? err.message : String(err),
     });
-    return NextResponse.json({ error: "PIN invalide." }, { status: 401 });
+    return NextResponse.json({ error: "internal" }, { status: 500 });
   }
 
   const rawFrontmatter = (dataJson.frontmatter as Record<string, unknown>) ?? {};
@@ -167,9 +200,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Frontmatter invalide." }, { status: 400 });
   }
 
-  const supabase = getSupabaseServiceClient();
   const updatedAt = new Date().toISOString();
   const stats = getLiveStats(content);
+  void stats;
+
+  // TODO P0.x : la table `live_exercises` n'a pas de colonne author_user_id.
+  // Quand une migration future l'ajoutera, alimenter ici author_user_id = user.id.
   const { error } = await supabase
     .from("live_exercises")
     .upsert(
@@ -189,6 +225,9 @@ export async function POST(request: Request) {
     );
 
   if (error) {
+    if (error.code === "42501") {
+      return jsonError("rls_denied", "Accès refusé.", 403);
+    }
     logLiveError({
       slug,
       locale,
@@ -199,7 +238,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Erreur d'enregistrement." }, { status: 500 });
   }
 
-
   return NextResponse.json({ ok: true });
 }
 
@@ -208,26 +246,21 @@ export async function DELETE(request: Request) {
   const slug = searchParams.get("slug")?.trim() ?? "";
   const locale = searchParams.get("locale")?.trim() ?? "";
 
-  let payload: LiveDeletePayload | null = null;
-  try {
-    payload = (await request.json()) as LiveDeletePayload;
-  } catch {
-    payload = null;
-  }
-
   if (!slug || !locale) {
     return jsonError("missing_fields", "Champs requis manquants.", 400);
   }
 
-  if (!payload?.pin) {
-    return jsonError("missing_fields", "PIN requis.", 400);
+  const supabase = await createSupabaseServerClient();
+
+  try {
+    await requireAdmin(supabase);
+  } catch (err) {
+    if (err instanceof AuthError) {
+      return authErrorResponse(err, slug, locale);
+    }
+    return jsonError("internal", "Erreur interne.", 500);
   }
 
-  if (payload.pin !== process.env.TEACHER_PIN) {
-    return jsonError("invalid_pin", "PIN invalide.", 401);
-  }
-
-  const supabase = getSupabaseServiceClient();
   const { error } = await supabase
     .from("live_exercises")
     .delete()
@@ -235,6 +268,9 @@ export async function DELETE(request: Request) {
     .eq("locale", locale);
 
   if (error) {
+    if (error.code === "42501") {
+      return jsonError("rls_denied", "Accès refusé.", 403);
+    }
     return jsonError("delete_failed", "Erreur de suppression.", 500);
   }
 

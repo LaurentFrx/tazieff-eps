@@ -59,15 +59,14 @@ function getUniqueExerciseSlug(existingSlugs: Set<string>) {
 // ---------------------------------------------------------------------------
 
 export type TeacherToolbarProps = {
-  teacherUnlocked: boolean;
-  teacherPin: string;
+  /** P0.1 — true ssi l'utilisateur courant est super_admin / admin. */
+  isAdmin: boolean;
   existingSlugs: Set<string>;
   locale: Lang;
 };
 
 export function TeacherToolbar({
-  teacherUnlocked,
-  teacherPin,
+  isAdmin,
   existingSlugs,
   locale,
 }: TeacherToolbarProps) {
@@ -76,16 +75,12 @@ export function TeacherToolbar({
   const [createStatus, setCreateStatus] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
-  if (!teacherUnlocked) {
+  if (!isAdmin) {
     return null;
   }
 
   const handleCreateExercise = async () => {
     setCreateStatus(null);
-    if (!teacherPin) {
-      setCreateStatus(t("teacherMode.pinRequired"));
-      return;
-    }
 
     setIsCreating(true);
     setCreateStatus(t("exerciseEditor.creating"));
@@ -98,7 +93,6 @@ export function TeacherToolbar({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          pin: teacherPin,
           slug,
           locale,
           dataJson: {
@@ -122,7 +116,11 @@ export function TeacherToolbar({
 
     if (!response.ok) {
       setIsCreating(false);
-      setCreateStatus(response.status === 401 ? t("teacherMode.pinInvalid") : t("exerciseEditor.createFailed"));
+      setCreateStatus(
+        response.status === 401 || response.status === 403
+          ? t("exerciseEditor.adminRequired")
+          : t("exerciseEditor.createFailed"),
+      );
       return;
     }
 

@@ -16,7 +16,6 @@ export type OverrideUIContextValue = {
   deleteLiveOpen: boolean;
   isDeletingLive: boolean;
   liveExists: boolean;
-  teacherPin: string;
 
   setActiveSectionId: Dispatch<SetStateAction<string | null>>;
   setSectionMenuOpenId: Dispatch<SetStateAction<string | null>>;
@@ -27,7 +26,6 @@ export type OverrideUIContextValue = {
   setDeleteLiveOpen: Dispatch<SetStateAction<boolean>>;
   setIsDeletingLive: Dispatch<SetStateAction<boolean>>;
   setLiveExists: Dispatch<SetStateAction<boolean>>;
-  setTeacherPin: Dispatch<SetStateAction<string>>;
 
   sectionTitleRefs: MutableRefObject<Record<string, HTMLInputElement | null>>;
   blockFieldRefs: MutableRefObject<

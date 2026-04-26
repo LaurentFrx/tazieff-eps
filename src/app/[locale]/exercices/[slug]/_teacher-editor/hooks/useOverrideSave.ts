@@ -41,7 +41,6 @@ export type UseOverrideSaveInput = {
   slug: string;
   locale: Lang;
   source: "mdx" | "live" | "imported";
-  teacherPin: string;
   setPatch: Dispatch<SetStateAction<ExerciseOverridePatch | null>>;
   triggerRevalidate: (targetSlug: string) => void;
   onAuthError: (message: string) => void;
@@ -68,7 +67,6 @@ export function useOverrideSave(
     slug,
     locale,
     source,
-    teacherPin,
     setPatch,
     triggerRevalidate,
     onAuthError,
@@ -175,10 +173,9 @@ export function useOverrideSave(
   };
 
   const handleSaveOverride = async () => {
-    if (!teacherPin) {
-      showOverrideToast(t("teacherMode.pinRequired"), "error");
-      return;
-    }
+    // P0.1 — la garde "PIN saisi" est supprimée. L'authentification est
+    // contrôlée côté serveur par requireAdmin() qui vérifie la session
+    // cookie + l'appartenance à public.app_admins.
     if (!overrideDoc) {
       setSubmitStatus(t("exerciseEditor.noChanges"));
       return;
@@ -250,7 +247,6 @@ export function useOverrideSave(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          pin: teacherPin,
           slug,
           locale,
           patchJson,
@@ -263,8 +259,8 @@ export function useOverrideSave(
       return;
     }
     if (!response.ok) {
-      if (response.status === 401) {
-        onAuthError(t("teacherMode.pinInvalid"));
+      if (response.status === 401 || response.status === 403) {
+        onAuthError(t("exerciseEditor.adminRequired"));
         setSubmitStatus(null);
         setIsSavingOverride(false);
         return;
@@ -280,7 +276,6 @@ export function useOverrideSave(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          pin: teacherPin,
           slug,
           locale,
           dataJson: {

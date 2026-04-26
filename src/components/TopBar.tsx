@@ -4,7 +4,6 @@ import { LocaleLink as Link } from "@/components/LocaleLink";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { useTeacherMode } from "@/hooks/useTeacherMode";
 import { SearchModal } from "@/components/SearchModal";
 import { useTimerContext } from "@/contexts/TimerContext";
 
@@ -57,7 +56,6 @@ function formatBadgeTime(s: number) {
 
 export function TopBar() {
   const { t } = useI18n();
-  const { unlocked: teacherUnlocked } = useTeacherMode();
   const [searchOpen, setSearchOpen] = useState(false);
   const timerCtx = useTimerContext();
 
@@ -147,16 +145,16 @@ export function TopBar() {
               <IconSettings />
             </Link>
 
-            {/* Mode enseignant — conditional */}
-            {teacherUnlocked && (
-              <Link
-                href="/enseignant"
-                className="flex items-center justify-center w-11 h-11 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                aria-label={t("enseignant.navLabel")}
-              >
-                <IconTeacher />
-              </Link>
-            )}
+            {/* P0.1 — Mode enseignant : icône visible pour tous (la page
+                /enseignant est un outil localStorage ouvert à tous, sans
+                écriture base de données). */}
+            <Link
+              href="/enseignant"
+              className="flex items-center justify-center w-11 h-11 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              aria-label={t("enseignant.navLabel")}
+            >
+              <IconTeacher />
+            </Link>
           </div>
         </div>
       </header>

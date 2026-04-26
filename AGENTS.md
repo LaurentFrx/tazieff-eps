@@ -24,4 +24,4 @@ Format d’affichage exact:
 - Si la demande implique du code: proposer un plan + liste de fichiers touchés AVANT de modifier, et attendre confirmation.
 - Interdiction de modifier menus/routes existantes sauf demande explicite.
 - Toujours exécuter `npm run lint` + `npm run build` avant commit.
-- Ne jamais exposer `SUPABASE_SERVICE_ROLE_KEY` ou `TEACHER_PIN` côté client (pas de `NEXT_PUBLIC`).
+- Ne jamais exposer `SUPABASE_SERVICE_ROLE_KEY` côté client (pas de `NEXT_PUBLIC`). [P0.1 — `TEACHER_PIN` retiré, l'édition admin passe désormais par compte authentifié.]

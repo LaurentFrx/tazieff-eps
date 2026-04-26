@@ -13,7 +13,7 @@ import {
 } from "@/lib/exercices/filters";
 import { MUSCLE_GROUP_IDS, type MuscleGroupId } from "@/lib/exercices/muscleGroups";
 import { useFavorites } from "@/hooks/useFavorites";
-import { useTeacherMode } from "@/hooks/useTeacherMode";
+import { useAppAdmin } from "@/hooks/useAppAdmin";
 import { useExercisesLiveSync } from "@/hooks/useExercisesLiveSync";
 import { ExerciseFilters } from "@/components/exercices/ExerciseFilters";
 import { ExerciseGrid } from "@/components/exercices/ExerciseGrid";
@@ -120,7 +120,9 @@ export function ExerciseListClient({
 
   // Phase 2 hooks
   const { favorites } = useFavorites();
-  const { unlocked: teacherUnlocked, pin: teacherPin } = useTeacherMode();
+  // P0.1 — la garde "mode enseignant déverrouillé" est remplacée par
+  // la vérification du rôle admin authentifié.
+  const { isAdmin } = useAppAdmin();
 
   // Read ?muscle= from URL (set by anatomy page link)
   const searchParams = useSearchParams();
@@ -165,9 +167,12 @@ export function ExerciseListClient({
     [exercises, liveRows],
   );
 
+  // P0.1 — les drafts sont visibles aux comptes admin (super_admin / admin),
+  // pas aux élèves. Le param de filterVisibleExercises s'appelle toujours
+  // `teacherUnlocked` côté lib (rétrocompat interne).
   const visibleExercises = useMemo(
-    () => filterVisibleExercises(mergedExercises, teacherUnlocked),
-    [mergedExercises, teacherUnlocked],
+    () => filterVisibleExercises(mergedExercises, isAdmin),
+    [mergedExercises, isAdmin],
   );
 
   const levelOptions = useMemo(() => {
@@ -274,8 +279,7 @@ export function ExerciseListClient({
       <BackToAnatomy />
       <div className="filter-panel">
         <TeacherToolbar
-          teacherUnlocked={teacherUnlocked}
-          teacherPin={teacherPin}
+          isAdmin={isAdmin}
           existingSlugs={existingSlugs}
           locale={locale}
         />

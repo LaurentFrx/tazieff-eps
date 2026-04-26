@@ -240,14 +240,12 @@ export default function TeacherOverrideEditor({
     deleteLiveOpen,
     isDeletingLive,
     liveExists,
-    teacherPin,
     setActiveSectionId,
     setSectionMenuOpenId,
     setBlockMenuOpenKey,
     setAddBlockMenuOpen,
     setConfirmCloseOpen,
     setDeleteLiveOpen,
-    setTeacherPin,
     sectionTitleRefs,
     blockFieldRefs,
     blockContainerRefs,
@@ -1658,14 +1656,8 @@ export default function TeacherOverrideEditor({
                   {locale}
                 </span>
               </p>
-              <label className="field-label">{t("teacherMode.pinHeading")}</label>
-              <input
-                className="field-input"
-                type="password"
-                value={teacherPin}
-                onChange={(event) => setTeacherPin(event.target.value)}
-                placeholder={t("teacherMode.pinRequired")}
-              />
+              {/* P0.1 — La saisie du PIN a été retirée. L'authentification
+                  passe par la session admin (cookie Supabase). */}
             </div>
             <div className="modal-actions">
               <button
@@ -1680,7 +1672,7 @@ export default function TeacherOverrideEditor({
                 type="button"
                 className="primary-button primary-button--wide bg-red-500 text-white hover:bg-red-600"
                 onClick={handleDeleteLive}
-                disabled={isDeletingLive || !teacherPin}
+                disabled={isDeletingLive}
               >
                 {isDeletingLive
                   ? t("exerciseEditor.deleting")

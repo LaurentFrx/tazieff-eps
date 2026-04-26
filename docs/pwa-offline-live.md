@@ -83,7 +83,9 @@ create policy "no delete live"
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
-TEACHER_PIN=
+# P0.1 (avr. 2026) — TEACHER_PIN retiré : l'édition du catalogue exige
+# désormais un compte super_admin / admin authentifié (cf. table app_admins
+# et endpoint /api/me/role).
 ```
 
 ### Forme des données LIVE

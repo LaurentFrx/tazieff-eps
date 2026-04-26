@@ -28,29 +28,31 @@ Couvrent : état initial, isFavorite, toggle add/remove, set/clear, persistance 
 
 ---
 
-## useTeacherMode
+## useAppAdmin (P0.1 — remplace useTeacherMode)
 
-Hook React gérant `window.__teacherMode` avec synchronisation via custom events.
+Hook React qui interroge `GET /api/me/role` au montage pour exposer le statut
+admin de l'utilisateur courant. Conforme à `GOUVERNANCE_EDITORIALE.md` §3.1, §7.
 
 ### API
 
 ```ts
-function useTeacherMode(): {
-  unlocked: boolean;
-  pin: string;
-  unlock: (pin: string) => void;
-  lock: () => void;
+function useAppAdmin(): {
+  isAdmin: boolean;
+  isSuperAdmin: boolean;
+  isLoading: boolean;
+  refetch: () => Promise<void>;
 };
 ```
 
 ### Comportement
 
-- Lit `window.__teacherMode` via `useSyncExternalStore`.
-- `unlock(pin)` écrit `{ unlocked: true, pin }` sur `window.__teacherMode` et dispatch `"teacherModeChange"`.
-- `lock()` écrit `{ unlocked: false, pin: "" }` et dispatch l'événement.
-- SSR-safe : retourne `{ unlocked: false, pin: "" }` côté serveur.
-- Coerce `unlocked` en `boolean` pour tolérer les valeurs truthy.
+- Initialise les booléens à `false` (deny by default — moindre privilège).
+- Appelle `/api/me/role` au mount (cache `no-store`).
+- En cas d'erreur réseau / réponse non-OK : retombe sur deny.
+- `refetch()` permet de recharger après login/logout.
 
-### Tests (10)
+### Tests (6)
 
-Couvrent : état par défaut, lecture initiale, unlock/lock, dispatch d'événements custom, coercion, réaction à `_emit` externe, round-trip.
+Couvrent : anonymous, authentifié non-admin, super_admin, admin simple, refetch après changement, fallback deny sur erreur HTTP.
+
+> Le hook précédent `useTeacherMode` (PIN local) a été supprimé en P0.1 le 26 avril 2026.

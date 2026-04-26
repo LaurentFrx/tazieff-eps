@@ -1,5 +1,28 @@
+// Phase P0.1 — POST /api/teacher/upload-media
+//
+// Verrouillage admin : route gatée par requireAdmin(). Le PIN est supprimé.
+//
+// Choix d'implémentation (option B du prompt P0.1) :
+//   - Le bucket Supabase Storage `exercise-media` n'a actuellement AUCUNE
+//     policy RLS sur `storage.objects`. L'upload exige donc le service
+//     client en l'état (BYPASSRLS).
+//   - On garde donc le service client UNIQUEMENT pour l'upload Storage et
+//     l'insert dans `media_assets`. Mais on ajoute un check `requireAdmin`
+//     en amont (sur le client utilisateur, RLS active) pour s'assurer que
+//     seul un compte super_admin/admin peut déclencher cet upload.
+//
+//   TODO P0.x : poser une policy RLS sur `storage.objects` pour le bucket
+//   `exercise-media` qui autorise l'INSERT/UPDATE/DELETE via `is_admin()`,
+//   puis basculer ici sur le client utilisateur unique (cohérence avec
+//   exercise-override / live-exercise).
+//
+// Référence : GOUVERNANCE_EDITORIALE.md §3.1, §7.
+
 import { NextResponse } from "next/server";
-import { getSupabaseServiceClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient, getSupabaseServiceClient } from "@/lib/supabase/server";
+import { requireAdmin, AuthError } from "@/lib/auth/requireAdmin";
+
+export const runtime = "nodejs";
 
 const BUCKET = "exercise-media";
 const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
@@ -33,6 +56,30 @@ function getSupabaseMeta(error: unknown) {
 
 export async function POST(request: Request) {
   try {
+    // P0.1 : garde admin authentifié AVANT de toucher au formData (économie
+    // de bande passante si l'utilisateur n'est pas admin).
+    const userSupabase = await createSupabaseServerClient();
+    try {
+      await requireAdmin(userSupabase);
+    } catch (err) {
+      if (err instanceof AuthError) {
+        logError(
+          err.code === "unauthenticated" ? "UNAUTHORIZED" : "FORBIDDEN",
+          err.status,
+          err.code,
+        );
+        return errorJson(
+          err.status,
+          err.code === "unauthenticated" ? "UNAUTHORIZED" : "FORBIDDEN",
+          err.code === "unauthenticated"
+            ? "Authentification requise."
+            : "Accès refusé.",
+        );
+      }
+      logError("UNHANDLED", 500, "auth_check_failed");
+      return errorJson(500, "UNHANDLED", "Erreur interne.");
+    }
+
     let formData: FormData;
     try {
       formData = await request.formData();
@@ -42,13 +89,12 @@ export async function POST(request: Request) {
       return errorJson(400, "BAD_REQUEST", "Payload invalide.");
     }
 
-    const pin = formData.get("pin");
     const slug = formData.get("slug");
     const file = formData.get("file");
     const width = formData.get("width");
     const height = formData.get("height");
 
-    if (typeof pin !== "string" || typeof slug !== "string" || !slug.trim()) {
+    if (typeof slug !== "string" || !slug.trim()) {
       logError("BAD_REQUEST", 400, "missing_fields");
       return errorJson(400, "BAD_REQUEST", "Champs requis manquants.");
     }
@@ -56,11 +102,6 @@ export async function POST(request: Request) {
     if (!file || typeof file === "string") {
       logError("BAD_REQUEST", 400, "missing_file");
       return errorJson(400, "BAD_REQUEST", "Fichier manquant.");
-    }
-
-    if (pin !== process.env.TEACHER_PIN) {
-      logError("UNAUTHORIZED", 401, "invalid_pin");
-      return errorJson(401, "UNAUTHORIZED", "PIN invalide.");
     }
 
     if (!file.type || !ALLOWED_MIME_TYPES.has(file.type)) {
@@ -107,6 +148,7 @@ export async function POST(request: Request) {
 
     let supabase: ReturnType<typeof getSupabaseServiceClient>;
     try {
+      // TODO P0.x : remplacer par userSupabase une fois la policy storage posée.
       supabase = getSupabaseServiceClient();
     } catch (error) {
       const message = error instanceof Error ? error.message : "supabase_init_failed";
