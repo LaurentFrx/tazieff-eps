@@ -1,12 +1,15 @@
-// Phase P0.1 — POST + DELETE /api/teacher/live-exercise
+// Phase P0.1 + P0.4 — POST + DELETE /api/teacher/live-exercise
 //
-// Verrouillage admin : routes gatées par requireAdmin(). Le PIN est supprimé.
+// Verrouillage admin : routes gatées par requireAdmin().
 //
-// NOTE schéma : la table `live_exercises` n'a actuellement pas de colonne
-// `author_user_id` (4 colonnes : slug, locale, data_json, updated_at). La
-// traçabilité auteur ne peut pas être ajoutée ici. Migration prévue hors
-// scope P0.1. Le client utilisateur est tout de même utilisé (RLS active)
-// pour cohérence avec le reste de l'API admin.
+// P0.4 — La table `live_exercises` a désormais 8 colonnes (avec
+// author_user_id, created_at, created_by, deleted_at) et une matrice
+// RLS conforme. Le DELETE physique est transformé en soft-delete par
+// trigger. Les écritures sont auditées automatiquement.
+//
+// L'upsert est ici réécrit en SELECT + INSERT|UPDATE explicite afin de
+// préserver `author_user_id` et `created_by` originaux sur les UPDATE
+// (ne jamais ré-attribuer la création à l'éditeur en cours).
 //
 // Référence : GOUVERNANCE_EDITORIALE.md §3.1, §7.
 
@@ -144,8 +147,10 @@ export async function POST(request: Request) {
   const supabase = await createSupabaseServerClient();
 
   // P0.1 : garde admin authentifié (remplace le check PIN).
+  let user;
   try {
-    await requireAdmin(supabase);
+    const result = await requireAdmin(supabase);
+    user = result.user;
   } catch (err) {
     if (err instanceof AuthError) {
       return authErrorResponse(err, slug, locale);
@@ -204,36 +209,70 @@ export async function POST(request: Request) {
   const stats = getLiveStats(content);
   void stats;
 
-  // TODO P0.x : la table `live_exercises` n'a pas de colonne author_user_id.
-  // Quand une migration future l'ajoutera, alimenter ici author_user_id = user.id.
-  const { error } = await supabase
-    .from("live_exercises")
-    .upsert(
-      {
-        slug,
-        locale,
-        data_json: {
-          frontmatter: parsedFrontmatter.success
-            ? parsedFrontmatter.data
-            : normalizedFrontmatter,
-          content,
-          status,
-        },
-        updated_at: updatedAt,
-      },
-      { onConflict: "slug,locale" },
-    );
+  const dataJsonPayload = {
+    frontmatter: parsedFrontmatter.success
+      ? parsedFrontmatter.data
+      : normalizedFrontmatter,
+    content,
+    status,
+  };
 
-  if (error) {
-    if (error.code === "42501") {
+  // P0.4 : SELECT préalable pour distinguer INSERT (avec auteur) et
+  // UPDATE (sans toucher author_user_id / created_by, qui restent
+  // ceux du créateur originel).
+  const { data: existing, error: existingError } = await supabase
+    .from("live_exercises")
+    .select("slug")
+    .eq("slug", slug)
+    .eq("locale", locale)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (existingError) {
+    logLiveError({
+      slug,
+      locale,
+      status: 500,
+      code: existingError.code ?? "supabase_error",
+      msg: existingError.message ?? "Erreur de lecture.",
+    });
+    return NextResponse.json({ error: "Erreur d'enregistrement." }, { status: 500 });
+  }
+
+  const writeError = existing
+    ? (
+        await supabase
+          .from("live_exercises")
+          .update({
+            data_json: dataJsonPayload,
+            updated_at: updatedAt,
+          })
+          .eq("slug", slug)
+          .eq("locale", locale)
+      ).error
+    : (
+        await supabase
+          .from("live_exercises")
+          .insert({
+            slug,
+            locale,
+            data_json: dataJsonPayload,
+            updated_at: updatedAt,
+            author_user_id: user.id,
+            created_by: user.id,
+          })
+      ).error;
+
+  if (writeError) {
+    if (writeError.code === "42501") {
       return jsonError("rls_denied", "Accès refusé.", 403);
     }
     logLiveError({
       slug,
       locale,
       status: 500,
-      code: error.code ?? "supabase_error",
-      msg: error.message ?? "Erreur d'enregistrement.",
+      code: writeError.code ?? "supabase_error",
+      msg: writeError.message ?? "Erreur d'enregistrement.",
     });
     return NextResponse.json({ error: "Erreur d'enregistrement." }, { status: 500 });
   }

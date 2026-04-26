@@ -182,19 +182,31 @@ export type Database = {
       }
       live_exercises: {
         Row: {
+          author_user_id: string
+          created_at: string
+          created_by: string | null
           data_json: Json
+          deleted_at: string | null
           locale: string
           slug: string
           updated_at: string
         }
         Insert: {
+          author_user_id: string
+          created_at?: string
+          created_by?: string | null
           data_json: Json
+          deleted_at?: string | null
           locale: string
           slug: string
           updated_at?: string
         }
         Update: {
+          author_user_id?: string
+          created_at?: string
+          created_by?: string | null
           data_json?: Json
+          deleted_at?: string | null
           locale?: string
           slug?: string
           updated_at?: string

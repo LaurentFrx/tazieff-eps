@@ -8,10 +8,12 @@ export async function fetchLiveExercises(locale: string): Promise<LiveExerciseRo
     return [];
   }
 
+  // P0.6 : exclure les rows soft-deletées du listing.
   const { data, error } = await supabase
     .from("live_exercises")
     .select("slug, locale, data_json, updated_at")
-    .eq("locale", locale);
+    .eq("locale", locale)
+    .is("deleted_at", null);
 
   if (error || !data) {
     return [];
@@ -29,11 +31,13 @@ export async function fetchLiveExercise(
     return null;
   }
 
+  // P0.6 : exclure les rows soft-deletées de la lecture détail.
   const { data, error } = await supabase
     .from("live_exercises")
     .select("slug, locale, data_json, updated_at")
     .eq("slug", slug)
     .eq("locale", locale)
+    .is("deleted_at", null)
     .maybeSingle();
 
   if (error || !data) {

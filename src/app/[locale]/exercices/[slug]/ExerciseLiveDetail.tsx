@@ -742,9 +742,17 @@ export function ExerciseLiveDetail({
             setPatch(null);
             return;
           }
-          const nextPatch = (payload.new as { patch_json?: ExerciseOverridePatch })
-            .patch_json;
-          setPatch(nextPatch ?? null);
+          // P0.6 : un soft-delete arrive en UPDATE avec deleted_at non null.
+          // On traite comme un retrait : reset le patch à null.
+          const newRow = payload.new as {
+            patch_json?: ExerciseOverridePatch;
+            deleted_at?: string | null;
+          };
+          if (newRow.deleted_at) {
+            setPatch(null);
+            return;
+          }
+          setPatch(newRow.patch_json ?? null);
         },
       );
       channel.subscribe((status) => {
@@ -881,11 +889,14 @@ export function ExerciseLiveDetail({
     let interval: ReturnType<typeof setInterval> | null = null;
 
     const fetchOverride = async () => {
+      // P0.6 : exclure les rows soft-deletées du polling (la policy SELECT
+      // publique le fait déjà, on double-garde côté client).
       const { data } = await supabase
         .from("exercise_overrides")
         .select("slug, locale, patch_json, updated_at")
         .eq("slug", slug)
         .eq("locale", locale)
+        .is("deleted_at", null)
         .maybeSingle();
       if (!active) {
         return;

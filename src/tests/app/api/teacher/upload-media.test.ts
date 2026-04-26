@@ -65,11 +65,25 @@ function makeSupabase({
   chain.maybeSingle = vi.fn(() =>
     Promise.resolve({ data: appAdminRow, error: null }),
   );
+  // P0.5 — l'upload Storage passe désormais par le client utilisateur :
+  // on expose une API storage similaire à celle du service client mocké.
   return {
     auth: {
       getUser: vi.fn(() => Promise.resolve({ data: { user } })),
     },
     from: vi.fn(() => chain),
+    storage: {
+      from: () => ({
+        upload: vi.fn(() => Promise.resolve({ error: null })),
+        getPublicUrl: vi.fn(() => ({ data: { publicUrl: "https://x" } })),
+        createSignedUrl: vi.fn(() =>
+          Promise.resolve({ data: { signedUrl: "https://signed" } }),
+        ),
+      }),
+      getBucket: vi.fn(() =>
+        Promise.resolve({ data: { public: false }, error: null }),
+      ),
+    },
   };
 }
 

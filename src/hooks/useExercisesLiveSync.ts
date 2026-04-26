@@ -58,7 +58,15 @@ export function useExercisesLiveSync(
             setLiveRows((prev) => prev.filter((item) => item.slug !== deleted.slug));
             return;
           }
-          const row = payload.new as LiveExerciseRow;
+          // P0.6 : un soft-delete arrive en UPDATE avec deleted_at non null.
+          // On traite comme un retrait : exclut la row de la liste.
+          const row = payload.new as LiveExerciseRow & {
+            deleted_at?: string | null;
+          };
+          if (row.deleted_at) {
+            setLiveRows((prev) => prev.filter((item) => item.slug !== row.slug));
+            return;
+          }
           upsertRow(row);
         },
       );
@@ -111,10 +119,13 @@ export function useExercisesLiveSync(
       if (!active || document.visibilityState !== "visible") {
         return;
       }
+      // P0.6 : exclure les rows soft-deletées (la policy SELECT publique
+      // le fait déjà côté DB, on double-garde côté client).
       const { data } = await supabase
         .from("live_exercises")
         .select("slug, locale, data_json, updated_at")
-        .eq("locale", locale);
+        .eq("locale", locale)
+        .is("deleted_at", null);
       if (!active || !data) {
         return;
       }
