@@ -52,11 +52,15 @@ export async function fetchExerciseOverride(
     return null;
   }
 
+  // P0.2 : on ignore les lignes soft-deleted (deleted_at IS NOT NULL).
+  // La policy SELECT publique le filtre déjà côté DB, mais on double-garde
+  // côté client pour éviter qu'un changement de policy ne casse le fallback.
   const { data, error } = await supabase
     .from("exercise_overrides")
     .select("slug, locale, patch_json, updated_at")
     .eq("slug", slug)
     .eq("locale", locale)
+    .is("deleted_at", null)
     .maybeSingle();
 
   if (error || !data) {
