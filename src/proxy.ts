@@ -84,6 +84,44 @@ function shouldSkipHostRouting(pathname: string): boolean {
   );
 }
 
+/* ── P0.7-bis : pass-through admin (miroir d'édition) ────────────────── */
+//
+// Liste des paths qui NE sont PAS rewritées vers /admin/<path> sur le
+// sous-domaine admin. Le contenu standard de l'app est servi à la place,
+// avec la session admin active (donc édition au clic visible).
+//
+// Routes EXCLUES de la liste (continuent à rewrite vers /admin/<path>) :
+//   - /ma-classe : espace élève, ne doit pas être miroité côté admin
+//   - /enseignant : outil local élève, idem
+//
+// /_next, /api/*, fichiers avec extension : déjà gérés par
+// shouldSkipHostRouting() en amont (étape 0). Listés ici pour redondance
+// défensive et clarté.
+
+const ADMIN_MIRROR_PREFIXES = [
+  "/exercices",
+  "/methodes",
+  "/bac",
+  "/learn",
+  "/api/teacher",
+  "/api/me",
+  "/api/exercises",
+  "/api/auth",
+  "/_next",
+  "/favicon",
+  "/robots",
+  "/sitemap",
+  "/manifest",
+  "/icons",
+  "/images",
+];
+
+function isAdminMirrorPath(pathname: string): boolean {
+  return ADMIN_MIRROR_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+}
+
 /* ── i18n locale rewrite ─────────────────────────────────────────────── */
 
 const LOCALES = ["fr", "en", "es"];
@@ -102,11 +140,33 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 1) Host-based routing — admin (P0.7)
+  // 1) Host-based routing — admin (P0.7 + P0.7-bis)
+  //
+  // Sur admin.muscu-eps.fr / design-admin / admin.localhost :
+  //   - Routes pédagogiques (PASS_THROUGH_PATHS) : pass-through, le contenu
+  //     standard de l'app est servi avec la session admin active. C'est le
+  //     "miroir d'édition" introduit en P0.7-bis pour permettre au super_admin
+  //     de consulter les fiches et d'éditer au clic sans avoir à passer sur
+  //     muscu-eps.fr (cookies de session isolés par host, cf E.2.3.8).
+  //   - Routes natives /admin/* (login + home) et autres paths inconnus :
+  //     rewrite vers /admin/<path> (comportement P0.7).
+  //   - Routes /ma-classe, /enseignant : rewritées vers /admin/<path>
+  //     (rejet implicite — ces espaces appartiennent à l'élève, pas au
+  //     miroir admin).
+  //
+  // Sur muscu-eps.fr / design.muscu-eps.fr / autres :
+  //   - Path /admin/* : protection croisée (404).
   {
     const onAdminHost = isAdminHost(host);
 
-    // 1a. Host admin + path normal → rewrite interne vers /admin/<path>
+    // 1a. Host admin + path pédagogique → pass-through (miroir d'édition).
+    //     NB : /_next/* et /api/* sont déjà attrapés par shouldSkipHostRouting
+    //     en amont. Cette liste est faite pour les paths utilisateurs.
+    if (onAdminHost && isAdminMirrorPath(pathname)) {
+      return NextResponse.next();
+    }
+
+    // 1b. Host admin + path normal → rewrite interne vers /admin/<path>
     if (
       onAdminHost &&
       !pathname.startsWith("/admin/") &&
@@ -117,7 +177,7 @@ export function proxy(request: NextRequest) {
       return NextResponse.rewrite(url);
     }
 
-    // 1b. Host non-admin + path /admin/* → protection croisée (404)
+    // 1c. Host non-admin + path /admin/* → protection croisée (404)
     //     (NB : le Basic Auth historique ci-dessous n'est plus déclenché
     //      en prod car ce bloc le précède, sauf si ADMIN_BASIC_AUTH est
     //      utilisé sur localhost en dev — conservé pour rétrocompat.)
@@ -127,7 +187,7 @@ export function proxy(request: NextRequest) {
       return NextResponse.rewrite(url);
     }
 
-    // 1c. Host admin + path déjà /admin/* → pass-through
+    // 1d. Host admin + path déjà /admin/* → pass-through
     if (onAdminHost && (pathname === "/admin" || pathname.startsWith("/admin/"))) {
       return NextResponse.next();
     }

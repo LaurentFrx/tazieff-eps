@@ -235,3 +235,84 @@ describe("proxy — protection croisée : host élève + /admin/* = 404", () => 
     expect(result.rewriteUrl).toMatch(/\/_not-found$/);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────
+// Sprint P0.7-bis — miroir d'édition admin
+// ─────────────────────────────────────────────────────────────────────
+
+describe("proxy — host admin : miroir d'édition (P0.7-bis)", () => {
+  it("pass-through /exercices sur admin.muscu-eps.fr (pas de rewrite vers /admin)", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/exercices");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("pass-through /exercices/s1-01 sur admin.muscu-eps.fr", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/exercices/s1-01");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("pass-through /api/teacher/exercise-override sur admin.muscu-eps.fr", () => {
+    const req = makeRequest(
+      "admin.muscu-eps.fr",
+      "/api/teacher/exercise-override",
+    );
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("pass-through /api/me/role sur admin.muscu-eps.fr", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/api/me/role");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("pass-through /_next/static/foo.js sur admin.muscu-eps.fr", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/_next/static/foo.js");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("pass-through /methodes (préparation futur) sur admin.muscu-eps.fr", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/methodes");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("pass-through /exercices sur design-admin.muscu-eps.fr (preview)", () => {
+    const req = makeRequest("design-admin.muscu-eps.fr", "/exercices");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("toujours rewrite /ma-classe vers /admin/ma-classe sur admin.muscu-eps.fr (rejet implicite)", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/ma-classe");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/admin\/ma-classe$/);
+  });
+
+  it("toujours rewrite /enseignant vers /admin/enseignant sur admin.muscu-eps.fr (rejet implicite)", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/enseignant");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/admin\/enseignant$/);
+  });
+
+  it("non-régression : muscu-eps.fr/admin/login reste bloqué (croisé)", () => {
+    const req = makeRequest("muscu-eps.fr", "/admin/login");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/_not-found$/);
+  });
+});

@@ -5,6 +5,7 @@
 //   - User mais pas admin (cas edge) → redirect / (élève)
 //   - Sinon : affiche statut + rôle + bouton de déconnexion
 
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isAdminUser } from "@/lib/auth/requireAdmin";
@@ -71,6 +72,17 @@ export default async function AdminHomePage() {
             {roleLabel}
           </p>
         </div>
+
+        {/* P0.7-bis : lien vers le catalogue (servi en miroir sur ce host
+            par le proxy host-based admin, avec édition au clic active). */}
+        <Link
+          href="/exercices"
+          className="inline-flex items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-cyan-200 hover:bg-cyan-400/20"
+          data-testid="admin-catalog-link"
+        >
+          {t("adminHome.catalogLink")}
+        </Link>
+
         <LogoutButton label={t("adminHome.logout")} />
       </div>
     </section>
