@@ -34,19 +34,26 @@ function handleAdminAuth(request: NextRequest): NextResponse | null {
   return null; // auth OK
 }
 
-/* ── Host-based routing (Phase E.2.2.5) ─────────────────────────────── */
+/* ── Host-based routing (Phase E.2.2.5 + P0.7) ───────────────────────── */
 //
-// Sur prof.muscu-eps.fr / design-prof.muscu-eps.fr / prof.localhost:
+// Sur prof.muscu-eps.fr / design-prof.muscu-eps.fr / prof.localhost :
 //   rewrite interne <path> → /prof<path>  (URL publique inchangée)
+// Sur admin.muscu-eps.fr / design-admin.muscu-eps.fr / admin.localhost (P0.7) :
+//   rewrite interne <path> → /admin<path>
 // Sur muscu-eps.fr / design.muscu-eps.fr / etc. :
-//   /prof/* → /_not-found (protection croisée)
+//   /prof/* et /admin/* → /_not-found (protection croisée)
 //
-// Après ce bloc, les paths prof (reroutés ou non) sont DÉJÀ réécrits.
-// Le bloc i18n qui suit ne tourne que pour les paths élève.
+// Après ce bloc, les paths prof / admin (reroutés ou non) sont DÉJÀ
+// réécrits. Le bloc i18n qui suit ne tourne que pour les paths élève.
 
 const PROF_HOSTS = new Set<string>([
   "prof.muscu-eps.fr",
   "design-prof.muscu-eps.fr",
+]);
+
+const ADMIN_HOSTS = new Set<string>([
+  "admin.muscu-eps.fr",
+  "design-admin.muscu-eps.fr",
 ]);
 
 function isProfHost(host: string): boolean {
@@ -54,6 +61,14 @@ function isProfHost(host: string): boolean {
     PROF_HOSTS.has(host) ||
     host.startsWith("prof.localhost") ||
     host === "prof.localhost:3000"
+  );
+}
+
+function isAdminHost(host: string): boolean {
+  return (
+    ADMIN_HOSTS.has(host) ||
+    host.startsWith("admin.localhost") ||
+    host === "admin.localhost:3000"
   );
 }
 
@@ -87,18 +102,49 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 1) Admin basic auth (prioritaire)
+  // 1) Host-based routing — admin (P0.7)
+  {
+    const onAdminHost = isAdminHost(host);
+
+    // 1a. Host admin + path normal → rewrite interne vers /admin/<path>
+    if (
+      onAdminHost &&
+      !pathname.startsWith("/admin/") &&
+      pathname !== "/admin"
+    ) {
+      const url = request.nextUrl.clone();
+      url.pathname = pathname === "/" ? "/admin" : `/admin${pathname}`;
+      return NextResponse.rewrite(url);
+    }
+
+    // 1b. Host non-admin + path /admin/* → protection croisée (404)
+    //     (NB : le Basic Auth historique ci-dessous n'est plus déclenché
+    //      en prod car ce bloc le précède, sauf si ADMIN_BASIC_AUTH est
+    //      utilisé sur localhost en dev — conservé pour rétrocompat.)
+    if (!onAdminHost && pathname.startsWith("/admin/")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/_not-found";
+      return NextResponse.rewrite(url);
+    }
+
+    // 1c. Host admin + path déjà /admin/* → pass-through
+    if (onAdminHost && (pathname === "/admin" || pathname.startsWith("/admin/"))) {
+      return NextResponse.next();
+    }
+  }
+
+  // 2) Admin basic auth (rétrocompat dev). Inopérant en prod après le bloc 1.
   if (pathname === "/admin" || pathname.startsWith("/admin/")) {
     const authResponse = handleAdminAuth(request);
     if (authResponse) return authResponse;
     return NextResponse.next();
   }
 
-  // 2) Host-based routing (Phase E.2.2.5)
+  // 3) Host-based routing — prof (Phase E.2.2.5)
   {
     const onProfHost = isProfHost(host);
 
-    // 2a. Host prof + path normal → rewrite interne vers /prof/<path>
+    // 3a. Host prof + path normal → rewrite interne vers /prof/<path>
     if (
       onProfHost &&
       !pathname.startsWith("/prof/") &&
@@ -109,21 +155,21 @@ export function proxy(request: NextRequest) {
       return NextResponse.rewrite(url);
     }
 
-    // 2b. Host élève + path /prof/* → protection croisée (404)
+    // 3b. Host élève + path /prof/* → protection croisée (404)
     if (!onProfHost && pathname.startsWith("/prof/")) {
       const url = request.nextUrl.clone();
       url.pathname = "/_not-found";
       return NextResponse.rewrite(url);
     }
 
-    // 2c. Host prof + path déjà /prof/* → pass-through (évite double rewrite
+    // 3c. Host prof + path déjà /prof/* → pass-through (évite double rewrite
     // et évite le i18n rewrite qui sinon préfixerait /fr/prof/...).
     if (onProfHost && pathname.startsWith("/prof")) {
       return NextResponse.next();
     }
   }
 
-  // 3) i18n locale rewrite (espace élève uniquement, pas de /prof/*)
+  // 4) i18n locale rewrite (espace élève uniquement, pas de /prof/* ni /admin/*)
   // Skip si déjà préfixé par une locale
   const pathnameHasLocale = LOCALES.some(
     (locale) =>

@@ -161,3 +161,77 @@ describe("proxy — dev local prof.localhost", () => {
     expect(result.rewriteUrl).toMatch(/\/prof$/);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────
+// Sprint P0.7 — host admin
+// ─────────────────────────────────────────────────────────────────────
+
+describe("proxy — host admin → rewrite vers /admin/*", () => {
+  it("rewrite /login vers /admin/login sur admin.muscu-eps.fr", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/login");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/admin\/login$/);
+  });
+
+  it("rewrite / vers /admin sur admin.muscu-eps.fr", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/admin$/);
+  });
+
+  it("rewrite sur design-admin.muscu-eps.fr (preview)", () => {
+    const req = makeRequest("design-admin.muscu-eps.fr", "/login");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/admin\/login$/);
+  });
+
+  it("pass-through si path déjà /admin/* sur host admin (pas de double rewrite)", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/admin/login");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("rewrite / vers /admin sur admin.localhost:3000 (dev local)", () => {
+    const req = makeRequest("admin.localhost:3000", "/");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/admin$/);
+  });
+});
+
+describe("proxy — protection croisée : host élève + /admin/* = 404", () => {
+  it("rewrite /admin/login vers /_not-found sur muscu-eps.fr", () => {
+    const req = makeRequest("muscu-eps.fr", "/admin/login");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/_not-found$/);
+  });
+
+  it("rewrite /admin/foo vers /_not-found sur design.muscu-eps.fr", () => {
+    const req = makeRequest("design.muscu-eps.fr", "/admin/foo");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/_not-found$/);
+  });
+});

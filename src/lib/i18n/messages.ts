@@ -1191,6 +1191,28 @@ export const messages = {
     topBar: {
       maClasse: "Ma classe",
     },
+    adminLogin: {
+      title: "Connexion administrateur",
+      email: {
+        label: "Adresse email",
+      },
+      submit: "Connexion",
+      submitting: "Envoi…",
+      confirmation:
+        "Si cet email correspond à un compte administrateur, un lien de connexion a été envoyé.",
+      emailRequired: "Indique ton adresse email.",
+      networkError: "Une erreur est survenue. Réessaie dans un instant.",
+    },
+    adminHome: {
+      title: "Espace admin",
+      connectedAs: "Connecté en tant que",
+      roleLabel: "Rôle",
+      role: {
+        superAdmin: "Super-administrateur",
+        admin: "Administrateur",
+      },
+      logout: "Se déconnecter",
+    },
   },
   en: {
     header: {
@@ -2382,6 +2404,28 @@ export const messages = {
     topBar: {
       maClasse: "My class",
     },
+    adminLogin: {
+      title: "Admin sign in",
+      email: {
+        label: "Email address",
+      },
+      submit: "Sign in",
+      submitting: "Sending…",
+      confirmation:
+        "If this email matches an administrator account, a sign-in link has been sent.",
+      emailRequired: "Please enter your email address.",
+      networkError: "Something went wrong. Try again in a moment.",
+    },
+    adminHome: {
+      title: "Admin space",
+      connectedAs: "Signed in as",
+      roleLabel: "Role",
+      role: {
+        superAdmin: "Super-admin",
+        admin: "Administrator",
+      },
+      logout: "Sign out",
+    },
   },
   es: {
     header: {
@@ -3572,6 +3616,28 @@ export const messages = {
     },
     topBar: {
       maClasse: "Mi clase",
+    },
+    adminLogin: {
+      title: "Inicio de sesión de administrador",
+      email: {
+        label: "Dirección de correo",
+      },
+      submit: "Iniciar sesión",
+      submitting: "Enviando…",
+      confirmation:
+        "Si este correo corresponde a una cuenta de administrador, se ha enviado un enlace de inicio de sesión.",
+      emailRequired: "Indica tu dirección de correo.",
+      networkError: "Algo salió mal. Inténtalo de nuevo en un momento.",
+    },
+    adminHome: {
+      title: "Espacio admin",
+      connectedAs: "Conectado como",
+      roleLabel: "Rol",
+      role: {
+        superAdmin: "Super-administrador",
+        admin: "Administrador",
+      },
+      logout: "Cerrar sesión",
     },
   },
 } as const;
