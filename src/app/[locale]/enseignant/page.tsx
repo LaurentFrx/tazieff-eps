@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import { getAllMethodes } from "@/lib/content/fs";
-import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
-import { EnseignantDashboard } from "./EnseignantDashboard";
+import { EnseignantMovedClient } from "./EnseignantMovedClient";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -11,16 +9,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return { title: t("enseignant.title") };
 }
 
-export default async function EnseignantPage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
-  const lang = getServerLang(locale);
-  const [allMethodes, allExercices] = await Promise.all([
-    getAllMethodes(lang),
-    getExercisesIndex(lang),
-  ]);
-
-  const methodeNames = allMethodes.map((m) => ({ slug: m.slug, titre: m.titre }));
-  const exerciceNames = allExercices.map((e) => ({ slug: e.slug, title: e.title }));
-
-  return <EnseignantDashboard methodeNames={methodeNames} exerciceNames={exerciceNames} />;
+// Sprint P0.7-nonies — Rendre uniquement le message "espace déménagé".
+// L'ancien composant EnseignantDashboard reste dans le repo (archive) mais
+// n'est plus monté. La sous-route /enseignant/partage/* reste fonctionnelle
+// indépendamment (décodage de séances partagées par lien).
+export default function EnseignantPage() {
+  return <EnseignantMovedClient />;
 }

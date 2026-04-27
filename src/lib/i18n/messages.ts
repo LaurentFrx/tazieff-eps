@@ -1126,6 +1126,12 @@ export const messages = {
       sharedLoading: "Chargement…",
       goExercices: "Voir les exercices",
       close: "Fermer",
+      moved: {
+        body:
+          "L'espace enseignant a d\u00e9m\u00e9nag\u00e9. Acc\u00e9dez-y depuis un sous-domaine d\u00e9di\u00e9, plus adapt\u00e9 \u00e0 la tablette et au desktop.",
+        ctaPrimary: "Aller sur l'espace enseignant",
+        ctaSecondary: "Retour \u00e0 l'accueil",
+      },
     },
     meta: {
       homeTitle: "Tazieff EPS \u2014 Musculation au lyc\u00e9e",
@@ -2120,6 +2126,12 @@ export const messages = {
       sharedLoading: "Loading…",
       goExercices: "See exercises",
       close: "Close",
+      moved: {
+        body:
+          "The teacher space has moved. Access it from a dedicated subdomain, better suited to tablet and desktop.",
+        ctaPrimary: "Go to the teacher space",
+        ctaSecondary: "Back to home",
+      },
     },
     methodes: {
       eyebrow: "Methods",
@@ -3569,6 +3581,12 @@ export const messages = {
       sharedLoading: "Cargando…",
       goExercices: "Ver ejercicios",
       close: "Cerrar",
+      moved: {
+        body:
+          "El espacio del profesorado se ha trasladado. Accede desde un subdominio dedicado, más adaptado a tableta y escritorio.",
+        ctaPrimary: "Ir al espacio del profesorado",
+        ctaSecondary: "Volver al inicio",
+      },
     },
     meta: {
       homeTitle: "Tazieff EPS \u2014 Musculaci\u00f3n en el instituto",

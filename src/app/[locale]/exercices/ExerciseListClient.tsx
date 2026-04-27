@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Difficulty } from "@/lib/content/schema";
 import type { Lang } from "@/lib/i18n/I18nProvider";
 import type { LiveExerciseListItem, LiveExerciseRow } from "@/lib/live/types";
@@ -126,6 +126,19 @@ export function ExerciseListClient({
 
   // Read ?muscle= from URL (set by anatomy page link)
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // P0.7-nonies — clear le param muscle de l URL quand l utilisateur clique
+  // "Tous". Sans ça, partager le lien envoie le destinataire avec un faux
+  // filtre actif au mount (useEffect ci-dessous le relit).
+  const clearMuscleParam = useCallback(() => {
+    if (!searchParams.has("muscle")) return;
+    const next = new URLSearchParams(searchParams.toString());
+    next.delete("muscle");
+    const qs = next.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
 
   // Filter state
   const [query, setQuery] = useState("");
@@ -268,6 +281,7 @@ export function ExerciseListClient({
     setSelectedMuscleGroups([]);
     setSelectedThemes([]);
     setOnlyFavorites(false);
+    clearMuscleParam();
   };
 
   // ---------------------------------------------------------------------------
@@ -296,7 +310,10 @@ export function ExerciseListClient({
           equipmentOptions={equipmentOptions}
           selectedMuscleGroups={selectedMuscleGroups}
           onToggleMuscleGroup={toggleMuscleGroup}
-          onClearMuscleGroups={() => setSelectedMuscleGroups([])}
+          onClearMuscleGroups={() => {
+            setSelectedMuscleGroups([]);
+            clearMuscleParam();
+          }}
           selectedThemes={selectedThemes}
           onToggleTheme={toggleTheme}
           onClearThemes={() => setSelectedThemes([])}
