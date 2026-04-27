@@ -11,6 +11,7 @@ import { usePlan } from "@/hooks/usePlan";
 import { isAcademicEmail } from "@/lib/auth/academic-domains";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { LocaleLink } from "@/components/LocaleLink";
+import { getAdminLoginUrl } from "@/lib/admin-url";
 
 // Phase E.2.3.2 — l'espace enseignant a déménagé sur le sous-domaine prof.
 // Depuis cette page, on affiche seulement un lien pour rediriger les profs
@@ -421,6 +422,20 @@ export default function ReglagesPage() {
             <LocaleLink href="/legal/cgu" className="hover:text-[color:var(--ink)] transition-colors">
               {t("settings.legal.cgu")}
             </LocaleLink>
+          </div>
+          {/* P0.7-decies — Lien discret vers le login admin. La sécurité
+              repose sur le magic-link + table app_admins, pas sur
+              l'obscurité de l'URL. */}
+          <div className="mt-2 flex justify-center text-[11px] text-[color:var(--muted)]">
+            <a
+              href={getAdminLoginUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[color:var(--ink)] transition-colors"
+              data-testid="admin-area-link"
+            >
+              {t("settings.adminLink")}
+            </a>
           </div>
         </div>
       </div>

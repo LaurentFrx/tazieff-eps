@@ -95,6 +95,7 @@ export const messages = {
         privacy: "Confidentialité",
         cgu: "CGU",
       },
+      adminLink: "Espace administrateur",
     },
     nav: {
       home: { label: "Accueil" },
@@ -1323,6 +1324,7 @@ export const messages = {
         privacy: "Privacy",
         cgu: "Terms of use",
       },
+      adminLink: "Admin area",
     },
     nav: {
       home: { label: "Home" },
@@ -2550,6 +2552,7 @@ export const messages = {
         privacy: "Privacidad",
         cgu: "Condiciones de uso",
       },
+      adminLink: "Espacio administrador",
     },
     nav: {
       home: { label: "Inicio" },
