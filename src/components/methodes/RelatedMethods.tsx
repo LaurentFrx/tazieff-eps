@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink } from "@/components/LocaleLink";
 import type { MethodeFrontmatter } from "@/lib/content/schema";
 import { CategoryBadge } from "@/components/methodes/CategoryBadge";
 
@@ -29,7 +29,7 @@ export function RelatedMethods({
       <ul className="flex flex-col divide-y divide-[color:var(--border)]">
         {related.map((methode) => (
           <li key={methode.slug}>
-            <Link
+            <LocaleLink
               href={`/methodes/${methode.slug}`}
               className="flex items-center justify-between gap-3 py-3 text-[color:var(--ink)] hover:text-[color:var(--accent)]"
             >
@@ -43,7 +43,7 @@ export function RelatedMethods({
                 categorie={methode.categorie}
                 label={categoryLabels[methode.categorie] ?? methode.categorie}
               />
-            </Link>
+            </LocaleLink>
           </li>
         ))}
       </ul>

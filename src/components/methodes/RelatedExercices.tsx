@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink } from "@/components/LocaleLink";
 import type { LiveExerciseListItem } from "@/lib/live/types";
 import { ExoThumb } from "@/components/ExoThumb";
 
@@ -29,13 +29,13 @@ export function RelatedExercices({
       <ul className="flex flex-col divide-y divide-[color:var(--border)]">
         {related.map((exo) => (
           <li key={exo.slug}>
-            <Link
+            <LocaleLink
               href={`/exercices/${exo.slug}`}
               className="flex items-center gap-3 py-3 text-[color:var(--ink)] hover:text-[color:var(--accent)]"
             >
               <ExoThumb slug={exo.slug} />
               <p className="truncate text-sm font-semibold">{exo.title}</p>
-            </Link>
+            </LocaleLink>
           </li>
         ))}
       </ul>

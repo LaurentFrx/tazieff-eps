@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import Link from "next/link";
+import { LocaleLink } from "@/components/LocaleLink";
 import { ExerciseCard } from "@/components/ExerciseCard";
 import type { ExerciseListItem } from "@/lib/exercices/filters";
 import { toggleFavorite } from "@/lib/favoritesStore";
@@ -194,7 +194,7 @@ export function ExerciseGrid({
               {viewMode === "grid" ? (
                 <div className="grid grid-cols-2 items-start gap-2 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 md:gap-3 lg:grid-cols-5 lg:gap-4 xl:grid-cols-6">
                   {items.map((exercise) => (
-                    <Link key={exercise.slug} href={`/exercices/${exercise.slug}`}>
+                    <LocaleLink key={exercise.slug} href={`/exercices/${exercise.slug}`}>
                       <article className="card self-start !p-2 !min-h-0 !h-auto">
                         <ExerciseCard
                           exercise={{
@@ -211,13 +211,13 @@ export function ExerciseGrid({
                           }
                         />
                       </article>
-                    </Link>
+                    </LocaleLink>
                   ))}
                 </div>
               ) : (
                 <div className="flex flex-col gap-1">
                   {items.map((exercise) => (
-                    <Link
+                    <LocaleLink
                       key={exercise.slug}
                       href={`/exercices/${exercise.slug}`}
                       className="block"
@@ -238,7 +238,7 @@ export function ExerciseGrid({
                           }
                         />
                       </article>
-                    </Link>
+                    </LocaleLink>
                   ))}
                 </div>
               )}

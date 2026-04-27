@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink } from "@/components/LocaleLink";
 import type { CategorieMethode } from "@/lib/content/schema";
 import { CategoryBadge } from "@/components/methodes/CategoryBadge";
 import { AnimatedScoresBlock } from "@/components/methodes/AnimatedScoresBlock";
@@ -39,7 +39,7 @@ export function MethodeCard({
   timerLabel,
 }: MethodeCardProps) {
   return (
-    <Link
+    <LocaleLink
       href={`/methodes/${slug}`}
       className="card tap-feedback flex flex-col gap-3 p-4 transition-colors hover:border-[color:var(--accent)]"
     >
@@ -72,6 +72,6 @@ export function MethodeCard({
           ) : null}
         </div>
       ) : null}
-    </Link>
+    </LocaleLink>
   );
 }
