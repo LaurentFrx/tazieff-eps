@@ -162,3 +162,113 @@ describe("AdminLoginClient", () => {
     expect(signInWithOtpMock).not.toHaveBeenCalled();
   });
 });
+
+// P0.7-undecies — Régression-guard sur le HOST exact de emailRedirectTo.
+// Le bug observé (clic magic-link → home élève sans préfixe locale) ne peut
+// pas venir du code si window.location.origin est correctement préfixé. Si
+// ces tests cassent un jour, le bug a une cause code. Sinon (tests verts +
+// bug en runtime), la cause est config Supabase Redirect URLs.
+describe("AdminLoginClient — emailRedirectTo host par environnement (P0.7-undecies)", () => {
+  const originalWindowLocation = Object.getOwnPropertyDescriptor(
+    window,
+    "location",
+  );
+
+  function setLocationOrigin(origin: string) {
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      writable: true,
+      value: { ...window.location, origin, host: origin.replace(/^https?:\/\//, "") },
+    });
+  }
+
+  afterEach(() => {
+    if (originalWindowLocation) {
+      Object.defineProperty(window, "location", originalWindowLocation);
+    }
+  });
+
+  it("preview design-admin.muscu-eps.fr → emailRedirectTo prefixé sur ce host", async () => {
+    setLocationOrigin("https://design-admin.muscu-eps.fr");
+    global.fetch = vi.fn(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ eligible: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    ) as unknown as typeof fetch;
+
+    renderClient();
+    fireEvent.change(screen.getByLabelText("Adresse email"), {
+      target: { value: "contact@muscu-eps.fr" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Connexion" }));
+
+    await waitFor(() => {
+      expect(signInWithOtpMock).toHaveBeenCalledTimes(1);
+    });
+    const callArgs = signInWithOtpMock.mock.calls[0]?.[0] as {
+      options: { emailRedirectTo: string };
+    };
+    expect(callArgs.options.emailRedirectTo).toBe(
+      "https://design-admin.muscu-eps.fr/auth/callback?next=/admin",
+    );
+  });
+
+  it("prod admin.muscu-eps.fr → emailRedirectTo prefixé sur ce host", async () => {
+    setLocationOrigin("https://admin.muscu-eps.fr");
+    global.fetch = vi.fn(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ eligible: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    ) as unknown as typeof fetch;
+
+    renderClient();
+    fireEvent.change(screen.getByLabelText("Adresse email"), {
+      target: { value: "contact@muscu-eps.fr" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Connexion" }));
+
+    await waitFor(() => {
+      expect(signInWithOtpMock).toHaveBeenCalledTimes(1);
+    });
+    const callArgs = signInWithOtpMock.mock.calls[0]?.[0] as {
+      options: { emailRedirectTo: string };
+    };
+    expect(callArgs.options.emailRedirectTo).toBe(
+      "https://admin.muscu-eps.fr/auth/callback?next=/admin",
+    );
+  });
+
+  it("dev local admin.localhost:3000 → emailRedirectTo prefixé sur ce host", async () => {
+    setLocationOrigin("http://admin.localhost:3000");
+    global.fetch = vi.fn(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ eligible: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    ) as unknown as typeof fetch;
+
+    renderClient();
+    fireEvent.change(screen.getByLabelText("Adresse email"), {
+      target: { value: "contact@muscu-eps.fr" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Connexion" }));
+
+    await waitFor(() => {
+      expect(signInWithOtpMock).toHaveBeenCalledTimes(1);
+    });
+    const callArgs = signInWithOtpMock.mock.calls[0]?.[0] as {
+      options: { emailRedirectTo: string };
+    };
+    expect(callArgs.options.emailRedirectTo).toBe(
+      "http://admin.localhost:3000/auth/callback?next=/admin",
+    );
+  });
+});
