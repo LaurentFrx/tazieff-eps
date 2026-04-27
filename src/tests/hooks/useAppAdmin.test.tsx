@@ -97,4 +97,43 @@ describe("useAppAdmin", () => {
     expect(result.current.isAdmin).toBe(false);
     expect(result.current.isSuperAdmin).toBe(false);
   });
+
+  // P0.7-quinquies — contrats critiques pour le miroir admin :
+  // les cookies sb-* doivent être envoyés (sinon /api/me/role voit null),
+  // et la réponse ne doit jamais être servie depuis un cache stale.
+  it("appelle /api/me/role avec credentials: 'include' (envoie cookies session)", async () => {
+    const fetchSpy = vi.fn(() =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({ is_super_admin: false, is_admin: false }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+      ),
+    );
+    global.fetch = fetchSpy as unknown as typeof fetch;
+    const { result } = renderHook(() => useAppAdmin());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "/api/me/role",
+      expect.objectContaining({ credentials: "include" }),
+    );
+  });
+
+  it("appelle /api/me/role avec cache: 'no-store' (lecture session fraîche)", async () => {
+    const fetchSpy = vi.fn(() =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({ is_super_admin: false, is_admin: false }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+      ),
+    );
+    global.fetch = fetchSpy as unknown as typeof fetch;
+    const { result } = renderHook(() => useAppAdmin());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "/api/me/role",
+      expect.objectContaining({ cache: "no-store" }),
+    );
+  });
 });
