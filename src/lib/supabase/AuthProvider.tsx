@@ -16,62 +16,50 @@ export const AuthContext = createContext<AuthContextValue>({
   isAnonymous: false,
 });
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+type AuthProviderProps = {
+  children: React.ReactNode;
+  /**
+   * P0.7-septies — Désactive le fallback `signInAnonymously()` quand aucune
+   * session n'est trouvée. À utiliser sur le miroir admin pour empêcher
+   * l'écrasement des cookies sb-* admin par une session anonyme involontaire.
+   *
+   * Cf. GOUVERNANCE_EDITORIALE.md §2.1, §3.1 et l'audit P0.7-sexies.
+   */
+  disableAnonymousFallback?: boolean;
+};
+
+export function AuthProvider({
+  children,
+  disableAnonymousFallback = false,
+}: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const initAuth = useCallback(async () => {
     const supabase = await getSupabaseBrowserClientAsync();
     if (!supabase) {
-      // eslint-disable-next-line no-console -- DEBUG_P0_7_SEXIES
-      console.log("[DEBUG_P0_7_SEXIES] AuthProvider.initAuth: supabase=null", {
-        host: typeof window !== "undefined" ? window.location.host : null,
-      });
       setIsLoading(false);
       return;
     }
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      // eslint-disable-next-line no-console -- DEBUG_P0_7_SEXIES
-      console.log("[DEBUG_P0_7_SEXIES] AuthProvider.initAuth: getSession result", {
-        host: typeof window !== "undefined" ? window.location.host : null,
-        hasSession: !!session,
-        userId: session?.user?.id ?? null,
-        userEmail: session?.user?.email ?? null,
-        isAnon: session?.user?.is_anonymous ?? null,
-        cookiePresent:
-          typeof document !== "undefined" &&
-          /sb-[a-z]+-auth-token/.test(document.cookie),
-      });
       if (session?.user) {
         setUser(session.user);
-      } else {
-        // eslint-disable-next-line no-console -- DEBUG_P0_7_SEXIES
-        console.warn(
-          "[DEBUG_P0_7_SEXIES] AuthProvider.initAuth: PAS DE SESSION → signInAnonymously",
-          {
-            host: typeof window !== "undefined" ? window.location.host : null,
-            cookieRaw:
-              typeof document !== "undefined" ? document.cookie : null,
-          },
-        );
+      } else if (!disableAnonymousFallback) {
         const { data } = await supabase.auth.signInAnonymously();
-        // eslint-disable-next-line no-console -- DEBUG_P0_7_SEXIES
-        console.log(
-          "[DEBUG_P0_7_SEXIES] AuthProvider.initAuth: signInAnonymously OK",
-          { newUserId: data.user?.id ?? null },
-        );
         setUser(data.user ?? null);
+      } else {
+        // Miroir admin sans session : on laisse user à null. Pas de création
+        // d'un compte anonyme orphelin qui écraserait les cookies admin.
+        setUser(null);
       }
-    } catch (err) {
-      // eslint-disable-next-line no-console -- DEBUG_P0_7_SEXIES
-      console.error("[DEBUG_P0_7_SEXIES] AuthProvider.initAuth: catch", err);
+    } catch {
       // Auth failed — app continues without auth
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [disableAnonymousFallback]);
 
   useEffect(() => {
     initAuth();

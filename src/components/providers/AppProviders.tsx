@@ -14,6 +14,12 @@ type AppProvidersProps = {
   children: React.ReactNode;
   initialLang: Lang;
   initialTheme: ThemePreference;
+  /**
+   * P0.7-septies — Sur le miroir admin, désactive le fallback anonymous
+   * de l'AuthProvider pour ne pas écraser les cookies admin posés par
+   * /auth/callback. Propagé tel quel à AuthProvider.
+   */
+  disableAnonymousFallback?: boolean;
 };
 
 const THEME_STORAGE_KEY = "eps_theme";
@@ -60,6 +66,7 @@ export function AppProviders({
   children,
   initialLang,
   initialTheme,
+  disableAnonymousFallback = false,
 }: AppProvidersProps) {
   return (
     <ThemeProvider
@@ -70,7 +77,7 @@ export function AppProviders({
       storageKey={THEME_STORAGE_KEY}
     >
       <I18nProvider initialLang={initialLang}>
-        <AuthProvider>
+        <AuthProvider disableAnonymousFallback={disableAnonymousFallback}>
           <TimerProvider>
           {children}
           </TimerProvider>

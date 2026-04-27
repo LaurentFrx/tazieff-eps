@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { isAdminHost, isProfHost } from "@/lib/admin-hosts";
 
 /* ── Admin basic auth ────────────────────────────────────────────────── */
 
@@ -46,31 +47,8 @@ function handleAdminAuth(request: NextRequest): NextResponse | null {
 // Après ce bloc, les paths prof / admin (reroutés ou non) sont DÉJÀ
 // réécrits. Le bloc i18n qui suit ne tourne que pour les paths élève.
 
-const PROF_HOSTS = new Set<string>([
-  "prof.muscu-eps.fr",
-  "design-prof.muscu-eps.fr",
-]);
-
-const ADMIN_HOSTS = new Set<string>([
-  "admin.muscu-eps.fr",
-  "design-admin.muscu-eps.fr",
-]);
-
-function isProfHost(host: string): boolean {
-  return (
-    PROF_HOSTS.has(host) ||
-    host.startsWith("prof.localhost") ||
-    host === "prof.localhost:3000"
-  );
-}
-
-function isAdminHost(host: string): boolean {
-  return (
-    ADMIN_HOSTS.has(host) ||
-    host.startsWith("admin.localhost") ||
-    host === "admin.localhost:3000"
-  );
-}
+// ADMIN_HOSTS / PROF_HOSTS / isAdminHost / isProfHost partagés avec le
+// layout [locale] (P0.7-septies) via src/lib/admin-hosts.ts.
 
 function shouldSkipHostRouting(pathname: string): boolean {
   // Assets, API, auth Supabase callback, GitHub OAuth callback :

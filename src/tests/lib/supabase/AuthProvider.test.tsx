@@ -140,3 +140,71 @@ describe("AuthProvider — contrat critique miroir admin (P0.7-sexies)", () => {
     expect(signInAnonymouslyMock).not.toHaveBeenCalled();
   });
 });
+
+describe("AuthProvider — disableAnonymousFallback (P0.7-septies)", () => {
+  it("disableAnonymousFallback=true + pas de session : user reste null, signInAnonymously NON appelé", async () => {
+    getSessionMock.mockResolvedValue({ data: { session: null } });
+
+    const { getByTestId } = render(
+      <AuthProvider disableAnonymousFallback>
+        <Probe />
+      </AuthProvider>,
+    );
+
+    await waitFor(() => {
+      expect(getByTestId("loading").textContent).toBe("no");
+    });
+    expect(getByTestId("user-id").textContent).toBe("null");
+    expect(getByTestId("anon").textContent).toBe("no");
+    expect(signInAnonymouslyMock).not.toHaveBeenCalled();
+  });
+
+  it("disableAnonymousFallback=true + session admin existante : user lu correctement (pas d'écrasement)", async () => {
+    getSessionMock.mockResolvedValue({
+      data: {
+        session: {
+          user: {
+            id: "u-admin-1",
+            email: "contact@muscu-eps.fr",
+            is_anonymous: false,
+          },
+        },
+      },
+    });
+
+    const { getByTestId } = render(
+      <AuthProvider disableAnonymousFallback>
+        <Probe />
+      </AuthProvider>,
+    );
+
+    await waitFor(() => {
+      expect(getByTestId("loading").textContent).toBe("no");
+    });
+    expect(getByTestId("user-id").textContent).toBe("u-admin-1");
+    expect(getByTestId("user-email").textContent).toBe("contact@muscu-eps.fr");
+    expect(getByTestId("anon").textContent).toBe("no");
+    expect(signInAnonymouslyMock).not.toHaveBeenCalled();
+  });
+
+  it("disableAnonymousFallback=false (défaut élève) + pas de session : signInAnonymously appelé (non-régression)", async () => {
+    getSessionMock.mockResolvedValue({ data: { session: null } });
+    signInAnonymouslyMock.mockResolvedValue({
+      data: { user: { id: "u-anon-fresh", email: null, is_anonymous: true } },
+    });
+
+    const { getByTestId } = render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>,
+    );
+
+    await waitFor(() => {
+      expect(getByTestId("loading").textContent).toBe("no");
+    });
+    expect(signInAnonymouslyMock).toHaveBeenCalledTimes(1);
+    expect(getByTestId("user-id").textContent).toBe("u-anon-fresh");
+    expect(getByTestId("anon").textContent).toBe("yes");
+  });
+});
+

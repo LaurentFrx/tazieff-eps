@@ -37,28 +37,16 @@ export function useAppAdmin(): UseAppAdminResult {
         credentials: "include",
       });
       if (!response.ok) {
-        // eslint-disable-next-line no-console -- DEBUG_P0_7_SEXIES
-        console.warn("[DEBUG_P0_7_SEXIES] useAppAdmin: response not ok", {
-          status: response.status,
-          host: typeof window !== "undefined" ? window.location.host : null,
-        });
+        // 4xx/5xx : on retombe en deny.
         setIsAdmin(false);
         setIsSuperAdmin(false);
         return;
       }
       const json = (await response.json()) as RoleResponse;
-      // eslint-disable-next-line no-console -- DEBUG_P0_7_SEXIES
-      console.log("[DEBUG_P0_7_SEXIES] useAppAdmin: role response", {
-        host: typeof window !== "undefined" ? window.location.host : null,
-        path: typeof window !== "undefined" ? window.location.pathname : null,
-        is_admin: json.is_admin,
-        is_super_admin: json.is_super_admin,
-      });
       setIsAdmin(Boolean(json.is_admin));
       setIsSuperAdmin(Boolean(json.is_super_admin));
-    } catch (err) {
-      // eslint-disable-next-line no-console -- DEBUG_P0_7_SEXIES
-      console.error("[DEBUG_P0_7_SEXIES] useAppAdmin: fetch threw", err);
+    } catch {
+      // Réseau / parse : deny.
       setIsAdmin(false);
       setIsSuperAdmin(false);
     } finally {
