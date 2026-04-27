@@ -116,9 +116,28 @@ const ADMIN_MIRROR_PREFIXES = [
   "/images",
 ];
 
+const LOCALE_PREFIXES = ["/fr", "/en", "/es"] as const;
+
+// P0.7-ter — Les routes pédagogiques de l'app sont localisées
+// (/fr/exercices, /en/exercices, /es/exercices). Pour que le miroir admin
+// reconnaisse ces chemins comme pass-through, on retire le préfixe locale
+// avant de tester contre la liste. Les routes /api/* ne sont jamais
+// localisées en Next.js, donc ce strip est sans effet sur elles.
+function stripLocalePrefix(pathname: string): string {
+  for (const prefix of LOCALE_PREFIXES) {
+    if (pathname === prefix) return "/";
+    if (pathname.startsWith(`${prefix}/`)) {
+      return pathname.slice(prefix.length);
+    }
+  }
+  return pathname;
+}
+
 function isAdminMirrorPath(pathname: string): boolean {
+  const delocalized = stripLocalePrefix(pathname);
   return ADMIN_MIRROR_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+    (prefix) =>
+      delocalized === prefix || delocalized.startsWith(`${prefix}/`),
   );
 }
 

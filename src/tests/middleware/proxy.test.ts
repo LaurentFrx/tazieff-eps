@@ -316,3 +316,93 @@ describe("proxy — host admin : miroir d'édition (P0.7-bis)", () => {
     expect(result.rewriteUrl).toMatch(/\/_not-found$/);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────
+// Sprint P0.7-ter — miroir admin pour routes localisées /fr/* /en/* /es/*
+// ─────────────────────────────────────────────────────────────────────
+
+describe("proxy — host admin : miroir d'édition localisé (P0.7-ter)", () => {
+  it("pass-through /fr/exercices sur admin.muscu-eps.fr", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/fr/exercices");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("pass-through /fr/exercices/s1-01 sur admin.muscu-eps.fr", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/fr/exercices/s1-01");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("pass-through /en/exercices sur admin.muscu-eps.fr", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/en/exercices");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("pass-through /es/exercices sur admin.muscu-eps.fr", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/es/exercices");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("pass-through /fr/methodes sur admin.muscu-eps.fr", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/fr/methodes");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("pass-through /fr/bac sur admin.muscu-eps.fr", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/fr/bac");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("pass-through /fr/learn sur admin.muscu-eps.fr", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/fr/learn");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("rewrite /fr/ma-classe vers /admin/fr/ma-classe (rejet implicite, locale conservée)", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/fr/ma-classe");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/admin\/fr\/ma-classe$/);
+  });
+
+  it("rewrite /fr/enseignant vers /admin/fr/enseignant (rejet implicite, locale conservée)", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/fr/enseignant");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/admin\/fr\/enseignant$/);
+  });
+
+  it("pass-through /fr/exercices/s1-01 sur design-admin.muscu-eps.fr (preview)", () => {
+    const req = makeRequest("design-admin.muscu-eps.fr", "/fr/exercices/s1-01");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("pass-through /en/methodes/circuit sur admin.muscu-eps.fr", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/en/methodes/circuit");
+    const result = proxy(req as never) as { type: string };
+    expect(result.type).toBe("next");
+  });
+
+  it("non-régression : muscu-eps.fr/admin/fr/login reste bloqué (croisé)", () => {
+    const req = makeRequest("muscu-eps.fr", "/admin/fr/login");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/_not-found$/);
+  });
+});
