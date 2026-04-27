@@ -1,14 +1,12 @@
 export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { notFound } from "next/navigation";
 import { getAllBacPages, getBacPage } from "@/lib/content/fs";
 import { renderMdx } from "@/lib/mdx/render";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-
-const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale}${path}`;
 
 type BacSlugPageProps = {
   params: Promise<{ locale: string; slug: string }>;
@@ -59,7 +57,7 @@ export default async function BacSlugPage({ params }: BacSlugPageProps) {
       />
       <header className="page-header">
         <Link
-          href={lp("/bac", locale)}
+          href="/bac"
           className="eyebrow hover:text-[color:var(--accent)]"
         >
           ← {t("bac.backLabel")}

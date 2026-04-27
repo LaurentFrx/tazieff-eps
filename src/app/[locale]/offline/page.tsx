@@ -1,7 +1,5 @@
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
-
-const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale}${path}`;
 
 export default async function OfflinePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -33,13 +31,13 @@ export default async function OfflinePage({ params }: { params: Promise<{ locale
         <p>{t("offline.cachedSectionsBody")}</p>
         <div className="parcours-grille-links" style={{ marginTop: 12 }}>
           {cachedSections.map((s) => (
-            <Link key={s.href} href={lp(s.href, locale)} className="parcours-grille-link">
+            <Link key={s.href} href={s.href} className="parcours-grille-link">
               {s.label}
             </Link>
           ))}
         </div>
       </div>
-      <Link className="primary-button" href={lp("/", locale)}>
+      <Link className="primary-button" href="/">
         {t("offline.backHome")}
       </Link>
     </section>

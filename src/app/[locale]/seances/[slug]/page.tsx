@@ -1,8 +1,6 @@
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-
-const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale}${path}`;
 import DifficultyPill from "@/components/DifficultyPill";
 import { ExoThumb } from "@/components/ExoThumb";
 import { exercisesIndex, getSeance } from "@/lib/content/fs";
@@ -56,7 +54,7 @@ export default async function SeancePage({ params }: SeancePageProps) {
       <DetailHeader
         title={frontmatter.title}
         gradient="from-orange-500 to-amber-400"
-        backHref={lp("/seances", locale)}
+        backHref="/seances"
         backLabel={t("seanceDetail.backLabel")}
         badges={
           <>
@@ -74,7 +72,7 @@ export default async function SeancePage({ params }: SeancePageProps) {
       />
 
       <div className="flex flex-wrap gap-3">
-        <Link href={lp(`/seances/${frontmatter.slug}/terrain`, locale)} className="primary-button">
+        <Link href={`/seances/${frontmatter.slug}/terrain`} className="primary-button">
           {t("seanceDetail.terrainMode")}
         </Link>
         <SeanceDownloadButton exerciseSlugs={exerciseSlugs} />
@@ -92,7 +90,7 @@ export default async function SeancePage({ params }: SeancePageProps) {
               <div key={`${block.exoSlug}-${index}`} className="block-row">
                 <ExoThumb slug={block.exoSlug} />
                 <div>
-                  <Link href={lp(`/exercices/${block.exoSlug}`, locale)} className="block-title">
+                  <Link href={`/exercices/${block.exoSlug}`} className="block-title">
                     {exercise?.title ?? block.exoSlug}
                   </Link>
                   <p className="block-meta">

@@ -1,7 +1,5 @@
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { getAllBacPages } from "@/lib/content/fs";
-
-const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale}${path}`;
 import { getPageMdx, renderPageMdx } from "@/lib/content/reader";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 
@@ -108,7 +106,7 @@ export default async function BacPage({ params }: { params: Promise<{ locale: st
   return (
     <section className="page">
       <Link
-        href={lp("/parcours-bac", locale)}
+        href="/parcours-bac"
         className="card flex items-center justify-between gap-4 p-4 transition-colors hover:border-[color:var(--accent)]"
       >
         <div>
@@ -131,7 +129,7 @@ export default async function BacPage({ params }: { params: Promise<{ locale: st
             {bacPages.map((page) => (
               <li key={page.slug}>
                 <Link
-                  href={lp(`/bac/${page.slug}`, locale)}
+                  href={`/bac/${page.slug}`}
                   className="card flex items-center justify-between gap-4 p-4 transition-colors hover:border-[color:var(--accent)]"
                 >
                   <div>

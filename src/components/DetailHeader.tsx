@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
+import { LocaleLink } from "@/components/LocaleLink";
 
 interface DetailHeaderProps {
   title: string;
@@ -22,7 +22,7 @@ export function DetailHeader({
     <div
       className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${gradient} px-5 pt-4 pb-5 min-h-[120px] flex flex-col gap-3 shadow-lg`}
     >
-      <Link
+      <LocaleLink
         href={backHref}
         className="inline-flex items-center gap-1 text-white/80 hover:text-white text-xs font-medium transition-colors self-start min-h-[44px]"
       >
@@ -41,7 +41,7 @@ export function DetailHeader({
           />
         </svg>
         {backLabel}
-      </Link>
+      </LocaleLink>
       <div className="flex flex-col gap-2 mt-auto">
         <h1 className="text-2xl font-extrabold text-white drop-shadow-sm leading-tight">
           {title}

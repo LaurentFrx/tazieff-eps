@@ -9,10 +9,6 @@ import type { ObjectifSlug } from "@/lib/objectifs/data";
 import { getExerciseSlugsForObjectif } from "@/lib/objectifs/exercises";
 import { MethodAccordion, ExerciseList } from "@/components/objectifs/MethodAccordion";
 
-/* ── locale-aware link prefix ─────────────────────────────────── */
-const lp = (path: string, locale: string) =>
-  locale === "fr" ? path : `/${locale}${path}`;
-
 /* ── static params for the 3 slugs × 3 locales ───────────────── */
 export function generateStaticParams() {
   const locales = ["fr", "en", "es"];
@@ -122,7 +118,7 @@ export default async function ObjectifPage({ params }: Props) {
       >
         <div className="relative z-10">
           <a
-            href={lp("/", locale)}
+            href="/"
             className="inline-flex items-center gap-1 text-[13px] text-white/70 mb-2 hover:text-white/90 transition-colors"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>

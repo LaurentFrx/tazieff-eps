@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { notFound } from "next/navigation";
 import { getAllMethodes, getMethode } from "@/lib/content/fs";
 import { renderMdx } from "@/lib/mdx/render";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { DetailHeader } from "@/components/DetailHeader";
-
-const lp = (path: string, locale: string) => locale === "fr" ? path : `/${locale}${path}`;
 import { CategoryBadge } from "@/components/methodes/CategoryBadge";
 import { AnimatedScoresBlock } from "@/components/methodes/AnimatedScoresBlock";
 import { ParametresTable } from "@/components/methodes/ParametresTable";
@@ -120,7 +118,7 @@ export default async function MethodePage({ params }: MethodePageProps) {
       <DetailHeader
         title={m.titre}
         gradient="from-blue-600 to-cyan-500"
-        backHref={lp("/methodes", locale)}
+        backHref="/methodes"
         backLabel={t("methodes.backLabel")}
         badges={
           <>
@@ -164,7 +162,7 @@ export default async function MethodePage({ params }: MethodePageProps) {
             <MethodeTimer labels={timerLabels} />
             <div className="mt-4 flex flex-col gap-2">
               <Link
-                href={lp("/outils/timer", locale)}
+                href="/outils/timer"
                 className="tap-feedback flex items-center justify-center py-3 text-sm font-semibold text-blue-600 dark:text-blue-400 rounded-xl bg-white/60 dark:bg-zinc-900/40 hover:bg-white dark:hover:bg-zinc-800 transition-colors"
               >
                 {t("methodes.timer.fullTimerLink")}
