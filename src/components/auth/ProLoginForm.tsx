@@ -1,14 +1,29 @@
 "use client";
 
-// Phase E.2.2.5 — Formulaire de connexion prof via magic link académique.
-// Utilise le hook `useTeacherAuth` existant (POST /api/auth/teacher-magic-link).
-// Validation locale via isAcademicEmail avant l'appel API, pour feedback
-// immédiat sans aller-retour serveur.
+// Phase E.2.2.5 + Sprint P0.8 — Formulaire de connexion prof via magic link.
+//
+// P0.8 : message de confirmation différencié selon `eligible` retourné par
+// le hook (anti-leak prof : on révèle uniquement le format académique de
+// l'email, pas l'existence d'un compte) :
+//   - eligible: true  → "Lien de connexion envoyé sur ton adresse académique."
+//   - eligible: false → "Vérifie l'orthographe de ton adresse, ou contacte
+//                        l'administrateur de Tazieff EPS."
+//
+// Validation locale conservée via `isAcademicEmail` avant l'appel API,
+// pour feedback immédiat sans aller-retour serveur.
 
 import { useMemo, useState, type FormEvent } from "react";
 import { isAcademicEmail } from "@/lib/auth/academic-domains";
 import { useTeacherSession } from "@/hooks/useTeacherSession";
 import styles from "./ProLoginForm.module.css";
+
+// L'espace prof est français-only (cf. src/app/prof/layout.tsx). On hardcode
+// les messages au lieu de monter un I18nProvider sur ce sous-domaine.
+const TEACHER_LOGIN_MESSAGES = {
+  eligible: "Lien de connexion envoyé sur ton adresse académique.",
+  notEligible:
+    "Vérifie l'orthographe de ton adresse, ou contacte l'administrateur de Tazieff EPS.",
+} as const;
 
 type Status = "idle" | "validating" | "success" | "error";
 
@@ -21,7 +36,6 @@ function getStudentSiteUrl(): string {
   const host = window.location.host;
   if (host === "design-prof.muscu-eps.fr") return "https://design.muscu-eps.fr";
   if (host === "prof.muscu-eps.fr") return "https://muscu-eps.fr";
-  // Dev local / fallback
   return "https://muscu-eps.fr";
 }
 
@@ -53,15 +67,18 @@ export default function ProLoginForm() {
 
     const result = await signInWithEmail(trimmed);
 
-    if (result.ok) {
-      setStatus("success");
-      setMessage(
-        `Lien envoyé à ${trimmed}. Vérifiez votre boîte mail pour vous connecter.`,
-      );
-    } else {
+    if (!result.ok) {
       setStatus("error");
       setMessage(result.error ?? "Une erreur est survenue.");
+      return;
     }
+
+    setStatus("success");
+    setMessage(
+      result.eligible
+        ? TEACHER_LOGIN_MESSAGES.eligible
+        : TEACHER_LOGIN_MESSAGES.notEligible,
+    );
   }
 
   const isSuccess = status === "success";

@@ -1,12 +1,22 @@
 "use client";
 
-// Sprint P0.7 — Composant client pour la page /admin/login.
-// Formulaire 1 champ (email) + bouton.
-// Réponse serveur toujours opaque : on affiche un message générique de
-// confirmation, qu'on ait envoyé le magic-link ou non (anti-leak).
+// Sprint P0.7 + P0.8 — Composant client pour la page /admin/login.
+//
+// P0.8 : flow magic-link client-initié canonique @supabase/ssr.
+//   1. POST /api/auth/admin-magic-link — pré-check d'éligibilité serveur
+//      (lookup app_admins ⨝ auth.users). Retour { eligible: boolean }.
+//   2. Si eligible → signInWithOtp côté navigateur via createBrowserClient,
+//      le verifier PKCE est posé directement dans les cookies du host courant.
+//   3. Dans tous les cas → message de confirmation strict identique
+//      (anti-leak admin : on ne révèle jamais l'existence du compte).
+//
+// Cf. audit P0.8 : le pattern signInWithOtp côté serveur faisait transiter
+// le verifier via Set-Cookie de la réponse POST, dépendant du timing du
+// navigateur — bug "PKCE code verifier not found in storage" reproductible.
 
 import { useState, useRef, useEffect, type FormEvent } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 export function AdminLoginClient() {
   const { t } = useI18n();
@@ -44,7 +54,33 @@ export function AdminLoginClient() {
         setErrorMessage(t("adminLogin.networkError"));
         return;
       }
-      // Succès — toujours afficher le message de confirmation neutre.
+
+      const body = (await response.json().catch(() => ({}))) as {
+        eligible?: boolean;
+      };
+
+      // Si eligible, on déclenche signInWithOtp côté navigateur.
+      // Si non eligible, on ne fait rien, mais on affiche le même message
+      // de confirmation (anti-leak strict).
+      if (body.eligible === true) {
+        const supabase = getSupabaseBrowserClient();
+        if (supabase) {
+          const { error: otpError } = await supabase.auth.signInWithOtp({
+            email: email.trim().toLowerCase(),
+            options: {
+              emailRedirectTo: `${window.location.origin}/auth/callback?next=/admin`,
+              shouldCreateUser: false,
+            },
+          });
+          if (otpError) {
+            // Erreur Supabase (rate limit, SMTP). Anti-leak : on log côté
+            // client mais on affiche le même message neutre.
+            console.error("[admin-login] signInWithOtp:", otpError.message);
+          }
+        }
+      }
+
+      // Toujours afficher le message de confirmation neutre, dans les deux cas.
       setIsConfirmed(true);
     } catch {
       setErrorMessage(t("adminLogin.networkError"));

@@ -1214,6 +1214,14 @@ export const messages = {
       catalogLink: "Catalogue des exercices",
       logout: "Se déconnecter",
     },
+    teacherLogin: {
+      confirmation: {
+        eligible:
+          "Lien de connexion envoyé sur ton adresse académique.",
+        notEligible:
+          "Vérifie l'orthographe de ton adresse, ou contacte l'administrateur de Tazieff EPS.",
+      },
+    },
   },
   en: {
     header: {
@@ -2428,6 +2436,13 @@ export const messages = {
       catalogLink: "Exercise catalog",
       logout: "Sign out",
     },
+    teacherLogin: {
+      confirmation: {
+        eligible: "Sign-in link sent to your academic email.",
+        notEligible:
+          "Check the spelling of your email, or contact the Tazieff EPS administrator.",
+      },
+    },
   },
   es: {
     header: {
@@ -3641,6 +3656,14 @@ export const messages = {
       },
       catalogLink: "Catálogo de ejercicios",
       logout: "Cerrar sesión",
+    },
+    teacherLogin: {
+      confirmation: {
+        eligible:
+          "Enlace de inicio de sesión enviado a tu correo académico.",
+        notEligible:
+          "Verifica la ortografía de tu correo, o contacta al administrador de Tazieff EPS.",
+      },
     },
   },
 } as const;

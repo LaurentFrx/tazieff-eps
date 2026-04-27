@@ -1,6 +1,6 @@
 "use client";
 
-// Phase E.2.2 — Hook auth prof basé sur magic link académique.
+// Phase E.2.2 + Sprint P0.8 — Hook auth prof basé sur magic link académique.
 //
 // Cohabite avec `useAuth()` (context anonymous élève) sans conflit :
 //   - `useAuth()` fournit le user courant (anonymous OU prof) via Supabase
@@ -13,10 +13,13 @@
 //   2. anonymous élève (`is_anonymous: true`)
 //   3. prof académique (`email` académique + `is_anonymous: false`)
 //
-// signInWithEmail() déclenche le POST /api/auth/teacher-magic-link. On ne gère
-// PAS le retour direct — l'utilisateur reçoit un email, clique, revient via
-// /auth/callback qui établit la session. Le `onAuthStateChange` dans
-// `AuthProvider` mettra alors le context à jour, et ce hook reflétera l'état.
+// P0.8 : signInWithEmail() effectue désormais le flow client-initié canonique :
+//   1. POST /api/auth/teacher-magic-link → pré-check d'éligibilité serveur
+//   2. Si eligible → signInWithOtp côté navigateur (verifier PKCE posé
+//      directement dans les cookies du host courant, pas via Set-Cookie
+//      serveur — corrige le bug "PKCE code verifier not found in storage").
+//   3. Si non eligible → on n'envoie pas de magic link, on remonte
+//      `eligible: false` au composant qui décide du message à afficher.
 
 import { useCallback, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
@@ -24,20 +27,24 @@ import { useAuth } from "@/hooks/useAuth";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { isAcademicEmail } from "@/lib/auth/academic-domains";
 
+export type TeacherSignInResult = {
+  /** `true` si le pré-check + signInWithOtp se sont déroulés sans erreur réseau. */
+  ok: boolean;
+  /** `true` si l'email est académique (donc magic link envoyé). */
+  eligible: boolean;
+  /** Message d'erreur réseau / Supabase. Vide en cas de succès. */
+  error?: string;
+};
+
 export type TeacherAuthState = {
-  /** User courant (anonymous, prof, ou null). */
   user: User | null;
-  /** `true` si l'email du user est académique. */
   isTeacher: boolean;
-  /** `true` tant que la session Supabase n'a pas été résolue. */
   isLoading: boolean;
   /**
-   * Demande un magic link via POST /api/auth/teacher-magic-link.
-   * Résout avec `{ok: true}` même si Supabase a raté (anti-énumération).
-   * Résout avec `{ok: false, error}` uniquement sur erreur client (400/403/réseau).
+   * Demande un magic link via flow client-initié.
+   * Cf. {@link TeacherSignInResult}.
    */
-  signInWithEmail: (email: string) => Promise<{ ok: boolean; error?: string }>;
-  /** Déconnexion Supabase. Après coup, AuthProvider fera un re-anon sign-in automatique. */
+  signInWithEmail: (email: string) => Promise<TeacherSignInResult>;
   signOut: () => Promise<void>;
 };
 
@@ -48,29 +55,53 @@ export function useTeacherAuth(): TeacherAuthState {
   const isTeacher = !!(user?.email && isAcademicEmail(user.email));
 
   const signInWithEmail = useCallback(
-    async (email: string): Promise<{ ok: boolean; error?: string }> => {
+    async (email: string): Promise<TeacherSignInResult> => {
       setSigningIn(true);
       try {
         const response = await fetch("/api/auth/teacher-magic-link", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ email }),
         });
-        if (response.status === 403) {
-          const body = await response.json().catch(() => ({}));
+        if (!response.ok) {
           return {
             ok: false,
-            error:
-              body?.message ?? "Email non académique. Utilisez @ac-*.fr.",
+            eligible: false,
+            error: `HTTP ${response.status}`,
           };
         }
-        if (!response.ok) {
-          return { ok: false, error: `HTTP ${response.status}` };
+        const body = (await response.json().catch(() => ({}))) as {
+          eligible?: boolean;
+        };
+        const eligible = body.eligible === true;
+
+        if (eligible) {
+          const supabase = getSupabaseBrowserClient();
+          if (!supabase) {
+            return {
+              ok: false,
+              eligible: true,
+              error: "Supabase indisponible côté navigateur.",
+            };
+          }
+          const { error: otpError } = await supabase.auth.signInWithOtp({
+            email: email.trim().toLowerCase(),
+            options: {
+              emailRedirectTo: `${window.location.origin}/auth/callback?next=/tableau-de-bord`,
+              shouldCreateUser: true,
+            },
+          });
+          if (otpError) {
+            return { ok: false, eligible: true, error: otpError.message };
+          }
         }
-        return { ok: true };
+
+        return { ok: true, eligible };
       } catch (err) {
         return {
           ok: false,
+          eligible: false,
           error: err instanceof Error ? err.message : "Erreur réseau",
         };
       } finally {
@@ -87,8 +118,6 @@ export function useTeacherAuth(): TeacherAuthState {
     // AuthProvider.onAuthStateChange captera l'event et fera re-sign-in anon.
   }, []);
 
-  // Effet purement cosmétique : log dev pour aider à diagnostiquer quand
-  // on passe de "anonymous" à "teacher" en preview. Retiré en prod.
   useEffect(() => {
     if (process.env.NODE_ENV === "development" && user?.email && isTeacher) {
       // eslint-disable-next-line no-console

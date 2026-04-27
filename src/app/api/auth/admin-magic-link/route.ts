@@ -1,23 +1,24 @@
-// Sprint P0.7 — POST /api/auth/admin-magic-link
+// Sprint P0.7 + P0.8 — POST /api/auth/admin-magic-link
 //
-// Envoie un magic-link Supabase à un email présent dans la table app_admins.
-// Anti-leak : la réponse est toujours 200 { ok: true } pour ne pas révéler
-// si l'email existe ou non en base. Si l'email n'est pas un admin connu,
-// AUCUN appel à signInWithOtp n'est fait (pas d'envoi d'email parasite).
+// P0.8 : pré-check d'éligibilité uniquement. Le signInWithOtp PKCE est
+// déclenché côté navigateur par AdminLoginClient (cf. audit P0.8 : pattern
+// canonique @supabase/ssr, le verifier est posé directement par le client
+// sans dépendre du timing du Set-Cookie serveur).
 //
-// Choix d'implémentation : on utilise le service client pour le lookup
-// `app_admins ⨝ auth.users` car la table `auth.users` n'est pas exposée
-// aux clients via RLS standard. La route reste publique mais ne fait
-// rien d'observable côté Supabase si l'email n'est pas admin.
+// Anti-leak : la réponse est toujours 200 { eligible: boolean }, que l'email
+// corresponde à un admin ou non. Délai artificiel constant de 1.5s avant
+// retour pour empêcher l'énumération via timing attack.
 //
 // Référence : GOUVERNANCE_EDITORIALE.md §2.1, §2.2, §7.
+//
+// Note : on garde le service client UNIQUEMENT pour le lookup
+// app_admins ⨝ auth.users, qui n'est pas exposé via RLS standard.
+// Aucun cookie de session n'est posé ici.
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import {
-  createSupabaseServerClient,
-  getSupabaseServiceClient,
-} from "@/lib/supabase/server";
+import { getSupabaseServiceClient } from "@/lib/supabase/server";
+import { constantResponseDelay } from "@/lib/auth/constantDelay";
 
 export const runtime = "nodejs";
 
@@ -60,9 +61,6 @@ async function isEmailAdmin(email: string): Promise<boolean> {
   const userIds = data.map((row) => row.user_id).filter((id): id is string => Boolean(id));
   if (userIds.length === 0) return false;
 
-  // Lookup direct sur auth.users (accessible via service role).
-  // L'API admin Supabase JS expose auth.admin.getUserById / listUsers ;
-  // on utilise listUsers avec filtre email pour minimiser les calls.
   const { data: userData, error: userError } =
     await serviceClient.auth.admin.listUsers({
       perPage: 100,
@@ -94,41 +92,21 @@ export async function POST(request: Request) {
   }
   const { email } = parsed.data;
 
-  // 1. Lookup app_admins ⨝ auth.users via service client.
-  let isAdmin: boolean;
+  // Lookup en parallèle du délai constant pour amortir le coût.
+  const delay = constantResponseDelay(1500);
+
+  let eligible = false;
   try {
-    isAdmin = await isEmailAdmin(email);
+    eligible = await isEmailAdmin(email);
   } catch (err) {
     console.error(
       "[admin-magic-link] admin lookup failed:",
       err instanceof Error ? err.message : String(err),
     );
+    await delay;
     return NextResponse.json({ error: "internal" }, { status: 500 });
   }
 
-  // 2. Si non admin → réponse 200 opaque, pas d'envoi de magic-link.
-  if (!isAdmin) {
-    return NextResponse.json({ ok: true });
-  }
-
-  // 3. Admin reconnu → on envoie le magic-link via le client utilisateur
-  //    (signInWithOtp ne nécessite pas le service role).
-  const origin = new URL(request.url).origin;
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: `${origin}/auth/callback?next=/admin`,
-      shouldCreateUser: false, // jamais créer un user via cette route
-    },
-  });
-
-  if (error) {
-    // Erreur Supabase réelle (rate limit, SMTP). On log mais on ne révèle
-    // rien au client (anti-leak) → 500 générique.
-    console.error("[admin-magic-link] supabase error:", error.message);
-    return NextResponse.json({ error: "internal" }, { status: 500 });
-  }
-
-  return NextResponse.json({ ok: true });
+  await delay;
+  return NextResponse.json({ eligible });
 }
