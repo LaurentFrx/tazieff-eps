@@ -3,7 +3,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
-  usePathname: () => "/fr/onboarding",
+  // Pathname côté élève (sans préfixe locale) — le middleware réécrit en
+  // interne. LocaleLink ne préfixe donc pas le href.
+  usePathname: () => "/onboarding",
 }));
 
 vi.mock("@/lib/i18n/I18nProvider", () => ({

@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { clientLocalizedHref } from "@/lib/i18n/locale-path";
+import type { Locale } from "@/lib/i18n/constants";
 
 /* ── Types & constants ─────────────────────────────────────────────── */
 
@@ -53,8 +55,9 @@ const GOALS: { value: Objectif; labelKey: string; descKey: string; gradient: str
 /* ── Component ─────────────────────────────────────────────────────── */
 
 export function OnboardingWizard() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const router = useRouter();
+  const pathname = usePathname();
   const [step, setStep] = useState<Step>(1);
   const [level, setLevel] = useState<Level | null>(null);
   const [goal, setGoal] = useState<Objectif | null>(null);
@@ -65,8 +68,9 @@ export function OnboardingWizard() {
       if (goal) localStorage.setItem(LS_GOAL, goal);
       localStorage.setItem(LS_DONE, "true");
     } catch { /* ignore */ }
-    router.push("/");
-  }, [level, goal, router]);
+    // Sprint A2 — préfixe locale pour fonctionner sur miroir admin.
+    router.push(clientLocalizedHref("/", lang as Locale, pathname));
+  }, [level, goal, router, lang, pathname]);
 
   const levelLabel = level ? t(LEVELS.find((l) => l.value === level)!.labelKey) : "";
   const goalLabel = goal ? t(GOALS.find((g) => g.value === goal)!.labelKey) : "";

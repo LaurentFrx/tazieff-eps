@@ -1,5 +1,8 @@
-import { redirect } from "next/navigation";
+import { localizedRedirect } from "@/lib/navigation";
 
-export default function MaSeanceRedirect() {
-  redirect("/outils/ma-seance");
+type Props = { params: Promise<{ locale: string }> };
+
+export default async function MaSeanceRedirect({ params }: Props) {
+  const { locale } = await params;
+  localizedRedirect("/outils/ma-seance", locale);
 }

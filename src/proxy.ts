@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { isAdminHost, isProfHost } from "@/lib/admin-hosts";
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from "@/lib/i18n/constants";
 
 /* ── Admin basic auth ────────────────────────────────────────────────── */
 
@@ -34,28 +36,20 @@ function handleAdminAuth(request: NextRequest): NextResponse | null {
   return null; // auth OK
 }
 
-/* ── Host-based routing (Phase E.2.2.5) ─────────────────────────────── */
+/* ── Host-based routing (Phase E.2.2.5 + P0.7) ───────────────────────── */
 //
-// Sur prof.muscu-eps.fr / design-prof.muscu-eps.fr / prof.localhost:
+// Sur prof.muscu-eps.fr / design-prof.muscu-eps.fr / prof.localhost :
 //   rewrite interne <path> → /prof<path>  (URL publique inchangée)
+// Sur admin.muscu-eps.fr / design-admin.muscu-eps.fr / admin.localhost (P0.7) :
+//   rewrite interne <path> → /admin<path>
 // Sur muscu-eps.fr / design.muscu-eps.fr / etc. :
-//   /prof/* → /_not-found (protection croisée)
+//   /prof/* et /admin/* → /_not-found (protection croisée)
 //
-// Après ce bloc, les paths prof (reroutés ou non) sont DÉJÀ réécrits.
-// Le bloc i18n qui suit ne tourne que pour les paths élève.
+// Après ce bloc, les paths prof / admin (reroutés ou non) sont DÉJÀ
+// réécrits. Le bloc i18n qui suit ne tourne que pour les paths élève.
 
-const PROF_HOSTS = new Set<string>([
-  "prof.muscu-eps.fr",
-  "design-prof.muscu-eps.fr",
-]);
-
-function isProfHost(host: string): boolean {
-  return (
-    PROF_HOSTS.has(host) ||
-    host.startsWith("prof.localhost") ||
-    host === "prof.localhost:3000"
-  );
-}
+// ADMIN_HOSTS / PROF_HOSTS / isAdminHost / isProfHost partagés avec le
+// layout [locale] (P0.7-septies) via src/lib/admin-hosts.ts.
 
 function shouldSkipHostRouting(pathname: string): boolean {
   // Assets, API, auth Supabase callback, GitHub OAuth callback :
@@ -69,9 +63,72 @@ function shouldSkipHostRouting(pathname: string): boolean {
   );
 }
 
+/* ── P0.7-bis : pass-through admin (miroir d'édition) ────────────────── */
+//
+// Liste des paths qui NE sont PAS rewritées vers /admin/<path> sur le
+// sous-domaine admin. Le contenu standard de l'app est servi à la place,
+// avec la session admin active (donc édition au clic visible).
+//
+// Routes EXCLUES de la liste (continuent à rewrite vers /admin/<path>) :
+//   - /ma-classe : espace élève, ne doit pas être miroité côté admin
+//   - /enseignant : outil local élève, idem
+//
+// /_next, /api/*, fichiers avec extension : déjà gérés par
+// shouldSkipHostRouting() en amont (étape 0). Listés ici pour redondance
+// défensive et clarté.
+
+const ADMIN_MIRROR_PREFIXES = [
+  "/exercices",
+  "/methodes",
+  "/bac",
+  "/learn",
+  "/api/teacher",
+  "/api/me",
+  "/api/exercises",
+  "/api/auth",
+  "/_next",
+  "/favicon",
+  "/robots",
+  "/sitemap",
+  "/manifest",
+  "/icons",
+  "/images",
+];
+
+// Sprint A5 — LOCALE_PREFIXES dérivé de SUPPORTED_LOCALES (source unique).
+// Avant : tableau hardcodé ["/fr","/en","/es"] qui doublonnait LOCALES plus
+// bas. Toute future locale ajoutée à SUPPORTED_LOCALES est désormais propagée
+// automatiquement (cf audit-cc 2026-04-28 PS6 / L18).
+const LOCALE_PREFIXES = SUPPORTED_LOCALES.map((loc) => `/${loc}`);
+
+// P0.7-ter — Les routes pédagogiques de l'app sont localisées
+// (/fr/exercices, /en/exercices, /es/exercices). Pour que le miroir admin
+// reconnaisse ces chemins comme pass-through, on retire le préfixe locale
+// avant de tester contre la liste. Les routes /api/* ne sont jamais
+// localisées en Next.js, donc ce strip est sans effet sur elles.
+function stripLocalePrefix(pathname: string): string {
+  for (const prefix of LOCALE_PREFIXES) {
+    if (pathname === prefix) return "/";
+    if (pathname.startsWith(`${prefix}/`)) {
+      return pathname.slice(prefix.length);
+    }
+  }
+  return pathname;
+}
+
+function isAdminMirrorPath(pathname: string): boolean {
+  const delocalized = stripLocalePrefix(pathname);
+  return ADMIN_MIRROR_PREFIXES.some(
+    (prefix) =>
+      delocalized === prefix || delocalized.startsWith(`${prefix}/`),
+  );
+}
+
 /* ── i18n locale rewrite ─────────────────────────────────────────────── */
 
-const LOCALES = ["fr", "en", "es"];
+// Sprint A5 — LOCALES alias de SUPPORTED_LOCALES pour conserver le nom
+// historique du proxy. Toute évolution passe par lib/i18n/constants.ts.
+const LOCALES = SUPPORTED_LOCALES;
 
 /* ── Main proxy ──────────────────────────────────────────────────────── */
 
@@ -87,18 +144,71 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 1) Admin basic auth (prioritaire)
+  // 1) Host-based routing — admin (P0.7 + P0.7-bis)
+  //
+  // Sur admin.muscu-eps.fr / design-admin / admin.localhost :
+  //   - Routes pédagogiques (PASS_THROUGH_PATHS) : pass-through, le contenu
+  //     standard de l'app est servi avec la session admin active. C'est le
+  //     "miroir d'édition" introduit en P0.7-bis pour permettre au super_admin
+  //     de consulter les fiches et d'éditer au clic sans avoir à passer sur
+  //     muscu-eps.fr (cookies de session isolés par host, cf E.2.3.8).
+  //   - Routes natives /admin/* (login + home) et autres paths inconnus :
+  //     rewrite vers /admin/<path> (comportement P0.7).
+  //   - Routes /ma-classe, /enseignant : rewritées vers /admin/<path>
+  //     (rejet implicite — ces espaces appartiennent à l'élève, pas au
+  //     miroir admin).
+  //
+  // Sur muscu-eps.fr / design.muscu-eps.fr / autres :
+  //   - Path /admin/* : protection croisée (404).
+  {
+    const onAdminHost = isAdminHost(host);
+
+    // 1a. Host admin + path pédagogique → pass-through (miroir d'édition).
+    //     NB : /_next/* et /api/* sont déjà attrapés par shouldSkipHostRouting
+    //     en amont. Cette liste est faite pour les paths utilisateurs.
+    if (onAdminHost && isAdminMirrorPath(pathname)) {
+      return NextResponse.next();
+    }
+
+    // 1b. Host admin + path normal → rewrite interne vers /admin/<path>
+    if (
+      onAdminHost &&
+      !pathname.startsWith("/admin/") &&
+      pathname !== "/admin"
+    ) {
+      const url = request.nextUrl.clone();
+      url.pathname = pathname === "/" ? "/admin" : `/admin${pathname}`;
+      return NextResponse.rewrite(url);
+    }
+
+    // 1c. Host non-admin + path /admin/* → protection croisée (404)
+    //     (NB : le Basic Auth historique ci-dessous n'est plus déclenché
+    //      en prod car ce bloc le précède, sauf si ADMIN_BASIC_AUTH est
+    //      utilisé sur localhost en dev — conservé pour rétrocompat.)
+    if (!onAdminHost && pathname.startsWith("/admin/")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/_not-found";
+      return NextResponse.rewrite(url);
+    }
+
+    // 1d. Host admin + path déjà /admin/* → pass-through
+    if (onAdminHost && (pathname === "/admin" || pathname.startsWith("/admin/"))) {
+      return NextResponse.next();
+    }
+  }
+
+  // 2) Admin basic auth (rétrocompat dev). Inopérant en prod après le bloc 1.
   if (pathname === "/admin" || pathname.startsWith("/admin/")) {
     const authResponse = handleAdminAuth(request);
     if (authResponse) return authResponse;
     return NextResponse.next();
   }
 
-  // 2) Host-based routing (Phase E.2.2.5)
+  // 3) Host-based routing — prof (Phase E.2.2.5)
   {
     const onProfHost = isProfHost(host);
 
-    // 2a. Host prof + path normal → rewrite interne vers /prof/<path>
+    // 3a. Host prof + path normal → rewrite interne vers /prof/<path>
     if (
       onProfHost &&
       !pathname.startsWith("/prof/") &&
@@ -109,21 +219,21 @@ export function proxy(request: NextRequest) {
       return NextResponse.rewrite(url);
     }
 
-    // 2b. Host élève + path /prof/* → protection croisée (404)
+    // 3b. Host élève + path /prof/* → protection croisée (404)
     if (!onProfHost && pathname.startsWith("/prof/")) {
       const url = request.nextUrl.clone();
       url.pathname = "/_not-found";
       return NextResponse.rewrite(url);
     }
 
-    // 2c. Host prof + path déjà /prof/* → pass-through (évite double rewrite
+    // 3c. Host prof + path déjà /prof/* → pass-through (évite double rewrite
     // et évite le i18n rewrite qui sinon préfixerait /fr/prof/...).
     if (onProfHost && pathname.startsWith("/prof")) {
       return NextResponse.next();
     }
   }
 
-  // 3) i18n locale rewrite (espace élève uniquement, pas de /prof/*)
+  // 4) i18n locale rewrite (espace élève uniquement, pas de /prof/* ni /admin/*)
   // Skip si déjà préfixé par une locale
   const pathnameHasLocale = LOCALES.some(
     (locale) =>
@@ -131,9 +241,9 @@ export function proxy(request: NextRequest) {
   );
   if (pathnameHasLocale) return NextResponse.next();
 
-  // Rewrite unprefixed paths to /fr/...
+  // Rewrite unprefixed paths to the default locale (Sprint A5 — DEFAULT_LOCALE).
   const url = request.nextUrl.clone();
-  url.pathname = `/fr${pathname}`;
+  url.pathname = `/${DEFAULT_LOCALE}${pathname}`;
   return NextResponse.rewrite(url);
 }
 

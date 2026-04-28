@@ -4,9 +4,9 @@ import { LocaleLink as Link } from "@/components/LocaleLink";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { useTeacherMode } from "@/hooks/useTeacherMode";
 import { SearchModal } from "@/components/SearchModal";
 import { useTimerContext } from "@/contexts/TimerContext";
+import { useMyClasses } from "@/hooks/useMyClasses";
 
 /* ── Inline SVG icons (20×20) ────────────────────────────────────── */
 
@@ -47,6 +47,15 @@ function IconTeacher() {
   );
 }
 
+function IconMaClasse() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+      <path d="M9 22V12h6v10" />
+    </svg>
+  );
+}
+
 /* ── Component ───────────────────────────────────────────────────── */
 
 function formatBadgeTime(s: number) {
@@ -57,9 +66,11 @@ function formatBadgeTime(s: number) {
 
 export function TopBar() {
   const { t } = useI18n();
-  const { unlocked: teacherUnlocked } = useTeacherMode();
   const [searchOpen, setSearchOpen] = useState(false);
   const timerCtx = useTimerContext();
+  // Sprint E1 — affichage conditionné à l'inscription dans au moins une classe.
+  const { classes: myClasses } = useMyClasses();
+  const hasClass = myClasses.length > 0;
 
   /* ── Cmd/Ctrl+K shortcut ──────────────────────────────────────── */
   useEffect(() => {
@@ -147,16 +158,28 @@ export function TopBar() {
               <IconSettings />
             </Link>
 
-            {/* Mode enseignant — conditional */}
-            {teacherUnlocked && (
+            {/* Sprint E1 — Lien Ma classe : visible uniquement si l'élève
+                est inscrit dans au moins une classe. */}
+            {hasClass && (
               <Link
-                href="/enseignant"
+                href="/ma-classe"
                 className="flex items-center justify-center w-11 h-11 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                aria-label={t("enseignant.navLabel")}
+                aria-label={t("topBar.maClasse")}
               >
-                <IconTeacher />
+                <IconMaClasse />
               </Link>
             )}
+
+            {/* P0.1 — Mode enseignant : icône visible pour tous (la page
+                /enseignant est un outil localStorage ouvert à tous, sans
+                écriture base de données). */}
+            <Link
+              href="/enseignant"
+              className="flex items-center justify-center w-11 h-11 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              aria-label={t("enseignant.navLabel")}
+            >
+              <IconTeacher />
+            </Link>
           </div>
         </div>
       </header>

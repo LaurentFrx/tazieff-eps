@@ -95,6 +95,7 @@ export const messages = {
         privacy: "Confidentialité",
         cgu: "CGU",
       },
+      adminLink: "Espace administrateur",
     },
     nav: {
       home: { label: "Accueil" },
@@ -412,6 +413,7 @@ export const messages = {
       saveFailed: "Échec de l'enregistrement.",
       updateFailed: "Échec de la mise à jour.",
       createFailed: "Échec de la création.",
+      adminRequired: "Compte administrateur requis pour cette action.",
       deleteFailed: "Échec de la suppression.",
       versionDeleted: "Version supprimée",
       imageTooLarge: "Image trop lourde après compression (max 2 Mo).",
@@ -1125,6 +1127,12 @@ export const messages = {
       sharedLoading: "Chargement…",
       goExercices: "Voir les exercices",
       close: "Fermer",
+      moved: {
+        body:
+          "L'espace enseignant a d\u00e9m\u00e9nag\u00e9. Acc\u00e9dez-y depuis un sous-domaine d\u00e9di\u00e9, plus adapt\u00e9 \u00e0 la tablette et au desktop.",
+        ctaPrimary: "Aller sur l'espace enseignant",
+        ctaSecondary: "Retour \u00e0 l'accueil",
+      },
     },
     meta: {
       homeTitle: "Tazieff EPS \u2014 Musculation au lyc\u00e9e",
@@ -1160,6 +1168,75 @@ export const messages = {
       methodsCollapse: "R\u00e9duire",
       methodsSeeMethod: "Voir la fiche compl\u00e8te",
       backHome: "Retour \u00e0 l\u2019accueil",
+    },
+    maClasse: {
+      title: "Ma classe",
+      joinForm: {
+        firstName: "Pr\u00e9nom",
+        lastName: "Nom",
+        code: "Code de classe",
+        submit: "Rejoindre ma classe",
+        submitting: "Inscription...",
+        errors: {
+          codeNotFound: "Code de classe inconnu. V\u00e9rifie aupr\u00e8s de ton enseignant.",
+          alreadyEnrolled: "Tu es d\u00e9j\u00e0 dans cette classe.",
+          joinFailed: "Une erreur est survenue, r\u00e9essaie dans un instant.",
+          networkError: "Connexion indisponible. R\u00e9essaie dans un instant.",
+          firstNameRequired: "Indique ton pr\u00e9nom.",
+          lastNameRequired: "Indique ton nom.",
+          codeRequired: "Indique le code de classe (4 caract\u00e8res minimum).",
+        },
+      },
+      detail: {
+        schoolYear: "Ann\u00e9e scolaire",
+        teacher: "Enseignant",
+        organization: "\u00c9tablissement",
+        teacherUnknown: "Enseignant",
+        loading: "Chargement\u2026",
+      },
+    },
+    topBar: {
+      maClasse: "Ma classe",
+    },
+    adminLogin: {
+      title: "Connexion administrateur",
+      email: {
+        label: "Adresse email",
+      },
+      submit: "Connexion",
+      submitting: "Envoi…",
+      confirmation:
+        "Si cet email correspond à un compte administrateur, un lien de connexion a été envoyé.",
+      emailRequired: "Indique ton adresse email.",
+      networkError: "Une erreur est survenue. Réessaie dans un instant.",
+    },
+    adminHome: {
+      title: "Espace admin",
+      connectedAs: "Connecté en tant que",
+      roleLabel: "Rôle",
+      role: {
+        superAdmin: "Super-administrateur",
+        admin: "Administrateur",
+      },
+      catalogLink: "Catalogue des exercices",
+      logout: "Se déconnecter",
+    },
+    teacherLogin: {
+      confirmation: {
+        eligible:
+          "Lien de connexion envoyé sur ton adresse académique.",
+        notEligible:
+          "Vérifie l'orthographe de ton adresse, ou contacte l'administrateur de Tazieff EPS.",
+      },
+    },
+    rejoindre: {
+      title: "Rejoindre une classe",
+      subtitleWithCode:
+        "Le code de ta classe est pré-rempli. Renseigne ton prénom et ton nom pour t'inscrire.",
+      subtitleNoCode:
+        "Saisis le code que ton enseignant t'a communiqué, ainsi que ton prénom et ton nom.",
+      help:
+        "Tu pourras retrouver ta classe à tout moment depuis l'onglet « Ma classe ».",
     },
   },
   en: {
@@ -1256,6 +1333,7 @@ export const messages = {
         privacy: "Privacy",
         cgu: "Terms of use",
       },
+      adminLink: "Admin area",
     },
     nav: {
       home: { label: "Home" },
@@ -1573,6 +1651,7 @@ export const messages = {
       saveFailed: "Save failed.",
       updateFailed: "Update failed.",
       createFailed: "Creation failed.",
+      adminRequired: "Administrator account required for this action.",
       deleteFailed: "Delete failed.",
       versionDeleted: "Version deleted",
       imageTooLarge: "Image too large after compression (max 2 MB).",
@@ -2058,6 +2137,12 @@ export const messages = {
       sharedLoading: "Loading…",
       goExercices: "See exercises",
       close: "Close",
+      moved: {
+        body:
+          "The teacher space has moved. Access it from a dedicated subdomain, better suited to tablet and desktop.",
+        ctaPrimary: "Go to the teacher space",
+        ctaSecondary: "Back to home",
+      },
     },
     methodes: {
       eyebrow: "Methods",
@@ -2322,6 +2407,74 @@ export const messages = {
       methodsSeeMethod: "See full method",
       backHome: "Back to home",
     },
+    maClasse: {
+      title: "My class",
+      joinForm: {
+        firstName: "First name",
+        lastName: "Last name",
+        code: "Class code",
+        submit: "Join my class",
+        submitting: "Joining...",
+        errors: {
+          codeNotFound: "Unknown class code. Check with your teacher.",
+          alreadyEnrolled: "You are already in this class.",
+          joinFailed: "Something went wrong, try again in a moment.",
+          networkError: "Network unavailable. Try again in a moment.",
+          firstNameRequired: "Please enter your first name.",
+          lastNameRequired: "Please enter your last name.",
+          codeRequired: "Please enter the class code (4 characters minimum).",
+        },
+      },
+      detail: {
+        schoolYear: "School year",
+        teacher: "Teacher",
+        organization: "School",
+        teacherUnknown: "Teacher",
+        loading: "Loading…",
+      },
+    },
+    topBar: {
+      maClasse: "My class",
+    },
+    adminLogin: {
+      title: "Admin sign in",
+      email: {
+        label: "Email address",
+      },
+      submit: "Sign in",
+      submitting: "Sending…",
+      confirmation:
+        "If this email matches an administrator account, a sign-in link has been sent.",
+      emailRequired: "Please enter your email address.",
+      networkError: "Something went wrong. Try again in a moment.",
+    },
+    adminHome: {
+      title: "Admin space",
+      connectedAs: "Signed in as",
+      roleLabel: "Role",
+      role: {
+        superAdmin: "Super-admin",
+        admin: "Administrator",
+      },
+      catalogLink: "Exercise catalog",
+      logout: "Sign out",
+    },
+    teacherLogin: {
+      confirmation: {
+        eligible: "Sign-in link sent to your academic email.",
+        notEligible:
+          "Check the spelling of your email, or contact the Tazieff EPS administrator.",
+      },
+    },
+    rejoindre: {
+      title: "Join a class",
+      subtitleWithCode:
+        "Your class code is pre-filled. Enter your first and last name to enroll.",
+      subtitleNoCode:
+        "Enter the code your teacher gave you, plus your first and last name.",
+      help:
+        "You can find your class anytime from the \"My class\" tab.",
+    },
   },
   es: {
     header: {
@@ -2417,6 +2570,7 @@ export const messages = {
         privacy: "Privacidad",
         cgu: "Condiciones de uso",
       },
+      adminLink: "Espacio administrador",
     },
     nav: {
       home: { label: "Inicio" },
@@ -2734,6 +2888,7 @@ export const messages = {
       saveFailed: "Error al guardar.",
       updateFailed: "Error al actualizar.",
       createFailed: "Error al crear.",
+      adminRequired: "Cuenta de administrador requerida para esta acción.",
       deleteFailed: "Error al eliminar.",
       versionDeleted: "Versión eliminada",
       imageTooLarge: "Imagen demasiado grande tras compresión (máx 2 MB).",
@@ -3447,6 +3602,12 @@ export const messages = {
       sharedLoading: "Cargando…",
       goExercices: "Ver ejercicios",
       close: "Cerrar",
+      moved: {
+        body:
+          "El espacio del profesorado se ha trasladado. Accede desde un subdominio dedicado, más adaptado a tableta y escritorio.",
+        ctaPrimary: "Ir al espacio del profesorado",
+        ctaSecondary: "Volver al inicio",
+      },
     },
     meta: {
       homeTitle: "Tazieff EPS \u2014 Musculaci\u00f3n en el instituto",
@@ -3482,6 +3643,75 @@ export const messages = {
       methodsCollapse: "Reducir",
       methodsSeeMethod: "Ver la ficha completa",
       backHome: "Volver al inicio",
+    },
+    maClasse: {
+      title: "Mi clase",
+      joinForm: {
+        firstName: "Nombre",
+        lastName: "Apellido",
+        code: "Código de clase",
+        submit: "Unirme a mi clase",
+        submitting: "Uniéndome...",
+        errors: {
+          codeNotFound: "Código de clase desconocido. Verifica con tu profesor.",
+          alreadyEnrolled: "Ya estás en esta clase.",
+          joinFailed: "Algo salió mal, inténtalo de nuevo en un momento.",
+          networkError: "Conexión no disponible. Inténtalo de nuevo en un momento.",
+          firstNameRequired: "Indica tu nombre.",
+          lastNameRequired: "Indica tu apellido.",
+          codeRequired: "Indica el código de clase (mínimo 4 caracteres).",
+        },
+      },
+      detail: {
+        schoolYear: "Año escolar",
+        teacher: "Profesor",
+        organization: "Centro",
+        teacherUnknown: "Profesor",
+        loading: "Cargando…",
+      },
+    },
+    topBar: {
+      maClasse: "Mi clase",
+    },
+    adminLogin: {
+      title: "Inicio de sesión de administrador",
+      email: {
+        label: "Dirección de correo",
+      },
+      submit: "Iniciar sesión",
+      submitting: "Enviando…",
+      confirmation:
+        "Si este correo corresponde a una cuenta de administrador, se ha enviado un enlace de inicio de sesión.",
+      emailRequired: "Indica tu dirección de correo.",
+      networkError: "Algo salió mal. Inténtalo de nuevo en un momento.",
+    },
+    adminHome: {
+      title: "Espacio admin",
+      connectedAs: "Conectado como",
+      roleLabel: "Rol",
+      role: {
+        superAdmin: "Super-administrador",
+        admin: "Administrador",
+      },
+      catalogLink: "Catálogo de ejercicios",
+      logout: "Cerrar sesión",
+    },
+    teacherLogin: {
+      confirmation: {
+        eligible:
+          "Enlace de inicio de sesión enviado a tu correo académico.",
+        notEligible:
+          "Verifica la ortografía de tu correo, o contacta al administrador de Tazieff EPS.",
+      },
+    },
+    rejoindre: {
+      title: "Unirse a una clase",
+      subtitleWithCode:
+        "El código de tu clase está pre-rellenado. Introduce tu nombre y apellido para inscribirte.",
+      subtitleNoCode:
+        "Introduce el código que te dio tu profesor, junto con tu nombre y apellido.",
+      help:
+        "Puedes consultar tu clase en cualquier momento desde la pestaña «Mi clase».",
     },
   },
 } as const;

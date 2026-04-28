@@ -1,10 +1,23 @@
 "use client";
 
-import { createContext, useCallback, useEffect, useMemo, useState } from "react";
-import type { User } from "@supabase/supabase-js";
-import { getSupabaseBrowserClientAsync } from "./client";
+// Sprint A3 — AuthProvider est désormais un alias d'IdentityProvider en
+// mode="eleve". Conservé pour compat avec les ~5 consommateurs (useAuth,
+// AppProviders) qui dépendent du context typé { user, isLoading, isAnonymous }.
+//
+// Nouveau code : préférer IdentityProvider + useIdentity / useStudentSession
+// (cf. src/lib/auth/IdentityContext.tsx + src/lib/auth/sessions.ts).
+//
+// Cause racine traitée (audit-cc 2026-04-28 PS3) : 4 providers d'auth
+// distincts → 1 provider unifié paramétré par mode.
 
-type AuthContextValue = {
+import { createContext, useMemo, type ReactNode } from "react";
+import type { User } from "@supabase/supabase-js";
+import {
+  IdentityProvider,
+  useIdentity,
+} from "@/lib/auth/IdentityContext";
+
+export type AuthContextValue = {
   user: User | null;
   isLoading: boolean;
   isAnonymous: boolean;
@@ -16,68 +29,51 @@ export const AuthContext = createContext<AuthContextValue>({
   isAnonymous: false,
 });
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const initAuth = useCallback(async () => {
-    const supabase = await getSupabaseBrowserClientAsync();
-    if (!supabase) {
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUser(session.user);
-      } else {
-        const { data } = await supabase.auth.signInAnonymously();
-        setUser(data.user ?? null);
-      }
-    } catch {
-      // Auth failed — app continues without auth
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    initAuth();
-  }, [initAuth]);
-
-  useEffect(() => {
-    let cancelled = false;
-    let cleanupRef: (() => void) | null = null;
-
-    getSupabaseBrowserClientAsync().then((supabase) => {
-      if (cancelled || !supabase) return;
-
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        (_event, session) => {
-          setUser(session?.user ?? null);
-        },
-      );
-
-      cleanupRef = () => subscription.unsubscribe();
-    });
-
-    return () => {
-      cancelled = true;
-      cleanupRef?.();
-    };
-  }, []);
-
+/**
+ * Adapter qui mappe l'Identity unifié vers l'ancienne forme AuthContextValue.
+ * Conservé pour ne pas casser les consommateurs `useAuth()` existants.
+ */
+function AuthContextAdapter({ children }: { children: ReactNode }) {
+  const identity = useIdentity();
   const value = useMemo<AuthContextValue>(
     () => ({
-      user,
-      isLoading,
-      isAnonymous: user?.is_anonymous ?? false,
+      user: identity.user,
+      isLoading: identity.isLoading,
+      // ATTENTION : `isAnonymous` reflète user.is_anonymous (drapeau Supabase
+      // explicite), pas le rôle "anonymous" dérivé. Quand user est null
+      // (cas disableAnonymousFallback=true sans session), on retourne false
+      // pour préserver le contrat historique testé en P0.7-septies :
+      // « user null → isAnonymous=false (on ne sait pas) ».
+      isAnonymous: !!identity.user?.is_anonymous,
     }),
-    [user, isLoading],
+    [identity.user, identity.isLoading],
   );
-
   return (
     <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  );
+}
+
+type AuthProviderProps = {
+  children: ReactNode;
+  /**
+   * P0.7-septies — Désactive le fallback `signInAnonymously()` quand aucune
+   * session n'est trouvée. Propagé tel quel à IdentityProvider.
+   *
+   * Cf. GOUVERNANCE_EDITORIALE.md §2.1, §3.1.
+   */
+  disableAnonymousFallback?: boolean;
+};
+
+export function AuthProvider({
+  children,
+  disableAnonymousFallback = false,
+}: AuthProviderProps) {
+  return (
+    <IdentityProvider
+      mode="eleve"
+      disableAnonymousFallback={disableAnonymousFallback}
+    >
+      <AuthContextAdapter>{children}</AuthContextAdapter>
+    </IdentityProvider>
   );
 }

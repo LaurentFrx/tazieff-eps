@@ -3,12 +3,13 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("next/link");
 vi.mock("@/lib/i18n/I18nProvider", () => ({
-  useI18n: () => ({ t: (key: string) => key }),
+  useI18n: () => ({ t: (key: string) => key, lang: "fr" }),
 }));
 
-// Mock useSearchParams
+// Mock useSearchParams + usePathname (utilisé par LocaleLink depuis P0.7-quater)
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
+  usePathname: () => "/outils/ma-seance",
 }));
 
 import { SessionGenerator } from "./SessionGenerator";

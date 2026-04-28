@@ -3,7 +3,10 @@ import { describe, it, expect, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
-  usePathname: () => "/fr/methodes",
+  // Pathname côté élève (sans préfixe locale) — le middleware réécrit en
+  // interne, l'URL publique reste sans préfixe. LocaleLink ne préfixe donc
+  // pas le href.
+  usePathname: () => "/methodes",
 }));
 
 import { I18nProvider } from "@/lib/i18n/I18nProvider";

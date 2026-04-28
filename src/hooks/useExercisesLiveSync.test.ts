@@ -25,9 +25,19 @@ const mockChannel = {
   unsubscribe: mockUnsubscribe,
 };
 
+// P0.6 — la query est `from().select().eq("locale", locale).is("deleted_at", null)`.
+// On expose un thenable qui supporte aussi .is() pour rétrocompat.
 const mockFrom = {
   select: vi.fn().mockReturnThis(),
-  eq: vi.fn(() => Promise.resolve({ data: mockSelectData })),
+  eq: vi.fn(() => {
+    const result = {
+      data: null as LiveExerciseRow[] | null,
+      is: vi.fn(() => Promise.resolve({ data: mockSelectData })),
+      then: (resolve: (value: { data: LiveExerciseRow[] | null }) => unknown) =>
+        resolve({ data: mockSelectData }),
+    };
+    return result;
+  }),
 };
 
 const mockSupabase = {
@@ -36,7 +46,7 @@ const mockSupabase = {
   removeChannel: mockRemoveChannel,
 };
 
-vi.mock("@/lib/supabase/client", () => ({
+vi.mock("@/lib/supabase/browser", () => ({
   getSupabaseBrowserClient: () => mockSupabase,
 }));
 

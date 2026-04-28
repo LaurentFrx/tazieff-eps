@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { LocaleLink as Link } from "@/components/LocaleLink";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import DifficultyPill from "@/components/DifficultyPill";
 import { ExerciseMannequin3D } from "@/components/exercices/ExerciseMannequin3D";
 import { HeroMedia } from "@/components/media/HeroMedia";
@@ -12,9 +12,12 @@ import {
   toggleFavorite,
 } from "@/lib/favoritesStore";
 import { useSessionDraft } from "@/hooks/useSessionDraft";
+import { useAppAdmin } from "@/hooks/useAppAdmin";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Lang } from "@/lib/i18n/messages";
+import { clientLocalizedHref } from "@/lib/i18n/locale-path";
+import type { Locale } from "@/lib/i18n/constants";
 import { ExerciseJsonLd } from "@/components/seo/ExerciseJsonLd";
 import { ExerciseQuickInfo } from "@/components/exercices/ExerciseQuickInfo";
 import { RestTimer } from "@/components/exercices/RestTimer";
@@ -47,7 +50,7 @@ import type {
   ExerciseOverridePatch,
   LiveExerciseRow,
 } from "@/lib/live/types";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { useReveal } from "@/hooks/useReveal";
 import "./exercise-detail.css";
 import {
@@ -112,42 +115,12 @@ type LiveDraft = {
 
 type ExerciseStatus = "draft" | "ready";
 
-type TeacherModeSnapshot = {
-  unlocked: boolean;
-  pin: string;
-};
-
-declare global {
-  interface Window {
-    __teacherMode?: TeacherModeSnapshot;
-  }
-}
+// P0.1 — Le mécanisme TeacherModeSnapshot / window.__teacherMode / PIN a été
+// supprimé. L'édition du catalogue officiel est maintenant gatée par
+// `useAppAdmin()` (compte super_admin / admin authentifié, cf. /api/me/role
+// et table public.app_admins en P0.2). Voir GOUVERNANCE_EDITORIALE.md §3.1, §7.
 
 const POLL_INTERVAL_MS = 20000;
-const LONG_PRESS_MS = 1800;
-const MOVE_THRESHOLD_PX = 10;
-const DEFAULT_TEACHER_MODE: TeacherModeSnapshot = { unlocked: false, pin: "" };
-
-function getTeacherModeSnapshot(): TeacherModeSnapshot {
-  if (typeof window === "undefined") {
-    return { ...DEFAULT_TEACHER_MODE };
-  }
-  const snapshot = window.__teacherMode;
-  if (!snapshot) {
-    return { ...DEFAULT_TEACHER_MODE };
-  }
-  return {
-    unlocked: Boolean(snapshot.unlocked),
-    pin: snapshot.pin ?? "",
-  };
-}
-
-function setTeacherModeSnapshot(next: TeacherModeSnapshot) {
-  if (typeof window === "undefined") {
-    return;
-  }
-  window.__teacherMode = next;
-}
 
 function parseList(value: string) {
   return value
@@ -283,6 +256,7 @@ export function ExerciseLiveDetail({
 }: ExerciseLiveDetailProps) {
   const { t, lang } = useI18n();
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const sessionDraft = useSessionDraft();
   const supabase = getSupabaseBrowserClient();
@@ -293,13 +267,10 @@ export function ExerciseLiveDetail({
   const [patch, setPatch] = useState<ExerciseOverridePatch | null>(() => initialPatch);
   const [overrideReady, setOverrideReady] = useState(false);
   const [liveReady, setLiveReady] = useState(false);
-  const [pinModalOpen, setPinModalOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [teacherUnlocked, setTeacherUnlocked] = useState(
-    () => getTeacherModeSnapshot().unlocked,
-  );
-  const [teacherPin, setTeacherPin] = useState(() => getTeacherModeSnapshot().pin);
-  const [teacherError, setTeacherError] = useState<string | null>(null);
+  // P0.1 — `isAdmin` remplace l'ancien teacherUnlocked. Source de vérité :
+  // GET /api/me/role qui consulte public.app_admins via RLS.
+  const { isAdmin } = useAppAdmin();
   const [overrideDoc, setOverrideDoc] = useState<ExerciseLiveDocV2 | null>(null);
   // Phase E.1 — override local du titre (édition inline). Prend le pas sur
   // merged.frontmatter.title tant qu'il est non null, pour refléter immédiatement
@@ -315,15 +286,8 @@ export function ExerciseLiveDetail({
   const [liveOpen, setLiveOpen] = useState(false);
   const [liveExists, setLiveExists] = useState(false);
   const [liveDraft, setLiveDraft] = useState<LiveDraft | null>(null);
-  const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pressStartRef = useRef<{ x: number; y: number } | null>(null);
-  const touchPointerActiveRef = useRef(false);
   const autoEditHandledRef = useRef(false);
   const mediaInfoRequestedRef = useRef<Set<string>>(new Set());
-
-  useEffect(() => {
-    setTeacherModeSnapshot({ unlocked: teacherUnlocked, pin: teacherPin });
-  }, [teacherPin, teacherUnlocked]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -546,14 +510,11 @@ export function ExerciseLiveDetail({
     slug,
     locale,
     source,
-    teacherPin,
     setPatch,
     triggerRevalidate,
     onAuthError: (message: string) => {
-      setTeacherUnlocked(false);
-      setTeacherPin("");
-      setTeacherError(message);
-      setPinModalOpen(true);
+      // P0.1 — plus de PIN modal. On affiche un toast d'erreur.
+      showOverrideToast(message, "error");
     },
     setConfirmCloseOpen,
     onDiscardResetExternalState: (firstSectionId) => {
@@ -709,8 +670,6 @@ export function ExerciseLiveDetail({
     slug,
     locale,
     triggerRevalidate,
-    teacherPin,
-    setTeacherPin,
   });
   const {
     activeSectionId,
@@ -786,9 +745,17 @@ export function ExerciseLiveDetail({
             setPatch(null);
             return;
           }
-          const nextPatch = (payload.new as { patch_json?: ExerciseOverridePatch })
-            .patch_json;
-          setPatch(nextPatch ?? null);
+          // P0.6 : un soft-delete arrive en UPDATE avec deleted_at non null.
+          // On traite comme un retrait : reset le patch à null.
+          const newRow = payload.new as {
+            patch_json?: ExerciseOverridePatch;
+            deleted_at?: string | null;
+          };
+          if (newRow.deleted_at) {
+            setPatch(null);
+            return;
+          }
+          setPatch(newRow.patch_json ?? null);
         },
       );
       channel.subscribe((status) => {
@@ -925,16 +892,22 @@ export function ExerciseLiveDetail({
     let interval: ReturnType<typeof setInterval> | null = null;
 
     const fetchOverride = async () => {
+      // P0.6 : exclure les rows soft-deletées du polling (la policy SELECT
+      // publique le fait déjà, on double-garde côté client).
       const { data } = await supabase
         .from("exercise_overrides")
         .select("slug, locale, patch_json, updated_at")
         .eq("slug", slug)
         .eq("locale", locale)
+        .is("deleted_at", null)
         .maybeSingle();
       if (!active) {
         return;
       }
-      setPatch(data?.patch_json ?? null);
+      // Sprint A3 — cast explicite : le client typé Database expose patch_json
+      // comme `Json` générique, alors que le runtime sait qu'il s'agit d'un
+      // ExerciseOverridePatch validé en POST. Migration A3 (client.ts → browser.ts).
+      setPatch((data?.patch_json as ExerciseOverridePatch | null) ?? null);
     };
 
     const fetchLive = async () => {
@@ -955,9 +928,13 @@ export function ExerciseLiveDetail({
       if (source !== "live" || !data?.data_json) {
         return;
       }
+      // Sprint A3 — cast explicite : le client typé Database expose data_json
+      // comme `Json` générique, alors que le runtime sait qu'il s'agit d'un
+      // LiveExerciseRow["data_json"] (validé à l'écriture par la route API).
+      const liveDoc = data.data_json as LiveExerciseRow["data_json"];
       setBase({
-        frontmatter: data.data_json.frontmatter,
-        content: data.data_json.content,
+        frontmatter: liveDoc.frontmatter,
+        content: liveDoc.content,
       });
     };
 
@@ -989,7 +966,6 @@ export function ExerciseLiveDetail({
   const overrideMediaValue = useOverrideMediaUpload({
     overrideDoc,
     slug,
-    teacherPin,
     updateSection,
     updateOverrideDoc,
     handleAuthError,
@@ -1091,46 +1067,10 @@ export function ExerciseLiveDetail({
     updateDropdownPosition,
   } = overridePillsValue;
 
-  const openPinModal = () => {
-    if (teacherUnlocked) {
-      return;
-    }
-    setPinModalOpen(true);
-  };
-
-  const startLongPress = (x: number, y: number) => {
-    if (teacherUnlocked) {
-      return;
-    }
-    pressStartRef.current = { x, y };
-    if (pressTimerRef.current) {
-      clearTimeout(pressTimerRef.current);
-    }
-    pressTimerRef.current = setTimeout(() => {
-      pressTimerRef.current = null;
-      openPinModal();
-    }, LONG_PRESS_MS);
-  };
-
-  const cancelLongPress = () => {
-    if (pressTimerRef.current) {
-      clearTimeout(pressTimerRef.current);
-      pressTimerRef.current = null;
-    }
-    pressStartRef.current = null;
-  };
-
-  const cancelLongPressOnMove = (x: number, y: number) => {
-    const start = pressStartRef.current;
-    if (!start) {
-      return;
-    }
-    const dx = x - start.x;
-    const dy = y - start.y;
-    if (Math.hypot(dx, dy) > MOVE_THRESHOLD_PX) {
-      cancelLongPress();
-    }
-  };
+  // P0.1 — La logique de long-press / openPinModal a été supprimée avec le PIN.
+  // Le bouton ··· (3 points) ouvre directement le menu pour tous les
+  // utilisateurs ; l'option "Mode enseignant" du menu n'apparaît que pour
+  // les comptes admin.
 
   const openOverrideEditor = useCallback(() => {
     setSubmitStatus(null);
@@ -1156,29 +1096,18 @@ export function ExerciseLiveDetail({
       return;
     }
     autoEditHandledRef.current = true;
-    if (!teacherUnlocked) {
+    if (!isAdmin) {
       return;
     }
     if (searchParams?.get("edit") !== "1") {
       return;
     }
     openOverrideEditor();
-  }, [openOverrideEditor, searchParams, teacherUnlocked]);
-
-  const handleUnlock = (event?: React.FormEvent) => {
-    event?.preventDefault();
-    if (!teacherPin.trim()) {
-      setTeacherError(t("teacherMode.pinRequired"));
-      return;
-    }
-    setTeacherUnlocked(true);
-    setTeacherError(null);
-    setPinModalOpen(false);
-  };
+  }, [openOverrideEditor, searchParams, isAdmin]);
 
   const handleSaveLive = async () => {
-    if (!teacherPin) {
-      handleAuthError(t("teacherMode.pinRequired"));
+    if (!isAdmin) {
+      handleAuthError(t("exerciseEditor.adminRequired"));
       return;
     }
     if (!liveDraft) {
@@ -1213,7 +1142,6 @@ export function ExerciseLiveDetail({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        pin: teacherPin,
         slug: slugValue,
         locale,
         dataJson: {
@@ -1224,8 +1152,8 @@ export function ExerciseLiveDetail({
       }),
     });
     if (!response.ok) {
-      if (response.status === 401) {
-        handleAuthError(t("teacherMode.pinInvalid"));
+      if (response.status === 401 || response.status === 403) {
+        handleAuthError(t("exerciseEditor.adminRequired"));
         setSubmitStatus(null);
         return;
       }
@@ -1332,10 +1260,16 @@ export function ExerciseLiveDetail({
           heroEl.style.transform = `translateX(${deltaX < 0 ? "-100%" : "100%"})`;
           heroEl.style.opacity = "0";
         }
-        setTimeout(() => router.push(`/exercices/${target.slug}`), 300);
+        // Sprint A2 — préfixe locale pour fonctionner sur miroir admin.
+        const targetHref = clientLocalizedHref(
+          `/exercices/${target.slug}`,
+          lang as Locale,
+          pathname,
+        );
+        setTimeout(() => router.push(targetHref), 300);
       }
     }
-  }, [nextExercise, prevExercise, router]);
+  }, [nextExercise, prevExercise, router, lang, pathname]);
 
   // --- Favori burst ---
   const [favBursting, setFavBursting] = useState(false);
@@ -1493,32 +1427,16 @@ export function ExerciseLiveDetail({
                   type="button"
                   className="tap-feedback flex items-center justify-center w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white font-bold tracking-widest hover:bg-black/50 transition-colors"
                   aria-label={t("exerciseDetail.menuLabel")}
-                  onPointerDown={(event) => {
-                    if (event.ctrlKey || event.shiftKey) {
-                      event.preventDefault();
-                      cancelLongPress();
-                      openPinModal();
-                      return;
-                    }
-                    if (event.pointerType === "touch") {
-                      touchPointerActiveRef.current = true;
-                    } else {
-                      event.preventDefault();
-                    }
-                    startLongPress(event.clientX, event.clientY);
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setMenuOpen(!menuOpen);
                   }}
-                  onPointerMove={(event) => cancelLongPressOnMove(event.clientX, event.clientY)}
-                  onPointerUp={() => { cancelLongPress(); touchPointerActiveRef.current = false; }}
-                  onPointerLeave={() => { cancelLongPress(); touchPointerActiveRef.current = false; }}
-                  onPointerCancel={() => { cancelLongPress(); touchPointerActiveRef.current = false; }}
-                  onMouseDown={(event) => { if (event.ctrlKey || event.shiftKey) { event.preventDefault(); cancelLongPress(); openPinModal(); return; } event.preventDefault(); }}
-                  onTouchStart={(event) => { if (touchPointerActiveRef.current) return; const touch = event.touches[0]; if (!touch) return; startLongPress(touch.clientX, touch.clientY); }}
-                  onTouchMove={(event) => { if (touchPointerActiveRef.current) return; const touch = event.touches[0]; if (!touch) return; cancelLongPressOnMove(touch.clientX, touch.clientY); }}
-                  onTouchEnd={() => { cancelLongPress(); touchPointerActiveRef.current = false; }}
-                  onTouchCancel={() => { cancelLongPress(); touchPointerActiveRef.current = false; }}
-                  onContextMenu={(event) => event.preventDefault()}
-                  onClick={(event) => { if (event.ctrlKey || event.shiftKey) { event.preventDefault(); cancelLongPress(); openPinModal(); } else { event.stopPropagation(); setMenuOpen(!menuOpen); } }}
-                  onKeyDown={(event) => { if (teacherUnlocked) return; if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setMenuOpen(!menuOpen); } }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setMenuOpen(!menuOpen);
+                    }
+                  }}
                   style={{ WebkitUserSelect: "none", WebkitTouchCallout: "none" }}
                 >
                   ···
@@ -1531,10 +1449,15 @@ export function ExerciseLiveDetail({
                     <button type="button" onClick={() => { const fm = merged.frontmatter; if (sessionDraft.isInDraft(fm.slug)) { sessionDraft.removeItem(fm.slug); } else { sessionDraft.addItem({ slug: fm.slug, title: fm.title, muscles: fm.muscles }); } setMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors">
                       {sessionDraft.isInDraft(merged.frontmatter.slug) ? `✓ ${t("exerciseDetail.inSession")}` : `＋ ${t("exerciseDetail.addToSession")}`}
                     </button>
-                    <div className="h-px bg-white/10 my-1" />
-                    <button type="button" onClick={() => { if (teacherUnlocked) { openOverrideEditor(); } else { openPinModal(); } setMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors">
-                      {t("exerciseDetail.teacherMode")}
-                    </button>
+                    {/* P0.1 — option d'édition uniquement pour les comptes admin (super_admin / admin) */}
+                    {isAdmin && (
+                      <>
+                        <div className="h-px bg-white/10 my-1" />
+                        <button type="button" onClick={() => { openOverrideEditor(); setMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors">
+                          {t("exerciseDetail.teacherMode")}
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -1553,7 +1476,7 @@ export function ExerciseLiveDetail({
           {/* Gradient vers fond #04040A + titre overlay + nav session */}
           <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-3 pt-20" style={{ background: 'linear-gradient(to top, #04040A 0%, rgba(4,4,10,0.7) 50%, transparent 100%)' }}>
             <h1 className="text-white text-3xl md:text-4xl leading-none tracking-wide" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>
-              {teacherUnlocked ? (
+              {isAdmin ? (
                 <InlineTitleEditor
                   title={displayTitle}
                   slug={slug}
@@ -1723,7 +1646,7 @@ export function ExerciseLiveDetail({
           {/* 6. RESUME */}
           {parsedSections.resume && parsedSections.resume.body && (
             <div ref={resumeRef as React.RefObject<HTMLDivElement>} className="border-l-2 border-[#FF8C00] pl-4 py-1 mb-4">
-              {teacherUnlocked ? (
+              {isAdmin ? (
                 <InlineParagraphEditor
                   initialValue={parsedSections.resume.body}
                   onSave={(newBody) => handleInlineParagraphSave('resume', newBody)}
@@ -1779,7 +1702,7 @@ export function ExerciseLiveDetail({
               <h2 className="text-xl uppercase tracking-wider mb-2 mt-2" style={{ fontFamily: 'var(--font-bebas), sans-serif', color: '#00E5FF' }}>
                 {parsedSections.respiration.heading}
               </h2>
-              {teacherUnlocked ? (
+              {isAdmin ? (
                 <InlineParagraphEditor
                   initialValue={parsedSections.respiration.body}
                   onSave={(newBody) => handleInlineParagraphSave('respiration', newBody)}
@@ -1846,7 +1769,7 @@ export function ExerciseLiveDetail({
               </button>
               {securiteOpen && (
                 <div className="rounded-xl px-4 py-3 mb-1" style={{ background: 'rgba(255,0,110,0.05)', border: '1px solid rgba(255,0,110,0.15)' }}>
-                  {teacherUnlocked ? (
+                  {isAdmin ? (
                     <InlineParagraphEditor
                       initialValue={parsedSections.securite.body}
                       onSave={(newBody) => handleInlineParagraphSave('securite', newBody)}
@@ -1888,7 +1811,7 @@ export function ExerciseLiveDetail({
       )}
 
       {/* ─── PANEL ENSEIGNANT ─── */}
-      {teacherUnlocked ? (
+      {isAdmin ? (
         <div className="teacher-panel">
           <p className="eyebrow">{t("exerciseEditor.teacherPanel")}</p>
           <div className="modal-actions">
@@ -1900,39 +1823,9 @@ export function ExerciseLiveDetail({
         </div>
       ) : null}
 
-      {pinModalOpen ? (
-        <div className="modal-overlay" role="dialog" aria-modal="true">
-          <div className="modal-card">
-            <h2>{t("teacherMode.pinHeading")}</h2>
-            <form onSubmit={handleUnlock} className="stack-md">
-              <input
-                className="field-input"
-                type="password"
-                inputMode="numeric"
-                autoFocus
-                placeholder="••••"
-                value={teacherPin}
-                onChange={(event) => setTeacherPin(event.target.value)}
-              />
-              {teacherError ? (
-                <p className="text-xs text-[color:var(--muted)]">{teacherError}</p>
-              ) : null}
-              <div className="modal-actions">
-                <button type="submit" className="primary-button primary-button--wide">
-                  {t("teacherMode.unlock")}
-                </button>
-                <button
-                  type="button"
-                  className="chip"
-                  onClick={() => setPinModalOpen(false)}
-                >
-                  {t("teacherMode.cancel")}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      ) : null}
+      {/* P0.1 — Le PIN modal a été supprimé. L'édition du catalogue exige un
+          compte super_admin / admin authentifié (cf. GOUVERNANCE_EDITORIALE.md
+          §3.1, §7). */}
 
       <OverrideUIProvider
         value={{ ...overrideUIHookValue, handleAddFromMenu }}

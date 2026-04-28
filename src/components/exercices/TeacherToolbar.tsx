@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import type { Lang } from "@/lib/i18n/I18nProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { clientLocalizedHref } from "@/lib/i18n/locale-path";
+import type { Locale } from "@/lib/i18n/constants";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -59,33 +61,29 @@ function getUniqueExerciseSlug(existingSlugs: Set<string>) {
 // ---------------------------------------------------------------------------
 
 export type TeacherToolbarProps = {
-  teacherUnlocked: boolean;
-  teacherPin: string;
+  /** P0.1 — true ssi l'utilisateur courant est super_admin / admin. */
+  isAdmin: boolean;
   existingSlugs: Set<string>;
   locale: Lang;
 };
 
 export function TeacherToolbar({
-  teacherUnlocked,
-  teacherPin,
+  isAdmin,
   existingSlugs,
   locale,
 }: TeacherToolbarProps) {
   const { t } = useI18n();
   const router = useRouter();
+  const pathname = usePathname();
   const [createStatus, setCreateStatus] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
-  if (!teacherUnlocked) {
+  if (!isAdmin) {
     return null;
   }
 
   const handleCreateExercise = async () => {
     setCreateStatus(null);
-    if (!teacherPin) {
-      setCreateStatus(t("teacherMode.pinRequired"));
-      return;
-    }
 
     setIsCreating(true);
     setCreateStatus(t("exerciseEditor.creating"));
@@ -98,7 +96,6 @@ export function TeacherToolbar({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          pin: teacherPin,
           slug,
           locale,
           dataJson: {
@@ -122,13 +119,24 @@ export function TeacherToolbar({
 
     if (!response.ok) {
       setIsCreating(false);
-      setCreateStatus(response.status === 401 ? t("teacherMode.pinInvalid") : t("exerciseEditor.createFailed"));
+      setCreateStatus(
+        response.status === 401 || response.status === 403
+          ? t("exerciseEditor.adminRequired")
+          : t("exerciseEditor.createFailed"),
+      );
       return;
     }
 
     setIsCreating(false);
     setCreateStatus(null);
-    router.push(`/exercices/${encodeURIComponent(slug)}?edit=1`);
+    // Sprint A2 — préfixe locale pour fonctionner sur miroir admin.
+    router.push(
+      clientLocalizedHref(
+        `/exercices/${encodeURIComponent(slug)}?edit=1`,
+        locale as Locale,
+        pathname,
+      ),
+    );
   };
 
   return (

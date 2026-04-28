@@ -1,10 +1,10 @@
-import { redirect } from "next/navigation";
+import { localizedRedirect } from "@/lib/navigation";
 
 type ExoPageProps = {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 };
 
 export default async function ExoPage({ params }: ExoPageProps) {
-  const { slug } = await params;
-  redirect(`/exercices/${slug}`);
+  const { locale, slug } = await params;
+  localizedRedirect(`/exercices/${slug}`, locale);
 }

@@ -119,9 +119,11 @@ describe("ProLoginForm — validation locale", () => {
   });
 });
 
-describe("ProLoginForm — soumission", () => {
-  it("appelle signInWithEmail et affiche le message de succès", async () => {
-    const signIn = vi.fn().mockResolvedValue({ ok: true });
+describe("ProLoginForm — soumission (P0.8 flow client-initié)", () => {
+  it("eligible: true → message de confirmation 'Lien de connexion envoyé'", async () => {
+    const signIn = vi
+      .fn()
+      .mockResolvedValue({ ok: true, eligible: true });
     mockUseTeacherSession.mockReturnValue({
       user: null,
       isTeacher: false,
@@ -140,15 +142,17 @@ describe("ProLoginForm — soumission", () => {
     await waitFor(() => {
       expect(screen.getByRole("status")).toBeDefined();
       expect(
-        screen.getByText(/Lien envoyé à prof@ac-bordeaux\.fr/),
+        screen.getByText(
+          /Lien de connexion envoyé sur ton adresse académique/i,
+        ),
       ).toBeDefined();
     });
   });
 
-  it("affiche l'erreur retournée par signInWithEmail (403 non-académique back)", async () => {
+  it("eligible: false → message 'Vérifie l'orthographe…' (anti-leak prof)", async () => {
     const signIn = vi
       .fn()
-      .mockResolvedValue({ ok: false, error: "Email non académique côté serveur." });
+      .mockResolvedValue({ ok: true, eligible: false });
     mockUseTeacherSession.mockReturnValue({
       user: null,
       isTeacher: false,
@@ -158,19 +162,43 @@ describe("ProLoginForm — soumission", () => {
     });
     render(<ProLoginForm />);
     const input = screen.getByLabelText(/Email académique/i);
-    // On force un email qui passe la validation locale mais que le mock rejette
     fireEvent.change(input, { target: { value: "prof@ac-paris.fr" } });
     fireEvent.click(screen.getByRole("button", { name: /Recevoir mon lien/i }));
 
     await waitFor(() => {
       expect(
-        screen.getByText(/Email non académique côté serveur/),
+        screen.getByText(
+          /Vérifie l'orthographe de ton adresse, ou contacte l'administrateur/i,
+        ),
       ).toBeDefined();
     });
   });
 
+  it("ok: false → affiche l'erreur retournée par signInWithEmail", async () => {
+    const signIn = vi.fn().mockResolvedValue({
+      ok: false,
+      eligible: true,
+      error: "rate limit",
+    });
+    mockUseTeacherSession.mockReturnValue({
+      user: null,
+      isTeacher: false,
+      isLoading: false,
+      signInWithEmail: signIn,
+      signOut: vi.fn(),
+    });
+    render(<ProLoginForm />);
+    const input = screen.getByLabelText(/Email académique/i);
+    fireEvent.change(input, { target: { value: "prof@ac-paris.fr" } });
+    fireEvent.click(screen.getByRole("button", { name: /Recevoir mon lien/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/rate limit/)).toBeDefined();
+    });
+  });
+
   it("trim l'email avant l'envoi", async () => {
-    const signIn = vi.fn().mockResolvedValue({ ok: true });
+    const signIn = vi.fn().mockResolvedValue({ ok: true, eligible: true });
     mockUseTeacherSession.mockReturnValue({
       user: null,
       isTeacher: false,

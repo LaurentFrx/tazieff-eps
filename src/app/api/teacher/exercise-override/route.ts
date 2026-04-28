@@ -1,18 +1,33 @@
+// Phase P0.1 — POST /api/teacher/exercise-override
+//
+// Verrouillage admin : route gatée par requireAdmin() (super_admin / admin
+// authentifiés). Le PIN est supprimé (était le mécanisme legacy).
+//
+// Le client utilisateur est utilisé (RLS active) au lieu du service client.
+// Les colonnes author_user_id et created_by sont alimentées avec user.id
+// (cf. policy `exercise_overrides_insert_admin` posée en P0.2 qui vérifie
+// `author_user_id = auth.uid() AND created_by = auth.uid()`).
+//
+// Référence : GOUVERNANCE_EDITORIALE.md §3.1, §7. Skill gouvernance-editoriale.
+
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import type { ExercisePatch } from "@/lib/live/types";
-import { getSupabaseServiceClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdmin, AuthError } from "@/lib/auth/requireAdmin";
+
+export const runtime = "nodejs";
+
+const PayloadSchema = z.object({
+  slug: z.string().trim().min(1),
+  locale: z.string().trim().min(1),
+  patchJson: z.unknown(),
+});
 
 type OverrideStats = {
   version: string | null;
   sections: number | null;
   blocks: number | null;
-};
-
-type OverridePayload = {
-  pin?: string;
-  slug?: string;
-  locale?: string;
-  patchJson?: ExercisePatch;
 };
 
 function getOverrideStats(patchJson: unknown): OverrideStats {
@@ -66,14 +81,14 @@ function logOverrideError({
 }
 
 export async function POST(request: Request) {
-  let payload: OverridePayload | null = null;
+  let raw: unknown = null;
   try {
-    payload = (await request.json()) as OverridePayload;
+    raw = await request.json();
   } catch {
-    payload = null;
+    raw = null;
   }
 
-  if (!payload) {
+  if (!raw) {
     logOverrideError({
       status: 400,
       code: "invalid_payload",
@@ -82,32 +97,55 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Payload invalide." }, { status: 400 });
   }
 
-  const { pin, slug, locale, patchJson } = payload;
-  if (!pin || !slug || !locale || !patchJson) {
+  const parsed = PayloadSchema.safeParse(raw);
+  if (!parsed.success) {
     logOverrideError({
-      slug,
-      locale,
       status: 400,
       code: "missing_fields",
       msg: "Champs requis manquants.",
     });
     return NextResponse.json({ error: "Champs requis manquants." }, { status: 400 });
   }
+  const { slug, locale } = parsed.data;
+  const patchJson = parsed.data.patchJson as ExercisePatch;
 
-  if (pin !== process.env.TEACHER_PIN) {
+  const supabase = await createSupabaseServerClient();
+
+  // P0.1 : garde admin authentifié (remplace le check PIN).
+  let user;
+  try {
+    const result = await requireAdmin(supabase);
+    user = result.user;
+  } catch (err) {
+    if (err instanceof AuthError) {
+      logOverrideError({
+        slug,
+        locale,
+        status: err.status,
+        code: err.code,
+        msg: err.code === "unauthenticated" ? "Authentification requise." : "Accès refusé.",
+      });
+      return NextResponse.json({ error: err.code }, { status: err.status });
+    }
     logOverrideError({
       slug,
       locale,
-      status: 401,
-      code: "invalid_pin",
-      msg: "PIN invalide.",
+      status: 500,
+      code: "auth_check_failed",
+      msg: err instanceof Error ? err.message : String(err),
     });
-    return NextResponse.json({ error: "PIN invalide." }, { status: 401 });
+    return NextResponse.json({ error: "internal" }, { status: 500 });
   }
 
-  const supabase = getSupabaseServiceClient();
   const updatedAt = new Date().toISOString();
   const stats = getOverrideStats(patchJson);
+  void stats;
+
+  // Upsert avec traçabilité auteur (P0.2). Côté policy RLS :
+  //   - INSERT : with_check exige author_user_id = auth.uid() ET created_by = auth.uid()
+  //   - UPDATE : using/with_check exige is_admin() (un admin peut corriger un override d'un autre admin)
+  // Pour qu'un upsert soit accepté quel que soit le chemin (insert ou update),
+  // on alimente author_user_id et created_by sur l'INSERT initial.
   const { error } = await supabase
     .from("exercise_overrides")
     .upsert(
@@ -116,11 +154,23 @@ export async function POST(request: Request) {
         locale,
         patch_json: patchJson,
         updated_at: updatedAt,
+        author_user_id: user.id,
+        created_by: user.id,
       },
       { onConflict: "slug,locale" },
     );
 
   if (error) {
+    if (error.code === "42501") {
+      logOverrideError({
+        slug,
+        locale,
+        status: 403,
+        code: "rls_denied",
+        msg: error.message ?? "RLS denied.",
+      });
+      return NextResponse.json({ error: "forbidden" }, { status: 403 });
+    }
     logOverrideError({
       slug,
       locale,
@@ -130,7 +180,6 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ error: "Erreur d'enregistrement." }, { status: 500 });
   }
-
 
   return NextResponse.json({ ok: true });
 }

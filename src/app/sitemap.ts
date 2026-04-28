@@ -1,8 +1,12 @@
 import type { MetadataRoute } from 'next';
 import { readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { resolveEnv } from '@/lib/env';
 
-const BASE_URL = 'https://muscu-eps.fr';
+// Sprint A1 — BASE_URL n'est plus hardcodé. On lit resolveEnv() au moment
+// de l'export pour que les sitemaps preview pointent vers design.muscu-eps.fr
+// et non vers la prod.
+const BASE_URL = resolveEnv().baseUrl.eleve;
 const LOCALES = ['fr', 'en', 'es'] as const;
 
 function localizedUrl(path: string, locale: string): string {

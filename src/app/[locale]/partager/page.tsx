@@ -5,11 +5,12 @@ import { useState, useEffect } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { SectionHero } from "@/components/SectionHero";
 import { IlluShare } from "@/components/illustrations";
-
-const APP_URL = "https://muscu-eps.fr";
+import { resolveEnv } from "@/lib/env";
 
 export default function PartagerPage() {
   const { t } = useI18n();
+  // Sprint A1 — APP_URL dérivé de resolveEnv() pour suivre l'env courant.
+  const APP_URL = resolveEnv().baseUrl.eleve;
   const [copied, setCopied] = useState(false);
   const [canShare, setCanShare] = useState(false);
 

@@ -39,6 +39,18 @@ const nextConfig = {
       ],
     };
   },
+  // Sprint A5 — anciens favoris `/legal/*` (sans préfixe locale) sont
+  // redirigés en 308 vers `/fr/legal/*` après la suppression du doublon
+  // non-localisé. Préserve le SEO et les bookmarks utilisateurs.
+  async redirects() {
+    return [
+      {
+        source: "/legal/:path*",
+        destination: "/fr/legal/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 module.exports = withBundleAnalyzer(withSerwist(nextConfig));

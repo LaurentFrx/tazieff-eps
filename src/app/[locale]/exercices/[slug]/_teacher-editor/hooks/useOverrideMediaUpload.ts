@@ -24,7 +24,7 @@ import type {
   ExerciseLiveMediaBlock,
   ExerciseLiveSection,
 } from "@/lib/live/types";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type {
   MediaInfo,
   MediaResolveStatus,
@@ -44,7 +44,6 @@ import {
 export type UseOverrideMediaUploadInput = {
   overrideDoc: ExerciseLiveDocV2 | null;
   slug: string;
-  teacherPin: string;
   updateSection: (
     sectionId: string,
     updater: (section: ExerciseLiveSection) => ExerciseLiveSection,
@@ -65,7 +64,6 @@ export function useOverrideMediaUpload(
   const {
     overrideDoc,
     slug,
-    teacherPin,
     updateSection,
     updateOverrideDoc,
     handleAuthError,
@@ -242,10 +240,8 @@ export function useOverrideMediaUpload(
   );
 
   const handlePhotoUploadRequest = (sectionId: string, blockIndex?: number) => {
-    if (!teacherPin) {
-      handleAuthError(t("teacherMode.pinRequired"));
-      return;
-    }
+    // P0.1 — la garde "PIN saisi" est supprimée. L'authentification est
+    // contrôlée côté serveur par requireAdmin().
     setActiveSectionId(sectionId);
     setUploadTarget({ sectionId, blockIndex });
     fileInputRef.current?.click();
@@ -257,10 +253,6 @@ export function useOverrideMediaUpload(
     const file = event.target.files?.[0] ?? null;
     event.target.value = "";
     if (!file || !uploadTarget) {
-      return;
-    }
-    if (!teacherPin) {
-      handleAuthError(t("teacherMode.pinRequired"));
       return;
     }
     setMediaStatus(t("exerciseEditor.uploading"));
@@ -304,7 +296,6 @@ export function useOverrideMediaUpload(
       const formData = new FormData();
       formData.append("file", uploadFile);
       formData.append("slug", slug);
-      formData.append("pin", teacherPin);
       formData.append("width", String(targetWidth));
       formData.append("height", String(targetHeight));
 

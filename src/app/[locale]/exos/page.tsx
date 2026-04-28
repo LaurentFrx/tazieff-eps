@@ -1,5 +1,8 @@
-import { redirect } from "next/navigation";
+import { localizedRedirect } from "@/lib/navigation";
 
-export default function ExosPage() {
-  redirect("/exercices");
+type Props = { params: Promise<{ locale: string }> };
+
+export default async function ExosPage({ params }: Props) {
+  const { locale } = await params;
+  localizedRedirect("/exercices", locale);
 }

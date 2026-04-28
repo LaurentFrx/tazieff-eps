@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { BookMarked, BookOpen, Dumbbell, Search } from "lucide-react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { search, type SearchResultGroup } from "@/lib/search/search";
 import type { SearchEntry } from "@/lib/search/search-index";
 import { ExoThumb } from "@/components/ExoThumb";
+import { LocaleLink } from "@/components/LocaleLink";
 
 const TYPE_ICONS: Record<SearchEntry["type"], typeof Search> = {
   exercice: Dumbbell,
@@ -24,7 +24,6 @@ const TYPE_LABEL_KEYS: Record<SearchEntry["type"], string> = {
 
 export function SearchModal({ onClose }: { onClose: () => void }) {
   const { t } = useI18n();
-  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResultGroup[]>([]);
@@ -50,14 +49,6 @@ export function SearchModal({ onClose }: { onClose: () => void }) {
     document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
   }, [onClose]);
-
-  const navigate = useCallback(
-    (href: string) => {
-      router.push(href);
-      onClose();
-    },
-    [router, onClose],
-  );
 
   const hasResults = results.length > 0;
   const showEmpty = query.trim().length >= 2 && !hasResults;
@@ -91,15 +82,15 @@ export function SearchModal({ onClose }: { onClose: () => void }) {
                   {t(TYPE_LABEL_KEYS[group.type])}
                 </h3>
                 {group.items.map((item) => (
-                  <button
+                  <LocaleLink
                     key={item.slug}
-                    type="button"
+                    href={item.href}
                     className="search-result-item"
-                    onClick={() => navigate(item.href)}
+                    onClick={onClose}
                   >
                     {group.type === "exercice" && <ExoThumb slug={item.slug} />}
                     {item.title}
-                  </button>
+                  </LocaleLink>
                 ))}
               </div>
             );

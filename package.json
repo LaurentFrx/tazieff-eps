@@ -13,6 +13,10 @@
         "test": "vitest",
         "test:ui": "vitest --ui",
         "test:run": "vitest run",
+        "test:e2e": "playwright test",
+        "test:e2e:ui": "playwright test --ui",
+        "test:e2e:debug": "playwright test --debug",
+        "test:e2e:list": "playwright test --list",
         "type-check": "tsc --noEmit",
         "db:diff": "supabase db diff --schema public",
         "db:push": "supabase db push",
@@ -47,6 +51,7 @@
     },
     "devDependencies": {
         "@next/bundle-analyzer": "^16.2.1",
+        "@playwright/test": "^1.59.1",
         "@tailwindcss/postcss": "^4",
         "@testing-library/react": "^16.1.0",
         "@types/node": "^20",

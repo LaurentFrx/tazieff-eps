@@ -2,8 +2,9 @@
 
 import { useState, useMemo } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import { resolveEnv } from '@/lib/env';
 
-const BASE_URL = 'https://muscu-eps.fr';
+// Sprint A1 — BASE_URL dérivée de resolveEnv() pour suivre l'env courant.
 
 interface Exercise {
   slug: string;
@@ -17,6 +18,7 @@ interface QrCodeGeneratorProps {
 }
 
 export function QrCodeGenerator({ exercises }: QrCodeGeneratorProps) {
+  const baseUrl = resolveEnv().baseUrl.eleve;
   const [selectedEquipment, setSelectedEquipment] = useState<Set<string>>(new Set());
 
   const allEquipment = useMemo(() => {
@@ -97,7 +99,7 @@ export function QrCodeGenerator({ exercises }: QrCodeGeneratorProps) {
             className="flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-white/5 p-4 print:border-dashed print:border-gray-300 print:bg-white print:p-3 print:break-inside-avoid"
           >
             <QRCodeSVG
-              value={`${BASE_URL}/exercices/${ex.slug}?source=qr`}
+              value={`${baseUrl}/exercices/${ex.slug}?source=qr`}
               size={150}
               level="M"
               bgColor="transparent"

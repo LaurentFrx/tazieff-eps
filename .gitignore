@@ -66,3 +66,8 @@ supabase/.temp/
 .claude/*
 !.claude/skills/
 !.claude/skills/**
+
+# playwright e2e — artefacts générés (résultats, rapports, traces)
+test-results/
+playwright-report/
+playwright/.cache/

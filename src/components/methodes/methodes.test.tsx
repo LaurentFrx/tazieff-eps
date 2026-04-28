@@ -13,6 +13,15 @@ beforeAll(() => {
 
 vi.mock("next/link");
 
+// Mocks pour LocaleLink (introduit en P0.7-quater dans MethodeCard, RelatedMethods,
+// RelatedExercices via useI18n + usePathname).
+vi.mock("@/lib/i18n/I18nProvider", () => ({
+  useI18n: () => ({ t: (key: string) => key, lang: "fr" }),
+}));
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/methodes",
+}));
+
 import { MethodeCard } from "./MethodeCard";
 import { CategoryBadge } from "./CategoryBadge";
 import { ScoreBar, ScoresBlock } from "./ScoreBar";

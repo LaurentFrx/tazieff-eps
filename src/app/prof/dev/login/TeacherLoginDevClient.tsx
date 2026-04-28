@@ -24,12 +24,18 @@ export default function TeacherLoginDevClient() {
     e.preventDefault();
     setSigninFeedback("Envoi en cours…");
     const result = await signInWithEmail(email);
-    if (result.ok) {
+    if (!result.ok) {
+      setSigninFeedback(`❌ ${result.error ?? "Erreur inconnue"}`);
+      return;
+    }
+    if (result.eligible) {
       setSigninFeedback(
         "✅ Lien envoyé, vérifiez votre boîte mail. Cliquez sur le lien pour revenir connecté.",
       );
     } else {
-      setSigninFeedback(`❌ ${result.error ?? "Erreur inconnue"}`);
+      setSigninFeedback(
+        "⚠️ Email non académique : aucun lien envoyé. Utilise une adresse @ac-*.fr.",
+      );
     }
   };
 

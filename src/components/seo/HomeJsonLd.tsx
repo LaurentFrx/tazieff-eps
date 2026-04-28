@@ -1,8 +1,9 @@
 import { JsonLd } from './JsonLd';
-
-const BASE_URL = 'https://muscu-eps.fr';
+import { resolveEnv } from '@/lib/env';
 
 export function HomeJsonLd() {
+  // Sprint A1 — URL dérivée de resolveEnv() pour suivre l'env courant.
+  const baseUrl = resolveEnv().baseUrl.eleve;
   return (
     <JsonLd
       data={{
@@ -11,7 +12,7 @@ export function HomeJsonLd() {
         name: 'Tazieff EPS',
         description:
           'Application pédagogique de musculation pour l\'EPS au lycée',
-        url: BASE_URL,
+        url: baseUrl,
         educationalLevel: 'Lycée (Seconde, Première, Terminale)',
         knowsAbout: [
           'Musculation',

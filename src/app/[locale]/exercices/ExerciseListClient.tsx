@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Difficulty } from "@/lib/content/schema";
 import type { Lang } from "@/lib/i18n/I18nProvider";
 import type { LiveExerciseListItem, LiveExerciseRow } from "@/lib/live/types";
@@ -13,7 +13,7 @@ import {
 } from "@/lib/exercices/filters";
 import { MUSCLE_GROUP_IDS, type MuscleGroupId } from "@/lib/exercices/muscleGroups";
 import { useFavorites } from "@/hooks/useFavorites";
-import { useTeacherMode } from "@/hooks/useTeacherMode";
+import { useAppAdmin } from "@/hooks/useAppAdmin";
 import { useExercisesLiveSync } from "@/hooks/useExercisesLiveSync";
 import { ExerciseFilters } from "@/components/exercices/ExerciseFilters";
 import { ExerciseGrid } from "@/components/exercices/ExerciseGrid";
@@ -120,10 +120,25 @@ export function ExerciseListClient({
 
   // Phase 2 hooks
   const { favorites } = useFavorites();
-  const { unlocked: teacherUnlocked, pin: teacherPin } = useTeacherMode();
+  // P0.1 — la garde "mode enseignant déverrouillé" est remplacée par
+  // la vérification du rôle admin authentifié.
+  const { isAdmin } = useAppAdmin();
 
   // Read ?muscle= from URL (set by anatomy page link)
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // P0.7-nonies — clear le param muscle de l URL quand l utilisateur clique
+  // "Tous". Sans ça, partager le lien envoie le destinataire avec un faux
+  // filtre actif au mount (useEffect ci-dessous le relit).
+  const clearMuscleParam = useCallback(() => {
+    if (!searchParams.has("muscle")) return;
+    const next = new URLSearchParams(searchParams.toString());
+    next.delete("muscle");
+    const qs = next.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
 
   // Filter state
   const [query, setQuery] = useState("");
@@ -165,9 +180,12 @@ export function ExerciseListClient({
     [exercises, liveRows],
   );
 
+  // P0.1 — les drafts sont visibles aux comptes admin (super_admin / admin),
+  // pas aux élèves. Le param de filterVisibleExercises s'appelle toujours
+  // `teacherUnlocked` côté lib (rétrocompat interne).
   const visibleExercises = useMemo(
-    () => filterVisibleExercises(mergedExercises, teacherUnlocked),
-    [mergedExercises, teacherUnlocked],
+    () => filterVisibleExercises(mergedExercises, isAdmin),
+    [mergedExercises, isAdmin],
   );
 
   const levelOptions = useMemo(() => {
@@ -263,6 +281,7 @@ export function ExerciseListClient({
     setSelectedMuscleGroups([]);
     setSelectedThemes([]);
     setOnlyFavorites(false);
+    clearMuscleParam();
   };
 
   // ---------------------------------------------------------------------------
@@ -274,8 +293,7 @@ export function ExerciseListClient({
       <BackToAnatomy />
       <div className="filter-panel">
         <TeacherToolbar
-          teacherUnlocked={teacherUnlocked}
-          teacherPin={teacherPin}
+          isAdmin={isAdmin}
           existingSlugs={existingSlugs}
           locale={locale}
         />
@@ -292,7 +310,10 @@ export function ExerciseListClient({
           equipmentOptions={equipmentOptions}
           selectedMuscleGroups={selectedMuscleGroups}
           onToggleMuscleGroup={toggleMuscleGroup}
-          onClearMuscleGroups={() => setSelectedMuscleGroups([])}
+          onClearMuscleGroups={() => {
+            setSelectedMuscleGroups([]);
+            clearMuscleParam();
+          }}
           selectedThemes={selectedThemes}
           onToggleTheme={toggleTheme}
           onClearThemes={() => setSelectedThemes([])}
