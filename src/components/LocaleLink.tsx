@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { clientLocalizedHref } from "@/lib/i18n/locale-path";
+import type { Locale } from "@/lib/i18n/constants";
 import type { ComponentProps } from "react";
 
 type LocaleLinkProps = ComponentProps<typeof Link>;
@@ -10,47 +12,33 @@ type LocaleLinkProps = ComponentProps<typeof Link>;
 /**
  * Locale-aware Link wrapper.
  *
- * Pour `lang === "fr"` :
- *   - Sur les hosts élève (muscu-eps.fr / design.muscu-eps.fr), l'URL publique
- *     est sans préfixe locale (ex: `/exercices`). Le middleware réécrit en
- *     interne vers `/fr/exercices`. On retourne donc `href` tel quel.
- *   - Sur le miroir admin (admin.muscu-eps.fr / design-admin.muscu-eps.fr),
- *     les routes pédagogiques sont servies en pass-through SANS rewrite.
- *     L'URL publique est `/fr/exercices`. Si on retournait `/exercices/s1-01`
- *     non préfixé, le clic atterrirait sur une route inexistante (404).
- *     On détecte ce cas en lisant `pathname` : s'il commence par `/fr/`,
- *     `/en/` ou `/es/`, on préfixe le href avec la locale.
+ * Sprint A2 — Délègue la résolution à `clientLocalizedHref()` (source unique
+ * partagée avec les router.push() programmatiques). La logique reste :
  *
- * Pour `lang === "en"` ou `"es"` : on préfixe toujours (comportement legacy).
+ *   - `lang === "fr"` ET pathname élève (pas de préfixe locale) → href tel quel
+ *     Le proxy i18n compense en interne.
+ *   - Sinon (miroir admin OU autre locale) → préfixe avec `/${lang}`.
+ *
+ * Cf. clientLocalizedHref() dans src/lib/i18n/locale-path.ts pour la matrice
+ * complète. Cf. SUPPORTED_LOCALES dans src/lib/i18n/constants.ts pour la liste
+ * des locales (3 actuellement).
  */
 export function LocaleLink({ href, ...rest }: LocaleLinkProps) {
   const { lang } = useI18n();
   const pathname = usePathname();
 
-  const currentHasLocalePrefix =
-    pathname === "/fr" ||
-    pathname === "/en" ||
-    pathname === "/es" ||
-    pathname?.startsWith("/fr/") ||
-    pathname?.startsWith("/en/") ||
-    pathname?.startsWith("/es/");
+  // Le hook lang vient de I18nProvider (typé Lang = "fr"|"en"|"es"), équivalent
+  // à Locale. On force le cast pour clientLocalizedHref qui attend Locale.
+  const safeLang = lang as Locale;
 
-  const prefixed = (() => {
-    if (lang === "fr" && !currentHasLocalePrefix) return href;
-    const hrefStr = typeof href === "string" ? href : href.pathname ?? "/";
-    // Don't prefix external URLs, anchors, or already-prefixed paths
-    if (
-      hrefStr.startsWith("http") ||
-      hrefStr.startsWith("#") ||
-      hrefStr.startsWith(`/${lang}/`) ||
-      hrefStr === `/${lang}`
-    ) {
-      return href;
-    }
-    const prefixedPath = `/${lang}${hrefStr.startsWith("/") ? hrefStr : `/${hrefStr}`}`;
-    if (typeof href === "string") return prefixedPath;
-    return { ...href, pathname: prefixedPath };
+  const hrefStr = typeof href === "string" ? href : href.pathname ?? "/";
+  const resolved = clientLocalizedHref(hrefStr, safeLang, pathname);
+
+  const finalHref = (() => {
+    if (typeof href === "string") return resolved;
+    if (resolved === hrefStr) return href; // pas de modif → garde l'objet original
+    return { ...href, pathname: resolved };
   })();
 
-  return <Link href={prefixed} {...rest} />;
+  return <Link href={finalHref} {...rest} />;
 }

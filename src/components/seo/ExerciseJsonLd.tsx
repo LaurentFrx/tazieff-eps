@@ -1,7 +1,6 @@
 import { JsonLd } from './JsonLd';
 import type { ExerciseFrontmatter } from '@/lib/content/schema';
-
-const BASE_URL = 'https://muscu-eps.fr';
+import { resolveEnv } from '@/lib/env';
 
 const LEVEL_MAP: Record<string, string> = {
   debutant: 'Beginner',
@@ -17,6 +16,7 @@ interface ExerciseJsonLdProps {
 
 export function ExerciseJsonLd({ frontmatter, content, locale }: ExerciseJsonLdProps) {
   const { title, slug, muscles, equipment, level } = frontmatter;
+  const baseUrl = resolveEnv().baseUrl.eleve;
 
   // Extract steps from markdown content: lines starting with "- " under an execution/steps heading
   const steps = extractSteps(content);
@@ -32,7 +32,7 @@ export function ExerciseJsonLd({ frontmatter, content, locale }: ExerciseJsonLdP
     description,
     category: 'Musculation / EPS',
     inLanguage: locale,
-    image: `${BASE_URL}/images/exos/${slug}.webp`,
+    image: `${baseUrl}/images/exos/${slug}.webp`,
   };
 
   if (level && LEVEL_MAP[level]) {

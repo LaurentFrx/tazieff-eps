@@ -11,13 +11,11 @@
 
 import { LocaleLink } from "@/components/LocaleLink";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { resolveEnv } from "@/lib/env";
 
-function getTeacherLoginUrl(): string {
-  if (typeof window === "undefined") return "https://prof.muscu-eps.fr/connexion";
-  const host = window.location.host;
-  if (host === "design.muscu-eps.fr") return "https://design-prof.muscu-eps.fr/connexion";
-  return "https://prof.muscu-eps.fr/connexion";
-}
+// Sprint A1 — Supprimé le helper inline `getTeacherLoginUrl` (couvrait pas
+// localhost, divergent avec les autres helpers de host). Source unique :
+// resolveEnv().baseUrl.prof.
 
 export function EnseignantMovedClient() {
   const { t } = useI18n();
@@ -34,7 +32,7 @@ export function EnseignantMovedClient() {
         </p>
 
         <a
-          href={getTeacherLoginUrl()}
+          href={`${resolveEnv().baseUrl.prof}/connexion`}
           className="primary-button inline-flex items-center justify-center gap-2 self-start"
           rel="noopener"
           data-testid="enseignant-moved-cta"

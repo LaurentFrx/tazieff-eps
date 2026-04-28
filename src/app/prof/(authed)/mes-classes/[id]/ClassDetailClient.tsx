@@ -5,6 +5,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
+import { resolveEnv } from "@/lib/env";
 import styles from "./detail.module.css";
 
 type Props = {
@@ -13,8 +14,10 @@ type Props = {
   expiresAt: string | null;
 };
 
+// Sprint A1 — buildJoinUrl utilise resolveEnv() : sur preview les QR pointent
+// vers design.muscu-eps.fr, plus vers la prod.
 function buildJoinUrl(code: string): string {
-  return `https://muscu-eps.fr/rejoindre?code=${encodeURIComponent(code)}`;
+  return `${resolveEnv().baseUrl.eleve}/rejoindre?code=${encodeURIComponent(code)}`;
 }
 
 export default function ClassDetailClient({ classId, initialCode }: Props) {

@@ -15,6 +15,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { isAcademicEmail } from "@/lib/auth/academic-domains";
 import { useTeacherSession } from "@/hooks/useTeacherSession";
+import { resolveEnv } from "@/lib/env";
 import styles from "./ProLoginForm.module.css";
 
 // L'espace prof est français-only (cf. src/app/prof/layout.tsx). On hardcode
@@ -27,17 +28,9 @@ const TEACHER_LOGIN_MESSAGES = {
 
 type Status = "idle" | "validating" | "success" | "error";
 
-/**
- * Détermine l'URL du site élève à rendre dans le lien secondaire.
- * En preview → design.muscu-eps.fr, en prod → muscu-eps.fr, sinon local.
- */
-function getStudentSiteUrl(): string {
-  if (typeof window === "undefined") return "https://muscu-eps.fr";
-  const host = window.location.host;
-  if (host === "design-prof.muscu-eps.fr") return "https://design.muscu-eps.fr";
-  if (host === "prof.muscu-eps.fr") return "https://muscu-eps.fr";
-  return "https://muscu-eps.fr";
-}
+// Sprint A1 — supprimé le helper inline `getStudentSiteUrl` (couvrait pas
+// localhost, divergent avec les autres helpers de host). Source unique :
+// resolveEnv().baseUrl.eleve.
 
 export default function ProLoginForm() {
   const { signInWithEmail } = useTeacherSession();
@@ -167,7 +160,7 @@ export default function ProLoginForm() {
 
       <a
         className={styles.secondaryLink}
-        href={getStudentSiteUrl()}
+        href={resolveEnv().baseUrl.eleve}
         rel="noopener"
       >
         Découvrir l&apos;espace élève avant de vous lancer

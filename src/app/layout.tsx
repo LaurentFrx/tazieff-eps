@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { Bebas_Neue, DM_Sans, JetBrains_Mono } from "next/font/google";
+import { resolveEnv } from "@/lib/env";
 import "./globals.css";
 
 const bebasNeue = Bebas_Neue({
@@ -32,7 +33,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://muscu-eps.fr"),
+  // Sprint A1 — metadataBase suit l'environnement courant (preview/prod).
+  metadataBase: new URL(resolveEnv().baseUrl.eleve),
   title: "Tazieff EPS",
   description: "Guide complet de musculation pour le BAC EPS : exercices, m\u00e9thodes d\u2019entra\u00eenement, anatomie et parcours d\u2019\u00e9valuation.",
   manifest: "/manifest.webmanifest",

@@ -167,3 +167,39 @@ describe("LocaleLink — cas spéciaux", () => {
     expect(getByTestId("link").getAttribute("href")).toBe("#section");
   });
 });
+
+// Sprint A2 — Vérifie que LocaleLink lit la liste des locales depuis le
+// module partagé SUPPORTED_LOCALES et qu'il honore TOUTES les locales
+// déclarées (pas seulement les 3 hardcodées historiquement).
+describe("LocaleLink — SUPPORTED_LOCALES (source unique)", () => {
+  it("toutes les locales déclarées dans SUPPORTED_LOCALES sont reconnues comme préfixe", async () => {
+    const { SUPPORTED_LOCALES } = await import("@/lib/i18n/constants");
+    expect(SUPPORTED_LOCALES).toContain("fr");
+    expect(SUPPORTED_LOCALES).toContain("en");
+    expect(SUPPORTED_LOCALES).toContain("es");
+  });
+
+  it("pathname /fr/x → considéré comme préfixé locale (préfixe le href)", () => {
+    setup({ lang: "fr", pathname: "/fr/exercices" });
+    const { getByTestId } = render(
+      <LocaleLink href="/methodes">x</LocaleLink>,
+    );
+    expect(getByTestId("link").getAttribute("href")).toBe("/fr/methodes");
+  });
+
+  it("pathname /en/x → considéré comme préfixé locale", () => {
+    setup({ lang: "en", pathname: "/en/exercices" });
+    const { getByTestId } = render(
+      <LocaleLink href="/methodes">x</LocaleLink>,
+    );
+    expect(getByTestId("link").getAttribute("href")).toBe("/en/methodes");
+  });
+
+  it("pathname /es/x → considéré comme préfixé locale", () => {
+    setup({ lang: "es", pathname: "/es/exercices" });
+    const { getByTestId } = render(
+      <LocaleLink href="/methodes">x</LocaleLink>,
+    );
+    expect(getByTestId("link").getAttribute("href")).toBe("/es/methodes");
+  });
+});

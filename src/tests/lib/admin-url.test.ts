@@ -1,13 +1,18 @@
 // Sprint P0.7-decies — Tests de getAdminLoginUrl().
+// Sprint A1 — getAdminLoginUrl délègue à resolveEnv() (source unique des
+// hosts par environnement). Le SSR retombe désormais sur la détection
+// VERCEL_ENV / NODE_ENV au lieu d'un hardcode prod.
 //
-// L'URL est calculée au runtime via window.location.host. Tests :
-// prod, preview design, dev local (port standard et port custom),
-// SSR fallback.
+// L'URL est calculée au runtime via window.location.host (côté client) ou
+// via process.env (côté serveur). Tests : prod, preview design, dev local
+// (port standard et port custom), SSR.
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { getAdminLoginUrl } from "@/lib/admin-url";
 
 const originalLocation = globalThis.window?.location;
+const originalNodeEnv = process.env.NODE_ENV;
+const originalVercelEnv = process.env.VERCEL_ENV;
 
 function mockHost(host: string | undefined) {
   if (host === undefined) {
@@ -27,12 +32,21 @@ function mockHost(host: string | undefined) {
   });
 }
 
+function setServerEnv(vercelEnv: string | undefined) {
+  if (vercelEnv === undefined) {
+    delete process.env.VERCEL_ENV;
+  } else {
+    process.env.VERCEL_ENV = vercelEnv;
+  }
+}
+
 beforeEach(() => {
   // Restore browser-like default before each test.
   Object.defineProperty(globalThis, "window", {
     configurable: true,
     value: { location: { host: "muscu-eps.fr" } },
   });
+  setServerEnv(undefined);
 });
 
 afterEach(() => {
@@ -41,6 +55,14 @@ afterEach(() => {
       configurable: true,
       value: { location: originalLocation },
     });
+  }
+  if (originalNodeEnv !== undefined) {
+    (process.env as Record<string, string>).NODE_ENV = originalNodeEnv;
+  }
+  if (originalVercelEnv !== undefined) {
+    process.env.VERCEL_ENV = originalVercelEnv;
+  } else {
+    delete process.env.VERCEL_ENV;
   }
 });
 
@@ -72,12 +94,21 @@ describe("getAdminLoginUrl()", () => {
     expect(getAdminLoginUrl()).toBe("http://admin.localhost:3000/login");
   });
 
-  it("SSR (window undefined) → fallback prod", () => {
+  it("SSR avec VERCEL_ENV=production → URL admin de prod", () => {
     mockHost(undefined);
+    setServerEnv("production");
     expect(getAdminLoginUrl()).toBe("https://admin.muscu-eps.fr/login");
   });
 
-  it("host inconnu → fallback prod (deny by default safe)", () => {
+  it("SSR avec VERCEL_ENV=preview → URL admin de preview", () => {
+    mockHost(undefined);
+    setServerEnv("preview");
+    expect(getAdminLoginUrl()).toBe(
+      "https://design-admin.muscu-eps.fr/login",
+    );
+  });
+
+  it("host inconnu côté client → fallback prod (deny by default safe)", () => {
     mockHost("preview-pr-42.example.com");
     expect(getAdminLoginUrl()).toBe("https://admin.muscu-eps.fr/login");
   });

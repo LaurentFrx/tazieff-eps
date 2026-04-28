@@ -1,7 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { clientLocalizedHref } from "@/lib/i18n/locale-path";
+import type { Locale } from "@/lib/i18n/constants";
 
 type Props = {
   /** Rest duration in seconds from method frontmatter, or default 120 */
@@ -12,7 +14,8 @@ type Props = {
 
 export function TimerLaunchButton({ restSeconds, methodSlug }: Props) {
   const router = useRouter();
-  const { t } = useI18n();
+  const pathname = usePathname();
+  const { t, lang } = useI18n();
 
   function handleClick() {
     try {
@@ -21,7 +24,8 @@ export function TimerLaunchButton({ restSeconds, methodSlug }: Props) {
         JSON.stringify({ preset: "repos", duration: restSeconds, from: methodSlug }),
       );
     } catch { /* quota */ }
-    router.push("/outils/timer");
+    // Sprint A2 — préfixe locale pour fonctionner sur miroir admin.
+    router.push(clientLocalizedHref("/outils/timer", lang as Locale, pathname));
   }
 
   return (

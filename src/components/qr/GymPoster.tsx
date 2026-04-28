@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-
-const BASE_URL = 'https://muscu-eps.fr';
+import { resolveEnv } from '@/lib/env';
 
 interface PosterParams {
   sets: string;
@@ -57,6 +56,7 @@ const POSTERS: PosterConfig[] = [
 
 function PosterCard({ poster }: { poster: PosterConfig }) {
   const { title, subtitle, description, params, qrPath, accent } = poster;
+  const baseUrl = resolveEnv().baseUrl.eleve;
   const paramItems = [
     { label: 'Séries', value: params.sets },
     { label: 'Reps', value: params.reps },
@@ -102,7 +102,7 @@ function PosterCard({ poster }: { poster: PosterConfig }) {
       {/* QR code */}
       <div className="mt-8 flex flex-col items-center">
         <QRCodeSVG
-          value={`${BASE_URL}${qrPath}`}
+          value={`${baseUrl}${qrPath}`}
           size={180}
           level="M"
           bgColor="#ffffff"

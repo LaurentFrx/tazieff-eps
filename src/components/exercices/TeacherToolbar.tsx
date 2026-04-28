@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import type { Lang } from "@/lib/i18n/I18nProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { clientLocalizedHref } from "@/lib/i18n/locale-path";
+import type { Locale } from "@/lib/i18n/constants";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -72,6 +74,7 @@ export function TeacherToolbar({
 }: TeacherToolbarProps) {
   const { t } = useI18n();
   const router = useRouter();
+  const pathname = usePathname();
   const [createStatus, setCreateStatus] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -126,7 +129,14 @@ export function TeacherToolbar({
 
     setIsCreating(false);
     setCreateStatus(null);
-    router.push(`/exercices/${encodeURIComponent(slug)}?edit=1`);
+    // Sprint A2 — préfixe locale pour fonctionner sur miroir admin.
+    router.push(
+      clientLocalizedHref(
+        `/exercices/${encodeURIComponent(slug)}?edit=1`,
+        locale as Locale,
+        pathname,
+      ),
+    );
   };
 
   return (

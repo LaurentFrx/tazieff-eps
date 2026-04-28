@@ -57,10 +57,17 @@ describe("EnseignantMovedClient (P0.7-nonies)", () => {
     ).toBeDefined();
   });
 
-  it("expose un lien externe vers prof.muscu-eps.fr/connexion", () => {
+  it("expose un lien externe vers l'espace enseignant (host suit l'environnement)", () => {
+    // Sprint A1 — Le href est désormais dérivé de resolveEnv() (sources
+    // unique). En prod : prof.muscu-eps.fr/connexion. En preview :
+    // design-prof.muscu-eps.fr/connexion. En dev (cas des tests Vitest) :
+    // prof.localhost:<port>/connexion. Le test n'asserte plus le host
+    // exact mais la structure : ".../connexion" vers le sous-domaine prof.
     render(<EnseignantMovedClient />);
     const cta = screen.getByTestId("enseignant-moved-cta");
-    expect(cta.getAttribute("href")).toContain("prof.muscu-eps.fr/connexion");
+    const href = cta.getAttribute("href") ?? "";
+    expect(href).toMatch(/\/\/prof[.-]/); // prof.muscu, prof.localhost, design-prof.muscu
+    expect(href).toContain("/connexion");
     expect(cta.getAttribute("rel")).toContain("noopener");
   });
 

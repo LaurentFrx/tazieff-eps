@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { LocaleLink as Link } from "@/components/LocaleLink";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import DifficultyPill from "@/components/DifficultyPill";
 import { ExerciseMannequin3D } from "@/components/exercices/ExerciseMannequin3D";
 import { HeroMedia } from "@/components/media/HeroMedia";
@@ -16,6 +16,8 @@ import { useAppAdmin } from "@/hooks/useAppAdmin";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Lang } from "@/lib/i18n/messages";
+import { clientLocalizedHref } from "@/lib/i18n/locale-path";
+import type { Locale } from "@/lib/i18n/constants";
 import { ExerciseJsonLd } from "@/components/seo/ExerciseJsonLd";
 import { ExerciseQuickInfo } from "@/components/exercices/ExerciseQuickInfo";
 import { RestTimer } from "@/components/exercices/RestTimer";
@@ -254,6 +256,7 @@ export function ExerciseLiveDetail({
 }: ExerciseLiveDetailProps) {
   const { t, lang } = useI18n();
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const sessionDraft = useSessionDraft();
   const supabase = getSupabaseBrowserClient();
@@ -1250,10 +1253,16 @@ export function ExerciseLiveDetail({
           heroEl.style.transform = `translateX(${deltaX < 0 ? "-100%" : "100%"})`;
           heroEl.style.opacity = "0";
         }
-        setTimeout(() => router.push(`/exercices/${target.slug}`), 300);
+        // Sprint A2 — préfixe locale pour fonctionner sur miroir admin.
+        const targetHref = clientLocalizedHref(
+          `/exercices/${target.slug}`,
+          lang as Locale,
+          pathname,
+        );
+        setTimeout(() => router.push(targetHref), 300);
       }
     }
-  }, [nextExercise, prevExercise, router]);
+  }, [nextExercise, prevExercise, router, lang, pathname]);
 
   // --- Favori burst ---
   const [favBursting, setFavBursting] = useState(false);

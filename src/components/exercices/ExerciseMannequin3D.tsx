@@ -3,8 +3,10 @@
 import { useState, useCallback, useMemo, Component } from "react";
 import type { ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { clientLocalizedHref } from "@/lib/i18n/locale-path";
+import type { Locale } from "@/lib/i18n/constants";
 import { getMuscleGroups, MUSCLE_GROUP_COLORS, type MuscleGroupId } from "@/lib/exercices/muscleGroups";
 
 /* ── Dynamic imports (Three.js heavy, SSR incompatible) ─── */
@@ -56,8 +58,9 @@ type Props = {
 };
 
 export function ExerciseMannequin3D({ muscles, slug, anatomyGroups }: Props) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const router = useRouter();
+  const pathname = usePathname();
   const [containerHeight, setContainerHeight] = useState(320);
 
   const handleFrameComputed = useCallback((h: number) => {
@@ -76,7 +79,11 @@ export function ExerciseMannequin3D({ muscles, slug, anatomyGroups }: Props) {
   // Legend — unified 8-group keys
   const groupKeys = useMemo(() => getMuscleGroups(muscles), [muscles]);
 
-  const anatomyHref = `/apprendre/anatomie?muscles=${anatomyGroups.join(",")}&from=exercice&slug=${slug}`;
+  // Sprint A2 — anatomyHref préserve la locale courante via le helper
+  // partagé clientLocalizedHref (même logique que LocaleLink). Sur le miroir
+  // admin → préfixe /fr/... ; sur l'élève → href tel quel (le proxy compense).
+  const anatomyPath = `/apprendre/anatomie?muscles=${anatomyGroups.join(",")}&from=exercice&slug=${slug}`;
+  const anatomyHref = clientLocalizedHref(anatomyPath, lang as Locale, pathname);
 
   // Tap → navigate to anatomy page
   const handleTap = useCallback(() => {

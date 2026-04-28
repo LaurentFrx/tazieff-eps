@@ -1,8 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { ScoresBlock } from '@/components/methodes/ScoreBar';
 import { ExoThumb } from '@/components/ExoThumb';
+import { clientLocalizedHref } from '@/lib/i18n/locale-path';
+import type { Locale } from '@/lib/i18n/constants';
 
 type MethodeData = {
   slug: string;
@@ -25,8 +28,9 @@ type MethodAccordionProps = {
   seeMethodLabel: string;
 };
 
-const lp = (path: string, locale: string) =>
-  locale === 'fr' ? path : `/${locale}${path}`;
+// Sprint A2 — Le helper lp() divergent (préfixait sauf fr) a été supprimé au
+// profit de clientLocalizedHref() qui s'aligne sur LocaleLink (préfixe en fr
+// quand on est sur le miroir admin, conserve le path nu sur l'élève).
 
 export function MethodAccordion({
   methodes,
@@ -38,6 +42,7 @@ export function MethodAccordion({
   seeMethodLabel,
 }: MethodAccordionProps) {
   const [open, setOpen] = useState<Set<string>>(new Set());
+  const pathname = usePathname();
 
   const toggle = (slug: string) => {
     setOpen((prev) => {
@@ -86,7 +91,7 @@ export function MethodAccordion({
               <div className="px-4 pb-4 space-y-3">
                 <ScoresBlock scores={m.scores} labels={scoreLabels} />
                 <a
-                  href={lp(`/methodes/${m.slug}`, locale)}
+                  href={clientLocalizedHref(`/methodes/${m.slug}`, locale as Locale, pathname)}
                   className="inline-flex items-center gap-1 text-xs font-semibold"
                   style={{ color: colorAccent }}
                 >
@@ -117,6 +122,7 @@ export function ExerciseList({
   maxItems = 12,
 }: ExerciseListProps) {
   const shown = exercises.slice(0, maxItems);
+  const pathname = usePathname();
 
   return (
     <div>
@@ -124,7 +130,7 @@ export function ExerciseList({
         {shown.map((exo) => (
           <li key={exo.slug}>
             <a
-              href={lp(`/exercices/${exo.slug}`, locale)}
+              href={clientLocalizedHref(`/exercices/${exo.slug}`, locale as Locale, pathname)}
               className="flex items-center gap-3 rounded-xl p-2.5 border border-[color:var(--border)] hover:border-[color:var(--accent)] transition-colors"
             >
               <ExoThumb slug={exo.slug} size={44} />
@@ -136,7 +142,7 @@ export function ExerciseList({
       {exercises.length > maxItems && (
         <div className="mt-3 text-center">
           <a
-            href={lp(seeAllHref, locale)}
+            href={clientLocalizedHref(seeAllHref, locale as Locale, pathname)}
             className="text-xs font-semibold text-[color:var(--accent)]"
           >
             {seeAllLabel} →

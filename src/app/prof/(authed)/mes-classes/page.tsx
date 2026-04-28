@@ -6,6 +6,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { resolveEnv } from "@/lib/env";
 import ClassCardMiniQr from "@/components/teacher/ClassCardMiniQr";
 import styles from "./mes-classes.module.css";
 
@@ -134,6 +135,9 @@ export default async function MesClassesPage() {
 // URL de rejoint d'une classe (à afficher en QR). On vise l'espace élève
 // avec un paramètre ?code=XXX — la page élève /rejoindre (non encore créée,
 // E.2.4) consommera ce paramètre via join_class_with_code.
+//
+// Sprint A1 — base URL via resolveEnv() : sur preview, le QR pointe vers
+// design.muscu-eps.fr, plus vers la prod.
 function buildJoinUrl(code: string): string {
-  return `https://muscu-eps.fr/rejoindre?code=${encodeURIComponent(code)}`;
+  return `${resolveEnv().baseUrl.eleve}/rejoindre?code=${encodeURIComponent(code)}`;
 }

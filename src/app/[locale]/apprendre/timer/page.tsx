@@ -1,5 +1,8 @@
-import { redirect } from "next/navigation";
+import { localizedRedirect } from "@/lib/navigation";
 
-export default function TimerRedirect() {
-  redirect("/outils/timer");
+type Props = { params: Promise<{ locale: string }> };
+
+export default async function TimerRedirect({ params }: Props) {
+  const { locale } = await params;
+  localizedRedirect("/outils/timer", locale);
 }

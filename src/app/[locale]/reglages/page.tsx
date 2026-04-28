@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useCallback, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useBuildInfo } from "@/components/BuildStamp";
@@ -12,15 +12,19 @@ import { isAcademicEmail } from "@/lib/auth/academic-domains";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { LocaleLink } from "@/components/LocaleLink";
 import { getAdminLoginUrl } from "@/lib/admin-url";
+import { resolveEnv } from "@/lib/env";
+import { clientLocalizedHref } from "@/lib/i18n/locale-path";
+import type { Locale } from "@/lib/i18n/constants";
 
 // Phase E.2.3.2 — l'espace enseignant a déménagé sur le sous-domaine prof.
 // Depuis cette page, on affiche seulement un lien pour rediriger les profs
 // vers le bon espace. L'auth magic-link inline a été retirée.
+//
+// Sprint A1 — Supprimé le helper inline `getTeacherLoginUrl` (couvrait pas
+// localhost, divergent avec les autres helpers de host). Source unique :
+// resolveEnv().baseUrl.prof.
 function getTeacherLoginUrl(): string {
-  if (typeof window === "undefined") return "https://prof.muscu-eps.fr/connexion";
-  const host = window.location.host;
-  if (host === "design.muscu-eps.fr") return "https://design-prof.muscu-eps.fr/connexion";
-  return "https://prof.muscu-eps.fr/connexion";
+  return `${resolveEnv().baseUrl.prof}/connexion`;
 }
 
 
@@ -89,6 +93,7 @@ function Seg<O extends { value: string | number }>({
 
 export default function ReglagesPage() {
   const { t, lang, setLang } = useI18n();
+  const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const currentTheme = (theme ?? "system") as "system" | "light" | "dark";
   const buildInfo = useBuildInfo();
@@ -132,8 +137,9 @@ export default function ReglagesPage() {
       localStorage.removeItem("eps_onboarding_level");
       localStorage.removeItem("eps_onboarding_goal");
     } catch { /* ignore */ }
-    router.push("/onboarding");
-  }, [router]);
+    // Sprint A2 — préfixe locale pour fonctionner sur miroir admin.
+    router.push(clientLocalizedHref("/onboarding", lang as Locale, pathname));
+  }, [router, lang, pathname]);
 
   const handleCopy = async () => {
     try { await navigator?.clipboard?.writeText(buildInfo.label); } catch { /* ignore */ }
