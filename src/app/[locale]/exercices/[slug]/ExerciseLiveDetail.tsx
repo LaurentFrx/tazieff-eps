@@ -63,6 +63,7 @@ import {
 import { useOverrideSave } from "./_teacher-editor/hooks/useOverrideSave";
 import InlineTitleEditor from "./_teacher-editor/InlineTitleEditor";
 import InlineParagraphEditor from "./_teacher-editor/InlineParagraphEditor";
+import InlineListEditor from "./_teacher-editor/InlineListEditor";
 import { useOverrideMediaUpload } from "./_teacher-editor/hooks/useOverrideMediaUpload";
 import { useOverrideUI } from "./_teacher-editor/hooks/useOverrideUI";
 import { usePillDropdown } from "./_teacher-editor/hooks/usePillDropdown";
@@ -201,7 +202,14 @@ function buildSectionsFromContent(
 }
 
 // Phase E.2 — clés logiques pour l'édition inline des paragraphes simples.
-type InlineParagraphKey = "resume" | "respiration" | "securite";
+// Hotfix 28 avril 2026 — étendu à "execution" et "conseils" (listes
+// markdown) pour combler le gap d'édition sur ces deux sections.
+type InlineParagraphKey =
+  | "resume"
+  | "respiration"
+  | "securite"
+  | "execution"
+  | "conseils";
 
 // Matchers de titres de section (FR primaire, accents insensibles) — utilisés
 // pour localiser la section cible dans l'override doc lors de l'édition inline.
@@ -209,6 +217,8 @@ const SECTION_TITLE_MATCHERS: Record<InlineParagraphKey, RegExp> = {
   resume: /^r[eé]sum[eé]$/i,
   respiration: /^respiration$/i,
   securite: /^s[eé]curit[eé]$/i,
+  execution: /^ex[eé]cution$/i,
+  conseils: /^conseils?$/i,
 };
 
 function buildOverrideDoc(
@@ -1673,29 +1683,56 @@ export function ExerciseLiveDetail({
           )}
 
           {/* 7. EXECUTION (dosage lines filtered) */}
+          {/*
+            Hotfix 28 avril 2026 — wrap dans InlineListEditor en mode admin
+            pour permettre l'édition inline des étapes (markdown brut dans
+            le textarea, rendu numéroté en lecture). En mode élève, rendu
+            statique inchangé.
+          */}
           {parsedSections.execution && parsedSections.execution.body && (
             <div ref={executionRef as React.RefObject<HTMLDivElement>} className="mb-4">
               <h2 className="text-xl uppercase tracking-wider mb-3 mt-1" style={{ fontFamily: 'var(--font-bebas), sans-serif', color: '#00E5FF' }}>
                 {parsedSections.execution.heading}
               </h2>
-              <div className="flex flex-col gap-2.5">
-                {(() => {
-                  const steps = parsedSections.execution.body.split('\n')
-                    .filter(l => l.trim().startsWith('-'))
-                    .filter(l => !isDosageLine(l));
-                  return steps.map((line, i) => {
-                    const text = line.replace(/^-\s*/, '').trim();
-                    return (
-                      <RevealStep key={i} delay={i * 80}>
-                        <div className="flex gap-3 items-start">
+              {isAdmin ? (
+                <InlineListEditor
+                  initialValue={parsedSections.execution.body}
+                  onSave={(newBody) => handleInlineParagraphSave('execution', newBody)}
+                  onError={(message) => showOverrideToast(message, "error")}
+                  ariaLabel={t("exerciseEditor.editExecutionAriaLabel")}
+                  saveLabel={t("exerciseEditor.editParagraphSaveLabel")}
+                  sectionKey="execution"
+                  renderList={(items, handlers) => (
+                    <div {...handlers} className={`flex flex-col gap-2.5 ${handlers.className}`}>
+                      {items.filter((line) => !isDosageLine(line)).map((text, i) => (
+                        <div key={i} className="flex gap-3 items-start">
                           <span className="text-2xl leading-none text-[#FF8C00] shrink-0 w-8 text-right" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>{i + 1}</span>
                           <p className="text-sm text-white/80 leading-relaxed pt-0.5" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>{text}</p>
                         </div>
-                      </RevealStep>
-                    );
-                  });
-                })()}
-              </div>
+                      ))}
+                    </div>
+                  )}
+                />
+              ) : (
+                <div className="flex flex-col gap-2.5">
+                  {(() => {
+                    const steps = parsedSections.execution.body.split('\n')
+                      .filter(l => l.trim().startsWith('-'))
+                      .filter(l => !isDosageLine(l));
+                    return steps.map((line, i) => {
+                      const text = line.replace(/^-\s*/, '').trim();
+                      return (
+                        <RevealStep key={i} delay={i * 80}>
+                          <div className="flex gap-3 items-start">
+                            <span className="text-2xl leading-none text-[#FF8C00] shrink-0 w-8 text-right" style={{ fontFamily: 'var(--font-bebas), sans-serif' }}>{i + 1}</span>
+                            <p className="text-sm text-white/80 leading-relaxed pt-0.5" style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}>{text}</p>
+                          </div>
+                        </RevealStep>
+                      );
+                    });
+                  })()}
+                </div>
+              )}
             </div>
           )}
 
@@ -1732,6 +1769,11 @@ export function ExerciseLiveDetail({
           {(parsedSections.conseils || parsedSections.securite) && <div className="h-px bg-white/5 my-1" />}
 
           {/* 9. CONSEILS (collapsible) */}
+          {/*
+            Hotfix 28 avril 2026 — wrap dans InlineListEditor en mode admin
+            pour permettre l'édition inline des bullets. En mode élève, rendu
+            statique inchangé. Le toggle collapsible reste fonctionnel.
+          */}
           {parsedSections.conseils && parsedSections.conseils.body && (
             <div ref={conseilsRef as React.RefObject<HTMLDivElement>} className="mb-1">
               <button
@@ -1746,14 +1788,35 @@ export function ExerciseLiveDetail({
               </button>
               {conseilsOpen && (
                 <div className="pb-2">
-                  <ul className="flex flex-col gap-1.5 pl-1">
-                    {parsedSections.conseils.body.split('\n').filter(l => l.trim().startsWith('-')).map((line, i) => (
-                      <li key={i} className="flex gap-2 items-start text-sm text-white/70 leading-relaxed">
-                        <span className="text-[#FF8C00] mt-1 shrink-0">•</span>
-                        <span>{line.replace(/^-\s*/, '').trim()}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  {isAdmin ? (
+                    <InlineListEditor
+                      initialValue={parsedSections.conseils.body}
+                      onSave={(newBody) => handleInlineParagraphSave('conseils', newBody)}
+                      onError={(message) => showOverrideToast(message, "error")}
+                      ariaLabel={t("exerciseEditor.editConseilsAriaLabel")}
+                      saveLabel={t("exerciseEditor.editParagraphSaveLabel")}
+                      sectionKey="conseils"
+                      renderList={(items, handlers) => (
+                        <ul {...handlers} className={`flex flex-col gap-1.5 pl-1 ${handlers.className}`}>
+                          {items.map((text, i) => (
+                            <li key={i} className="flex gap-2 items-start text-sm text-white/70 leading-relaxed">
+                              <span className="text-[#FF8C00] mt-1 shrink-0">•</span>
+                              <span>{text}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    />
+                  ) : (
+                    <ul className="flex flex-col gap-1.5 pl-1">
+                      {parsedSections.conseils.body.split('\n').filter(l => l.trim().startsWith('-')).map((line, i) => (
+                        <li key={i} className="flex gap-2 items-start text-sm text-white/70 leading-relaxed">
+                          <span className="text-[#FF8C00] mt-1 shrink-0">•</span>
+                          <span>{line.replace(/^-\s*/, '').trim()}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
             </div>
