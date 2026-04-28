@@ -3,6 +3,7 @@
 import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useIsAdminMirror } from "@/hooks/useIsAdminMirror";
 
 const LS_DONE = "eps_onboarding_done";
 const LS_DISMISSED = "eps_onboarding_dismissed";
@@ -10,6 +11,9 @@ const LS_DISMISSED = "eps_onboarding_dismissed";
 export function OnboardingBanner() {
   const { t } = useI18n();
   const [visible, setVisible] = useState(false);
+  // Sprint hotfix admin-mirror-elements (28 avril 2026) — masqué sur le
+  // miroir admin (l'admin connecté n'a pas besoin de l'onboarding élève).
+  const isAdminMirror = useIsAdminMirror();
 
   useEffect(() => {
     try {
@@ -19,7 +23,7 @@ export function OnboardingBanner() {
     } catch { /* ignore */ }
   }, []);
 
-  if (!visible) return null;
+  if (!visible || isAdminMirror) return null;
 
   const dismiss = () => {
     setVisible(false);
