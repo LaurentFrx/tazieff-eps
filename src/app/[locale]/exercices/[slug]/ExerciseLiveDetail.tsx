@@ -13,6 +13,7 @@ import {
 } from "@/lib/favoritesStore";
 import { useSessionDraft } from "@/hooks/useSessionDraft";
 import { useAppAdmin } from "@/hooks/useAppAdmin";
+import { useIsAdminMirror } from "@/hooks/useIsAdminMirror";
 import type { ExerciseFrontmatter } from "@/lib/content/schema";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Lang } from "@/lib/i18n/messages";
@@ -271,6 +272,11 @@ export function ExerciseLiveDetail({
   // P0.1 — `isAdmin` remplace l'ancien teacherUnlocked. Source de vérité :
   // GET /api/me/role qui consulte public.app_admins via RLS.
   const { isAdmin } = useAppAdmin();
+  // Sprint hotfix admin-mirror-elements (28 avril 2026) — sur le miroir
+  // admin (admin.muscu-eps.fr), l'édition se fait déjà via les inline
+  // editors. Le panel "MODE PROF / MODIFIER L'EXERCICE" en bas de page est
+  // redondant et son label est trompeur sur ce sous-domaine.
+  const isAdminMirror = useIsAdminMirror();
   const [overrideDoc, setOverrideDoc] = useState<ExerciseLiveDocV2 | null>(null);
   // Phase E.1 — override local du titre (édition inline). Prend le pas sur
   // merged.frontmatter.title tant qu'il est non null, pour refléter immédiatement
@@ -1811,7 +1817,18 @@ export function ExerciseLiveDetail({
       )}
 
       {/* ─── PANEL ENSEIGNANT ─── */}
-      {isAdmin ? (
+      {/*
+        Sprint hotfix admin-mirror-elements (28 avril 2026) — masqué sur le
+        miroir admin (admin.muscu-eps.fr). Sur ce sous-domaine, l'édition au
+        clic via les inline editors (titre, paragraphes Résumé/Respiration/
+        Sécurité, image hero) est déjà active. Le panel "MODE PROF /
+        MODIFIER L'EXERCICE" qui ouvrait l'éditeur modal complet est
+        redondant et son label "Mode prof" est trompeur (l'admin connecté
+        n'est pas un prof).
+        Reste affiché sur muscu-eps.fr (élève) si un admin y navigue : utile
+        car l'édition au clic n'y est pas active par défaut.
+      */}
+      {isAdmin && !isAdminMirror ? (
         <div className="teacher-panel">
           <p className="eyebrow">{t("exerciseEditor.teacherPanel")}</p>
           <div className="modal-actions">

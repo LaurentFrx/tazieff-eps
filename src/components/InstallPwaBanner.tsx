@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useIsAdminMirror } from "@/hooks/useIsAdminMirror";
 
 const STORAGE_KEY = "pwa_install_banner_dismissed_v1";
 const EVENT_NAME = "pwa-banner-change";
@@ -66,6 +67,10 @@ export function InstallPwaBanner() {
     getSnapshot,
     getServerSnapshot,
   );
+  // Sprint hotfix admin-mirror-elements (28 avril 2026) — masqué sur le
+  // miroir admin (l'admin connecté est sur desktop, pas iOS, et n'installe
+  // pas la PWA).
+  const isAdminMirror = useIsAdminMirror();
 
   const handleDismiss = () => {
     if (typeof window !== "undefined") {
@@ -74,7 +79,7 @@ export function InstallPwaBanner() {
     }
   };
 
-  if (!visible) {
+  if (!visible || isAdminMirror) {
     return null;
   }
 
