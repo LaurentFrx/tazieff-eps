@@ -240,17 +240,29 @@ describe("proxy — protection croisée : host élève + /admin/* = 404", () => 
 // Sprint P0.7-bis — miroir d'édition admin
 // ─────────────────────────────────────────────────────────────────────
 
-describe("proxy — host admin : miroir d'édition (P0.7-bis)", () => {
-  it("pass-through /exercices sur admin.muscu-eps.fr (pas de rewrite vers /admin)", () => {
+describe("proxy — host admin : miroir d'édition (P0.7-bis + hotfix locale)", () => {
+  // Hotfix 28 avril 2026 — Avant ce fix, /exercices sur admin retournait
+  // un pass-through `next()` qui menait à 404 côté Next.js (les routes sont
+  // sous /[locale]/exercices). Maintenant on rewrite explicitement vers
+  // /<DEFAULT_LOCALE>/<path> pour servir la version localisée FR.
+  it("rewrite /exercices → /fr/exercices sur admin.muscu-eps.fr (locale fallback)", () => {
     const req = makeRequest("admin.muscu-eps.fr", "/exercices");
-    const result = proxy(req as never) as { type: string };
-    expect(result.type).toBe("next");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/fr\/exercices$/);
   });
 
-  it("pass-through /exercices/s1-01 sur admin.muscu-eps.fr", () => {
+  it("rewrite /exercices/s1-01 → /fr/exercices/s1-01 sur admin.muscu-eps.fr", () => {
     const req = makeRequest("admin.muscu-eps.fr", "/exercices/s1-01");
-    const result = proxy(req as never) as { type: string };
-    expect(result.type).toBe("next");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/fr\/exercices\/s1-01$/);
   });
 
   it("pass-through /api/teacher/exercise-override sur admin.muscu-eps.fr", () => {
@@ -274,16 +286,34 @@ describe("proxy — host admin : miroir d'édition (P0.7-bis)", () => {
     expect(result.type).toBe("next");
   });
 
-  it("pass-through /methodes (préparation futur) sur admin.muscu-eps.fr", () => {
+  it("rewrite /methodes → /fr/methodes sur admin.muscu-eps.fr", () => {
     const req = makeRequest("admin.muscu-eps.fr", "/methodes");
-    const result = proxy(req as never) as { type: string };
-    expect(result.type).toBe("next");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/fr\/methodes$/);
   });
 
-  it("pass-through /exercices sur design-admin.muscu-eps.fr (preview)", () => {
+  it("rewrite /bac → /fr/bac sur admin.muscu-eps.fr", () => {
+    const req = makeRequest("admin.muscu-eps.fr", "/bac");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/fr\/bac$/);
+  });
+
+  it("rewrite /exercices → /fr/exercices sur design-admin.muscu-eps.fr (preview)", () => {
     const req = makeRequest("design-admin.muscu-eps.fr", "/exercices");
-    const result = proxy(req as never) as { type: string };
-    expect(result.type).toBe("next");
+    const result = proxy(req as never) as {
+      type: string;
+      rewriteUrl: string;
+    };
+    expect(result.type).toBe("rewrite");
+    expect(result.rewriteUrl).toMatch(/\/fr\/exercices$/);
   });
 
   it("toujours rewrite /ma-classe vers /admin/ma-classe sur admin.muscu-eps.fr (rejet implicite)", () => {

@@ -166,8 +166,27 @@ export function proxy(request: NextRequest) {
     // 1a. Host admin + path pédagogique → pass-through (miroir d'édition).
     //     NB : /_next/* et /api/* sont déjà attrapés par shouldSkipHostRouting
     //     en amont. Cette liste est faite pour les paths utilisateurs.
+    //
+    // Hotfix 28 avril 2026 : sur l'élève, l'étape 4 du proxy rewrite les
+    // paths sans préfixe locale (ex: /exercices) vers /fr/exercices avant
+    // de toucher Next.js. Sur le miroir admin, l'étape 1a court-circuitait
+    // ce rewrite avec un simple `next()` pass-through, conduisant à un 404
+    // pour les paths comme admin.muscu-eps.fr/exercices (Next.js cherchait
+    // /exercices directement, mais les routes sont sous /[locale]/exercices).
+    //
+    // Fix : si le path miroir n'est PAS déjà préfixé locale, on applique
+    // explicitement le rewrite vers /<DEFAULT_LOCALE>/<path>. Si le path
+    // est déjà préfixé (ex: /fr/exercices), on pass-through normalement.
     if (onAdminHost && isAdminMirrorPath(pathname)) {
-      return NextResponse.next();
+      const hasLocalePrefix = SUPPORTED_LOCALES.some(
+        (loc) => pathname === `/${loc}` || pathname.startsWith(`/${loc}/`),
+      );
+      if (hasLocalePrefix) {
+        return NextResponse.next();
+      }
+      const url = request.nextUrl.clone();
+      url.pathname = `/${DEFAULT_LOCALE}${pathname}`;
+      return NextResponse.rewrite(url);
     }
 
     // 1b. Host admin + path normal → rewrite interne vers /admin/<path>
