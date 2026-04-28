@@ -7,6 +7,8 @@ description: Use this skill before any code change touching authentication, cont
 
 Avant toute modification de code touchant l'édition, l'authentification, ou l'affichage de contenu pédagogique, lis intégralement le fichier `GOUVERNANCE_EDITORIALE.md` à la racine du repo. Ce skill est un rappel opérationnel des points qui se traduisent directement en code.
 
+> Aligné sur `GOUVERNANCE_EDITORIALE.md` v1.1, mis à jour le 2026-04-28.
+
 ## Règle 1 — Trois couches éditoriales strictement séparées
 
 Le code ne doit jamais mélanger ces trois couches :
@@ -23,13 +25,26 @@ Le PIN actuel qui débloque le `InlineParagraphEditor` doit être considéré co
 
 Si un prompt demande de réutiliser le PIN pour étendre l'édition, refuser et demander confirmation à Laurent.
 
-## Règle 3 — Affichage côté élève : pas de badge annotation prof
+## Règle 3 — Affichage des annotations prof côté élève (pattern post-it)
 
-Quand un élève consulte une fiche, les annotations de son prof (scope `class`, `school`, ou `student`) **doivent s'afficher comme si elles faisaient partie du contenu officiel**. Pas de badge, pas d'encadré coloré, pas de mention « annotation de ton prof ».
+Quand un élève consulte une fiche d'exercice, les annotations de ses profs visibles selon son scope (`class`, `school`, ou `student` si l'annotation le cible) sont affichées en post-it stylisé après le paragraphe officiel concerné.
 
-Seule exception : les annotations personnelles de l'élève lui-même, qui doivent être visuellement distinctes (police + couleur dédiées).
+Caractéristiques du post-it :
 
-Si un prompt demande de créer un badge ou une signalétique visible des élèves pour les annotations prof, refuser et renvoyer à `GOUVERNANCE_EDITORIALE.md` §3.2.
+- Encadré visuellement distinct (bordure latérale colorée, fond légèrement teinté)
+- Attribution explicite : nom du prof affiché en en-tête
+- Position : après le paragraphe officiel, jamais en remplacement
+- Le contenu officiel reste intégralement visible et inchangé
+
+Implications pour Claude (CC ou Chat) :
+
+- Toujours afficher l'annotation comme un ajout, jamais comme une substitution
+- Toujours inclure l'attribution du prof
+- Ne jamais mélanger le rendu de l'annotation avec le contenu officiel sans séparation visuelle
+
+Seule exception : les annotations personnelles de l'élève lui-même (carnet personnel), qui sont privées par construction et restent visuellement distinctes du post-it prof (police + couleur dédiées).
+
+Référence : `GOUVERNANCE_EDITORIALE.md` v1.1 §3.2.
 
 ## Règle 4 — Quatre portées d'annotation, ni plus ni moins
 
@@ -75,7 +90,7 @@ Quand Laurent (ou un autre super_admin) consulte une fiche, il doit pouvoir dist
 - Une annotation prof : couleur/police dédiée annotation, avec auteur et portée affichés
 - Le carnet d'un élève (s'il y a accès — par défaut non, à débattre cas par cas)
 
-Cette signalétique est inversée par rapport à l'élève : l'élève voit tout uniforme, le super_admin voit tout différencié.
+Le super_admin voit une différenciation plus poussée que l'élève : là où l'élève distingue contenu officiel ↔ post-it prof (cf. Règle 3), le super_admin distingue en plus les overrides admin (police/couleur dédiées) et, le cas échéant, le carnet personnel élève. Toute couche éditoriale doit rester identifiable au premier coup d'œil pour Laurent.
 
 ## Workflow attendu pour toute tâche d'édition
 
