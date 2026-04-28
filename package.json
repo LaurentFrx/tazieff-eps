@@ -25,7 +25,9 @@
         "db:reset": "supabase db reset",
         "db:new-migration": "supabase migration new",
         "db:migration-list": "supabase migration list",
-        "db:seed": "tsx supabase/seeds/e2_1_seed_users.ts"
+        "db:seed": "tsx supabase/seeds/e2_1_seed_users.ts",
+        "seed:phase-e": "tsx scripts/seed/phase-e-test-data.ts",
+        "seed:cleanup": "tsx scripts/seed/cleanup-phase-e-test-data.ts"
     },
     "dependencies": {
         "@react-three/drei": "^10.7.7",
