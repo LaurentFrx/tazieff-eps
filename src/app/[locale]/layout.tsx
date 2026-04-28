@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { notFound } from "next/navigation";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { TopBar } from "@/components/TopBar";
 import { InstallPwaBanner } from "@/components/InstallPwaBanner";
@@ -7,16 +8,28 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { PageTransition } from "@/components/PageTransition";
 import { isAdminHost } from "@/lib/admin-hosts";
+import { SUPPORTED_LOCALES, isLocale } from "@/lib/i18n/constants";
 import type { Lang } from "@/lib/i18n/messages";
 
-const VALID_LOCALES: Lang[] = ["fr", "en", "es"];
-
-function isValidLocale(value: string): value is Lang {
-  return VALID_LOCALES.includes(value as Lang);
-}
+// Sprint A5.1 — Guard explicite sur params.locale.
+//
+// Bug constaté par audit visuel A5 (Claude Chrome 2026-04-28) : /auth et
+// /callback (apres suppression A5 des routes OAuth GitHub legacy) répondaient
+// HTTP 200 avec une app élève dégradée (compteurs à zéro). Cause racine :
+// le segment dynamique [locale] acceptait toute string et fallback-ait
+// silencieusement vers "fr", générant une UI cassée silencieusement.
+//
+// Fix : si params.locale n'est pas dans SUPPORTED_LOCALES (fr/en/es), on
+// appelle notFound() pour retourner un vrai 404. Couvre tout futur faux
+// locale (/lol, /test, /admin/legacy, etc.).
+//
+// generateStaticParams ci-dessous limite déjà les routes pré-générées aux 3
+// locales supportées, mais Next.js 16 rend aussi à la volée les segments
+// dynamiques pour les chemins non-générés — d'où la nécessité du guard
+// runtime explicite.
 
 export function generateStaticParams() {
-  return VALID_LOCALES.map((locale) => ({ locale }));
+  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
 }
 
 export default async function LocaleLayout({
@@ -27,7 +40,12 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale: rawLocale } = await params;
-  const locale: Lang = isValidLocale(rawLocale) ? rawLocale : "fr";
+
+  // Sprint A5.1 — refuse explicitement les locales invalides.
+  if (!isLocale(rawLocale)) {
+    notFound();
+  }
+  const locale: Lang = rawLocale;
 
   // P0.7-septies — Sur le miroir admin (admin.muscu-eps.fr / design-admin.*),
   // on désactive le fallback signInAnonymously du AuthProvider pour empêcher
