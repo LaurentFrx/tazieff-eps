@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { isAdminHost, isProfHost } from "@/lib/admin-hosts";
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from "@/lib/i18n/constants";
 
 /* ── Admin basic auth ────────────────────────────────────────────────── */
 
@@ -94,7 +95,11 @@ const ADMIN_MIRROR_PREFIXES = [
   "/images",
 ];
 
-const LOCALE_PREFIXES = ["/fr", "/en", "/es"] as const;
+// Sprint A5 — LOCALE_PREFIXES dérivé de SUPPORTED_LOCALES (source unique).
+// Avant : tableau hardcodé ["/fr","/en","/es"] qui doublonnait LOCALES plus
+// bas. Toute future locale ajoutée à SUPPORTED_LOCALES est désormais propagée
+// automatiquement (cf audit-cc 2026-04-28 PS6 / L18).
+const LOCALE_PREFIXES = SUPPORTED_LOCALES.map((loc) => `/${loc}`);
 
 // P0.7-ter — Les routes pédagogiques de l'app sont localisées
 // (/fr/exercices, /en/exercices, /es/exercices). Pour que le miroir admin
@@ -121,7 +126,9 @@ function isAdminMirrorPath(pathname: string): boolean {
 
 /* ── i18n locale rewrite ─────────────────────────────────────────────── */
 
-const LOCALES = ["fr", "en", "es"];
+// Sprint A5 — LOCALES alias de SUPPORTED_LOCALES pour conserver le nom
+// historique du proxy. Toute évolution passe par lib/i18n/constants.ts.
+const LOCALES = SUPPORTED_LOCALES;
 
 /* ── Main proxy ──────────────────────────────────────────────────────── */
 
@@ -234,9 +241,9 @@ export function proxy(request: NextRequest) {
   );
   if (pathnameHasLocale) return NextResponse.next();
 
-  // Rewrite unprefixed paths to /fr/...
+  // Rewrite unprefixed paths to the default locale (Sprint A5 — DEFAULT_LOCALE).
   const url = request.nextUrl.clone();
-  url.pathname = `/fr${pathname}`;
+  url.pathname = `/${DEFAULT_LOCALE}${pathname}`;
   return NextResponse.rewrite(url);
 }
 

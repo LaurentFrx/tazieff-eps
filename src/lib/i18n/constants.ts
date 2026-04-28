@@ -13,6 +13,13 @@ export const SUPPORTED_LOCALES = ["fr", "en", "es"] as const;
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
+/**
+ * Sprint A5 — Locale par défaut quand aucune n'est fournie ou que la valeur
+ * est invalide. Utilisée par le proxy i18n (fallback rewrite vers /fr/...) et
+ * par localizedRedirect() dans @/lib/navigation.
+ */
+export const DEFAULT_LOCALE: Locale = "fr";
+
 export function isLocale(value: string): value is Locale {
   return (SUPPORTED_LOCALES as readonly string[]).includes(value);
 }

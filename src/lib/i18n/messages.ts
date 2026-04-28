@@ -1229,6 +1229,15 @@ export const messages = {
           "Vérifie l'orthographe de ton adresse, ou contacte l'administrateur de Tazieff EPS.",
       },
     },
+    rejoindre: {
+      title: "Rejoindre une classe",
+      subtitleWithCode:
+        "Le code de ta classe est pré-rempli. Renseigne ton prénom et ton nom pour t'inscrire.",
+      subtitleNoCode:
+        "Saisis le code que ton enseignant t'a communiqué, ainsi que ton prénom et ton nom.",
+      help:
+        "Tu pourras retrouver ta classe à tout moment depuis l'onglet « Ma classe ».",
+    },
   },
   en: {
     header: {
@@ -2456,6 +2465,15 @@ export const messages = {
         notEligible:
           "Check the spelling of your email, or contact the Tazieff EPS administrator.",
       },
+    },
+    rejoindre: {
+      title: "Join a class",
+      subtitleWithCode:
+        "Your class code is pre-filled. Enter your first and last name to enroll.",
+      subtitleNoCode:
+        "Enter the code your teacher gave you, plus your first and last name.",
+      help:
+        "You can find your class anytime from the \"My class\" tab.",
     },
   },
   es: {
@@ -3685,6 +3703,15 @@ export const messages = {
         notEligible:
           "Verifica la ortografía de tu correo, o contacta al administrador de Tazieff EPS.",
       },
+    },
+    rejoindre: {
+      title: "Unirse a una clase",
+      subtitleWithCode:
+        "El código de tu clase está pre-rellenado. Introduce tu nombre y apellido para inscribirte.",
+      subtitleNoCode:
+        "Introduce el código que te dio tu profesor, junto con tu nombre y apellido.",
+      help:
+        "Puedes consultar tu clase en cualquier momento desde la pestaña «Mi clase».",
     },
   },
 } as const;

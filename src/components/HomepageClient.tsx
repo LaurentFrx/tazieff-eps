@@ -314,13 +314,14 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
       </div>
 
       {/* ── Footer légal ─────────────────────────────────────────── */}
+      {/* Sprint A5 — <a href> remplacé par LocaleLink (alias Link) pour préfixer la locale courante. */}
       <div className="text-center pb-6 pt-2">
         <nav className="inline-flex gap-2 text-[11px] text-zinc-500">
-          <a href="/legal/mentions-legales" className="tap-feedback hover:text-zinc-400 transition-colors">Mentions l&eacute;gales</a>
+          <Link href="/legal/mentions-legales" className="tap-feedback hover:text-zinc-400 transition-colors">Mentions l&eacute;gales</Link>
           <span aria-hidden="true">&middot;</span>
-          <a href="/legal/confidentialite" className="tap-feedback hover:text-zinc-400 transition-colors">Confidentialit&eacute;</a>
+          <Link href="/legal/confidentialite" className="tap-feedback hover:text-zinc-400 transition-colors">Confidentialit&eacute;</Link>
           <span aria-hidden="true">&middot;</span>
-          <a href="/legal/cgu" className="tap-feedback hover:text-zinc-400 transition-colors">CGU</a>
+          <Link href="/legal/cgu" className="tap-feedback hover:text-zinc-400 transition-colors">CGU</Link>
         </nav>
       </div>
     </section>

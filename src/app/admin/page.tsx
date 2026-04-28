@@ -7,6 +7,7 @@
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isAdminUser } from "@/lib/auth/requireAdmin";
 import { getServerLang, getServerT } from "@/lib/i18n/server";
@@ -32,8 +33,13 @@ export default async function AdminHomePage() {
     redirect("/login");
   }
 
-  // i18n : on lit la locale via cookie (espace admin n'a pas de [locale] route).
-  const lang = getServerLang();
+  // Sprint A5 — i18n : on lit la locale via cookie (espace admin n'a pas de
+  // route [locale], donc getServerLang() sans argument retournait toujours
+  // "fr" — bug L17 de l'audit-cc). On lit explicitement le cookie eps_lang
+  // ici, comme le fait déjà admin/layout.tsx pour I18nProvider.
+  const cookieStore = await cookies();
+  const langCookie = cookieStore.get("eps_lang")?.value;
+  const lang = getServerLang(langCookie);
   const t = getServerT(lang);
 
   const roleLabel = role.is_super_admin

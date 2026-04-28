@@ -26,13 +26,19 @@ type ApiError = {
 
 type Props = {
   onJoined?: () => void | Promise<void>;
+  /**
+   * Sprint A5 — Code de classe pré-rempli (utilisé par la page /rejoindre
+   * qui lit `?code=XXX` du querystring). L'utilisateur peut toujours le
+   * modifier avant soumission.
+   */
+  initialCode?: string;
 };
 
-export function JoinClassForm({ onJoined }: Props) {
+export function JoinClassForm({ onJoined, initialCode = "" }: Props) {
   const { t } = useI18n();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(initialCode.trim().toUpperCase());
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
