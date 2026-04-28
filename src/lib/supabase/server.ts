@@ -1,8 +1,9 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import type { Database } from "@/types/database";
+import { getSharedCookieOptions } from "./cookieOptions";
 
 /**
  * Supabase — clients serveur.
@@ -44,6 +45,13 @@ export async function createSupabaseServerClient() {
     );
   }
   const cookieStore = await cookies();
+  // Sprint fix-pkce-prod (28 avril 2026) — on lit le host de la requête
+  // courante pour décider du flag `secure` des cookies posés par
+  // exchangeCodeForSession (et tous les autres set côté serveur). Cohérence
+  // avec browser.ts qui lit window.location.protocol.
+  const requestHost = (await headers()).get("host") ?? "";
+  const sharedOptions = getSharedCookieOptions(requestHost);
+
   return createServerClient<Database>(
     SUPABASE_URL_PUBLIC,
     SUPABASE_ANON_KEY_PUBLIC,
@@ -53,7 +61,21 @@ export async function createSupabaseServerClient() {
         setAll: (cookiesToSet) => {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
+              cookieStore.set(name, value, {
+                // Sprint fix-pkce-prod : on merge nos options partagées
+                // avec celles du SDK pour garantir path/sameSite/secure
+                // cohérents avec browser.ts. Le SDK garde la main sur
+                // maxAge (qui diffère selon verifier vs session) et tout
+                // autre champ qu'il fournit.
+                ...sharedOptions,
+                ...options,
+                // On force les flags critiques pour être sûr de l'alignement
+                // browser ↔ server, condition nécessaire pour que le
+                // verifier posé client soit retrouvé serveur.
+                path: sharedOptions.path,
+                sameSite: sharedOptions.sameSite,
+                secure: sharedOptions.secure,
+              }),
             );
           } catch {
             // Server Components : `set` ne peut pas écrire les cookies. Normal.
