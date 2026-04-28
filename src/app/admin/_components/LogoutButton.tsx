@@ -5,7 +5,7 @@
 // en /admin/login par le proxy host-based).
 
 import { useState } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type Props = {
   label: string;

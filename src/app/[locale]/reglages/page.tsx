@@ -9,7 +9,7 @@ import { getTheme, onThemeChange, setTheme as setFieldTheme, type ThemePreferenc
 import { useAuth } from "@/hooks/useAuth";
 import { usePlan } from "@/hooks/usePlan";
 import { isAcademicEmail } from "@/lib/auth/academic-domains";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { LocaleLink } from "@/components/LocaleLink";
 import { getAdminLoginUrl } from "@/lib/admin-url";
 import { resolveEnv } from "@/lib/env";

@@ -15,7 +15,7 @@ const { supabaseHolder } = vi.hoisted(() => ({
   supabaseHolder: { client: null as MockClient | null },
 }));
 
-vi.mock("@/lib/supabase/client", () => ({
+vi.mock("@/lib/supabase/browser", () => ({
   getSupabaseBrowserClient: () => supabaseHolder.client,
 }));
 

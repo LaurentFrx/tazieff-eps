@@ -1,29 +1,24 @@
 "use client";
 
-// Phase E.2.2.5 — Provider d'auth pour l'espace enseignant (sous-domaine prof).
+// Sprint A3 — TeacherAuthProvider est désormais un alias d'IdentityProvider
+// en mode="prof". Conservé pour compat avec /prof/layout.tsx qui le monte,
+// et le hook useTeacherAuthContext() (re-export de useIdentity sous l'ancien
+// type `TeacherAuthContextValue`).
 //
-// DIFFÉRENCE FONDAMENTALE avec AuthProvider (espace élève) :
-//   - NE déclenche PAS `signInAnonymously()` au montage
-//   - Écoute uniquement `onAuthStateChange` pour détecter les sessions magic link
-//   - Expose un context dédié `TeacherAuthContext`
+// Nouveau code : préférer IdentityProvider mode="prof" + useTeacherSession()
+// (cf. src/lib/auth/IdentityContext.tsx + src/lib/auth/sessions.ts).
 //
-// Cela évite le bug E.2.2 où l'anonymous session préalable faisait interpréter
-// le signInWithOtp comme un "Confirm Email Change" (updateUser-like).
-//
-// Utilisé par src/app/prof/layout.tsx uniquement. Le middleware garantit que
-// ce layout est monté SEULEMENT sur les hosts prof.muscu-eps.fr et
-// design-prof.muscu-eps.fr, jamais sur muscu-eps.fr/design.muscu-eps.fr.
+// Différence fonctionnelle préservée vs AuthProvider (espace élève) :
+//   - Pas de signInAnonymously au montage (effectiveDisable = true)
+//   - Évite le bug E.2.2 où l'anonymous session faisait interpréter
+//     signInWithOtp comme un "Confirm Email Change" (updateUser-like).
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { useMemo, type ReactNode } from "react";
 import type { User } from "@supabase/supabase-js";
-import { getSupabaseBrowserClient } from "./browser";
+import {
+  IdentityProvider,
+  useIdentity,
+} from "@/lib/auth/IdentityContext";
 
 export type TeacherAuthContextValue = {
   /** User Supabase courant ou null. Pas d'anonymous sur l'espace prof. */
@@ -32,78 +27,25 @@ export type TeacherAuthContextValue = {
   isLoading: boolean;
 };
 
-const TeacherAuthContext = createContext<TeacherAuthContextValue>({
-  user: null,
-  isLoading: true,
-});
-
 export function TeacherAuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Initialisation : on lit la session existante (magic link déjà consommé)
-  // mais on NE fait AUCUN sign-in automatique.
-  useEffect(() => {
-    let cancelled = false;
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) {
-      setIsLoading(false);
-      return;
-    }
-
-    supabase.auth
-      .getSession()
-      .then(({ data }) => {
-        if (cancelled) return;
-        setUser(data.session?.user ?? null);
-        setIsLoading(false);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setIsLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // Écoute des changements de session (retour depuis magic link, signOut, etc.)
-  useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const value = useMemo<TeacherAuthContextValue>(
-    () => ({ user, isLoading }),
-    [user, isLoading],
-  );
-
   return (
-    <TeacherAuthContext.Provider value={value}>
+    <IdentityProvider mode="prof" disableAnonymousFallback>
       {children}
-    </TeacherAuthContext.Provider>
+    </IdentityProvider>
   );
 }
 
 /**
- * Hook de consommation du TeacherAuthContext. À utiliser dans tout composant
- * du sous-arbre /prof/* (layout, pages, composants enfants).
+ * Hook de consommation — alias de useIdentity() restreint au mode prof.
  *
- * Ne PAS confondre avec `useTeacherAuth()` de `src/hooks/useTeacherAuth.ts`
- * qui, lui, dépend du AuthContext anonymous (espace élève / flow hérité
- * TeacherAuth.tsx dans /reglages).
+ * Ne PAS confondre avec `useTeacherAuth()` (zombie supprimé en A3). Le hook
+ * de référence pour l'espace prof est désormais `useTeacherSession()` dans
+ * `@/lib/auth/sessions`, qui expose en plus signInWithEmail / signOut.
  */
 export function useTeacherAuthContext(): TeacherAuthContextValue {
-  return useContext(TeacherAuthContext);
+  const identity = useIdentity();
+  return useMemo<TeacherAuthContextValue>(
+    () => ({ user: identity.user, isLoading: identity.isLoading }),
+    [identity.user, identity.isLoading],
+  );
 }

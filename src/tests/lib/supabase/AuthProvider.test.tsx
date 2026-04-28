@@ -1,9 +1,9 @@
 // Sprint P0.7-sexies — Tests du AuthProvider (élève).
-//
-// Garantit le contrat critique pour le miroir admin : si une session
-// existe en cookies au mount, AuthProvider DOIT setUser(session.user) et
-// NE PAS appeler signInAnonymously. Tout écart = régression du fix
-// P0.7-quinquies (alignement client.ts ↔ browser.ts).
+// Sprint A3 — AuthProvider est désormais un alias d'IdentityProvider en
+// mode="eleve". Le contrat critique reste identique (cf. tests ci-dessous) :
+// si une session existe en cookies au mount, on ne déclenche PAS
+// signInAnonymously. Le mock cible désormais `getSupabaseBrowserClient`
+// (synchrone, source unique post-A3) au lieu de l'ancien wrapper async.
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, waitFor } from "@testing-library/react";
@@ -15,16 +15,14 @@ const onAuthStateChangeMock = vi.fn(() => ({
   data: { subscription: { unsubscribe: vi.fn() } },
 }));
 
-vi.mock("@/lib/supabase/client", () => ({
-  getSupabaseBrowserClientAsync: vi.fn(() =>
-    Promise.resolve({
-      auth: {
-        getSession: getSessionMock,
-        signInAnonymously: signInAnonymouslyMock,
-        onAuthStateChange: onAuthStateChangeMock,
-      },
-    }),
-  ),
+vi.mock("@/lib/supabase/browser", () => ({
+  getSupabaseBrowserClient: vi.fn(() => ({
+    auth: {
+      getSession: getSessionMock,
+      signInAnonymously: signInAnonymouslyMock,
+      onAuthStateChange: onAuthStateChangeMock,
+    },
+  })),
 }));
 
 import { AuthProvider, AuthContext } from "@/lib/supabase/AuthProvider";

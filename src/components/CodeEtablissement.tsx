@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 const ORG_CODE_KEY = "tazieff-org-code";
 const PLAN_CACHE_KEY = "tazieff-plan-cache";

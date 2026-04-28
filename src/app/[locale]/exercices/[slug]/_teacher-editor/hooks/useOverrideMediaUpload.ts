@@ -24,7 +24,7 @@ import type {
   ExerciseLiveMediaBlock,
   ExerciseLiveSection,
 } from "@/lib/live/types";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type {
   MediaInfo,
   MediaResolveStatus,

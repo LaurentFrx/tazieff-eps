@@ -50,7 +50,7 @@ import type {
   ExerciseOverridePatch,
   LiveExerciseRow,
 } from "@/lib/live/types";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { useReveal } from "@/hooks/useReveal";
 import "./exercise-detail.css";
 import {
@@ -904,7 +904,10 @@ export function ExerciseLiveDetail({
       if (!active) {
         return;
       }
-      setPatch(data?.patch_json ?? null);
+      // Sprint A3 — cast explicite : le client typé Database expose patch_json
+      // comme `Json` générique, alors que le runtime sait qu'il s'agit d'un
+      // ExerciseOverridePatch validé en POST. Migration A3 (client.ts → browser.ts).
+      setPatch((data?.patch_json as ExerciseOverridePatch | null) ?? null);
     };
 
     const fetchLive = async () => {
@@ -925,9 +928,13 @@ export function ExerciseLiveDetail({
       if (source !== "live" || !data?.data_json) {
         return;
       }
+      // Sprint A3 — cast explicite : le client typé Database expose data_json
+      // comme `Json` générique, alors que le runtime sait qu'il s'agit d'un
+      // LiveExerciseRow["data_json"] (validé à l'écriture par la route API).
+      const liveDoc = data.data_json as LiveExerciseRow["data_json"];
       setBase({
-        frontmatter: data.data_json.frontmatter,
-        content: data.data_json.content,
+        frontmatter: liveDoc.frontmatter,
+        content: liveDoc.content,
       });
     };
 

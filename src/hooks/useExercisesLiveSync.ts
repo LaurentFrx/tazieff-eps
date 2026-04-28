@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { LiveExerciseRow } from "@/lib/live/types";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 const POLL_INTERVAL_MS = 20_000;
 

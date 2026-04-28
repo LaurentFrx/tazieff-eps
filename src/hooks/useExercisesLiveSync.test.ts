@@ -46,7 +46,7 @@ const mockSupabase = {
   removeChannel: mockRemoveChannel,
 };
 
-vi.mock("@/lib/supabase/client", () => ({
+vi.mock("@/lib/supabase/browser", () => ({
   getSupabaseBrowserClient: () => mockSupabase,
 }));
 
