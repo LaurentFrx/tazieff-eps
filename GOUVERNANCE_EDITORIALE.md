@@ -1,6 +1,6 @@
 # Gouvernance éditoriale Tazieff EPS
 
-**Version 1.0 — 26 avril 2026**
+**Version 1.1 — 28 avril 2026**
 **Source de vérité pour toute décision d'architecture, de permissions et d'affichage de contenu pédagogique.**
 
 Ce document est la référence canonique. Toute évolution du code touchant à l'authentification, à l'édition de contenu, à la lecture côté élève, ou à l'affichage différencié doit être conforme à ce qui est écrit ici. En cas de doute, ce document prime sur l'existant.
@@ -78,7 +78,30 @@ Quatre portées disponibles :
 | `class`           | `class`                      | Tous les élèves d'une classe                    |
 | `school`          | `school`                     | Tous les élèves de l'établissement              |
 
-**Affichage côté élève :** indistinguable du contenu officiel. Pas de badge, pas d'encadré, pas de signalétique « annotation prof ». L'annotation se substitue ou s'ajoute au texte officiel dans le flux normal de la fiche, comme si elle en faisait partie. C'est une exigence pédagogique forte : l'élève suit la consigne sans distraction sur sa source.
+**Affichage côté élève : pattern post-it Google Docs.**
+
+Quand un élève ouvre un exercice, les annotations prof visibles selon son scope (annotations de ses propres profs via `class_enrollments`, annotations `school` de son établissement) sont affichées en post-it stylisé après le paragraphe officiel concerné.
+
+Spécifications du post-it :
+
+- Encadré visuellement distinct (bordure latérale colorée, fond légèrement teinté)
+- En-tête : icône (crayon ou post-it) + nom du prof (prénom + première lettre du nom, ou nom complet selon préférences prof)
+- Corps : contenu de l'annotation, formaté en markdown
+- Position : juste après le paragraphe officiel correspondant, jamais en remplacement
+- Le contenu officiel reste intégralement visible et inchangé
+
+Cas particuliers :
+
+- Plusieurs annotations sur le même paragraphe : chaque post-it est rendu séparément, dans l'ordre chronologique de création
+- Annotation `scope=student` (cible un élève précis) : affichée uniquement pour cet élève, même rendu post-it
+- Annotation `scope=school` : même rendu, en-tête peut indiquer prof + établissement si plusieurs profs dans le lycée
+
+Justification de cette décision (28 avril 2026) :
+
+- Clarté pédagogique : l'élève sait qui a écrit quoi
+- Autorité pédagogique : l'annotation prof a une visibilité reconnaissante
+- Réversibilité : si une annotation est supprimée, le contenu officiel est intact
+- Cohérence avec la métaphore « manuel scolaire annoté » : le manuel reste, les post-it s'ajoutent
 **Affichage côté super_admin :** distinct (police + couleur dédiée), avec mention de l'auteur et de la portée. Tu dois pouvoir, depuis n'importe quelle fiche, voir qui a annoté quoi pour qui.
 **Modération :** a posteriori. L'annotation est immédiatement visible par ses destinataires dès qu'elle est sauvegardée. Le super_admin reçoit une notification et peut valider, supprimer, ou alerter l'auteur.
 
@@ -121,12 +144,12 @@ Trois polices/couleurs canoniques à définir dans le design system Sport Vibran
 | Couche                    | Visible pour     | Police + couleur                                            |
 | ------------------------- | ---------------- | ----------------------------------------------------------- |
 | Contenu officiel + override | Tous             | Police corps standard (DM Sans), couleur texte standard     |
-| Annotations prof           | Élèves destinataires | **Indistinct du contenu officiel** (exigence pédagogique) |
+| Annotations prof           | Élèves destinataires | **Post-it stylisé** avec attribution explicite (nom du prof) — voir §3.2 |
 | Annotations prof           | Super_admin      | Police + couleur dédiées (à définir, distinctes du carnet)  |
 | Carnet personnel élève     | Élève propriétaire | Police + couleur dédiées (à définir)                       |
 | Override admin             | Super_admin      | Police + couleur dédiées (distinctes des annotations)       |
 
-L'élève ne distingue jamais une annotation prof du contenu officiel. Le super_admin distingue toujours qui a écrit quoi.
+L'élève distingue clairement les annotations prof du contenu officiel grâce au pattern post-it (cf. §3.2). Le super_admin a une vue encore plus différenciée (police + couleur dédiées, mention de l'auteur et de la portée).
 
 ---
 
@@ -164,3 +187,10 @@ Volontairement laissé ouvert pour itération future :
 ---
 
 **Toute évolution de ce document doit être discutée avec le super_admin avant implémentation.**
+
+---
+
+## Changelog
+
+- **v1.1 (2026-04-28)** : Affichage des annotations côté élève changé de « indistinct sans badge » à « post-it visible avec attribution explicite » (décision Laurent). Mise à jour cohérente du tableau §5 et de sa phrase de synthèse.
+- **v1.0 (2026-04-26)** : Version initiale.
