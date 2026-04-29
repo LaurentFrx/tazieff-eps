@@ -5,22 +5,32 @@ import { Bebas_Neue, DM_Sans, JetBrains_Mono } from "next/font/google";
 import { resolveEnv } from "@/lib/env";
 import "./globals.css";
 
+// Sprint perf-quick-wins (29 avril 2026) — `display: "optional"` sur les
+// 3 polices Google. Comportement : si la police est dans le cache navigateur,
+// elle est utilisée immédiatement ; sinon le fallback système est conservé
+// au premier paint et la police custom n'est appliquée qu'aux visites
+// suivantes. Élimine le FOIT/FOUT qui contribuait au CLS 0.164 mesuré.
+// `adjustFontFallback: true` (valeur par défaut Next.js) calibre les métriques
+// du fallback pour minimiser le shift quand la police custom finit par s'appliquer.
 const bebasNeue = Bebas_Neue({
   subsets: ["latin"],
   variable: "--font-bebas",
   weight: ["400"],
+  display: "optional",
 });
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-dm-sans",
   weight: ["300", "400", "500", "600", "700"],
+  display: "optional",
 });
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-jetbrains",
   weight: ["300", "400", "700"],
+  display: "optional",
 });
 
 const splashScript = readFileSync(join(process.cwd(), "public/splash.js"), "utf8");
@@ -76,6 +86,19 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* Sprint perf-quick-wins (29 avril 2026) — preconnect + dns-prefetch
+            vers Supabase pour économiser ~80ms sur le LCP. Le projet
+            zefkltkiigxkjcrdesrk est l'unique backend (élève + prof + admin).
+            Cf. CLAUDE.md §13. */}
+        <link
+          rel="preconnect"
+          href="https://zefkltkiigxkjcrdesrk.supabase.co"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="dns-prefetch"
+          href="https://zefkltkiigxkjcrdesrk.supabase.co"
+        />
         <script dangerouslySetInnerHTML={{ __html: splashScript }} />
       </head>
       <body className={`${bebasNeue.variable} ${dmSans.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
