@@ -105,7 +105,7 @@ requestAnimationFrame(function(){
     setTimeout(function(){mann.style.transition="opacity 1.2s ease, filter 1s ease";mann.style.opacity="1"},600);
   },400);
   setTimeout(function(){
-    scan.style.transition="top 2s ease-in-out, opacity 0.3s ease";scan.style.opacity="1";scan.style.top="90%";
+    scan.style.transition="top 1.333s ease-in-out, opacity 0.3s ease";scan.style.opacity="1";scan.style.top="90%";
     mann.style.filter="brightness(0.9) contrast(1.2) drop-shadow(0 0 12px #00E5FF40) drop-shadow(0 0 25px #7B2FFF1F)";
     crossH.style.transition="opacity 0.8s ease";crossH.style.opacity="1";
     crossV.style.transition="opacity 0.8s ease";crossV.style.opacity="1";
