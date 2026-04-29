@@ -77,6 +77,30 @@ export function applyExercisePatch(
   }
 
   if (isLiveDocV2(patch)) {
+    // Sprint E.3 — fusionne frontmatterPatch dans le frontmatter merged pour
+    // que le rendu côté élève lise transparente `merged.frontmatter.<champ>`
+    // sans connaître l'existence du patch override. Rétrocompatible : un
+    // override v2 sans frontmatterPatch retourne exactement le base.frontmatter.
+    const fmPatch = patch.doc.frontmatterPatch;
+    if (fmPatch) {
+      const mergedFrontmatter: ExerciseFrontmatter = {
+        ...base.frontmatter,
+        ...(fmPatch.methodes_compatibles !== undefined
+          ? { methodes_compatibles: fmPatch.methodes_compatibles }
+          : {}),
+        ...(fmPatch.exercices_similaires !== undefined
+          ? { exercices_similaires: fmPatch.exercices_similaires }
+          : {}),
+        ...(fmPatch.consignes_securite !== undefined
+          ? { consignes_securite: fmPatch.consignes_securite }
+          : {}),
+      };
+      return {
+        frontmatter: mergedFrontmatter,
+        content: base.content,
+        override: patch,
+      };
+    }
     return {
       frontmatter: base.frontmatter,
       content: base.content,

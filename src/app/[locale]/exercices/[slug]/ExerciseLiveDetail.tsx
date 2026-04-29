@@ -64,6 +64,11 @@ import { useOverrideSave } from "./_teacher-editor/hooks/useOverrideSave";
 import InlineTitleEditor from "./_teacher-editor/InlineTitleEditor";
 import InlineParagraphEditor from "./_teacher-editor/InlineParagraphEditor";
 import InlineListEditor from "./_teacher-editor/InlineListEditor";
+import LinksPanel from "./_teacher-editor/LinksPanel";
+import {
+  SECTION_TITLE_MATCHERS,
+  type InlineParagraphKey,
+} from "./_teacher-editor/section-matchers";
 import { useOverrideMediaUpload } from "./_teacher-editor/hooks/useOverrideMediaUpload";
 import { useOverrideUI } from "./_teacher-editor/hooks/useOverrideUI";
 import { usePillDropdown } from "./_teacher-editor/hooks/usePillDropdown";
@@ -201,25 +206,10 @@ function buildSectionsFromContent(
   return result;
 }
 
-// Phase E.2 — clés logiques pour l'édition inline des paragraphes simples.
-// Hotfix 28 avril 2026 — étendu à "execution" et "conseils" (listes
-// markdown) pour combler le gap d'édition sur ces deux sections.
-type InlineParagraphKey =
-  | "resume"
-  | "respiration"
-  | "securite"
-  | "execution"
-  | "conseils";
-
-// Matchers de titres de section (FR primaire, accents insensibles) — utilisés
-// pour localiser la section cible dans l'override doc lors de l'édition inline.
-const SECTION_TITLE_MATCHERS: Record<InlineParagraphKey, RegExp> = {
-  resume: /^r[eé]sum[eé]$/i,
-  respiration: /^respiration$/i,
-  securite: /^s[eé]curit[eé]$/i,
-  execution: /^ex[eé]cution$/i,
-  conseils: /^conseils?$/i,
-};
+// Phase E.2 / Hotfix 28 avril 2026 / Sprint E.3 (28 avril 2026) :
+// `InlineParagraphKey` et `SECTION_TITLE_MATCHERS` ont été extraits dans
+// `./_teacher-editor/section-matchers.ts` pour être testables indépendamment.
+// Ils sont importés en tête de fichier.
 
 function buildOverrideDoc(
   base: { frontmatter: ExerciseFrontmatter; content: string },
@@ -671,6 +661,42 @@ export function ExerciseLiveDetail({
       setOverrideDoc,
       handleSaveOverride,
     ],
+  );
+
+  // Sprint E.3 (28 avril 2026) — handler de sauvegarde pour les champs
+  // frontmatter qui n'ont pas de section markdown dédiée :
+  //   - consignes_securite (string court, distinct de la section ## Sécurité)
+  //   - methodes_compatibles (slugs de content/methodes/<slug>.<locale>.mdx)
+  //   - exercices_similaires (slugs de content/exercices/<slug>.<locale>.mdx)
+  //
+  // Persistence dans `overrideDoc.doc.frontmatterPatch` (extension
+  // rétrocompatible de ExerciseLiveDocV2). `applyExercisePatch()` côté
+  // lecture fusionne ce patch dans le frontmatter, donc le rendu lit
+  // simplement merged.frontmatter.<champ>.
+  const handleFrontmatterPatchSave = useCallback(
+    async (
+      patchPartial: Partial<{
+        consignes_securite: string;
+        methodes_compatibles: string[];
+        exercices_similaires: string[];
+      }>,
+    ) => {
+      const baseDoc: ExerciseLiveDocV2 =
+        overrideDoc ?? buildOverrideDoc(base, patch);
+      const nextDoc: ExerciseLiveDocV2 = {
+        ...baseDoc,
+        doc: {
+          ...baseDoc.doc,
+          frontmatterPatch: {
+            ...(baseDoc.doc.frontmatterPatch ?? {}),
+            ...patchPartial,
+          },
+        },
+      };
+      setOverrideDoc(nextDoc);
+      await handleSaveOverride();
+    },
+    [overrideDoc, base, patch, setOverrideDoc, handleSaveOverride],
   );
 
   const overrideUIHookValue = useOverrideUI({
@@ -1558,6 +1584,67 @@ export function ExerciseLiveDetail({
           securite={merged.frontmatter.consignes_securite ?? ''}
         />
       </div>
+
+      {/* ─── 4 bis. EDITION ADMIN (Sprint E.3 — 28 avril 2026)
+           Affiche, sous le bloc lecteur, deux éditeurs inline visibles
+           uniquement en mode admin :
+             - Section ## Dosage (markdown brut, parsé ensuite par
+               ExerciseQuickInfo pour produire les colonnes Sets/Reps/Rest)
+             - Frontmatter consignes_securite (texte court, persisté via
+               frontmatterPatch dans l'override v2)
+           Hors mode admin, ce bloc n'apparaît pas et le rendu lecteur
+           ci-dessus reste inchangé. ─── */}
+      {isAdmin ? (
+        <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/5 p-4">
+          <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-300/70">
+            {t("exerciseEditor.dosageAdminPanel")}
+          </p>
+          <div className="stack-sm">
+            <label className="text-xs font-semibold uppercase tracking-[0.15em] text-white/60">
+              {t("exerciseEditor.editDosageLabel")}
+            </label>
+            <InlineParagraphEditor
+              initialValue={parsedSections.dosage?.body ?? ''}
+              onSave={(newBody) => handleInlineParagraphSave('dosage', newBody)}
+              onError={(message) => showOverrideToast(message, "error")}
+              ariaLabel={t("exerciseEditor.editDosageAriaLabel")}
+              placeholder={t("exerciseEditor.editDosagePlaceholder")}
+              saveLabel={t("exerciseEditor.editParagraphSaveLabel")}
+              sectionKey="dosage"
+              className="text-sm leading-relaxed"
+            />
+          </div>
+          <div className="stack-sm mt-4">
+            <label className="text-xs font-semibold uppercase tracking-[0.15em] text-white/60">
+              {t("exerciseEditor.editConsignesSecuriteLabel")}
+            </label>
+            <InlineParagraphEditor
+              initialValue={merged.frontmatter.consignes_securite ?? ''}
+              onSave={(newValue) =>
+                handleFrontmatterPatchSave({ consignes_securite: newValue })
+              }
+              onError={(message) => showOverrideToast(message, "error")}
+              ariaLabel={t("exerciseEditor.editConsignesSecuriteAriaLabel")}
+              placeholder={t("exerciseEditor.editConsignesSecuritePlaceholder")}
+              saveLabel={t("exerciseEditor.editParagraphSaveLabel")}
+              sectionKey="consignes_securite"
+              className="text-sm leading-relaxed"
+            />
+          </div>
+          <div className="mt-4">
+            <LinksPanel
+              methodesValue={merged.frontmatter.methodes_compatibles ?? []}
+              exercicesValue={merged.frontmatter.exercices_similaires ?? []}
+              onChangeMethodes={(next) =>
+                handleFrontmatterPatchSave({ methodes_compatibles: next })
+              }
+              onChangeExercices={(next) =>
+                handleFrontmatterPatchSave({ exercices_similaires: next })
+              }
+            />
+          </div>
+        </div>
+      ) : null}
 
       {/* ─── 5. TIMER REPOS ─── */}
       <div ref={timerRef as React.RefObject<HTMLDivElement>} className="tap-feedback">

@@ -36,12 +36,33 @@ export type ExerciseLiveSection = {
   blocks: Array<ExerciseLiveMarkdownBlock | ExerciseLiveBulletsBlock | ExerciseLiveMediaBlock>;
 };
 
+/**
+ * Sprint E.3 (28 avril 2026) — patch ciblé des champs frontmatter qui n'ont
+ * pas de représentation native dans `pills` ou `sections`. Sert à persister
+ * dans la couche override admin :
+ *   - `methodes_compatibles` : slugs vers content/methodes/<slug>.<locale>.mdx
+ *   - `exercices_similaires` : slugs vers content/exercices/<slug>.<locale>.mdx
+ *   - `consignes_securite` : courte consigne affichée par ExerciseQuickInfo
+ *
+ * Optionnel et rétrocompatible : un override v2 sans `frontmatterPatch`
+ * continue de fonctionner exactement comme avant. Côté lecture,
+ * `applyExercisePatch()` fusionne ce patch dans le frontmatter pour que le
+ * reste du rendu lise simplement `merged.frontmatter.<champ>`.
+ */
+export type ExerciseLiveFrontmatterPatch = {
+  methodes_compatibles?: string[];
+  exercices_similaires?: string[];
+  consignes_securite?: string;
+};
+
 export type ExerciseLiveDocV2 = {
   version: 2;
   doc: {
     heroImage?: { url: string; alt?: string };
     pills?: Array<{ label: string; kind?: string }>;
     sections: ExerciseLiveSection[];
+    /** Phase E.3 (28 avril 2026) — patch des champs frontmatter sans pills. */
+    frontmatterPatch?: ExerciseLiveFrontmatterPatch;
   };
 };
 

@@ -135,4 +135,100 @@ describe("applyExercisePatch", () => {
     applyExercisePatch(base, patch);
     expect(base.content).toBe(snapshot);
   });
+
+  // Sprint E.3 (28 avril 2026) — frontmatterPatch est un ajout rétrocompatible
+  // qui permet d'overrider methodes_compatibles, exercices_similaires et
+  // consignes_securite côté admin sans toucher au frontmatter MDX original.
+  describe("frontmatterPatch (Sprint E.3)", () => {
+    it("ne touche pas au frontmatter quand frontmatterPatch est absent", () => {
+      const patch: ExerciseLiveDocV2 = {
+        version: 2,
+        doc: { sections: [] },
+      };
+      const result = applyExercisePatch(base, patch);
+      expect(result.frontmatter).toBe(BASE_FRONTMATTER);
+      expect(result.override).toBe(patch);
+    });
+
+    it("merge frontmatterPatch.consignes_securite dans le frontmatter retourné", () => {
+      const patch: ExerciseLiveDocV2 = {
+        version: 2,
+        doc: {
+          sections: [],
+          frontmatterPatch: { consignes_securite: "Bassin neutre, dos plat." },
+        },
+      };
+      const result = applyExercisePatch(base, patch);
+      expect(result.frontmatter.consignes_securite).toBe("Bassin neutre, dos plat.");
+      // Les autres champs frontmatter restent inchangés.
+      expect(result.frontmatter.title).toBe(BASE_FRONTMATTER.title);
+      expect(result.frontmatter.slug).toBe(BASE_FRONTMATTER.slug);
+    });
+
+    it("merge frontmatterPatch.methodes_compatibles dans le frontmatter retourné", () => {
+      const patch: ExerciseLiveDocV2 = {
+        version: 2,
+        doc: {
+          sections: [],
+          frontmatterPatch: {
+            methodes_compatibles: ["amrap", "circuit-training"],
+          },
+        },
+      };
+      const result = applyExercisePatch(base, patch);
+      expect(result.frontmatter.methodes_compatibles).toEqual([
+        "amrap",
+        "circuit-training",
+      ]);
+    });
+
+    it("merge frontmatterPatch.exercices_similaires dans le frontmatter retourné", () => {
+      const patch: ExerciseLiveDocV2 = {
+        version: 2,
+        doc: {
+          sections: [],
+          frontmatterPatch: {
+            exercices_similaires: ["s1-02", "s1-03"],
+          },
+        },
+      };
+      const result = applyExercisePatch(base, patch);
+      expect(result.frontmatter.exercices_similaires).toEqual(["s1-02", "s1-03"]);
+    });
+
+    it("merge plusieurs champs frontmatterPatch en un seul passage", () => {
+      const patch: ExerciseLiveDocV2 = {
+        version: 2,
+        doc: {
+          sections: [],
+          frontmatterPatch: {
+            methodes_compatibles: ["amrap"],
+            exercices_similaires: ["s2-01"],
+            consignes_securite: "Garde la respiration continue.",
+          },
+        },
+      };
+      const result = applyExercisePatch(base, patch);
+      expect(result.frontmatter.methodes_compatibles).toEqual(["amrap"]);
+      expect(result.frontmatter.exercices_similaires).toEqual(["s2-01"]);
+      expect(result.frontmatter.consignes_securite).toBe(
+        "Garde la respiration continue.",
+      );
+    });
+
+    it("ne mute pas le base.frontmatter d'origine quand frontmatterPatch est appliqué", () => {
+      const patch: ExerciseLiveDocV2 = {
+        version: 2,
+        doc: {
+          sections: [],
+          frontmatterPatch: { consignes_securite: "X" },
+        },
+      };
+      const result = applyExercisePatch(base, patch);
+      // Le frontmatter retourné contient le patch…
+      expect(result.frontmatter.consignes_securite).toBe("X");
+      // …mais l'objet d'origine (BASE_FRONTMATTER) reste intact.
+      expect(BASE_FRONTMATTER.consignes_securite).toBeUndefined();
+    });
+  });
 });
