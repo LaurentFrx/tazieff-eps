@@ -68,6 +68,9 @@ export async function PATCH(
     patch.visibility_scope = input.visibility_scope;
   if (input.scope_id !== undefined) patch.scope_id = input.scope_id;
   if (input.needs_review !== undefined) patch.needs_review = input.needs_review;
+  // Sprint E.4 — réancrage paragraphe possible (laisse null pour "general").
+  if (input.section_target !== undefined)
+    (patch as Record<string, unknown>).section_target = input.section_target;
 
   if (Object.keys(patch).length === 0) {
     return jsonError(400, "validation", {

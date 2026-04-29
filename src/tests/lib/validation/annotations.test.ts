@@ -288,3 +288,86 @@ describe("AnnotationContentSchema", () => {
     expect(r.success).toBe(false);
   });
 });
+
+// Sprint E.4 (29 avril 2026) — section_target ancrage paragraphe.
+describe("CreateAnnotationSchema — section_target (Sprint E.4)", () => {
+  it("accepte section_target='general' explicite", () => {
+    const r = CreateAnnotationSchema.safeParse({
+      organization_id: ORG,
+      exercise_slug: "s1-01",
+      content: { notes: "x" },
+      section_target: "general",
+    });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.section_target).toBe("general");
+  });
+
+  it("accepte chaque clé InlineParagraphKey (resume/execution/respiration/conseils/securite/dosage)", () => {
+    const keys = [
+      "resume",
+      "execution",
+      "respiration",
+      "conseils",
+      "securite",
+      "dosage",
+    ] as const;
+    for (const key of keys) {
+      const r = CreateAnnotationSchema.safeParse({
+        organization_id: ORG,
+        exercise_slug: "s1-01",
+        content: { notes: "x" },
+        section_target: key,
+      });
+      expect(r.success).toBe(true);
+    }
+  });
+
+  it("accepte section_target absent (équivaut à 'general' côté UI)", () => {
+    const r = CreateAnnotationSchema.safeParse({
+      organization_id: ORG,
+      exercise_slug: "s1-01",
+      content: { notes: "x" },
+    });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.section_target).toBeUndefined();
+  });
+
+  it("accepte section_target null explicite", () => {
+    const r = CreateAnnotationSchema.safeParse({
+      organization_id: ORG,
+      exercise_slug: "s1-01",
+      content: { notes: "x" },
+      section_target: null,
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it("rejette une valeur hors enum (ex: 'summary' EN au lieu de 'resume' FR)", () => {
+    const r = CreateAnnotationSchema.safeParse({
+      organization_id: ORG,
+      exercise_slug: "s1-01",
+      content: { notes: "x" },
+      section_target: "summary",
+    });
+    expect(r.success).toBe(false);
+  });
+});
+
+describe("UpdateAnnotationSchema — section_target (Sprint E.4)", () => {
+  it("accepte un PATCH ne contenant que section_target", () => {
+    const r = UpdateAnnotationSchema.safeParse({ section_target: "dosage" });
+    expect(r.success).toBe(true);
+  });
+
+  it("rejette un PATCH avec section_target invalide", () => {
+    const r = UpdateAnnotationSchema.safeParse({
+      section_target: "header",
+    });
+    expect(r.success).toBe(false);
+  });
+
+  it("accepte section_target null pour réancrer à 'general'", () => {
+    const r = UpdateAnnotationSchema.safeParse({ section_target: null });
+    expect(r.success).toBe(true);
+  });
+});
