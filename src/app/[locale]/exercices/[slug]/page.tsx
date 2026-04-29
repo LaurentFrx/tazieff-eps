@@ -8,6 +8,8 @@ import { getImportedExercisesIndex } from "@/lib/exercices/getImportedExercisesI
 import { getExercisesIndex } from "@/lib/exercices/getExercisesIndex";
 import { applyExercisePatch } from "@/lib/live/patch";
 import { fetchExerciseOverride, fetchLiveExercise } from "@/lib/live/queries";
+import { fetchStudentAnnotations } from "@/lib/live/student-annotations";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ExerciseLiveDetail } from "@/app/[locale]/exercices/[slug]/ExerciseLiveDetail";
 // RSC: useI18n() unavailable — read lang from cookie via getServerLang()
 import { getServerLang, getServerT } from "@/lib/i18n/server";
@@ -192,6 +194,19 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
   ]);
   const initialPatch = override?.patch_json ?? null;
 
+  // Sprint E.4 (29 avril 2026) — fetch annotations prof côté serveur pour
+  // affichage en post-it sous chaque paragraphe officiel. Dégradation
+  // gracieuse : si erreur ou anonyme, retourne array vide (cf. helper).
+  const initialAnnotations = await (async () => {
+    try {
+      const supabase = await createSupabaseServerClient();
+      return await fetchStudentAnnotations(supabase, slug, locale);
+    } catch (err) {
+      console.warn("[exercice page] fetchStudentAnnotations failed:", err);
+      return [];
+    }
+  })();
+
   const categoryLabels: Record<string, string> = {
     "endurance-de-force": t("methodes.categories.endurance-de-force"),
     "gain-de-volume": t("methodes.categories.gain-de-volume"),
@@ -246,6 +261,7 @@ export default async function ExercicePage({ params }: ExercicePageProps) {
         initialPatch={initialPatch}
         onRevalidate={revalidateExercises}
         sessionSiblings={sessionSiblings}
+        initialAnnotations={initialAnnotations}
       />
 
       {compatibleMethodes.length > 0 ? (

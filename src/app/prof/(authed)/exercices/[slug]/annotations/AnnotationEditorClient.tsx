@@ -7,13 +7,40 @@ import { useEffect, useMemo, useState } from "react";
 import type { Database } from "@/types/database";
 import styles from "./annotations.module.css";
 
-type AnnotationRow = Database["public"]["Tables"]["teacher_annotations"]["Row"];
+type AnnotationRow = Database["public"]["Tables"]["teacher_annotations"]["Row"] & {
+  // Sprint E.4 — section_target a été ajouté à la table par migration et
+  // est lu par l'API. Le type Database généré peut ne pas l'inclure si
+  // les types n'ont pas été regen. On l'expose explicitement ici pour
+  // que le composant compile sans erreur en attendant le re-génération.
+  section_target?: string | null;
+};
 type AnnotationContent = {
   title?: string;
   notes?: string;
 };
 
 type VisibilityScope = "private" | "class" | "school";
+
+// Sprint E.4 — sections cibles d'une annotation, alignées sur
+// InlineParagraphKey (cf. _teacher-editor/section-matchers.ts) + 'general'.
+type SectionTarget =
+  | "general"
+  | "resume"
+  | "execution"
+  | "respiration"
+  | "conseils"
+  | "securite"
+  | "dosage";
+
+const SECTION_TARGET_OPTIONS: Array<{ value: SectionTarget; label: string }> = [
+  { value: "general", label: "Toute la fiche" },
+  { value: "resume", label: "Résumé" },
+  { value: "execution", label: "Exécution" },
+  { value: "respiration", label: "Respiration" },
+  { value: "conseils", label: "Conseils" },
+  { value: "securite", label: "Sécurité" },
+  { value: "dosage", label: "Dosage" },
+];
 
 type Organization = { id: string; name: string };
 type ClassItem = { id: string; name: string; organization_id: string };
@@ -56,6 +83,7 @@ export default function AnnotationEditorClient({
   const [orgId, setOrgId] = useState(organizations[0]?.id ?? "");
   const [scope, setScope] = useState<VisibilityScope>("private");
   const [classId, setClassId] = useState("");
+  const [sectionTarget, setSectionTarget] = useState<SectionTarget>("general");
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -67,6 +95,7 @@ export default function AnnotationEditorClient({
       setOrgId(organizations[0]?.id ?? "");
       setScope("private");
       setClassId("");
+      setSectionTarget("general");
       setErrorMsg(null);
       return;
     }
@@ -81,6 +110,9 @@ export default function AnnotationEditorClient({
     setOrgId(current.organization_id);
     setScope(current.visibility_scope as VisibilityScope);
     setClassId(current.scope_id ?? "");
+    setSectionTarget(
+      (current.section_target as SectionTarget | null) ?? "general",
+    );
     setErrorMsg(null);
   }, [editor, annotations, organizations]);
 
@@ -122,6 +154,8 @@ export default function AnnotationEditorClient({
             content,
             visibility_scope: scope,
             scope_id: scope === "class" ? classId : null,
+            // Sprint E.4 — ancrage paragraphe (NULL pour "general").
+            section_target: sectionTarget === "general" ? null : sectionTarget,
           }),
         });
         if (!res.ok) {
@@ -143,6 +177,7 @@ export default function AnnotationEditorClient({
               content,
               visibility_scope: scope,
               scope_id: scope === "class" ? classId : null,
+              section_target: sectionTarget === "general" ? null : sectionTarget,
             }),
           },
         );
@@ -315,6 +350,27 @@ export default function AnnotationEditorClient({
               </select>
             </div>
           )}
+
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="ann-section-target">
+              Cette annotation concerne :
+            </label>
+            <select
+              id="ann-section-target"
+              className={styles.select}
+              value={sectionTarget}
+              onChange={(e) =>
+                setSectionTarget(e.target.value as SectionTarget)
+              }
+              disabled={submitting}
+            >
+              {SECTION_TARGET_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
           <div className={styles.field}>
             <label className={styles.label} htmlFor="ann-title">

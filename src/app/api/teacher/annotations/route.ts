@@ -100,10 +100,15 @@ export async function POST(request: NextRequest) {
     content: input.content,
     visibility_scope: input.visibility_scope,
     scope_id: input.scope_id ?? null,
+    // Sprint E.4 — ancrage paragraphe (cf. validation/annotations.ts).
+    // Le type Database généré ne contient pas encore section_target ;
+    // cast local en `any` jusqu'à régénération via `npm run db:types`.
+    section_target: input.section_target ?? null,
   };
 
-  const { data, error } = await supabase
-    .from("teacher_annotations")
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const annotationsTable = supabase.from("teacher_annotations") as any;
+  const { data, error } = await annotationsTable
     .insert(insertPayload)
     .select("*")
     .single();

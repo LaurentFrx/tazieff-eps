@@ -23,6 +23,26 @@ const uuid = () =>
   z.string().regex(UUID_LOOSE_RE, { message: "UUID invalide" });
 
 /**
+ * Sprint E.4 — Cibles de section pour ancrer une annotation à un paragraphe
+ * précis de la fiche exercice. Aligné sur InlineParagraphKey du composant
+ * d'édition admin (cf. _teacher-editor/section-matchers.ts) plus la valeur
+ * spéciale `general` (annotation à la fiche entière, fallback).
+ */
+export const ANNOTATION_SECTION_TARGETS = [
+  "general",
+  "resume",
+  "execution",
+  "respiration",
+  "conseils",
+  "securite",
+  "dosage",
+] as const;
+
+export type AnnotationSectionTarget = (typeof ANNOTATION_SECTION_TARGETS)[number];
+
+const sectionTargetSchema = z.enum(ANNOTATION_SECTION_TARGETS);
+
+/**
  * Forme du champ `content` (jsonb). On accepte title/notes/media_refs en
  * option et on refuse tout autre champ (`strict`) pour cadrer l'évolution
  * du modèle. E.2.3 pourra étendre.
@@ -46,6 +66,13 @@ export const CreateAnnotationSchema = z
       .enum(["private", "class", "school"])
       .default("private"),
     scope_id: uuid().nullable().optional(),
+    /**
+     * Sprint E.4 — Section cible (paragraphe) sur lequel l'annotation est
+     * ancrée. Optionnel : NULL signifie « annotation générale » (équivaut
+     * à `general` côté UI). Permet l'affichage côté élève juste après le
+     * paragraphe officiel correspondant (pattern post-it Google Docs).
+     */
+    section_target: sectionTargetSchema.nullable().optional(),
   })
   .refine(
     (data) =>
@@ -72,6 +99,8 @@ export const UpdateAnnotationSchema = z
     visibility_scope: z.enum(["private", "class", "school"]).optional(),
     scope_id: uuid().nullable().optional(),
     needs_review: z.boolean().optional(),
+    /** Sprint E.4 — éditable a posteriori pour réancrer l'annotation. */
+    section_target: sectionTargetSchema.nullable().optional(),
   })
   .refine(
     (data) => {

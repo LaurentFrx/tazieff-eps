@@ -69,6 +69,9 @@ import {
   SECTION_TITLE_MATCHERS,
   type InlineParagraphKey,
 } from "./_teacher-editor/section-matchers";
+import TeacherAnnotationPostIt, {
+  type AnnotationContentShape,
+} from "@/components/exercices/TeacherAnnotationPostIt";
 import { useOverrideMediaUpload } from "./_teacher-editor/hooks/useOverrideMediaUpload";
 import { useOverrideUI } from "./_teacher-editor/hooks/useOverrideUI";
 import { usePillDropdown } from "./_teacher-editor/hooks/usePillDropdown";
@@ -97,6 +100,22 @@ function RevealStep({ delay, children }: { delay: number; children: React.ReactN
 
 type SessionSibling = { slug: string; title: string };
 
+// Sprint E.4 (29 avril 2026) — annotations prof à afficher en post-it
+// après chaque paragraphe officiel correspondant (cf. GOUVERNANCE
+// EDITORIALE.md v1.1 §3.2 — pattern post-it Google Docs avec
+// attribution explicite). La structure est identique à
+// `StudentAnnotationItem` exposée par /api/exercises/[slug]/annotations.
+type StudentAnnotation = {
+  id: string;
+  content: unknown;
+  scope: "private" | "class" | "school";
+  section_target: string | null;
+  author_display_name: string;
+  author_user_id: string;
+  organization_id: string;
+  created_at: string | null;
+};
+
 type ExerciseLiveDetailProps = {
   slug: string;
   locale: Lang;
@@ -106,6 +125,8 @@ type ExerciseLiveDetailProps = {
   initialPatch: ExerciseOverridePatch | null;
   onRevalidate?: (slug: string) => Promise<void>;
   sessionSiblings?: SessionSibling[];
+  /** Sprint E.4 — annotations prof visibles par l'élève authentifié. */
+  initialAnnotations?: StudentAnnotation[];
 };
 
 type LiveDraft = {
@@ -254,6 +275,7 @@ export function ExerciseLiveDetail({
   initialPatch,
   onRevalidate,
   sessionSiblings = [],
+  initialAnnotations = [],
 }: ExerciseLiveDetailProps) {
   const { t, lang } = useI18n();
   const router = useRouter();
@@ -1376,6 +1398,70 @@ export function ExerciseLiveDetail({
     };
   }, [merged.content]);
 
+  // Sprint E.4 (29 avril 2026) — distribution des annotations prof par
+  // section_target. Les annotations `general` (ou section_target=NULL)
+  // sont rendues en bas de la fiche, les autres juste après le
+  // paragraphe officiel correspondant (pattern post-it Google Docs).
+  type SectionKey =
+    | "resume"
+    | "execution"
+    | "respiration"
+    | "conseils"
+    | "securite"
+    | "dosage";
+  const annotationsBySection = useMemo(() => {
+    const map: Record<SectionKey, StudentAnnotation[]> = {
+      resume: [],
+      execution: [],
+      respiration: [],
+      conseils: [],
+      securite: [],
+      dosage: [],
+    };
+    const general: StudentAnnotation[] = [];
+    for (const ann of initialAnnotations) {
+      // Défense en profondeur : private ne devrait jamais arriver côté
+      // élève (RLS filtre), mais si jamais on l'écarte du rendu.
+      if (ann.scope === "private") continue;
+      const key = (ann.section_target ?? "general") as SectionKey | "general";
+      if (key === "general") {
+        general.push(ann);
+      } else if (key in map) {
+        map[key].push(ann);
+      } else {
+        general.push(ann);
+      }
+    }
+    return { ...map, general };
+  }, [initialAnnotations]);
+
+  // Helper de rendu : produit un fragment de post-it pour une section
+  // donnée. Si aucune annotation visible, retourne null (rien rendu).
+  const renderAnnotationsForSection = useCallback(
+    (key: SectionKey | "general") => {
+      const list = annotationsBySection[key];
+      if (!list || list.length === 0) return null;
+      return (
+        <div
+          className="flex flex-col"
+          data-testid={`annotations-section-${key}`}
+        >
+          {list.map((ann) => (
+            <TeacherAnnotationPostIt
+              key={ann.id}
+              id={ann.id}
+              content={(ann.content as AnnotationContentShape) ?? {}}
+              authorDisplayName={ann.author_display_name}
+              scope={ann.scope}
+              sectionTarget={ann.section_target}
+            />
+          ))}
+        </div>
+      );
+    },
+    [annotationsBySection],
+  );
+
   // Filter dosage-contaminated lines from execution steps (e.g. "6 x 3-10 reps", "Repos 90 s", "Technique.")
   const isDosageLine = (line: string) => {
     const t2 = line.replace(/^-\s*/, '').trim();
@@ -1766,6 +1852,8 @@ export function ExerciseLiveDetail({
                   {parsedSections.resume.body}
                 </p>
               )}
+              {/* Sprint E.4 — post-it annotations prof ancrées au Résumé */}
+              {renderAnnotationsForSection("resume")}
             </div>
           )}
 
@@ -1820,6 +1908,8 @@ export function ExerciseLiveDetail({
                   })()}
                 </div>
               )}
+              {/* Sprint E.4 — post-it annotations prof ancrées à Exécution */}
+              {renderAnnotationsForSection("execution")}
             </div>
           )}
 
@@ -1849,6 +1939,8 @@ export function ExerciseLiveDetail({
                   {parsedSections.respiration.body}
                 </p>
               )}
+              {/* Sprint E.4 — post-it annotations prof ancrées à Respiration */}
+              {renderAnnotationsForSection("respiration")}
             </div>
           )}
 
@@ -1904,6 +1996,8 @@ export function ExerciseLiveDetail({
                       ))}
                     </ul>
                   )}
+                  {/* Sprint E.4 — post-it annotations prof ancrées à Conseils */}
+                  {renderAnnotationsForSection("conseils")}
                 </div>
               )}
             </div>
@@ -1942,10 +2036,19 @@ export function ExerciseLiveDetail({
                       {parsedSections.securite.body}
                     </p>
                   )}
+                  {/* Sprint E.4 — post-it annotations prof ancrées à Sécurité */}
+                  {renderAnnotationsForSection("securite")}
                 </div>
               )}
             </div>
           )}
+
+          {/* Sprint E.4 — annotations générales (section_target = NULL ou 'general')
+              et annotations ancrées à Dosage. Les annotations Dosage sont rendues
+              ici en bas car le bloc lecteur Dosage (ExerciseQuickInfo) parse le
+              markdown en colonnes structurées : on garde l'annotation propre. */}
+          {renderAnnotationsForSection("dosage")}
+          {renderAnnotationsForSection("general")}
 
           {/* Erreurs courantes (si présent, dans le flux) */}
           {parsedSections.erreurs && parsedSections.erreurs.body && (
