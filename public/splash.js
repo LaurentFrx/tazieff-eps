@@ -57,7 +57,7 @@ ic.style.cssText="transform-origin:center;animation:sp-spin 25s linear infinite"
 svg.appendChild(ic);
 splash.appendChild(svg);
 var mw=h("div","position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3");
-var mann=h("img","height:260px;width:auto;object-fit:contain;opacity:0;filter:brightness(0.5) contrast(1.1);mix-blend-mode:screen",{id:"sp-mannequin",src:"/images/anatomy/mini-mannequin.webp",alt:""});
+var mann=h("img","height:260px;width:auto;object-fit:contain;opacity:0;filter:brightness(0.5) contrast(1.1);mix-blend-mode:screen",{id:"sp-mannequin",src:"/images/anatomy/mini-mannequin-260.webp",alt:""});
 mw.appendChild(mann);
 mw.appendChild(h("div","position:absolute;inset:-30px;background:radial-gradient(ellipse 65% 75% at 50% 50%,transparent 35%,#04040A 100%);pointer-events:none"));
 splash.appendChild(mw);
