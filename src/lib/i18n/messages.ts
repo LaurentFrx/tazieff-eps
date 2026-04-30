@@ -1227,6 +1227,11 @@ export const messages = {
       submitting: "Envoi…",
       confirmation:
         "Si cet email correspond à un compte administrateur, un lien de connexion a été envoyé.",
+      confirmationTitle: "Lien envoyé à {email}",
+      confirmationBody:
+        "Vérifie ta boîte de réception (et tes spams). Le lien est valide une heure et utilisable une seule fois.",
+      confirmationHint:
+        "Pas de mail après 2 minutes ? Vérifie l’orthographe de l’adresse, ou contacte le support.",
       editEmail: "Modifier l’email",
       emailRequired: "Indique ton adresse email.",
       networkError: "Une erreur est survenue. Réessaie dans un instant.",
@@ -2486,6 +2491,11 @@ export const messages = {
       submitting: "Sending…",
       confirmation:
         "If this email matches an administrator account, a sign-in link has been sent.",
+      confirmationTitle: "Link sent to {email}",
+      confirmationBody:
+        "Check your inbox (and spam folder). The link is valid for one hour and can be used only once.",
+      confirmationHint:
+        "No email after 2 minutes? Double-check the address, or contact support.",
       editEmail: "Edit email",
       emailRequired: "Please enter your email address.",
       networkError: "Something went wrong. Try again in a moment.",
@@ -3744,6 +3754,11 @@ export const messages = {
       submitting: "Enviando…",
       confirmation:
         "Si este correo corresponde a una cuenta de administrador, se ha enviado un enlace de inicio de sesión.",
+      confirmationTitle: "Enlace enviado a {email}",
+      confirmationBody:
+        "Revisa tu bandeja de entrada (y la carpeta de spam). El enlace es válido durante una hora y solo puede usarse una vez.",
+      confirmationHint:
+        "¿Sin correo tras 2 minutos? Verifica la dirección, o contacta con el soporte.",
       editEmail: "Modificar el correo",
       emailRequired: "Indica tu dirección de correo.",
       networkError: "Algo salió mal. Inténtalo de nuevo en un momento.",

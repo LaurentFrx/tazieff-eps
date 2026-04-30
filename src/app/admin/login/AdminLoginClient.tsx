@@ -24,6 +24,11 @@ export function AdminLoginClient() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // Sprint fix-magic-link-otp-delivery (30 avril 2026) — mémorise l'email
+  // soumis pour l'afficher dans le titre de confirmation. Différent de
+  // `email` qui est l'input courant (potentiellement modifié si on revient
+  // au formulaire via "Modifier l'email").
+  const [submittedEmail, setSubmittedEmail] = useState("");
   const emailInputRef = useRef<HTMLInputElement | null>(null);
 
   // Focus management : l'input email reçoit le focus au mount.
@@ -81,6 +86,7 @@ export function AdminLoginClient() {
       }
 
       // Toujours afficher le message de confirmation neutre, dans les deux cas.
+      setSubmittedEmail(email.trim());
       setIsConfirmed(true);
     } catch {
       setErrorMessage(t("adminLogin.networkError"));
@@ -107,11 +113,29 @@ export function AdminLoginClient() {
           className="space-y-3 rounded-2xl border border-cyan-400/30 bg-cyan-400/10 p-5 text-sm text-cyan-100"
           data-testid="admin-login-confirmation"
         >
-          <p>{t("adminLogin.confirmation")}</p>
-          {/* Sprint fix-magic-link-delivery (30 avril 2026) — bouton de
-              retour au formulaire pour modifier l'email ou retenter sans
-              recharger la page. Avant ce fix, après soumission le formulaire
-              était caché sans aucun moyen d'y revenir. */}
+          {/* Sprint fix-magic-link-otp-delivery (30 avril 2026) — wording
+              actionnable. Cf. retour Laurent : « si je vois juste 'lien
+              envoyé' sans rappel des spams ni durée, je ne sais pas quoi
+              attendre ». L'ancien message générique anti-leak masquait
+              l'existence du compte mais ne donnait aucune info utile. */}
+          <p
+            className="text-base font-semibold text-white"
+            data-testid="admin-login-confirmation-title"
+          >
+            {t("adminLogin.confirmationTitle").replace(
+              "{email}",
+              submittedEmail || email,
+            )}
+          </p>
+          <p>{t("adminLogin.confirmationBody")}</p>
+          <p
+            className="text-xs text-cyan-100/60"
+            data-testid="admin-login-confirmation-hint"
+          >
+            {t("adminLogin.confirmationHint")}
+          </p>
+          {/* Bouton de retour au formulaire pour modifier l'email ou
+              retenter sans recharger la page. */}
           <button
             type="button"
             onClick={() => {
