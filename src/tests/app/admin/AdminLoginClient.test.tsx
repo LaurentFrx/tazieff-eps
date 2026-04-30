@@ -86,9 +86,11 @@ describe("AdminLoginClient", () => {
     const confirmation = await screen.findByTestId(
       "admin-login-confirmation",
     );
-    expect(confirmation.textContent).toMatch(
-      /Si cet email correspond à un compte administrateur/i,
-    );
+    // Sprint fix-magic-link-otp-delivery (30 avril 2026) — le wording a
+    // changé : on ne cherche plus l'anti-leak generique mais le titre
+    // « Lien envoyé à <email> » + le rappel spam/durée dans le corps.
+    expect(confirmation.textContent).toMatch(/Lien envoyé/i);
+    expect(confirmation.textContent).toMatch(/spam/i);
     await waitFor(() => {
       expect(signInWithOtpMock).toHaveBeenCalledTimes(1);
     });
@@ -122,9 +124,10 @@ describe("AdminLoginClient", () => {
     const confirmation = await screen.findByTestId(
       "admin-login-confirmation",
     );
-    expect(confirmation.textContent).toMatch(
-      /Si cet email correspond à un compte administrateur/i,
-    );
+    // Wording post-sprint-fix-magic-link-otp-delivery : titre + corps
+    // donnent les mêmes infos que l'ancien message neutre, anti-leak
+    // préservé (l'écran s'affiche identiquement pour eligible true/false).
+    expect(confirmation.textContent).toMatch(/Lien envoyé/i);
     expect(signInWithOtpMock).not.toHaveBeenCalled();
   });
 
@@ -160,6 +163,78 @@ describe("AdminLoginClient", () => {
     const error = await screen.findByTestId("admin-login-error");
     expect(error.textContent).toMatch(/erreur/i);
     expect(signInWithOtpMock).not.toHaveBeenCalled();
+  });
+
+  // Sprint fix-magic-link-otp-delivery (30 avril 2026) — wording de
+  // confirmation actionnable. Cf. retour Laurent : il avait besoin d'un
+  // titre clair, du rappel de la durée du lien, et de l'instruction de
+  // vérifier les spams.
+  it("affiche un titre 'Lien envoyé à <email>' avec l'email soumis", async () => {
+    global.fetch = vi.fn(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ eligible: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    ) as unknown as typeof fetch;
+
+    renderClient();
+    fireEvent.change(screen.getByLabelText("Adresse email"), {
+      target: { value: "contact@muscu-eps.fr" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Connexion" }));
+
+    const title = await screen.findByTestId(
+      "admin-login-confirmation-title",
+    );
+    expect(title.textContent).toMatch(/Lien envoyé/i);
+    expect(title.textContent).toContain("contact@muscu-eps.fr");
+  });
+
+  it("affiche le rappel des spams + durée du lien dans le corps", async () => {
+    global.fetch = vi.fn(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ eligible: false }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    ) as unknown as typeof fetch;
+
+    renderClient();
+    fireEvent.change(screen.getByLabelText("Adresse email"), {
+      target: { value: "test@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Connexion" }));
+
+    const confirmation = await screen.findByTestId(
+      "admin-login-confirmation",
+    );
+    expect(confirmation.textContent).toMatch(/spam/i);
+    expect(confirmation.textContent).toMatch(/(une heure|valide)/i);
+    expect(confirmation.textContent).toMatch(/(une seule fois)/i);
+  });
+
+  it("affiche un sous-texte d'aide après 2 minutes (testid hint)", async () => {
+    global.fetch = vi.fn(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ eligible: false }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    ) as unknown as typeof fetch;
+
+    renderClient();
+    fireEvent.change(screen.getByLabelText("Adresse email"), {
+      target: { value: "test@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Connexion" }));
+
+    const hint = await screen.findByTestId("admin-login-confirmation-hint");
+    expect(hint.textContent).toMatch(/2 minutes/i);
+    expect(hint.textContent).toMatch(/(orthographe|support)/i);
   });
 
   // Sprint fix-magic-link-delivery (30 avril 2026) — bouton de retour au
