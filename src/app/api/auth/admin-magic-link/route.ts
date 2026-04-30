@@ -38,6 +38,25 @@ type AdminUserLookup = {
  * Lookup robuste : on cherche dans app_admins l'utilisateur dont l'email
  * (auth.users.email) correspond. Retourne true si admin trouvé.
  *
+ * Sprint fix-magic-link-delivery (30 avril 2026) — RÉFACTOR.
+ *
+ * Bug originel : le code pré-fix faisait `auth.admin.listUsers({ perPage: 100 })`
+ * puis filtrait en JS avec `.find()`. Quand `auth.users` dépasse 100 lignes
+ * (883 le 30 avril 2026, dont 881 anonymous users créés par
+ * `signInAnonymously()` côté élève), le super_admin (position 777) n'était
+ * pas dans la page 1 → `find` retournait undefined → `eligible: false`
+ * silencieusement → `signInWithOtp` jamais appelé côté client → aucun
+ * email envoyé. Symptôme observé : le formulaire affiche le message
+ * neutre mais Laurent ne reçoit jamais de magic-link.
+ *
+ * Fix : on n'utilise plus listUsers paginée. On part de la liste des
+ * `app_admins.user_id` (toujours petite : 1-10 admins), on récupère chaque
+ * user via `getUserById(uuid)` (lookup direct par PK, indépendant du nombre
+ * total d'utilisateurs), et on compare son email à l'email recherché.
+ *
+ * Complexité : O(N admins) appels API au lieu de O(1) liste paginée
+ * tronquée. Pour 1-10 admins, négligeable. Aucun risque de pagination.
+ *
  * Le service client est utilisé exclusivement pour ce lookup en lecture
  * seule sur auth.users, qui n'est pas exposée via le client utilisateur.
  */
@@ -58,21 +77,24 @@ async function isEmailAdmin(email: string): Promise<boolean> {
     return false;
   }
 
-  const userIds = data.map((row) => row.user_id).filter((id): id is string => Boolean(id));
+  const userIds = data
+    .map((row) => row.user_id)
+    .filter((id): id is string => Boolean(id));
   if (userIds.length === 0) return false;
 
-  const { data: userData, error: userError } =
-    await serviceClient.auth.admin.listUsers({
-      perPage: 100,
-    });
-  if (userError || !userData?.users) {
-    return false;
+  // Pour chaque admin, on récupère son email via `getUserById` (lookup
+  // direct par PK, pas de pagination). On retourne true au premier match.
+  // Loop séquentielle (pas de Promise.all) pour court-circuiter dès qu'un
+  // match est trouvé et économiser des appels API en cas d'1 seul admin.
+  for (const userId of userIds) {
+    const { data: userResult, error: userError } =
+      await serviceClient.auth.admin.getUserById(userId);
+    if (userError || !userResult?.user) continue;
+    const userEmail = (userResult.user.email ?? "").toLowerCase();
+    if (userEmail === email) return true;
   }
-  const matchingUser = userData.users.find(
-    (u) => (u.email ?? "").toLowerCase() === email,
-  );
-  if (!matchingUser) return false;
-  return userIds.includes(matchingUser.id);
+
+  return false;
 }
 
 export async function POST(request: Request) {

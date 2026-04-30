@@ -161,6 +161,40 @@ describe("AdminLoginClient", () => {
     expect(error.textContent).toMatch(/erreur/i);
     expect(signInWithOtpMock).not.toHaveBeenCalled();
   });
+
+  // Sprint fix-magic-link-delivery (30 avril 2026) — bouton de retour au
+  // formulaire après soumission. Avant ce fix, l'écran de confirmation
+  // bloquait l'utilisateur et l'obligeait à recharger la page pour
+  // modifier son email ou retenter (cf. retour Laurent du 30 avril).
+  it("après confirmation, expose un bouton 'Modifier l'email' qui ré-affiche le formulaire", async () => {
+    global.fetch = vi.fn(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ eligible: false }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    ) as unknown as typeof fetch;
+
+    renderClient();
+    fireEvent.change(screen.getByLabelText("Adresse email"), {
+      target: { value: "first@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Connexion" }));
+
+    // Confirmation visible
+    await screen.findByTestId("admin-login-confirmation");
+    const editButton = screen.getByTestId("admin-login-edit-email");
+    expect(editButton.textContent).toMatch(/modifier l/i);
+
+    // Clic → on revient sur le formulaire
+    fireEvent.click(editButton);
+    await waitFor(() => {
+      expect(screen.queryByTestId("admin-login-confirmation")).toBeNull();
+    });
+    expect(screen.getByLabelText("Adresse email")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Connexion" })).toBeTruthy();
+  });
 });
 
 // P0.7-undecies — Régression-guard sur le HOST exact de emailRedirectTo.
