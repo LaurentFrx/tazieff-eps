@@ -104,10 +104,27 @@ export function AdminLoginClient() {
       {isConfirmed ? (
         <div
           role="status"
-          className="rounded-2xl border border-cyan-400/30 bg-cyan-400/10 p-5 text-sm text-cyan-100"
+          className="space-y-3 rounded-2xl border border-cyan-400/30 bg-cyan-400/10 p-5 text-sm text-cyan-100"
           data-testid="admin-login-confirmation"
         >
-          {t("adminLogin.confirmation")}
+          <p>{t("adminLogin.confirmation")}</p>
+          {/* Sprint fix-magic-link-delivery (30 avril 2026) — bouton de
+              retour au formulaire pour modifier l'email ou retenter sans
+              recharger la page. Avant ce fix, après soumission le formulaire
+              était caché sans aucun moyen d'y revenir. */}
+          <button
+            type="button"
+            onClick={() => {
+              setIsConfirmed(false);
+              setErrorMessage(null);
+              // Refocus l'input pour faciliter la modification.
+              setTimeout(() => emailInputRef.current?.focus(), 0);
+            }}
+            className="text-xs font-semibold uppercase tracking-wider text-cyan-300 underline-offset-4 hover:text-cyan-100 hover:underline"
+            data-testid="admin-login-edit-email"
+          >
+            {t("adminLogin.editEmail")}
+          </button>
         </div>
       ) : (
         <form

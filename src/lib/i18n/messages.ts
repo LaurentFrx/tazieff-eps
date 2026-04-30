@@ -1227,6 +1227,7 @@ export const messages = {
       submitting: "Envoi…",
       confirmation:
         "Si cet email correspond à un compte administrateur, un lien de connexion a été envoyé.",
+      editEmail: "Modifier l’email",
       emailRequired: "Indique ton adresse email.",
       networkError: "Une erreur est survenue. Réessaie dans un instant.",
     },
@@ -2485,6 +2486,7 @@ export const messages = {
       submitting: "Sending…",
       confirmation:
         "If this email matches an administrator account, a sign-in link has been sent.",
+      editEmail: "Edit email",
       emailRequired: "Please enter your email address.",
       networkError: "Something went wrong. Try again in a moment.",
     },
@@ -3742,6 +3744,7 @@ export const messages = {
       submitting: "Enviando…",
       confirmation:
         "Si este correo corresponde a una cuenta de administrador, se ha enviado un enlace de inicio de sesión.",
+      editEmail: "Modificar el correo",
       emailRequired: "Indica tu dirección de correo.",
       networkError: "Algo salió mal. Inténtalo de nuevo en un momento.",
     },

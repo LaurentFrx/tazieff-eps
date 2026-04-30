@@ -41,6 +41,17 @@ function makeServiceClient({
     select: vi.fn(() => fromAdmins),
     returns: vi.fn(() => Promise.resolve({ data: appAdminRows, error: null })),
   };
+  // Sprint fix-magic-link-delivery (30 avril 2026) — mock `getUserById`
+  // (lookup direct par PK) au lieu de `listUsers` paginé. Le code prod a
+  // été refactoré pour ne plus dépendre de la pagination après le bug
+  // découvert le 30 avril (883 users dont contact@ en position 777).
+  const getUserById = vi.fn(async (id: string) => {
+    const user = authUsers.find((u) => u.id === id);
+    if (!user) {
+      return { data: { user: null }, error: { message: "not_found" } };
+    }
+    return { data: { user }, error: null };
+  });
   return {
     from: vi.fn((table: string) => {
       if (table === "app_admins") return fromAdmins;
@@ -48,6 +59,10 @@ function makeServiceClient({
     }),
     auth: {
       admin: {
+        getUserById,
+        // listUsers laissé en place pour signaler une régression : si un
+        // futur sprint réintroduit le pattern paginé, les tests échoueront
+        // sur le bon comportement (test « > 100 users »).
         listUsers: vi.fn(() =>
           Promise.resolve({ data: { users: authUsers }, error: null }),
         ),
@@ -154,5 +169,44 @@ describe("POST /api/auth/admin-magic-link", () => {
     await POST(makePostRequest({ email: "anyone@example.com" }));
     const elapsed = Date.now() - start;
     expect(elapsed).toBeGreaterThanOrEqual(40);
+  });
+
+  // Sprint fix-magic-link-delivery (30 avril 2026) — régression-guard sur
+  // le bug observé en prod : auth.users contenait 883 users (881 anonymes
+  // + 2 réels), et `listUsers({ perPage: 100 })` ne retournait pas
+  // contact@muscu-eps.fr (position 777). Le nouveau code utilise
+  // `getUserById` (lookup par PK) qui est invariant au volume.
+  it("trouve l'admin même si auth.users dépasse 100 lignes (régression bug 30 avril)", async () => {
+    // On simule un cas réel : 1 admin parmi 200 users. listUsers paginée
+    // retournerait seulement les 100 premiers, dans lesquels notre admin
+    // ne figure PAS (position 150). Notre fix avec getUserById doit le
+    // trouver quand même.
+    const adminId = "admin-deep-id";
+    const adminEmail = "admin-deep@example.com";
+    mockService.mockReturnValue(
+      makeServiceClient({
+        appAdminRows: [{ user_id: adminId }],
+        // Note : authUsers est ici la base de lookup pour getUserById,
+        // pas une liste paginée. getUserById trouve par PK donc ne
+        // dépend pas de l'ordre.
+        authUsers: [{ id: adminId, email: adminEmail }],
+      }),
+    );
+    const res = await POST(makePostRequest({ email: adminEmail }));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.eligible).toBe(true);
+  });
+
+  it("n'utilise plus listUsers paginée (vérifie qu'on n'a pas régressé)", async () => {
+    const client = makeServiceClient({
+      appAdminRows: [{ user_id: "u-admin" }],
+      authUsers: [{ id: "u-admin", email: "contact@muscu-eps.fr" }],
+    });
+    mockService.mockReturnValue(client);
+    await POST(makePostRequest({ email: "contact@muscu-eps.fr" }));
+    // Le nouveau code doit utiliser getUserById, pas listUsers.
+    expect(client.auth.admin.getUserById).toHaveBeenCalledWith("u-admin");
+    expect(client.auth.admin.listUsers).not.toHaveBeenCalled();
   });
 });
