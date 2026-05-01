@@ -5,6 +5,7 @@ import { LocaleLink as Link } from "@/components/LocaleLink";
 import Image from "next/image";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useFavorites } from "@/hooks/useFavorites";
+import { resolveEnv } from "@/lib/env";
 import { SEARCH_INDEX } from "@/lib/search/search-index";
 import { OnboardingBanner } from "@/components/OnboardingBanner";
 import { HomeFlyer } from "@/components/HomeFlyer";
@@ -112,6 +113,17 @@ type Props = {
 export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Props) {
   const { t } = useI18n();
   const { favorites } = useFavorites();
+
+  // Sprint fix-footer-legal-urls (1 mai 2026) — URLs absolues cross-host
+  // pour les liens légaux du footer. Sur le miroir admin
+  // (admin.muscu-eps.fr/), la home élève est servie via pass-through
+  // (P0.7-bis), mais /legal/* n'est PAS dans ADMIN_MIRROR_PREFIXES du
+  // proxy → /legal/mentions-legales → 404. Solution : pointer vers le
+  // baseUrl élève (muscu-eps.fr / design.muscu-eps.fr / localhost:3000)
+  // qui héberge ces pages en source. Même pattern que TopBarHamburger
+  // (BUG 3 du Sprint TopBar, commit 4258597).
+  const eleveBaseUrl =
+    typeof window !== "undefined" ? resolveEnv().baseUrl.eleve : "";
 
   // --- Reveal hooks ---
   const flyerRef = useReveal(0);
@@ -314,14 +326,34 @@ export function HomepageClient({ exerciseCount, methodeCount, learnCount }: Prop
       </div>
 
       {/* ── Footer légal ─────────────────────────────────────────── */}
-      {/* Sprint A5 — <a href> remplacé par LocaleLink (alias Link) pour préfixer la locale courante. */}
+      {/* Sprint fix-footer-legal-urls (1 mai 2026) — URLs absolues vers
+          le sous-domaine élève. Cf. eleveBaseUrl plus haut pour la
+          motivation cross-host (404 sur miroir admin sinon). */}
       <div className="text-center pb-6 pt-2">
         <nav className="inline-flex gap-2 text-[11px] text-zinc-500">
-          <Link href="/legal/mentions-legales" className="tap-feedback hover:text-zinc-400 transition-colors">Mentions l&eacute;gales</Link>
+          <a
+            href={`${eleveBaseUrl}/legal/mentions-legales`}
+            className="tap-feedback hover:text-zinc-400 transition-colors"
+            data-testid="footer-legal-mentions"
+          >
+            Mentions l&eacute;gales
+          </a>
           <span aria-hidden="true">&middot;</span>
-          <Link href="/legal/confidentialite" className="tap-feedback hover:text-zinc-400 transition-colors">Confidentialit&eacute;</Link>
+          <a
+            href={`${eleveBaseUrl}/legal/confidentialite`}
+            className="tap-feedback hover:text-zinc-400 transition-colors"
+            data-testid="footer-legal-confidentialite"
+          >
+            Confidentialit&eacute;
+          </a>
           <span aria-hidden="true">&middot;</span>
-          <Link href="/legal/cgu" className="tap-feedback hover:text-zinc-400 transition-colors">CGU</Link>
+          <a
+            href={`${eleveBaseUrl}/legal/cgu`}
+            className="tap-feedback hover:text-zinc-400 transition-colors"
+            data-testid="footer-legal-cgu"
+          >
+            CGU
+          </a>
         </nav>
       </div>
     </section>

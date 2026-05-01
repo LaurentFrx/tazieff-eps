@@ -105,6 +105,13 @@ export default function ReglagesPage() {
   const [anatomyAnim, setLocalAnatomyAnim] = useState(getAnatomyAnim());
   const [mounted, setMounted] = useState(false);
 
+  // Sprint fix-footer-legal-urls (1 mai 2026) — Le footer légal en bas de
+  // /reglages doit pointer vers le sous-domaine élève en absolu. Sur le
+  // miroir admin (admin.muscu-eps.fr/reglages), /legal/* n'est pas dans
+  // ADMIN_MIRROR_PREFIXES → 404 si on utilise des URLs relatives.
+  const eleveBaseUrl =
+    typeof window !== "undefined" ? resolveEnv().baseUrl.eleve : "";
+
 
   // P0.1 — Section "Mode professeur" (PIN) retirée. Voir GOUVERNANCE_EDITORIALE.md.
 
@@ -419,15 +426,27 @@ export default function ReglagesPage() {
             </button>
           </p>
           <div className="mt-3 flex justify-center gap-4 text-[11px] text-[color:var(--muted)]">
-            <LocaleLink href="/legal/mentions-legales" className="hover:text-[color:var(--ink)] transition-colors">
+            <a
+              href={`${eleveBaseUrl}/legal/mentions-legales`}
+              className="hover:text-[color:var(--ink)] transition-colors"
+              data-testid="reglages-legal-mentions"
+            >
               {t("settings.legal.mentions")}
-            </LocaleLink>
-            <LocaleLink href="/legal/confidentialite" className="hover:text-[color:var(--ink)] transition-colors">
+            </a>
+            <a
+              href={`${eleveBaseUrl}/legal/confidentialite`}
+              className="hover:text-[color:var(--ink)] transition-colors"
+              data-testid="reglages-legal-confidentialite"
+            >
               {t("settings.legal.privacy")}
-            </LocaleLink>
-            <LocaleLink href="/legal/cgu" className="hover:text-[color:var(--ink)] transition-colors">
+            </a>
+            <a
+              href={`${eleveBaseUrl}/legal/cgu`}
+              className="hover:text-[color:var(--ink)] transition-colors"
+              data-testid="reglages-legal-cgu"
+            >
               {t("settings.legal.cgu")}
-            </LocaleLink>
+            </a>
           </div>
           {/* P0.7-decies — Lien discret vers le login admin. La sécurité
               repose sur le magic-link + table app_admins, pas sur
