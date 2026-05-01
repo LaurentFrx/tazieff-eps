@@ -5,10 +5,16 @@
 // Réglages, Mode enseignant) par un menu unique structuré.
 //
 // Sections affichées selon le rôle :
-//   - Tous : Outils (grille 2x2) + Préférences (langue, thème) +
-//     Mentions légales + Aide + Logout
+//   - Tous : Outils (grille 2x2) + Préférences (langue, thème) + Mentions légales
+//   - Anonyme : section "Se connecter" (Espace enseignant + Espace admin),
+//     pas de bouton "Se déconnecter"
+//   - Authentifié : bouton "Se déconnecter"
 //   - Prof / super_admin : section "Espace prof" en plus
 //   - Super_admin : section "Espace admin" en plus (placeholders)
+//
+// Sprint fix-hamburger-anonymous-login (1er mai 2026) — Ajout de la section
+// "Se connecter" pour les anonymes (test live tablette Isabelle), suppression
+// du lien "Aide" (pointait vers /apprendre, pas une vraie page d'aide).
 //
 // Pages admin avancées non encore créées : les liens du hamburger pointent
 // vers les routes target — accepteront 404 jusqu'à ce que les pages soient
@@ -50,6 +56,10 @@ export function TopBarHamburger({
   const isTeacherOrAbove =
     role === "teacher" || role === "admin" || role === "super_admin";
   const isAdmin = role === "admin" || role === "super_admin";
+  // Sprint fix-hamburger-anonymous-login (1er mai 2026) — un anonyme n'a
+  // ni session active à fermer (pas de logout) ni accès aux espaces
+  // privilégiés. On lui propose à la place une section "Se connecter".
+  const isAuthenticated = role !== "anonymous";
 
   // Click outside → close.
   useEffect(() => {
@@ -311,10 +321,15 @@ export function TopBarHamburger({
 
           {/* ── Liens transverses ─────────────────────────────── */}
           <SectionDivider />
-          {/* /legal/* et /apprendre n'existent QUE sur le sous-domaine élève
-              (pas dans ADMIN_MIRROR_PREFIXES de proxy.ts). On utilise donc
-              des URLs absolues vers le baseUrl élève pour éviter les 404
-              quand le hamburger est ouvert depuis admin.* ou prof.*. */}
+          {/* /legal/* n'existe QUE sur le sous-domaine élève (pas dans
+              ADMIN_MIRROR_PREFIXES de proxy.ts). On utilise donc une URL
+              absolue vers le baseUrl élève pour éviter les 404 quand le
+              hamburger est ouvert depuis admin.* ou prof.*.
+
+              Sprint fix-hamburger-anonymous-login (1er mai 2026) — Le lien
+              "Aide" (vers /apprendre) a été supprimé : ce path est du
+              contenu pédagogique théorique, pas une vraie page d'aide.
+              Décision Laurent : reporter la création d'une page Aide. */}
           <a
             href={`${eleveBaseUrl}/legal/mentions-legales`}
             className="block rounded-md px-2 py-1.5 text-sm text-white/80 transition-colors hover:bg-white/5 hover:text-white"
@@ -323,26 +338,44 @@ export function TopBarHamburger({
           >
             {t("topBar.hamburger.legal")}
           </a>
-          <a
-            href={`${eleveBaseUrl}/apprendre`}
-            className="block rounded-md px-2 py-1.5 text-sm text-white/80 transition-colors hover:bg-white/5 hover:text-white"
-            onClick={closeAndNav}
-            data-testid="hamburger-help"
-          >
-            {t("topBar.hamburger.help")}
-          </a>
 
-          {/* ── Logout ────────────────────────────────────────── */}
-          <SectionDivider />
-          <button
-            type="button"
-            onClick={handleLogout}
-            data-testid="hamburger-logout"
-            className="block w-full text-left rounded-md px-2 py-1.5 text-sm font-medium transition-colors hover:bg-white/5"
-            style={{ color: "#E24B4A" }}
-          >
-            {t("topBar.hamburger.logout")}
-          </button>
+          {/* ── Anonyme : Se connecter (Sprint 1er mai 2026) ─── */}
+          {!isAuthenticated ? (
+            <>
+              <SectionDivider />
+              <SectionTitle>{t("topBar.hamburger.signIn")}</SectionTitle>
+              <ExternalLink
+                href={`${profBaseUrl}/connexion`}
+                onClick={closeAndNav}
+                testId="hamburger-signin-teacher"
+              >
+                {t("topBar.hamburger.teacherLogin")}
+              </ExternalLink>
+              <ExternalLink
+                href={`${adminBaseUrl}/login`}
+                onClick={closeAndNav}
+                testId="hamburger-signin-admin"
+              >
+                {t("topBar.hamburger.adminLogin")}
+              </ExternalLink>
+            </>
+          ) : null}
+
+          {/* ── Logout (uniquement pour les utilisateurs authentifiés) ─ */}
+          {isAuthenticated ? (
+            <>
+              <SectionDivider />
+              <button
+                type="button"
+                onClick={handleLogout}
+                data-testid="hamburger-logout"
+                className="block w-full text-left rounded-md px-2 py-1.5 text-sm font-medium transition-colors hover:bg-white/5"
+                style={{ color: "#E24B4A" }}
+              >
+                {t("topBar.hamburger.logout")}
+              </button>
+            </>
+          ) : null}
         </div>
       ) : null}
     </div>

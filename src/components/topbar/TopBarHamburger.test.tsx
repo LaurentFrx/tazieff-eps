@@ -126,7 +126,7 @@ describe("TopBarHamburger", () => {
   });
 
   describe("contenu par rôle", () => {
-    it("student : Outils + Préférences + Mentions + Aide + Logout, mais PAS Espace prof / admin", () => {
+    it("student : Outils + Préférences + Mentions + Logout, mais PAS Aide / Espace prof / admin / SignIn", () => {
       render(<TopBarHamburger identityRoleOverride="student" />);
       fireEvent.click(screen.getByTestId("topbar-hamburger-button"));
       // Outils (toujours présents)
@@ -137,10 +137,15 @@ describe("TopBarHamburger", () => {
       // Préférences (toujours présentes)
       expect(screen.getByTestId("hamburger-lang-fr")).toBeTruthy();
       expect(screen.getByTestId("hamburger-theme-static")).toBeTruthy();
-      // Mentions / aide / logout
+      // Mentions / logout présents
       expect(screen.getByTestId("hamburger-legal")).toBeTruthy();
-      expect(screen.getByTestId("hamburger-help")).toBeTruthy();
       expect(screen.getByTestId("hamburger-logout")).toBeTruthy();
+      // Sprint fix-hamburger-anonymous-login (1er mai 2026) :
+      // - "Aide" supprimé pour tous les rôles
+      // - "Se connecter" caché pour les utilisateurs authentifiés
+      expect(screen.queryByTestId("hamburger-help")).toBeNull();
+      expect(screen.queryByTestId("hamburger-signin-teacher")).toBeNull();
+      expect(screen.queryByTestId("hamburger-signin-admin")).toBeNull();
       // Espaces avancés ABSENTS
       expect(screen.queryByTestId("hamburger-teacher-dashboard")).toBeNull();
       expect(screen.queryByTestId("hamburger-admin-home")).toBeNull();
@@ -255,7 +260,7 @@ describe("TopBarHamburger", () => {
       );
     });
 
-    it("Mentions légales et Aide sont aussi en URL absolue vers le baseUrl élève", () => {
+    it("Mentions légales en URL absolue vers le baseUrl élève (Aide supprimée Sprint 1er mai)", () => {
       setLocationHost("admin.muscu-eps.fr");
       render(<TopBarHamburger identityRoleOverride="admin" />);
       fireEvent.click(screen.getByTestId("topbar-hamburger-button"));
@@ -264,8 +269,9 @@ describe("TopBarHamburger", () => {
       expect(legal.getAttribute("href")).toBe(
         "https://muscu-eps.fr/legal/mentions-legales",
       );
-      const help = screen.getByTestId("hamburger-help");
-      expect(help.getAttribute("href")).toBe("https://muscu-eps.fr/apprendre");
+      // Sprint fix-hamburger-anonymous-login : "Aide" supprimée du hamburger
+      // (pointait vers /apprendre, pas une vraie page d'aide).
+      expect(screen.queryByTestId("hamburger-help")).toBeNull();
     });
 
     it("Espace prof : liens vers prof.muscu-eps.fr en URL absolue", () => {
@@ -286,6 +292,112 @@ describe("TopBarHamburger", () => {
 
       const audit = screen.getByTestId("hamburger-admin-audit");
       expect(audit.getAttribute("href")).toBe("https://admin.muscu-eps.fr/audit");
+    });
+  });
+
+  // Sprint fix-hamburger-anonymous-login (1er mai 2026) — Test live tablette
+  // Isabelle : un anonyme arrivant sur muscu-eps.fr n'a aucun moyen de se
+  // connecter. Le hamburger gagne une section "Se connecter" + le bouton
+  // logout est masqué (pas de session active à fermer).
+  describe("anonyme : Se connecter + pas de logout", () => {
+    const originalLocation = Object.getOwnPropertyDescriptor(
+      window,
+      "location",
+    );
+
+    afterEach(() => {
+      if (originalLocation) {
+        Object.defineProperty(window, "location", originalLocation);
+      }
+    });
+
+    function setLocationHost(host: string) {
+      const protocol = host.includes("localhost") ? "http:" : "https:";
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        writable: true,
+        value: {
+          ...window.location,
+          host,
+          hostname: host.split(":")[0],
+          protocol,
+          origin: `${protocol}//${host}`,
+        },
+      });
+    }
+
+    it("anonyme : section Se connecter rendue avec 2 liens", () => {
+      setLocationHost("muscu-eps.fr");
+      render(<TopBarHamburger identityRoleOverride="anonymous" />);
+      fireEvent.click(screen.getByTestId("topbar-hamburger-button"));
+
+      expect(screen.getByTestId("hamburger-signin-teacher")).toBeTruthy();
+      expect(screen.getByTestId("hamburger-signin-admin")).toBeTruthy();
+    });
+
+    it("anonyme : URL absolue vers prof.muscu-eps.fr/connexion et admin.muscu-eps.fr/login", () => {
+      setLocationHost("muscu-eps.fr");
+      render(<TopBarHamburger identityRoleOverride="anonymous" />);
+      fireEvent.click(screen.getByTestId("topbar-hamburger-button"));
+
+      const teacher = screen.getByTestId("hamburger-signin-teacher");
+      expect(teacher.getAttribute("href")).toBe(
+        "https://prof.muscu-eps.fr/connexion",
+      );
+      const admin = screen.getByTestId("hamburger-signin-admin");
+      expect(admin.getAttribute("href")).toBe(
+        "https://admin.muscu-eps.fr/login",
+      );
+    });
+
+    it("anonyme : URLs preview (design-prof / design-admin) en environnement preview", () => {
+      setLocationHost("design.muscu-eps.fr");
+      render(<TopBarHamburger identityRoleOverride="anonymous" />);
+      fireEvent.click(screen.getByTestId("topbar-hamburger-button"));
+
+      expect(
+        screen
+          .getByTestId("hamburger-signin-teacher")
+          .getAttribute("href"),
+      ).toBe("https://design-prof.muscu-eps.fr/connexion");
+      expect(
+        screen.getByTestId("hamburger-signin-admin").getAttribute("href"),
+      ).toBe("https://design-admin.muscu-eps.fr/login");
+    });
+
+    it("anonyme : le bouton Se déconnecter est masqué", () => {
+      setLocationHost("muscu-eps.fr");
+      render(<TopBarHamburger identityRoleOverride="anonymous" />);
+      fireEvent.click(screen.getByTestId("topbar-hamburger-button"));
+
+      expect(screen.queryByTestId("hamburger-logout")).toBeNull();
+    });
+
+    it("student : pas de section Se connecter (utilisateur déjà authentifié)", () => {
+      setLocationHost("muscu-eps.fr");
+      render(<TopBarHamburger identityRoleOverride="student" />);
+      fireEvent.click(screen.getByTestId("topbar-hamburger-button"));
+
+      expect(screen.queryByTestId("hamburger-signin-teacher")).toBeNull();
+      expect(screen.queryByTestId("hamburger-signin-admin")).toBeNull();
+    });
+
+    it("teacher : pas de section Se connecter", () => {
+      setLocationHost("prof.muscu-eps.fr");
+      render(<TopBarHamburger identityRoleOverride="teacher" />);
+      fireEvent.click(screen.getByTestId("topbar-hamburger-button"));
+
+      expect(screen.queryByTestId("hamburger-signin-teacher")).toBeNull();
+      expect(screen.queryByTestId("hamburger-signin-admin")).toBeNull();
+    });
+
+    it("super_admin : pas de section Se connecter (déjà authentifié)", () => {
+      setLocationHost("admin.muscu-eps.fr");
+      render(<TopBarHamburger identityRoleOverride="super_admin" />);
+      fireEvent.click(screen.getByTestId("topbar-hamburger-button"));
+
+      expect(screen.queryByTestId("hamburger-signin-teacher")).toBeNull();
+      expect(screen.queryByTestId("hamburger-signin-admin")).toBeNull();
     });
   });
 });
