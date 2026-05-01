@@ -16,8 +16,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { LocaleLink } from "@/components/LocaleLink";
-import { useIdentity } from "@/lib/auth/IdentityContext";
+import { useEffectiveRole } from "@/hooks/useEffectiveRole";
+import { type IdentityRole } from "@/lib/auth/IdentityContext";
 import { useI18n, type Lang } from "@/lib/i18n/I18nProvider";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { resolveEnv } from "@/lib/env";
@@ -29,16 +29,20 @@ const LANG_OPTIONS: Array<{ value: Lang; label: string }> = [
 ];
 
 export type TopBarHamburgerProps = {
-  /** Override IdentityContext role pour les tests. */
-  identityRoleOverride?: ReturnType<typeof useIdentity>["role"];
+  /** Override pour les tests (court-circuite useEffectiveRole). */
+  identityRoleOverride?: IdentityRole;
 };
 
 export function TopBarHamburger({
   identityRoleOverride,
 }: TopBarHamburgerProps = {}) {
   const { t, lang, setLang } = useI18n();
-  const identity = useIdentity();
-  const role = identityRoleOverride ?? identity.role;
+  // Sprint fix-topbar-badges (30 avril 2026) — useEffectiveRole détecte
+  // le rôle même sur le miroir admin (où IdentityProvider mode="eleve"
+  // ne déclenche pas refreshAdminRole). Sans ça, super_admin ne voyait
+  // jamais les sections Espace prof / Espace admin.
+  const { role: realRole } = useEffectiveRole();
+  const role = identityRoleOverride ?? realRole;
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
@@ -89,6 +93,14 @@ export function TopBarHamburger({
     }
   };
 
+  // Sprint fix-topbar-badges (30 avril 2026) — URLs absolues cross-host.
+  // BUG 3 : LocaleLink résout en relatif sur le host courant. Sur le miroir
+  // admin (admin.muscu-eps.fr), `/outils/timer` n'est pas dans
+  // ADMIN_MIRROR_PREFIXES (proxy.ts) → 404. Idem pour /legal/* et /apprendre.
+  // Solution : URLs absolues vers le sous-domaine élève qui héberge ces
+  // pages, peu importe le host courant.
+  const eleveBaseUrl =
+    typeof window !== "undefined" ? resolveEnv().baseUrl.eleve : "";
   const profBaseUrl =
     typeof window !== "undefined" ? resolveEnv().baseUrl.prof : "";
   const adminBaseUrl =
@@ -153,28 +165,28 @@ export function TopBarHamburger({
             <ToolTile
               icon="⏱️"
               label={t("topBar.hamburger.timer")}
-              href="/outils/timer"
+              href={`${eleveBaseUrl}/outils/timer`}
               onClick={closeAndNav}
               testId="hamburger-tool-timer"
             />
             <ToolTile
               icon="🧮"
               label={t("topBar.hamburger.calculator")}
-              href="/outils/calculateur-rm"
+              href={`${eleveBaseUrl}/outils/calculateur-rm`}
               onClick={closeAndNav}
               testId="hamburger-tool-rm"
             />
             <ToolTile
               icon="📋"
               label={t("topBar.hamburger.session")}
-              href="/outils/ma-seance"
+              href={`${eleveBaseUrl}/outils/ma-seance`}
               onClick={closeAndNav}
               testId="hamburger-tool-session"
             />
             <ToolTile
               icon="📔"
               label={t("topBar.hamburger.notebook")}
-              href="/outils/carnet"
+              href={`${eleveBaseUrl}/outils/carnet`}
               onClick={closeAndNav}
               testId="hamburger-tool-notebook"
             />
@@ -299,22 +311,26 @@ export function TopBarHamburger({
 
           {/* ── Liens transverses ─────────────────────────────── */}
           <SectionDivider />
-          <LocaleLink
-            href="/legal/mentions-legales"
+          {/* /legal/* et /apprendre n'existent QUE sur le sous-domaine élève
+              (pas dans ADMIN_MIRROR_PREFIXES de proxy.ts). On utilise donc
+              des URLs absolues vers le baseUrl élève pour éviter les 404
+              quand le hamburger est ouvert depuis admin.* ou prof.*. */}
+          <a
+            href={`${eleveBaseUrl}/legal/mentions-legales`}
             className="block rounded-md px-2 py-1.5 text-sm text-white/80 transition-colors hover:bg-white/5 hover:text-white"
             onClick={closeAndNav}
             data-testid="hamburger-legal"
           >
             {t("topBar.hamburger.legal")}
-          </LocaleLink>
-          <LocaleLink
-            href="/apprendre"
+          </a>
+          <a
+            href={`${eleveBaseUrl}/apprendre`}
             className="block rounded-md px-2 py-1.5 text-sm text-white/80 transition-colors hover:bg-white/5 hover:text-white"
             onClick={closeAndNav}
             data-testid="hamburger-help"
           >
             {t("topBar.hamburger.help")}
-          </LocaleLink>
+          </a>
 
           {/* ── Logout ────────────────────────────────────────── */}
           <SectionDivider />
@@ -368,8 +384,12 @@ function ToolTile({
   onClick: () => void;
   testId: string;
 }) {
+  // Sprint fix-topbar-badges (30 avril 2026) — ToolTile utilise désormais
+  // un <a href> classique avec URL absolue (cf. parent qui injecte
+  // eleveBaseUrl). LocaleLink est inadapté ici car il résout en relatif
+  // sur le host courant, et /outils/* n'est pas miroité sur admin/*.
   return (
-    <LocaleLink
+    <a
       href={href}
       onClick={onClick}
       data-testid={testId}
@@ -379,7 +399,7 @@ function ToolTile({
         {icon}
       </span>
       <span className="text-xs font-medium text-white/80">{label}</span>
-    </LocaleLink>
+    </a>
   );
 }
 

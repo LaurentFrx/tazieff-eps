@@ -41,6 +41,18 @@ vi.mock("@/lib/auth/IdentityContext", async () => {
   };
 });
 
+// Sprint fix-topbar-badges — useAppAdmin appelle fetch /api/me/role qui
+// n'est pas joignable en jsdom. On le mock ici pour que useEffectiveRole
+// retourne le rôle de useIdentity sans tenter de fetch réseau.
+vi.mock("@/hooks/useAppAdmin", () => ({
+  useAppAdmin: () => ({
+    isAdmin: false,
+    isSuperAdmin: false,
+    isLoading: false,
+    refetch: vi.fn(),
+  }),
+}));
+
 import {
   RoleBadgeSwitcher,
   detectActiveRole,
