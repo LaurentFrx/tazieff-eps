@@ -4,9 +4,14 @@
 //   - Les 3 helpers purs (detectActiveRole, deriveAvailableRoles, buildSwitchUrl)
 //   - Le rendu conditionnel selon le rôle du user
 //   - Le bon mapping des couleurs et l'attribut aria-current sur la pill active
+//
+// Sprint C1 (1er mai 2026) — Tests étendus :
+//   - Clic sur pill inactive → POST /api/auth/cross-domain/generate
+//   - Réponse OK → navigation vers redirect_url
+//   - Réponse 401/403 → fallback navigation directe (mode anonyme)
 
-import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 vi.mock("@/lib/i18n/I18nProvider", () => ({
   useI18n: () => ({
@@ -246,5 +251,165 @@ describe("RoleBadgeSwitcher (rendu)", () => {
     expect(
       screen.getByTestId("role-badge-eleve").getAttribute("aria-pressed"),
     ).toBe("false");
+  });
+});
+
+// Sprint C1 (1er mai 2026) — Auto-login cross-domain.
+//
+// Au clic sur une pill inactive, le composant doit POSTer sur
+// /api/auth/cross-domain/generate avec le target_host et target_path. Si la
+// réponse contient redirect_url, on navigue dessus (auto-login). Sinon on
+// retombe sur l'ancien comportement (navigation directe + login normal).
+
+describe("RoleBadgeSwitcher (auto-login Sprint C1)", () => {
+  // Sauvegarde et restauration de window.location et fetch.
+  let originalFetch: typeof globalThis.fetch;
+  let originalLocation: Location;
+  // Typed explicitly : vi.fn() infère un type Mock non-callable directement,
+  // alors qu'on veut une fonction qui prend un string et retourne void.
+  let hrefSetter: ((value: string) => void) & {
+    mock: { calls: [string][] };
+  };
+
+  beforeEach(() => {
+    originalFetch = globalThis.fetch;
+    originalLocation = window.location;
+    hrefSetter = vi.fn() as unknown as typeof hrefSetter;
+
+    // Mock window.location avec un getter/setter sur href + pathname/host
+    // figés. jsdom ne permet pas de réassigner location directement, on
+    // utilise defineProperty.
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      writable: true,
+      value: {
+        get href() {
+          return "";
+        },
+        set href(value: string) {
+          hrefSetter(value);
+        },
+        pathname: "/exercices/s1-01",
+        host: "admin.muscu-eps.fr",
+        protocol: "https:",
+      },
+    });
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      writable: true,
+      value: originalLocation,
+    });
+    vi.restoreAllMocks();
+  });
+
+  it("clic sur pill inactive → POST /api/auth/cross-domain/generate avec body correct", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        redirect_url:
+          "https://prof.muscu-eps.fr/api/auth/cross-domain/consume?token=abc&path=%2F",
+      }),
+    }) as unknown as typeof fetch;
+
+    render(
+      <RoleBadgeSwitcher
+        identityRoleOverride="super_admin"
+        hostOverride="admin.muscu-eps.fr"
+        pathnameOverride="/exercices/s1-01"
+      />,
+    );
+
+    const profPill = screen.getByTestId("role-badge-prof");
+    fireEvent.click(profPill);
+
+    await waitFor(() => {
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        "/api/auth/cross-domain/generate",
+        expect.objectContaining({
+          method: "POST",
+          credentials: "include",
+        }),
+      );
+    });
+    const fetchMock = globalThis.fetch as unknown as ReturnType<typeof vi.fn>;
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.target_host).toBe("prof.muscu-eps.fr");
+    expect(body.target_path).toBe("/exercices/s1-01");
+
+    await waitFor(() => {
+      expect(hrefSetter).toHaveBeenCalledWith(
+        "https://prof.muscu-eps.fr/api/auth/cross-domain/consume?token=abc&path=%2F",
+      );
+    });
+  });
+
+  it("réponse 401 → fallback navigation directe (anonyme)", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({ error: "unauthenticated" }),
+    }) as unknown as typeof fetch;
+
+    render(
+      <RoleBadgeSwitcher
+        identityRoleOverride="super_admin"
+        hostOverride="admin.muscu-eps.fr"
+        pathnameOverride="/exercices/s1-01"
+      />,
+    );
+
+    fireEvent.click(screen.getByTestId("role-badge-prof"));
+
+    await waitFor(() => {
+      expect(hrefSetter).toHaveBeenCalled();
+    });
+    // Le fallback utilise buildSwitchUrl → URL prof + path préservé.
+    expect(hrefSetter.mock.calls[0][0]).toBe(
+      "https://prof.muscu-eps.fr/exercices/s1-01",
+    );
+  });
+
+  it("clic sur pill ACTIVE → aucun fetch (no-op)", async () => {
+    globalThis.fetch = vi.fn() as unknown as typeof fetch;
+
+    render(
+      <RoleBadgeSwitcher
+        identityRoleOverride="super_admin"
+        hostOverride="admin.muscu-eps.fr"
+      />,
+    );
+
+    fireEvent.click(screen.getByTestId("role-badge-admin"));
+
+    // On laisse une frame pour s'assurer qu'aucun appel async n'a été fait.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it("erreur réseau (fetch reject) → fallback navigation directe", async () => {
+    globalThis.fetch = vi
+      .fn()
+      .mockRejectedValue(new Error("network error")) as unknown as typeof fetch;
+
+    render(
+      <RoleBadgeSwitcher
+        identityRoleOverride="teacher"
+        hostOverride="muscu-eps.fr"
+        pathnameOverride="/methodes"
+      />,
+    );
+
+    fireEvent.click(screen.getByTestId("role-badge-prof"));
+
+    await waitFor(() => {
+      expect(hrefSetter).toHaveBeenCalled();
+    });
+    expect(hrefSetter.mock.calls[0][0]).toBe(
+      "https://prof.muscu-eps.fr/methodes",
+    );
   });
 });

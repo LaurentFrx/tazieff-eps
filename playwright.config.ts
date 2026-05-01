@@ -52,7 +52,8 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
         baseURL: STUDENT_BASE_URL,
       },
-      testMatch: /(student-.*|locale-preservation|cross-host-isolation)\.spec\.ts/,
+      testMatch:
+        /(student-.*|locale-preservation|cross-host-isolation|cross-domain-sso)\.spec\.ts/,
     },
     {
       name: "teacher",

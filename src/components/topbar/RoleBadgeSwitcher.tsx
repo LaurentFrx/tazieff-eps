@@ -17,7 +17,7 @@
 // académique). Un élève n'a aucun accès aux espaces prof/admin même s'il
 // arrivait à manipuler les pills (il aurait juste l'écran de login).
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { useEffectiveRole } from "@/hooks/useEffectiveRole";
 import { type IdentityRole } from "@/lib/auth/IdentityContext";
@@ -199,8 +199,17 @@ function RoleBadge({
   label,
   pathnameOverride,
 }: RoleBadgeProps) {
-  const handleClick = () => {
-    if (isActive) return; // Pas de navigation si déjà actif.
+  // Sprint C1 (1er mai 2026) — état de loading pendant l'appel à
+  // /api/auth/cross-domain/generate. Affiché en opacity réduite + curseur
+  // wait pendant la latence (~100-300 ms en prod).
+  const [isLoading, setIsLoading] = useState(false);
+
+  const navigateAnonymous = () => {
+    // Fallback historique (avant Sprint C1) : navigation directe sans
+    // auto-login. Utilisé quand /generate refuse (élève simple, session
+    // expirée) ou échoue (réseau coupé). L'utilisateur arrive alors sur
+    // l'écran de login normal — aucun privilège fuité, comportement
+    // identique à un clic sur un lien externe.
     const { baseUrl } = resolveEnv();
     const currentPathname =
       pathnameOverride ??
@@ -215,23 +224,77 @@ function RoleBadge({
     }
   };
 
+  const handleClick = async () => {
+    if (isActive || isLoading) return;
+    if (typeof window === "undefined") return;
+
+    // Sprint C1 — Auto-login cross-domain. On demande au backend un token
+    // éphémère qui ouvrira directement la session sur le sous-domaine
+    // cible. Si /generate refuse ou échoue, on retombe sur l'ancien
+    // comportement (navigation anonyme + login normal côté cible).
+    setIsLoading(true);
+    try {
+      const { hosts } = resolveEnv();
+      const targetHost = hosts[role];
+      const currentPathname =
+        pathnameOverride ?? window.location.pathname ?? "/";
+      const response = await fetch("/api/auth/cross-domain/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          target_host: targetHost,
+          target_path: currentPathname,
+        }),
+      });
+
+      if (!response.ok) {
+        // 401 / 403 / 500 → fallback navigation anonyme (login normal côté
+        // cible). Pas de toast : la transition reste fluide.
+        navigateAnonymous();
+        return;
+      }
+
+      const body = (await response.json().catch(() => null)) as {
+        redirect_url?: string;
+      } | null;
+      if (!body?.redirect_url) {
+        navigateAnonymous();
+        return;
+      }
+      window.location.href = body.redirect_url;
+    } catch {
+      // Erreur réseau ou exception inattendue → fallback.
+      navigateAnonymous();
+    } finally {
+      // Note : navigateAnonymous() ou window.location.href déclenchent une
+      // navigation. Ce setIsLoading(false) ne sera atteint qu'en cas de
+      // navigation bloquée (rare). Sans danger.
+      setIsLoading(false);
+    }
+  };
+
   return (
     <button
       type="button"
       onClick={handleClick}
+      disabled={isLoading}
       aria-pressed={isActive}
+      aria-busy={isLoading || undefined}
       aria-current={isActive ? "page" : undefined}
       data-testid={`role-badge-${role}`}
-      className="cursor-pointer rounded-md px-3.5 py-1.5 text-[13px] font-medium transition-colors duration-150 ease-out hover:bg-white/5"
+      className="cursor-pointer rounded-md px-3.5 py-1.5 text-[13px] font-medium transition-colors duration-150 ease-out hover:bg-white/5 disabled:cursor-wait"
       style={
         isActive
           ? {
               backgroundColor: color,
               color: "#fff",
+              opacity: isLoading ? 0.7 : 1,
             }
           : {
               color: "#888",
               backgroundColor: "transparent",
+              opacity: isLoading ? 0.5 : 1,
             }
       }
     >
