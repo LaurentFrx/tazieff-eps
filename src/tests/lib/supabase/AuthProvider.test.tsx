@@ -26,6 +26,7 @@ vi.mock("@/lib/supabase/browser", () => ({
 }));
 
 import { AuthProvider, AuthContext } from "@/lib/supabase/AuthProvider";
+import { __resetAnonInitGuardForTests } from "@/lib/auth/IdentityContext";
 
 function Probe() {
   const ctx = useContext(AuthContext);
@@ -42,6 +43,10 @@ function Probe() {
 beforeEach(() => {
   getSessionMock.mockReset();
   signInAnonymouslyMock.mockReset();
+  // Sprint fix-anonymous-users (1 mai 2026) — Le guard module
+  // hasAttemptedAnonInit doit être reset entre chaque test, sinon le 2e
+  // test sans session ne déclencherait plus signInAnonymously().
+  __resetAnonInitGuardForTests();
 });
 
 afterEach(() => {
@@ -203,6 +208,74 @@ describe("AuthProvider — disableAnonymousFallback (P0.7-septies)", () => {
     expect(signInAnonymouslyMock).toHaveBeenCalledTimes(1);
     expect(getByTestId("user-id").textContent).toBe("u-anon-fresh");
     expect(getByTestId("anon").textContent).toBe("yes");
+  });
+});
+
+describe("AuthProvider — anti-prolifération sessions anonymes (Sprint 1 mai 2026)", () => {
+  it("deux remounts successifs sans session → signInAnonymously appelé UNE seule fois", async () => {
+    getSessionMock.mockResolvedValue({ data: { session: null } });
+    signInAnonymouslyMock.mockResolvedValue({
+      data: { user: { id: "u-anon-once", email: null, is_anonymous: true } },
+    });
+
+    // Premier mount : crée la session anonyme.
+    const { unmount, getByTestId } = render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>,
+    );
+    await waitFor(() => {
+      expect(getByTestId("loading").textContent).toBe("no");
+    });
+    expect(signInAnonymouslyMock).toHaveBeenCalledTimes(1);
+    unmount();
+
+    // Second mount sans reset du guard module : NE doit PAS rappeler
+    // signInAnonymously, même si getSession() retourne toujours null.
+    // (En pratique, après le premier appel, le cookie sb-* est posé et
+    // getSession() retournerait la session — mais on simule un cas où le
+    // mock reste à null pour vérifier explicitement le guard.)
+    const { getByTestId: getByTestId2 } = render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>,
+    );
+    await waitFor(() => {
+      expect(getByTestId2("loading").textContent).toBe("no");
+    });
+    // Toujours 1 appel — le guard a bloqué le second.
+    expect(signInAnonymouslyMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("après reset du guard, un nouveau remount peut réappeler signInAnonymously", async () => {
+    getSessionMock.mockResolvedValue({ data: { session: null } });
+    signInAnonymouslyMock.mockResolvedValue({
+      data: { user: { id: "u-anon-fresh", email: null, is_anonymous: true } },
+    });
+
+    const { unmount, getByTestId } = render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>,
+    );
+    await waitFor(() => {
+      expect(getByTestId("loading").textContent).toBe("no");
+    });
+    expect(signInAnonymouslyMock).toHaveBeenCalledTimes(1);
+    unmount();
+
+    // Reset explicite du guard (simulant un cycle de vie de page nouveau).
+    __resetAnonInitGuardForTests();
+
+    const { getByTestId: getByTestId2 } = render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>,
+    );
+    await waitFor(() => {
+      expect(getByTestId2("loading").textContent).toBe("no");
+    });
+    expect(signInAnonymouslyMock).toHaveBeenCalledTimes(2);
   });
 });
 
