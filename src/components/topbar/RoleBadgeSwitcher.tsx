@@ -19,7 +19,8 @@
 
 import { useMemo } from "react";
 
-import { useIdentity, type IdentityRole } from "@/lib/auth/IdentityContext";
+import { useEffectiveRole } from "@/hooks/useEffectiveRole";
+import { type IdentityRole } from "@/lib/auth/IdentityContext";
 import { resolveEnv, type AppRole } from "@/lib/env";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
@@ -128,9 +129,13 @@ export function RoleBadgeSwitcher({
   hostOverride,
   pathnameOverride,
 }: RoleBadgeSwitcherProps = {}) {
-  const identity = useIdentity();
+  // Sprint fix-topbar-badges (30 avril 2026) — useEffectiveRole combine
+  // IdentityContext + /api/me/role pour détecter le rôle même sur le
+  // miroir admin (où IdentityProvider mode="eleve" empêche refreshAdminRole
+  // de tourner). Cf. useEffectiveRole.ts.
+  const { role: realRole } = useEffectiveRole();
   const { t } = useI18n();
-  const effectiveIdentityRole = identityRoleOverride ?? identity.role;
+  const effectiveIdentityRole = identityRoleOverride ?? realRole;
   const roleLabels: Record<SwitcherRole, string> = {
     eleve: t("topBar.role.eleve"),
     prof: t("topBar.role.prof"),

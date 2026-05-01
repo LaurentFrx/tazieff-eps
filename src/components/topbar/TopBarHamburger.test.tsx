@@ -55,6 +55,17 @@ vi.mock("@/lib/auth/IdentityContext", async () => {
   };
 });
 
+// Sprint fix-topbar-badges — useAppAdmin via useEffectiveRole : mocké pour
+// éviter le fetch réseau /api/me/role pendant les tests jsdom.
+vi.mock("@/hooks/useAppAdmin", () => ({
+  useAppAdmin: () => ({
+    isAdmin: false,
+    isSuperAdmin: false,
+    isLoading: false,
+    refetch: vi.fn(),
+  }),
+}));
+
 vi.mock("next/navigation", () => ({
   usePathname: () => "/",
 }));
@@ -177,5 +188,104 @@ describe("TopBarHamburger", () => {
     fireEvent.click(screen.getByTestId("topbar-hamburger-button"));
     fireEvent.click(screen.getByTestId("hamburger-lang-en"));
     expect(setLangMock).toHaveBeenCalledWith("en");
+  });
+
+  // Sprint fix-topbar-badges (30 avril 2026) — BUG 3 : les liens outils,
+  // mentions légales et aide doivent être des URLs ABSOLUES vers le
+  // sous-domaine élève. Sinon, depuis admin.muscu-eps.fr ou prof.muscu-eps.fr,
+  // ils retournent 404 (ces paths ne sont pas dans ADMIN_MIRROR_PREFIXES).
+  describe("URLs absolues cross-host (BUG 3)", () => {
+    const originalLocation = Object.getOwnPropertyDescriptor(
+      window,
+      "location",
+    );
+
+    afterEach(() => {
+      if (originalLocation) {
+        Object.defineProperty(window, "location", originalLocation);
+      }
+    });
+
+    function setLocationHost(host: string) {
+      const protocol = host.includes("localhost") ? "http:" : "https:";
+      Object.defineProperty(window, "location", {
+        configurable: true,
+        writable: true,
+        value: {
+          ...window.location,
+          host,
+          hostname: host.split(":")[0],
+          protocol,
+          origin: `${protocol}//${host}`,
+        },
+      });
+    }
+
+    it("sur admin.muscu-eps.fr, les liens outils pointent en absolu vers muscu-eps.fr", () => {
+      setLocationHost("admin.muscu-eps.fr");
+      render(<TopBarHamburger identityRoleOverride="admin" />);
+      fireEvent.click(screen.getByTestId("topbar-hamburger-button"));
+
+      const timer = screen.getByTestId("hamburger-tool-timer");
+      expect(timer.getAttribute("href")).toBe(
+        "https://muscu-eps.fr/outils/timer",
+      );
+      const rm = screen.getByTestId("hamburger-tool-rm");
+      expect(rm.getAttribute("href")).toBe(
+        "https://muscu-eps.fr/outils/calculateur-rm",
+      );
+      const session = screen.getByTestId("hamburger-tool-session");
+      expect(session.getAttribute("href")).toBe(
+        "https://muscu-eps.fr/outils/ma-seance",
+      );
+      const notebook = screen.getByTestId("hamburger-tool-notebook");
+      expect(notebook.getAttribute("href")).toBe(
+        "https://muscu-eps.fr/outils/carnet",
+      );
+    });
+
+    it("sur design-admin.muscu-eps.fr (preview), les liens outils pointent vers design.muscu-eps.fr", () => {
+      setLocationHost("design-admin.muscu-eps.fr");
+      render(<TopBarHamburger identityRoleOverride="admin" />);
+      fireEvent.click(screen.getByTestId("topbar-hamburger-button"));
+
+      const timer = screen.getByTestId("hamburger-tool-timer");
+      expect(timer.getAttribute("href")).toBe(
+        "https://design.muscu-eps.fr/outils/timer",
+      );
+    });
+
+    it("Mentions légales et Aide sont aussi en URL absolue vers le baseUrl élève", () => {
+      setLocationHost("admin.muscu-eps.fr");
+      render(<TopBarHamburger identityRoleOverride="admin" />);
+      fireEvent.click(screen.getByTestId("topbar-hamburger-button"));
+
+      const legal = screen.getByTestId("hamburger-legal");
+      expect(legal.getAttribute("href")).toBe(
+        "https://muscu-eps.fr/legal/mentions-legales",
+      );
+      const help = screen.getByTestId("hamburger-help");
+      expect(help.getAttribute("href")).toBe("https://muscu-eps.fr/apprendre");
+    });
+
+    it("Espace prof : liens vers prof.muscu-eps.fr en URL absolue", () => {
+      setLocationHost("admin.muscu-eps.fr");
+      render(<TopBarHamburger identityRoleOverride="super_admin" />);
+      fireEvent.click(screen.getByTestId("topbar-hamburger-button"));
+
+      const dashboard = screen.getByTestId("hamburger-teacher-dashboard");
+      expect(dashboard.getAttribute("href")).toBe(
+        "https://prof.muscu-eps.fr/tableau-de-bord",
+      );
+    });
+
+    it("Espace admin : liens vers admin.muscu-eps.fr en URL absolue", () => {
+      setLocationHost("muscu-eps.fr");
+      render(<TopBarHamburger identityRoleOverride="super_admin" />);
+      fireEvent.click(screen.getByTestId("topbar-hamburger-button"));
+
+      const audit = screen.getByTestId("hamburger-admin-audit");
+      expect(audit.getAttribute("href")).toBe("https://admin.muscu-eps.fr/audit");
+    });
   });
 });
