@@ -75,6 +75,40 @@ const DEFAULT_IDENTITY: Identity = {
 
 const IdentityContext = createContext<Identity>(DEFAULT_IDENTITY);
 
+/* ── Guard anti-prolifération sessions anonymes (Sprint 1 mai 2026) ───── */
+//
+// Audit du 30 avril 2026 : 904 utilisateurs anonymes en BD pour 2 users
+// réels (cf. SQL `auth.users WHERE is_anonymous = true`), 100% jamais
+// réutilisés (last_sign_in_at - created_at < 1 seconde sur 904/904).
+//
+// Investigation in-vivo (Chrome DevTools sur muscu-eps.fr) :
+//   - Le SDK @supabase/ssr est correctement configuré et pose la session
+//     dans le cookie `sb-zefkltkiigxkjcrdesrk-auth-token` (host-only).
+//   - Reload sans clearing : la session est correctement réutilisée.
+//   - Reload après clearing : nouvelle session anonyme créée (attendu).
+//
+// Causes plausibles de la prolifération en prod :
+//   1. Bots / crawlers / monitoring : chacune de leurs visites efface ses
+//      cookies entre les requêtes → 1 anonyme par hit.
+//   2. Visiteurs uniques (élèves curieux qui ne reviennent jamais).
+//   3. React StrictMode double-mount en dev (inactif en prod, mais l'effet
+//      se voit pendant les builds/tests locaux).
+//   4. Transitions de layout (élève → admin → élève) qui démontent et
+//      remontent IdentityProvider, multipliant les init.
+//   5. Race conditions sur connexions lentes (le 1er signInAnonymously()
+//      n'a pas posé son cookie quand le 2e useEffect tourne).
+//
+// Le guard `hasAttemptedAnonInit` (au niveau module) bloque tout appel
+// supplémentaire à signInAnonymously() après le premier — la session
+// créée par ce premier appel est ensuite retrouvée via getSession() au
+// remount. Le reset n'est exposé que pour les tests Vitest.
+let hasAttemptedAnonInit = false;
+
+/** Reset uniquement utilisé par les tests Vitest. */
+export function __resetAnonInitGuardForTests(): void {
+  hasAttemptedAnonInit = false;
+}
+
 /* ── Helpers internes ────────────────────────────────────────────────── */
 
 /**
@@ -177,16 +211,35 @@ export function IdentityProvider({
             await refreshAdminRole();
           }
         } else if (!effectiveDisable) {
-          // Mode élève sans disableAnonymousFallback → anonymous.
-          const { data } = await supabase.auth.signInAnonymously();
-          if (cancelled) return;
-          setUser(data.user ?? null);
+          // Sprint fix-anonymous-users (1 mai 2026) — Garde anti-prolifération.
+          // hasAttemptedAnonInit empêche les appels multiples à
+          // signInAnonymously() pendant la durée de vie de la page (StrictMode,
+          // remounts de layout, races). Le tout premier appel crée la session
+          // qui sera ensuite retrouvée via getSession() — les remounts
+          // ultérieurs tomberont dans la branche `if (session?.user)` ci-dessus.
+          if (hasAttemptedAnonInit) {
+            // L'init anonyme a déjà été tentée pour cette page, mais
+            // getSession() retourne null. Probablement le cookie sb-* n'a
+            // pas encore été propagé (race), ou il est partiellement écrit.
+            // On NE crée PAS de nouvelle session — onAuthStateChange (ci-
+            // dessous) recevra l'event INITIAL_SESSION dès que le cookie
+            // sera disponible et hydratera setUser().
+            setUser(null);
+          } else {
+            hasAttemptedAnonInit = true;
+            const { data } = await supabase.auth.signInAnonymously();
+            if (cancelled) return;
+            setUser(data.user ?? null);
+          }
         } else {
           // Mode prof/admin sans session : on laisse user à null.
           setUser(null);
         }
-      } catch {
+      } catch (err) {
         // Auth failed — app continues without auth.
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("[IdentityProvider] init auth failed:", err);
+        }
       } finally {
         if (!cancelled) setIsLoading(false);
       }
