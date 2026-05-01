@@ -1215,6 +1215,17 @@ export const messages = {
         loading: "Chargement\u2026",
       },
     },
+    crossDomain: {
+      loading: "Connexion en cours…",
+      error: {
+        invalid: "Lien expiré ou invalide",
+        unauthorized: "Accès non autorisé",
+      },
+      hint: {
+        alreadyLoggedIn:
+          "Si vous êtes connecté sur un autre espace (admin / prof), allez-y et cliquez sur la pill correspondante pour vous reconnecter ici sans email.",
+      },
+    },
     topBar: {
       maClasse: "Ma classe",
       role: {
@@ -2509,6 +2520,17 @@ export const messages = {
         loading: "Loading…",
       },
     },
+    crossDomain: {
+      loading: "Signing in…",
+      error: {
+        invalid: "Link expired or invalid",
+        unauthorized: "Access denied",
+      },
+      hint: {
+        alreadyLoggedIn:
+          "If you are signed in on another space (admin / teacher), go there and click the matching pill to reconnect here without an email.",
+      },
+    },
     topBar: {
       maClasse: "My class",
       role: {
@@ -3800,6 +3822,17 @@ export const messages = {
         organization: "Centro",
         teacherUnknown: "Profesor",
         loading: "Cargando…",
+      },
+    },
+    crossDomain: {
+      loading: "Conectando…",
+      error: {
+        invalid: "Enlace caducado o inválido",
+        unauthorized: "Acceso no autorizado",
+      },
+      hint: {
+        alreadyLoggedIn:
+          "Si has iniciado sesión en otro espacio (admin / profe), ve allí y haz clic en la pestaña correspondiente para reconectarte aquí sin correo.",
       },
     },
     topBar: {
