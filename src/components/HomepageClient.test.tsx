@@ -51,6 +51,24 @@ vi.mock("@/components/HomeSearchBar", () => ({
   HomeSearchBar: () => <div data-testid="home-search">Search</div>,
 }));
 
+// Sprint fix-footer-legal-urls (1 mai 2026) — Mock resolveEnv pour des URLs
+// prévisibles dans les tests des liens légaux (cf. describe "footer légal").
+vi.mock("@/lib/env", () => ({
+  resolveEnv: () => ({
+    env: "production",
+    hosts: {
+      eleve: "muscu-eps.fr",
+      prof: "prof.muscu-eps.fr",
+      admin: "admin.muscu-eps.fr",
+    },
+    baseUrl: {
+      eleve: "https://muscu-eps.fr",
+      prof: "https://prof.muscu-eps.fr",
+      admin: "https://admin.muscu-eps.fr",
+    },
+  }),
+}));
+
 import { HomepageClient } from "./HomepageClient";
 
 describe("HomepageClient — hub d'actions", () => {
@@ -114,5 +132,39 @@ describe("HomepageClient — hub d'actions", () => {
   it("shows 'Pour bien commencer' when no favorites", () => {
     render(<HomepageClient {...props} />);
     expect(screen.getByText("pages.home.startTitle")).toBeDefined();
+  });
+});
+
+// Sprint fix-footer-legal-urls (1 mai 2026) — Tests cross-domain.
+//
+// Le footer légal de la home est rendu sur muscu-eps.fr/ ET sur le miroir
+// admin.muscu-eps.fr/ (pass-through P0.7-bis du proxy). Sur le miroir,
+// les paths /legal/* ne sont PAS dans ADMIN_MIRROR_PREFIXES → un Link
+// relatif retourne 404. Solution : URL absolue vers le baseUrl élève.
+describe("HomepageClient — footer légal cross-domain", () => {
+  const props = { exerciseCount: 80, methodeCount: 19, learnCount: 10 };
+
+  it("le lien Mentions légales pointe en absolu vers muscu-eps.fr/legal/mentions-legales", () => {
+    render(<HomepageClient {...props} />);
+    const link = screen.getByTestId("footer-legal-mentions");
+    expect(link.getAttribute("href")).toBe(
+      "https://muscu-eps.fr/legal/mentions-legales",
+    );
+  });
+
+  it("le lien Confidentialité pointe en absolu vers muscu-eps.fr/legal/confidentialite", () => {
+    render(<HomepageClient {...props} />);
+    const link = screen.getByTestId("footer-legal-confidentialite");
+    expect(link.getAttribute("href")).toBe(
+      "https://muscu-eps.fr/legal/confidentialite",
+    );
+  });
+
+  it("le lien CGU pointe en absolu vers muscu-eps.fr/legal/cgu", () => {
+    render(<HomepageClient {...props} />);
+    const link = screen.getByTestId("footer-legal-cgu");
+    expect(link.getAttribute("href")).toBe(
+      "https://muscu-eps.fr/legal/cgu",
+    );
   });
 });
