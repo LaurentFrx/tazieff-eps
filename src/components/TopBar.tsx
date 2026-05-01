@@ -1,5 +1,21 @@
 "use client";
 
+// Sprint topbar-refondue (30 avril 2026) — refonte complète :
+//   - Colonne 1 (gauche) : logo Tazieff EPS + texte (identique au précédent)
+//   - Colonne 2 (centre) : RoleBadgeSwitcher (uniquement pour profs/admins)
+//   - Colonne 3 (droite) : Search + TopBarHamburger
+//
+// Suppressions par rapport à l'ancienne TopBar :
+//   - Icône Outils (⚡) — déplacée dans le hamburger (grille 2×2 outils)
+//   - Icône Réglages (engrenage) — déplacée dans le hamburger
+//     (préférences langue/thème) ; la page /reglages reste en place
+//     temporairement pour les fonctions non migrées (objectif par défaut,
+//     animations anatomie, code établissement) — sprint dédié à venir.
+//   - Icône Mode enseignant — remplacée par la pill « Prof » du switcher.
+//
+// Conservés : Timer badge actif (clic → /outils/timer), lien « Ma classe »
+// (élève inscrit), shortcut clavier Cmd/Ctrl+K, modal Search.
+
 import { LocaleLink as Link } from "@/components/LocaleLink";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -7,6 +23,8 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { SearchModal } from "@/components/SearchModal";
 import { useTimerContext } from "@/contexts/TimerContext";
 import { useMyClasses } from "@/hooks/useMyClasses";
+import { RoleBadgeSwitcher } from "@/components/topbar/RoleBadgeSwitcher";
+import { TopBarHamburger } from "@/components/topbar/TopBarHamburger";
 
 /* ── Inline SVG icons (20×20) ────────────────────────────────────── */
 
@@ -15,34 +33,6 @@ function IconSearch() {
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="11" cy="11" r="7" />
       <path d="M21 21l-4.35-4.35" />
-    </svg>
-  );
-}
-
-function IconTools() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-    </svg>
-  );
-}
-
-function IconSettings() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1.08-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1.08 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001.08 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1.08z" />
-    </svg>
-  );
-}
-
-function IconTeacher() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 00-3-3.87" />
-      <path d="M16 3.13a4 4 0 010 7.75" />
     </svg>
   );
 }
@@ -86,11 +76,19 @@ export function TopBar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-40 border-b border-zinc-200 bg-white/95 backdrop-blur-lg dark:border-zinc-700 dark:bg-zinc-900/95" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
-        <div className="mx-auto flex h-12 max-w-7xl items-center justify-between gap-2 px-4">
+      <header
+        className="fixed top-0 left-0 right-0 z-40 border-b border-zinc-200 bg-white/95 backdrop-blur-lg dark:border-zinc-700 dark:bg-zinc-900/95"
+        style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+        data-testid="topbar"
+      >
+        <div className="mx-auto grid h-12 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-2 px-4">
 
-          {/* ── Left: Logo ────────────────────────────────────────── */}
-          <Link href="/" className="flex items-center gap-2 shrink-0 min-h-[44px]">
+          {/* ── Col 1 — Identité Tazieff (logo + texte sur ≥sm) ── */}
+          <Link
+            href="/"
+            className="flex items-center gap-2 shrink-0 min-h-[44px]"
+            data-testid="topbar-brand"
+          >
             <Image
               src="/media/branding/logo-eps-72.webp"
               alt="Logo Tazieff EPS"
@@ -98,88 +96,70 @@ export function TopBar() {
               height={24}
               unoptimized
             />
-            <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+            <span className="hidden sm:inline text-sm font-bold text-zinc-900 dark:text-zinc-100">
               Tazieff&apos;EPS
             </span>
           </Link>
 
-          {/* ── Timer badge (when active) ────────────────────────── */}
-          {timerCtx?.isActive && (() => {
-            const ap = timerCtx.state.phases[timerCtx.state.activePhaseIndex];
-            const color = timerCtx.displayConfig?.phaseColorMap[ap?.type ?? 'work'] ?? '#8b5cf6';
-            const running = timerCtx.state.status === 'running';
-            return (
-              <Link
-                href="/outils/timer"
-                className="flex items-center gap-2 px-2.5 py-1 rounded-full no-underline shrink-0"
-                style={{ background: `${color}33`, border: `1px solid ${color}4d` }}
-              >
-                <span
-                  className="block w-2 h-2 rounded-full"
-                  style={{
-                    background: color,
-                    animation: running ? 'timer-badge-pulse 1.5s ease-in-out infinite' : undefined,
-                  }}
-                />
-                <span className="font-mono text-[12px] font-bold text-zinc-900 dark:text-white">
-                  {formatBadgeTime(timerCtx.state.secondsLeft)}
-                </span>
-              </Link>
-            );
-          })()}
+          {/* ── Col 2 — Centre : badge timer actif OU switcher rôle ── */}
+          <div className="flex items-center justify-center min-w-0">
+            {timerCtx?.isActive ? (
+              (() => {
+                const ap = timerCtx.state.phases[timerCtx.state.activePhaseIndex];
+                const color = timerCtx.displayConfig?.phaseColorMap[ap?.type ?? 'work'] ?? '#8b5cf6';
+                const running = timerCtx.state.status === 'running';
+                return (
+                  <Link
+                    href="/outils/timer"
+                    className="flex items-center gap-2 px-2.5 py-1 rounded-full no-underline shrink-0"
+                    style={{ background: `${color}33`, border: `1px solid ${color}4d` }}
+                  >
+                    <span
+                      className="block w-2 h-2 rounded-full"
+                      style={{
+                        background: color,
+                        animation: running ? 'timer-badge-pulse 1.5s ease-in-out infinite' : undefined,
+                      }}
+                    />
+                    <span className="font-mono text-[12px] font-bold text-zinc-900 dark:text-white">
+                      {formatBadgeTime(timerCtx.state.secondsLeft)}
+                    </span>
+                  </Link>
+                );
+              })()
+            ) : (
+              <RoleBadgeSwitcher />
+            )}
+          </div>
 
-          {/* ── Right: Action icons ───────────────────────────────── */}
+          {/* ── Col 3 — Actions (search + ma classe + hamburger) ── */}
           <div className="flex items-center gap-0.5 shrink-0">
-            {/* Search */}
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
               className="flex items-center justify-center w-11 h-11 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               aria-label={t("search.open")}
+              data-testid="topbar-search-button"
             >
               <IconSearch />
             </button>
 
-            {/* Outils — mobile only */}
-            <Link
-              href="/outils"
-              className="flex items-center justify-center w-11 h-11 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              aria-label={t("nav.outils.label")}
-            >
-              <IconTools />
-            </Link>
-
-            {/* Réglages */}
-            <Link
-              href="/reglages"
-              className="flex items-center justify-center w-11 h-11 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              aria-label={t("pages.settings.title")}
-            >
-              <IconSettings />
-            </Link>
-
             {/* Sprint E1 — Lien Ma classe : visible uniquement si l'élève
-                est inscrit dans au moins une classe. */}
+                est inscrit dans au moins une classe. Conservé hors hamburger
+                (raccourci fréquent pour les élèves inscrits). */}
             {hasClass && (
               <Link
                 href="/ma-classe"
                 className="flex items-center justify-center w-11 h-11 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                 aria-label={t("topBar.maClasse")}
+                data-testid="topbar-ma-classe"
               >
                 <IconMaClasse />
               </Link>
             )}
 
-            {/* P0.1 — Mode enseignant : icône visible pour tous (la page
-                /enseignant est un outil localStorage ouvert à tous, sans
-                écriture base de données). */}
-            <Link
-              href="/enseignant"
-              className="flex items-center justify-center w-11 h-11 rounded-lg text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              aria-label={t("enseignant.navLabel")}
-            >
-              <IconTeacher />
-            </Link>
+            {/* Hamburger conditionnel par rôle */}
+            <TopBarHamburger />
           </div>
         </div>
       </header>
