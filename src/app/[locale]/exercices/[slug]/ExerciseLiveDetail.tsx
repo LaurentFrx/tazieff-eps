@@ -1443,9 +1443,6 @@ export function ExerciseLiveDetail({
                 </button>
                 {menuOpen && (
                   <div className="absolute top-12 right-0 min-w-48 rounded-xl border border-white/10 bg-gray-900/95 backdrop-blur-md p-2 shadow-xl z-[60]">
-                    <button type="button" onClick={() => { toggleFavorite(merged.frontmatter.slug); setMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors">
-                      {getFavoritesSnapshot().includes(merged.frontmatter.slug) ? t("favorites.remove") : t("favorites.add")}
-                    </button>
                     <button type="button" onClick={() => { const fm = merged.frontmatter; if (sessionDraft.isInDraft(fm.slug)) { sessionDraft.removeItem(fm.slug); } else { sessionDraft.addItem({ slug: fm.slug, title: fm.title, muscles: fm.muscles }); } setMenuOpen(false); }} className="w-full text-left px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors">
                       {sessionDraft.isInDraft(merged.frontmatter.slug) ? `✓ ${t("exerciseDetail.inSession")}` : `＋ ${t("exerciseDetail.addToSession")}`}
                     </button>
